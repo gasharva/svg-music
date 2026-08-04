@@ -1,0 +1,26 @@
+name: SVG symbol scaler
+
+on:
+  push:
+    branches: [ master, "agent/**" ]
+    paths:
+      - "Tools/SvgSymbolScaler/**"
+      - "Tools/SvgSymbolScaler.Tests/**"
+      - ".github/workflows/svg-symbol-scaler.yml"
+  pull_request:
+    branches: [ master ]
+    paths:
+      - "Tools/SvgSymbolScaler/**"
+      - "Tools/SvgSymbolScaler.Tests/**"
+      - ".github/workflows/svg-symbol-scaler.yml"
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - run: dotnet test Tools/SvgSymbolScaler.Tests/SvgSymbolScaler.Tests.csproj --configuration Release
