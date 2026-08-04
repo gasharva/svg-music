@@ -17,16 +17,12 @@ public sealed class SymbolClassifier
         var scoreDoc = System.Xml.Linq.XDocument.Load(scorePath);
         var source = _geometry.ReadScoreGeometries(scoreDoc);
         var staffSpace = staves.Count > 0 ? staves.Average(s => s.Space) : 1.0;
-
         var catalogWatch = Stopwatch.StartNew();
         var (references, cacheHit) = LoadReferences(catalogPath);
         catalogWatch.Stop();
 
-        var unique = source
-            .GroupBy(x => FastGlyphMatcher.GeometryKey(x.Value), StringComparer.Ordinal)
-            .Select(g => new { Geometry = g.First().Value, SymbolIds = g.Select(x => x.Key).ToArray() })
-            .ToArray();
-
+        var unique = source.GroupBy(x => FastGlyphMatcher.GeometryKey(x.Value), StringComparer.Ordinal)
+            .Select(g => new { Geometry = g.First().Value, SymbolIds = g.Select(x => x.Key).ToArray() }).ToArray();
         long maskComparisons = 0, vectorComparisons = 0;
         var result = new ClassificationResult();
         var classifyWatch = Stopwatch.StartNew();
@@ -38,40 +34,31 @@ public sealed class SymbolClassifier
             var widthSpaces = descriptor.Width / staffSpace;
             var heightSpaces = descriptor.Height / staffSpace;
             var mask = FastGlyphMatcher.CreateMask(geometry);
-
-            var finalists = references
-                .Select(reference =>
+            var finalists = references.Select(reference =>
                 {
                     maskComparisons++;
                     var maskIoU = FastGlyphMatcher.BestMaskIoU(mask, reference.Mask);
                     var size = SizeScore(widthSpaces, heightSpaces, reference);
                     var aspect = Math.Exp(-Math.Abs(Math.Log(Math.Max(descriptor.AspectRatio, 1e-6) / Math.Max(reference.AspectRatio, 1e-6))));
-                    var fastScore = 0.72 * maskIoU + 0.18 * size + 0.10 * aspect;
-                    return (Reference: reference, MaskIoU: maskIoU, Size: size, FastScore: fastScore);
+                    return (Reference: reference, MaskIoU: maskIoU, Size: size, FastScore: 0.72 * maskIoU + 0.18 * size + 0.10 * aspect);
                 })
-                .OrderByDescending(x => x.FastScore)
-                .Take(FinalCandidateCount)
-                .ToArray();
+                .OrderByDescending(x => x.FastScore).Take(FinalCandidateCount).ToArray();
 
-            var best = finalists
-                .Select(candidate =>
+            var best = finalists.Select(candidate =>
                 {
                     vectorComparisons++;
                     var vectorIoU = FastGlyphMatcher.BestVectorIoU(geometry, candidate.Reference.Geometry);
-                    var totalScore = 0.52 * candidate.MaskIoU + 0.28 * vectorIoU + 0.20 * candidate.Size;
-                    return (candidate.Reference, Total: totalScore, Shape: 0.65 * candidate.MaskIoU + 0.35 * vectorIoU, candidate.Size);
+                    return (candidate.Reference, Total: 0.52 * candidate.MaskIoU + 0.28 * vectorIoU + 0.20 * candidate.Size,
+                        Shape: 0.65 * candidate.MaskIoU + 0.35 * vectorIoU, candidate.Size);
                 })
-                .OrderByDescending(x => x.Total)
-                .FirstOrDefault();
-
+                .OrderByDescending(x => x.Total).FirstOrDefault();
             if (best.Reference is null) continue;
+
+            var semanticKind = NormalizeKind(best.Reference.Id, best.Reference.Kind);
             foreach (var symbolId in group.SymbolIds)
-            {
-                result.Symbols.Add(new SymbolClassification(
-                    symbolId, best.Reference.Kind, best.Reference.Id, best.Total,
+                result.Symbols.Add(new SymbolClassification(symbolId, semanticKind, best.Reference.Id, best.Total,
                     best.Shape, best.Size, widthSpaces, heightSpaces,
                     best.Reference.MusicXmlElement, best.Reference.MusicXmlValue));
-            }
         }
 
         classifyWatch.Stop();
@@ -90,6 +77,16 @@ public sealed class SymbolClassifier
         return result;
     }
 
+    private static string NormalizeKind(string referenceId, string kind) => referenceId switch
+    {
+        // MuseScore's round noteheads are geometrically closer to SMuFL shape-note
+        // variants than to Bravura's default oval noteheads. Musically they have the
+        // same filled/hollow semantics and must not remain smufl-unknown.
+        "uniE1B1" => "notehead-black",
+        "uniE1B0" => "notehead-half",
+        _ => kind
+    };
+
     private (List<CachedReference> References, bool CacheHit) LoadReferences(string catalogPath)
     {
         var cachePath = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(catalogPath))!, "catalog.bin");
@@ -100,22 +97,19 @@ public sealed class SymbolClassifier
             {
                 using var stream = File.OpenRead(cachePath);
                 using var reader = new BinaryReader(stream);
-                if (reader.ReadInt32() == CacheVersion && reader.ReadInt64() == catalogStamp)
-                    return (ReadCache(reader), true);
+                if (reader.ReadInt32() == CacheVersion && reader.ReadInt64() == catalogStamp) return (ReadCache(reader), true);
             }
             catch { }
         }
 
-        var catalog = JsonSerializer.Deserialize<ReferenceCatalog>(File.ReadAllText(catalogPath),
-            new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+        var catalog = JsonSerializer.Deserialize<ReferenceCatalog>(File.ReadAllText(catalogPath), new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
             ?? throw new InvalidOperationException("Не удалось прочитать каталог эталонов");
         var baseDir = Path.GetDirectoryName(Path.GetFullPath(catalogPath))!;
         var references = catalog.Symbols.Select(reference =>
         {
             var geometry = _geometry.ReadStandaloneSvg(Path.Combine(baseDir, reference.SvgPath));
             var descriptor = SvgPathGeometry.Describe(geometry);
-            return new CachedReference(
-                reference.Id, reference.Kind, reference.MusicXmlElement, reference.MusicXmlValue,
+            return new CachedReference(reference.Id, reference.Kind, reference.MusicXmlElement, reference.MusicXmlValue,
                 reference.ExpectedWidthInSpaces, reference.ExpectedHeightInSpaces, reference.SizeTolerance,
                 descriptor.AspectRatio, FastGlyphMatcher.CreateMask(geometry), geometry);
         }).ToList();
