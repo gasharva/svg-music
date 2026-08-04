@@ -20,6 +20,12 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
+      - name: Restore compiled glyph catalog
+        uses: actions/cache@v4
+        with:
+          path: References/catalog.bin
+          key: smufl-catalog-${{ runner.os }}-${{ hashFiles('References/catalog.json', 'References/glyphs/**') }}
+
       - name: Restore
         run: dotnet restore Tests/SvgToMusicXmlPoc.Tests/SvgToMusicXmlPoc.Tests.csproj
 
