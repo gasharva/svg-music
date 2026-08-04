@@ -1,5 +1,3 @@
-using System.Globalization;
-
 namespace SvgSymbolScaler;
 
 public sealed class NaturalPathComparer : IComparer<string>
@@ -16,8 +14,8 @@ public sealed class NaturalPathComparer : IComparer<string>
         if (x is null) return -1;
         if (y is null) return 1;
 
-        var left = Path.GetFileName(x);
-        var right = Path.GetFileName(y);
+        var left = x;
+        var right = y;
         var i = 0;
         var j = 0;
 
@@ -61,7 +59,6 @@ public sealed class NaturalPathComparer : IComparer<string>
         var remainderComparison = (left.Length - i).CompareTo(right.Length - j);
         if (remainderComparison != 0) return remainderComparison;
 
-        // Stable deterministic tie-breaker for identical file names in different subfolders.
         return _textComparer.Compare(x, y);
     }
 
