@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json;
 using SvgToMusicXmlPoc.Models;
 
@@ -5,77 +6,194 @@ namespace SvgToMusicXmlPoc.Services;
 
 public sealed class SymbolClassifier
 {
+    private const int FinalCandidateCount = 5;
+    private const int CacheVersion = 1;
     private readonly SvgPathGeometry _geometry = new();
+
+    public ClassifierPerformance LastPerformance { get; private set; } = new();
 
     public ClassificationResult Classify(string scorePath, IReadOnlyList<Staff> staves, string catalogPath)
     {
         var scoreDoc = System.Xml.Linq.XDocument.Load(scorePath);
         var source = _geometry.ReadScoreGeometries(scoreDoc);
-        var catalog = JsonSerializer.Deserialize<ReferenceCatalog>(File.ReadAllText(catalogPath), new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
-            ?? throw new InvalidOperationException("Не удалось прочитать каталог эталонов");
-        var baseDir = Path.GetDirectoryName(Path.GetFullPath(catalogPath))!;
-        var refs = catalog.Symbols.Select(r => (Ref:r, Desc:SvgPathGeometry.Describe(_geometry.ReadStandaloneSvg(Path.Combine(baseDir, r.SvgPath))))).ToList();
         var staffSpace = staves.Count > 0 ? staves.Average(s => s.Space) : 1.0;
+
+        var catalogWatch = Stopwatch.StartNew();
+        var (references, cacheHit) = LoadReferences(catalogPath);
+        catalogWatch.Stop();
+
+        var unique = source
+            .GroupBy(x => FastGlyphMatcher.GeometryKey(x.Value), StringComparer.Ordinal)
+            .Select(g => new { Geometry = g.First().Value, SymbolIds = g.Select(x => x.Key).ToArray() })
+            .ToArray();
+
+        long maskComparisons = 0, vectorComparisons = 0;
         var result = new ClassificationResult();
-        foreach (var pair in source)
+        var classifyWatch = Stopwatch.StartNew();
+
+        foreach (var group in unique)
         {
-            var desc = SvgPathGeometry.Describe(pair.Value);
-            var widthSpaces = desc.Width / staffSpace; var heightSpaces = desc.Height / staffSpace;
-            // Cheap pre-filter first. A full Chamfer comparison against the complete
-            // Bravura catalog would be unnecessarily expensive.
-            var candidates = refs
-                .Select(r => (r.Ref, r.Desc, Cheap: CheapScore(desc, widthSpaces, heightSpaces, r.Ref, r.Desc)))
-                .OrderByDescending(x => x.Cheap)
-                .Take(64)
-                .Select(x => (x.Ref, x.Desc));
-            var matches = candidates.Select(r => Score(desc, widthSpaces, heightSpaces, r.Ref, r.Desc)).OrderByDescending(x => x.Total).ToList();
-            if (matches.Count == 0) continue;
-            var best = matches[0];
-            result.Symbols.Add(new SymbolClassification(pair.Key, best.Reference.Kind, best.Reference.Id, best.Total,
-                best.Shape, best.Size, widthSpaces, heightSpaces, best.Reference.MusicXmlElement, best.Reference.MusicXmlValue));
+            var geometry = group.Geometry;
+            var descriptor = SvgPathGeometry.Describe(geometry);
+            var widthSpaces = descriptor.Width / staffSpace;
+            var heightSpaces = descriptor.Height / staffSpace;
+            var mask = FastGlyphMatcher.CreateMask(geometry);
+
+            var finalists = references
+                .Select(reference =>
+                {
+                    maskComparisons++;
+                    var maskIoU = FastGlyphMatcher.BestMaskIoU(mask, reference.Mask);
+                    var size = SizeScore(widthSpaces, heightSpaces, reference);
+                    var aspect = Math.Exp(-Math.Abs(Math.Log(Math.Max(descriptor.AspectRatio, 1e-6) / Math.Max(reference.AspectRatio, 1e-6))));
+                    var fastScore = 0.72 * maskIoU + 0.18 * size + 0.10 * aspect;
+                    return (Reference: reference, MaskIoU: maskIoU, Size: size, FastScore: fastScore);
+                })
+                .OrderByDescending(x => x.FastScore)
+                .Take(FinalCandidateCount)
+                .ToArray();
+
+            var best = finalists
+                .Select(candidate =>
+                {
+                    vectorComparisons++;
+                    var vectorIoU = FastGlyphMatcher.BestVectorIoU(geometry, candidate.Reference.Geometry);
+                    var totalScore = 0.52 * candidate.MaskIoU + 0.28 * vectorIoU + 0.20 * candidate.Size;
+                    return (candidate.Reference, Total: totalScore, Shape: 0.65 * candidate.MaskIoU + 0.35 * vectorIoU, candidate.Size);
+                })
+                .OrderByDescending(x => x.Total)
+                .FirstOrDefault();
+
+            if (best.Reference is null) continue;
+            foreach (var symbolId in group.SymbolIds)
+            {
+                result.Symbols.Add(new SymbolClassification(
+                    symbolId, best.Reference.Kind, best.Reference.Id, best.Total,
+                    best.Shape, best.Size, widthSpaces, heightSpaces,
+                    best.Reference.MusicXmlElement, best.Reference.MusicXmlValue));
+            }
         }
-        result.Symbols.Sort((a,b) => string.CompareOrdinal(a.SymbolId,b.SymbolId));
+
+        classifyWatch.Stop();
+        result.Symbols.Sort((a, b) => string.CompareOrdinal(a.SymbolId, b.SymbolId));
+        LastPerformance = new ClassifierPerformance
+        {
+            LoadCatalogMs = catalogWatch.Elapsed.TotalMilliseconds,
+            ClassifyMs = classifyWatch.Elapsed.TotalMilliseconds,
+            GlyphInstances = source.Count,
+            UniqueGeometries = unique.Length,
+            CatalogGlyphs = references.Count,
+            MaskComparisons = maskComparisons,
+            VectorComparisons = vectorComparisons,
+            CatalogCacheHit = cacheHit
+        };
         return result;
     }
 
+    private (List<CachedReference> References, bool CacheHit) LoadReferences(string catalogPath)
+    {
+        var cachePath = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(catalogPath))!, "catalog.bin");
+        var catalogStamp = File.GetLastWriteTimeUtc(catalogPath).Ticks;
+        if (File.Exists(cachePath))
+        {
+            try
+            {
+                using var stream = File.OpenRead(cachePath);
+                using var reader = new BinaryReader(stream);
+                if (reader.ReadInt32() == CacheVersion && reader.ReadInt64() == catalogStamp)
+                    return (ReadCache(reader), true);
+            }
+            catch { }
+        }
 
-    private static double CheapScore(ShapeDescriptor a,double widthSpaces,double heightSpaces,ReferenceSymbol r,ShapeDescriptor b)
-    {
-        var aspect = Math.Exp(-Math.Abs(Math.Log(Math.Max(a.AspectRatio,1e-6)/Math.Max(b.AspectRatio,1e-6))));
-        var sizeParts = new List<double>();
-        if(r.ExpectedWidthInSpaces is double ew) sizeParts.Add(SizeSimilarity(widthSpaces,ew,r.SizeTolerance));
-        if(r.ExpectedHeightInSpaces is double eh) sizeParts.Add(SizeSimilarity(heightSpaces,eh,r.SizeTolerance));
-        var size = sizeParts.Count==0 ? 0.5 : sizeParts.Average();
-        var contours = 1.0/(1+Math.Abs(a.ClosedContourCount-b.ClosedContourCount));
-        return 0.45*aspect + 0.45*size + 0.10*contours;
+        var catalog = JsonSerializer.Deserialize<ReferenceCatalog>(File.ReadAllText(catalogPath),
+            new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+            ?? throw new InvalidOperationException("Не удалось прочитать каталог эталонов");
+        var baseDir = Path.GetDirectoryName(Path.GetFullPath(catalogPath))!;
+        var references = catalog.Symbols.Select(reference =>
+        {
+            var geometry = _geometry.ReadStandaloneSvg(Path.Combine(baseDir, reference.SvgPath));
+            var descriptor = SvgPathGeometry.Describe(geometry);
+            return new CachedReference(
+                reference.Id, reference.Kind, reference.MusicXmlElement, reference.MusicXmlValue,
+                reference.ExpectedWidthInSpaces, reference.ExpectedHeightInSpaces, reference.SizeTolerance,
+                descriptor.AspectRatio, FastGlyphMatcher.CreateMask(geometry), geometry);
+        }).ToList();
+
+        try
+        {
+            using var stream = File.Create(cachePath);
+            using var writer = new BinaryWriter(stream);
+            writer.Write(CacheVersion); writer.Write(catalogStamp); WriteCache(writer, references);
+        }
+        catch { }
+        return (references, false);
     }
 
-    private static (ReferenceSymbol Reference,double Total,double Shape,double Size) Score(ShapeDescriptor a,double widthSpaces,double heightSpaces,ReferenceSymbol r,ShapeDescriptor b)
+    private static double SizeScore(double width, double height, CachedReference reference)
     {
-        var aspect = Math.Exp(-Math.Abs(Math.Log(Math.Max(a.AspectRatio,1e-6)/Math.Max(b.AspectRatio,1e-6))));
-        var fill = Math.Max(0, 1-Math.Abs(a.FillRatio-b.FillRatio));
-        var contours = 1.0/(1+Math.Abs(a.ClosedContourCount-b.ClosedContourCount));
-        var chamfer = BestOrientedChamfer(a.NormalizedPoints,b.NormalizedPoints);
-        var shape = 0.55*Math.Exp(-6*chamfer)+0.2*aspect+0.15*fill+0.1*contours;
-        var sizeParts = new List<double>();
-        if(r.ExpectedWidthInSpaces is double ew) sizeParts.Add(SizeSimilarity(widthSpaces,ew,r.SizeTolerance));
-        if(r.ExpectedHeightInSpaces is double eh) sizeParts.Add(SizeSimilarity(heightSpaces,eh,r.SizeTolerance));
-        var size = sizeParts.Count==0 ? 0.5 : sizeParts.Average();
-        var total = 0.78*shape+0.22*size;
-        return (r,total,shape,size);
+        var parts = new List<double>();
+        if (reference.ExpectedWidthInSpaces is double expectedWidth) parts.Add(SizeSimilarity(width, expectedWidth, reference.SizeTolerance));
+        if (reference.ExpectedHeightInSpaces is double expectedHeight) parts.Add(SizeSimilarity(height, expectedHeight, reference.SizeTolerance));
+        return parts.Count == 0 ? 0.5 : parts.Average();
     }
 
-    private static double SizeSimilarity(double actual,double expected,double tolerance)
+    private static double SizeSimilarity(double actual, double expected, double tolerance)
     {
-        if(actual<=0||expected<=0) return 0;
-        var relative=Math.Abs(Math.Log(actual/expected));
-        return Math.Exp(-relative/Math.Max(tolerance,0.05));
+        if (actual <= 0 || expected <= 0) return 0;
+        return Math.Exp(-Math.Abs(Math.Log(actual / expected)) / Math.Max(tolerance, 0.05));
     }
-    private static double BestOrientedChamfer(IReadOnlyList<PointD> a,IReadOnlyList<PointD> b)
+
+    private static void WriteCache(BinaryWriter writer, IReadOnlyList<CachedReference> references)
     {
-        static IReadOnlyList<PointD> Flip(IReadOnlyList<PointD> p,bool x,bool y) => p.Select(q => new PointD(x ? 1-q.X : q.X, y ? 1-q.Y : q.Y)).ToArray();
-        return new[]{b,Flip(b,true,false),Flip(b,false,true),Flip(b,true,true)}.Min(v => SymmetricChamfer(a,v));
+        writer.Write(references.Count);
+        foreach (var reference in references)
+        {
+            writer.Write(reference.Id ?? ""); writer.Write(reference.Kind ?? "");
+            writer.Write(reference.MusicXmlElement ?? ""); writer.Write(reference.MusicXmlValue ?? "");
+            WriteNullable(writer, reference.ExpectedWidthInSpaces); WriteNullable(writer, reference.ExpectedHeightInSpaces);
+            writer.Write(reference.SizeTolerance); writer.Write(reference.AspectRatio);
+            foreach (var row in reference.Mask) writer.Write(row);
+            writer.Write(reference.Geometry.Contours.Count);
+            foreach (var contour in reference.Geometry.Contours)
+            {
+                writer.Write(contour.Count);
+                foreach (var point in contour) { writer.Write(point.X); writer.Write(point.Y); }
+            }
+        }
     }
-    private static double SymmetricChamfer(IReadOnlyList<PointD> a,IReadOnlyList<PointD> b) => (OneWay(a,b)+OneWay(b,a))/2;
-    private static double OneWay(IReadOnlyList<PointD> a,IReadOnlyList<PointD> b) => a.Average(p => b.Min(q => Math.Sqrt(Math.Pow(p.X-q.X,2)+Math.Pow(p.Y-q.Y,2))));
+
+    private static List<CachedReference> ReadCache(BinaryReader reader)
+    {
+        var count = reader.ReadInt32();
+        var result = new List<CachedReference>(count);
+        for (var i = 0; i < count; i++)
+        {
+            var id = reader.ReadString(); var kind = reader.ReadString();
+            var element = EmptyToNull(reader.ReadString()); var value = EmptyToNull(reader.ReadString());
+            var expectedWidth = ReadNullable(reader); var expectedHeight = ReadNullable(reader);
+            var tolerance = reader.ReadDouble(); var aspect = reader.ReadDouble();
+            var mask = new ulong[FastGlyphMatcher.MaskSize];
+            for (var row = 0; row < mask.Length; row++) mask[row] = reader.ReadUInt64();
+            var contourCount = reader.ReadInt32();
+            var contours = new List<IReadOnlyList<PointD>>(contourCount);
+            for (var c = 0; c < contourCount; c++)
+            {
+                var pointCount = reader.ReadInt32(); var points = new PointD[pointCount];
+                for (var p = 0; p < pointCount; p++) points[p] = new PointD(reader.ReadDouble(), reader.ReadDouble());
+                contours.Add(points);
+            }
+            result.Add(new CachedReference(id, kind, element, value, expectedWidth, expectedHeight, tolerance,
+                aspect, mask, new SymbolGeometry(id, contours)));
+        }
+        return result;
+    }
+
+    private static void WriteNullable(BinaryWriter writer, double? value) { writer.Write(value.HasValue); if (value.HasValue) writer.Write(value.Value); }
+    private static double? ReadNullable(BinaryReader reader) => reader.ReadBoolean() ? reader.ReadDouble() : null;
+    private static string? EmptyToNull(string value) => value.Length == 0 ? null : value;
+
+    private sealed record CachedReference(string Id, string Kind, string? MusicXmlElement, string? MusicXmlValue,
+        double? ExpectedWidthInSpaces, double? ExpectedHeightInSpaces, double SizeTolerance, double AspectRatio,
+        ulong[] Mask, SymbolGeometry Geometry);
 }
