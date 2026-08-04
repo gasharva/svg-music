@@ -6,7 +6,7 @@ namespace SvgToMusicXmlPoc.Tests;
 public sealed class GoldenMusicXmlQualityTests
 {
     [Fact]
-    public void YellowLeaves_SvgConversion_ProducesSemanticQualityReport()
+    public void YellowLeaves_SvgConversion_ProducesSemanticQualityAndPerformanceReport()
     {
         var root = FindRepositoryRoot();
         var goldenDirectory = Path.Combine(root, "Golden");
@@ -23,20 +23,23 @@ public sealed class GoldenMusicXmlQualityTests
         Assert.True(File.Exists(catalogPath), $"SMuFL catalog not found: {catalogPath}");
 
         var conversion = new ConversionPipeline().Convert(svgPath, catalogPath, actualPath);
-
         var comparison = new MusicXmlSemanticComparer().Compare(expectedPath, actualPath);
-        new QualityReportWriter().Write(comparison, outputDirectory);
+        new QualityReportWriter().Write(comparison, outputDirectory, conversion.Performance);
 
         Assert.True(File.Exists(actualPath));
         Assert.True(File.Exists(Path.Combine(outputDirectory, "quality-report.csv")));
         Assert.True(File.Exists(Path.Combine(outputDirectory, "quality-report.md")));
+        Assert.True(File.Exists(Path.Combine(outputDirectory, "performance.csv")));
         Assert.True(comparison.Metrics.Expected > 0, "Golden MusicXML must contain semantic events.");
 
-        // This golden export is path-only. These assertions protect the first stage of
-        // the pipeline independently of later staff and musical-semantic recognition.
         Assert.NotEmpty(conversion.Analysis.Uses);
         Assert.All(conversion.Analysis.Uses, x => Assert.Equal("path", x.SourceKind));
         Assert.Equal(conversion.Analysis.Uses.Count, conversion.Classification.Symbols.Count);
+        Assert.True(conversion.Performance.GlyphInstances > 0);
+        Assert.True(conversion.Performance.UniqueGeometries > 0);
+        Assert.True(conversion.Performance.UniqueGeometries <= conversion.Performance.GlyphInstances);
+        Assert.True(conversion.Performance.MaskComparisons > 0);
+        Assert.True(conversion.Performance.VectorComparisons <= conversion.Performance.UniqueGeometries * 5L);
 
         Assert.Equal(comparison.Metrics.Expected,
             comparison.Metrics.Matched + comparison.Metrics.Mismatched + comparison.Metrics.Missing);
@@ -52,10 +55,8 @@ public sealed class GoldenMusicXmlQualityTests
             if (File.Exists(Path.Combine(directory.FullName, "SvgToMusicXmlPoc.csproj")) &&
                 Directory.Exists(Path.Combine(directory.FullName, "Golden")))
                 return directory.FullName;
-
             directory = directory.Parent;
         }
-
         throw new DirectoryNotFoundException("Could not locate repository root from test output directory.");
     }
 }
