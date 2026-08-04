@@ -3,12 +3,8 @@ using SvgSymbolScaler;
 try
 {
     var options = CliOptions.Parse(args);
-    var scaler = new CompactSvgScaler(
-        options.Scale,
-        options.MaxSize,
-        options.MaxAspectRatio,
-        options.ProtectAbove,
-        options.CropPadding);
+    var scaler = new CompactSvgScaler(options.Scale, options.MaxSize, options.MaxAspectRatio);
+    var postProcessor = new SvgPrintPostProcessor(options.ProtectAbove, options.CropPadding);
 
     var input = Path.GetFullPath(options.Input);
     var sourceDirectory = File.Exists(input)
@@ -33,9 +29,10 @@ try
         var relative = File.Exists(input) ? Path.GetFileName(file) : Path.GetRelativePath(input, file);
         var output = Path.Combine(outputDirectory, relative);
         Directory.CreateDirectory(Path.GetDirectoryName(output)!);
-        var result = scaler.ProcessFile(file, output);
+        var scaleResult = scaler.ProcessFile(file, output);
+        var postResult = postProcessor.Process(output);
         outputs.Add(output);
-        Console.WriteLine($"{relative}: scaled {result.Scaled}, protected {result.Protected}, skipped {result.Skipped}; crop={result.Crop.Width:F1}x{result.Crop.Height:F1}");
+        Console.WriteLine($"{relative}: scaled {scaleResult.Scaled}, protected {postResult.Protected}, skipped {scaleResult.Skipped}; crop={postResult.CropWidth:F1}x{postResult.CropHeight:F1}");
     }
 
     var pdfPath = Path.Combine(outputDirectory, "combined.pdf");
@@ -57,14 +54,7 @@ static bool IsInside(string file, string directory)
     return relative != ".." && !relative.StartsWith(".." + Path.DirectorySeparatorChar);
 }
 
-internal sealed record CliOptions(
-    string Input,
-    double Scale,
-    double MaxSize,
-    double MaxAspectRatio,
-    double ProtectAbove,
-    double CropPadding,
-    bool Recursive)
+internal sealed record CliOptions(string Input, double Scale, double MaxSize, double MaxAspectRatio, double ProtectAbove, double CropPadding, bool Recursive)
 {
     public const string Usage = """
 Usage:
@@ -84,13 +74,10 @@ Options:
 
     public static CliOptions Parse(string[] args)
     {
-        if (args.Length == 0 || args.Contains("--help") || args.Contains("-h"))
-            throw new ArgumentException(Usage);
-
+        if (args.Length == 0 || args.Contains("--help") || args.Contains("-h")) throw new ArgumentException(Usage);
         string? input = null;
         double scale = 1.2, maxSize = 120, maxAspect = 2, protectAbove = 80, cropPadding = 2;
         var recursive = false;
-
         for (var i = 0; i < args.Length; i++)
         {
             switch (args[i])
@@ -103,22 +90,18 @@ Options:
                 case "--recursive": recursive = true; break;
                 default:
                     if (args[i].StartsWith('-')) throw new ArgumentException($"Unknown option: {args[i]}");
-                    if (input is null) input = args[i];
-                    else throw new ArgumentException($"Unexpected argument: {args[i]}");
+                    if (input is null) input = args[i]; else throw new ArgumentException($"Unexpected argument: {args[i]}");
                     break;
             }
         }
-
         if (string.IsNullOrWhiteSpace(input)) throw new ArgumentException("Input path is required.");
-        if (scale <= 0 || maxSize <= 0 || maxAspect <= 1 || protectAbove < 0 || cropPadding < 0)
-            throw new ArgumentOutOfRangeException("Numeric options are outside their valid range.");
+        if (scale <= 0 || maxSize <= 0 || maxAspect <= 1 || protectAbove < 0 || cropPadding < 0) throw new ArgumentOutOfRangeException("Numeric options are outside their valid range.");
         return new CliOptions(input, scale, maxSize, maxAspect, protectAbove, cropPadding, recursive);
     }
 
     private static double ReadDouble(string[] args, ref int index, string option)
     {
-        if (++index >= args.Length || !double.TryParse(args[index], System.Globalization.NumberStyles.Float,
-                System.Globalization.CultureInfo.InvariantCulture, out var value))
+        if (++index >= args.Length || !double.TryParse(args[index], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var value))
             throw new ArgumentException($"{option} requires a number.");
         return value;
     }
