@@ -73,7 +73,7 @@ Options:
             throw new ArgumentException(Usage);
 
         string? input = null, output = null;
-        double scale = 1.5, maxSize = 120, maxAspect = 12;
+        double scale = 1.2, maxSize = 120, maxAspect = 2;
         var recursive = false;
 
         for (var i = 0; i < args.Length; i++)
