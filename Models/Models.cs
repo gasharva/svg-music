@@ -1,20 +1,8 @@
 namespace SvgToMusicXmlPoc.Models;
 
-public sealed record SvgUse(
-    string SymbolId,
-    double X,
-    double Y,
-    string SourceKind = "use",
-    double Width = 0,
-    double Height = 0);
+public sealed record SvgUse(string SymbolId, double X, double Y, string SourceKind = "use");
 
-public sealed record SvgDirectPath(
-    string SymbolId,
-    SymbolGeometry Geometry,
-    double X,
-    double Y,
-    double Width,
-    double Height);
+public sealed record SvgDirectPath(string SymbolId, SymbolGeometry Geometry, double X, double Y);
 
 public sealed record Staff(int Index, double Left, double Right, IReadOnlyList<double> Lines)
 {
@@ -32,8 +20,6 @@ public sealed class RecognizedEvent
     public double Confidence { get; init; }
     public double X { get; init; }
     public double Y { get; init; }
-    public double Width { get; init; }
-    public double Height { get; init; }
     public int StaffIndex { get; init; }
 
     public string? Step { get; set; }
@@ -46,8 +32,6 @@ public sealed class RecognizedEvent
     public string? ClefSign { get; set; }
     public int? ClefLine { get; set; }
     public string? AttachedToSymbolId { get; set; }
-    public string? StemSymbolId { get; set; }
-    public int BeamCount { get; set; }
 }
 
 public sealed class AnalysisResult
