@@ -15,12 +15,16 @@ try
 
     if (Directory.Exists(options.Input))
     {
-        var outputDirectory = options.Output ?? Path.Combine(options.Input, "scaled");
+        var inputDirectory = Path.GetFullPath(options.Input);
+        var outputDirectory = Path.GetFullPath(options.Output ?? Path.Combine(options.Input, "scaled"));
+        var files = Directory.EnumerateFiles(inputDirectory, "*.svg", options.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)
+            .Where(file => !IsInside(file, outputDirectory))
+            .ToArray();
         Directory.CreateDirectory(outputDirectory);
-        var files = Directory.EnumerateFiles(options.Input, "*.svg", options.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly).ToArray();
+
         foreach (var file in files)
         {
-            var relative = Path.GetRelativePath(options.Input, file);
+            var relative = Path.GetRelativePath(inputDirectory, file);
             var output = Path.Combine(outputDirectory, relative);
             Directory.CreateDirectory(Path.GetDirectoryName(output)!);
             var result = scaler.ProcessFile(file, output);
@@ -38,6 +42,12 @@ catch (Exception ex)
     Console.Error.WriteLine();
     Console.Error.WriteLine(CliOptions.Usage);
     Environment.ExitCode = 1;
+}
+
+static bool IsInside(string file, string directory)
+{
+    var relative = Path.GetRelativePath(directory, Path.GetFullPath(file));
+    return relative != ".." && !relative.StartsWith(".." + Path.DirectorySeparatorChar);
 }
 
 static string BuildOutputPath(string input) =>
