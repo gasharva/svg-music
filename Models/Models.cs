@@ -1,6 +1,8 @@
 namespace SvgToMusicXmlPoc.Models;
 
-public sealed record SvgUse(string SymbolId, double X, double Y);
+public sealed record SvgUse(string SymbolId, double X, double Y, string SourceKind = "use");
+
+public sealed record SvgDirectPath(string SymbolId, SymbolGeometry Geometry, double X, double Y);
 
 public sealed record Staff(int Index, double Left, double Right, IReadOnlyList<double> Lines)
 {
