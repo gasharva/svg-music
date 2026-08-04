@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using SvgToMusicXmlPoc.Configuration;
 using SvgToMusicXmlPoc.Models;
@@ -6,10 +7,15 @@ namespace SvgToMusicXmlPoc.Services;
 
 public sealed class MusicXmlWriter
 {
+    private static readonly Regex TimeDigitRegex = new(
+        @"(?:timeSig|timeSignature|timesig|numeral)[^0-9]*(?<digit>[0-9])",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
     public void Write(string path, AnalysisResult analysis, RecognitionConfig config)
     {
         var staffGroups = BuildStaffGroups(analysis);
         var pianoLayout = staffGroups.Any(x => x.Count == 2);
+        var time = DetectTimeSignature(analysis, staffGroups.FirstOrDefault(), config);
 
         var score = new XElement("score-partwise", new XAttribute("version", "4.0"),
             new XElement("part-list",
@@ -19,49 +25,174 @@ public sealed class MusicXmlWriter
         score.Add(part);
 
         var measureNumber = 1;
+        var firstMeasure = true;
         foreach (var group in staffGroups)
         {
-            var measure = new XElement("measure", new XAttribute("number", measureNumber++));
-            var attributes = new XElement("attributes",
-                new XElement("divisions", config.Divisions),
-                new XElement("key", new XElement("fifths", 0)),
-                new XElement("time", new XElement("beats", config.Beats), new XElement("beat-type", config.BeatType)));
-
-            if (group.Count > 1) attributes.Add(new XElement("staves", group.Count));
-            for (var staffNumber = 1; staffNumber <= group.Count; staffNumber++)
+            var boundaries = DetectMeasureBoundaries(analysis, group);
+            for (var segment = 0; segment + 1 < boundaries.Count; segment++)
             {
-                var staff = group[staffNumber - 1];
-                var clef = ClefForStaff(analysis, staff, config);
-                attributes.Add(new XElement("clef",
-                    group.Count > 1 ? new XAttribute("number", staffNumber) : null,
-                    new XElement("sign", clef.Sign),
-                    new XElement("line", clef.Line)));
+                var left = boundaries[segment];
+                var right = boundaries[segment + 1];
+                var measure = new XElement("measure", new XAttribute("number", measureNumber++));
+
+                if (firstMeasure)
+                {
+                    var attributes = new XElement("attributes",
+                        new XElement("divisions", config.Divisions),
+                        new XElement("key", new XElement("fifths", 0)),
+                        new XElement("time", new XElement("beats", time.Beats), new XElement("beat-type", time.BeatType)));
+
+                    if (group.Count > 1) attributes.Add(new XElement("staves", group.Count));
+                    AddClefs(attributes, analysis, group, config);
+                    measure.Add(attributes);
+                    firstMeasure = false;
+                }
+                else if (segment == 0)
+                {
+                    // A new SVG system may repeat clefs even though it continues the same MusicXML part.
+                    var attributes = new XElement("attributes");
+                    AddClefs(attributes, analysis, group, config);
+                    measure.Add(attributes);
+                }
+
+                var firstStaffDuration = 0;
+                for (var staffNumber = 1; staffNumber <= group.Count; staffNumber++)
+                {
+                    var staff = group[staffNumber - 1];
+                    var timed = analysis.Events
+                        .Where(x => x.StaffIndex == staff.Index && IsTimedEvent(x))
+                        .Where(x => x.X >= left && (segment + 2 == boundaries.Count ? x.X <= right : x.X < right))
+                        .OrderBy(x => x.X)
+                        .ThenByDescending(x => x.Y)
+                        .ToList();
+
+                    if (staffNumber > 1 && firstStaffDuration > 0)
+                        measure.Add(new XElement("backup", new XElement("duration", firstStaffDuration)));
+
+                    foreach (var evt in timed)
+                        measure.Add(CreateNote(evt, staffNumber));
+
+                    var duration = timed.Where(x => !x.Chord).Sum(x => x.Duration);
+                    if (staffNumber == 1) firstStaffDuration = duration;
+                }
+
+                part.Add(measure);
             }
-            measure.Add(attributes);
-
-            var firstStaffDuration = 0;
-            for (var staffNumber = 1; staffNumber <= group.Count; staffNumber++)
-            {
-                var staff = group[staffNumber - 1];
-                var timed = analysis.Events
-                    .Where(x => x.StaffIndex == staff.Index && IsTimedEvent(x))
-                    .OrderBy(x => x.X)
-                    .ThenByDescending(x => x.Y)
-                    .ToList();
-
-                if (staffNumber > 1 && firstStaffDuration > 0)
-                    measure.Add(new XElement("backup", new XElement("duration", firstStaffDuration)));
-
-                foreach (var evt in timed)
-                    measure.Add(CreateNote(evt, staffNumber));
-
-                var duration = timed.Where(x => !x.Chord).Sum(x => x.Duration);
-                if (staffNumber == 1) firstStaffDuration = duration;
-            }
-            part.Add(measure);
         }
 
         new XDocument(new XDeclaration("1.0", "UTF-8", null), score).Save(path);
+    }
+
+    private static void AddClefs(XElement attributes, AnalysisResult analysis, IReadOnlyList<Staff> group,
+        RecognitionConfig config)
+    {
+        for (var staffNumber = 1; staffNumber <= group.Count; staffNumber++)
+        {
+            var clef = ClefForStaff(analysis, group[staffNumber - 1], config);
+            attributes.Add(new XElement("clef",
+                group.Count > 1 ? new XAttribute("number", staffNumber) : null,
+                new XElement("sign", clef.Sign),
+                new XElement("line", clef.Line)));
+        }
+    }
+
+    private static List<double> DetectMeasureBoundaries(AnalysisResult analysis, IReadOnlyList<Staff> group)
+    {
+        var left = group.Min(x => x.Left);
+        var right = group.Max(x => x.Right);
+        var averageSpace = group.Average(x => x.Space);
+        var top = group.Min(x => x.Top) - averageSpace;
+        var bottom = group.Max(x => x.Bottom) + averageSpace;
+        var classes = analysis.Classifications.ToDictionary(x => x.SymbolId, StringComparer.Ordinal);
+
+        var candidates = analysis.Uses
+            .Where(x => x.X >= left - averageSpace && x.X <= right + averageSpace)
+            .Where(x => x.Y >= top - averageSpace * 2 && x.Y <= bottom + averageSpace * 2)
+            .Select(x => new { Use = x, Class = classes.GetValueOrDefault(x.SymbolId) })
+            .Where(x => x.Class is not null)
+            .Where(x => IsBarlineClass(x.Class!.Kind, x.Class.ReferenceId,
+                x.Class.WidthInSpaces, x.Class.HeightInSpaces))
+            .Select(x => x.Use.X)
+            .OrderBy(x => x)
+            .ToList();
+
+        // Merge double/repeated barlines and the same barline represented once per piano staff.
+        var merged = new List<double>();
+        foreach (var x in candidates)
+        {
+            if (merged.Count == 0 || x - merged[^1] > averageSpace * .65)
+                merged.Add(x);
+            else
+                merged[^1] = (merged[^1] + x) / 2;
+        }
+
+        // The left edge is a system boundary, not an empty first measure. Internal and right barlines split measures.
+        var result = new List<double> { left };
+        result.AddRange(merged.Where(x => x > left + averageSpace * 2 && x < right - averageSpace * .8));
+        result.Add(right);
+        return result.Distinct().OrderBy(x => x).ToList();
+    }
+
+    private static bool IsBarlineClass(string kind, string referenceId, double width, double height)
+    {
+        if (kind.Contains("barline", StringComparison.OrdinalIgnoreCase) ||
+            referenceId.Contains("barline", StringComparison.OrdinalIgnoreCase) ||
+            referenceId.Contains("barLine", StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        // Generic direct paths often have no semantic SMuFL name. A barline is tall and very narrow.
+        return width is > 0 and <= .55 && height >= 3.2;
+    }
+
+    private static (int Beats, int BeatType) DetectTimeSignature(
+        AnalysisResult analysis,
+        IReadOnlyList<Staff>? firstGroup,
+        RecognitionConfig config)
+    {
+        if (firstGroup is null || firstGroup.Count == 0) return (config.Beats, config.BeatType);
+        var staff = firstGroup[0];
+        var classes = analysis.Classifications.ToDictionary(x => x.SymbolId, StringComparer.Ordinal);
+        var firstNoteX = analysis.Events
+            .Where(x => x.StaffIndex == staff.Index && IsTimedEvent(x))
+            .Select(x => x.X)
+            .DefaultIfEmpty(staff.Left + staff.Space * 12)
+            .Min();
+
+        var digits = analysis.Uses
+            .Where(x => x.X >= staff.Left && x.X < firstNoteX)
+            .Select(x => new { Use = x, Class = classes.GetValueOrDefault(x.SymbolId) })
+            .Where(x => x.Class is not null)
+            .Select(x => new { x.Use, Digit = ReadTimeDigit(x.Class!.Kind, x.Class.ReferenceId) })
+            .Where(x => x.Digit.HasValue)
+            .OrderBy(x => x.Use.X)
+            .ToList();
+
+        if (digits.Count < 2) return (config.Beats, config.BeatType);
+
+        // Use the rightmost vertical pair before the first note; clefs and key signatures are farther left.
+        var pair = digits
+            .SelectMany((upper, index) => digits.Skip(index + 1).Select(lower => new { Upper = upper, Lower = lower }))
+            .Where(x => Math.Abs(x.Upper.Use.X - x.Lower.Use.X) <= staff.Space * 1.25)
+            .Where(x => x.Upper.Use.Y < staff.Center && x.Lower.Use.Y >= staff.Center)
+            .OrderByDescending(x => Math.Max(x.Upper.Use.X, x.Lower.Use.X))
+            .FirstOrDefault();
+
+        if (pair is null) return (config.Beats, config.BeatType);
+        var beats = pair.Upper.Digit!.Value;
+        var beatType = pair.Lower.Digit!.Value;
+        return beats is >= 1 and <= 12 && beatType is 1 or 2 or 4 or 8 or 16 or 32
+            ? (beats, beatType)
+            : (config.Beats, config.BeatType);
+    }
+
+    private static int? ReadTimeDigit(string kind, string referenceId)
+    {
+        foreach (var value in new[] { kind, referenceId })
+        {
+            var match = TimeDigitRegex.Match(value ?? string.Empty);
+            if (match.Success && int.TryParse(match.Groups["digit"].Value, out var digit)) return digit;
+        }
+        return null;
     }
 
     private static List<List<Staff>> BuildStaffGroups(AnalysisResult analysis)
@@ -69,8 +200,6 @@ public sealed class MusicXmlWriter
         var staves = analysis.Staves.OrderBy(x => x.Center).ToList();
         if (staves.Count < 2) return staves.Select(x => new List<Staff> { x }).ToList();
 
-        // A piano export normally repeats G-clef/F-clef pairs on every system. Use
-        // that strong semantic signal first; without it keep the old single-staff layout.
         var clefs = staves.ToDictionary(
             x => x.Index,
             x => analysis.Events
@@ -84,8 +213,7 @@ public sealed class MusicXmlWriter
 
         var expectedPairs = staves.Count / 2;
         var usePianoPairs = expectedPairs > 0 && recognizablePairs >= Math.Max(1, expectedPairs / 2);
-        if (!usePianoPairs)
-            return staves.Select(x => new List<Staff> { x }).ToList();
+        if (!usePianoPairs) return staves.Select(x => new List<Staff> { x }).ToList();
 
         var result = new List<List<Staff>>();
         for (var i = 0; i < staves.Count; i += 2)
@@ -93,10 +221,7 @@ public sealed class MusicXmlWriter
         return result;
     }
 
-    private static (string Sign, int Line) ClefForStaff(
-        AnalysisResult analysis,
-        Staff staff,
-        RecognitionConfig config)
+    private static (string Sign, int Line) ClefForStaff(AnalysisResult analysis, Staff staff, RecognitionConfig config)
     {
         var clef = analysis.Events
             .Where(x => x.StaffIndex == staff.Index && x.Kind.StartsWith("clef-", StringComparison.OrdinalIgnoreCase))
@@ -112,14 +237,11 @@ public sealed class MusicXmlWriter
     {
         var note = new XElement("note");
         if (evt.Chord) note.Add(new XElement("chord"));
-
-        if (evt.Kind.StartsWith("rest-", StringComparison.OrdinalIgnoreCase))
-            note.Add(new XElement("rest"));
-        else
-            note.Add(new XElement("pitch",
-                new XElement("step", evt.Step),
-                evt.Alter == 0 ? null : new XElement("alter", evt.Alter),
-                new XElement("octave", evt.Octave)));
+        if (evt.Kind.StartsWith("rest-", StringComparison.OrdinalIgnoreCase)) note.Add(new XElement("rest"));
+        else note.Add(new XElement("pitch",
+            new XElement("step", evt.Step),
+            evt.Alter == 0 ? null : new XElement("alter", evt.Alter),
+            new XElement("octave", evt.Octave)));
 
         note.Add(new XElement("duration", evt.Duration));
         note.Add(new XElement("voice", 1));
@@ -128,11 +250,7 @@ public sealed class MusicXmlWriter
         if (evt.Alter != 0)
             note.Add(new XElement("accidental", evt.Alter switch
             {
-                -2 => "flat-flat",
-                -1 => "flat",
-                1 => "sharp",
-                2 => "double-sharp",
-                _ => "natural"
+                -2 => "flat-flat", -1 => "flat", 1 => "sharp", 2 => "double-sharp", _ => "natural"
             }));
         note.Add(new XElement("staff", staffNumber));
         return note;
