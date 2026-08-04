@@ -177,8 +177,10 @@ public sealed class MusicXmlSemanticComparer
     private static void Add<T>(ICollection<string> target, string name, T expected, T actual)
     {
         if (!EqualityComparer<T>.Default.Equals(expected, actual))
-            target.Add($"{name}: expected={expected ?? (object)"null"}, actual={actual ?? (object)"null"}");
+            target.Add($"{name}: expected={Display(expected)}, actual={Display(actual)}");
     }
+
+    private static string Display<T>(T value) => value?.ToString() ?? "null";
 
     private static decimal DecimalValue(XElement? element) =>
         decimal.TryParse(element?.Value, NumberStyles.Number, CultureInfo.InvariantCulture, out var value) ? value : 0m;
