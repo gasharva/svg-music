@@ -24,7 +24,12 @@ jobs:
         run: dotnet restore Tests/SvgToMusicXmlPoc.Tests/SvgToMusicXmlPoc.Tests.csproj
 
       - name: Run golden quality test
-        run: dotnet test Tests/SvgToMusicXmlPoc.Tests/SvgToMusicXmlPoc.Tests.csproj --configuration Release --no-restore --logger "trx;LogFileName=golden-quality.trx"
+        run: >-
+          dotnet test Tests/SvgToMusicXmlPoc.Tests/SvgToMusicXmlPoc.Tests.csproj
+          --configuration Release
+          --no-restore
+          --results-directory TestResults/test-results
+          --logger "trx;LogFileName=golden-quality.trx"
 
       - name: Upload quality reports
         if: always()
@@ -33,5 +38,5 @@ jobs:
           name: golden-musicxml-quality
           path: |
             TestResults/golden-quality/**
-            Tests/SvgToMusicXmlPoc.Tests/TestResults/*.trx
+            TestResults/test-results/**
           if-no-files-found: warn
