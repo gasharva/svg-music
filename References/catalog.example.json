@@ -1,0 +1,41 @@
+{
+  "symbols": [
+    {
+      "id": "noteheadBlack",
+      "svgPath": "glyphs/noteheadBlack.svg",
+      "kind": "notehead-black",
+      "musicXmlElement": "note/type",
+      "musicXmlValue": "quarter",
+      "expectedWidthInSpaces": 1.2,
+      "expectedHeightInSpaces": 0.85,
+      "sizeTolerance": 0.45
+    },
+    {
+      "id": "augmentationDot",
+      "svgPath": "glyphs/augmentationDot.svg",
+      "kind": "augmentation-dot",
+      "musicXmlElement": "note/dot",
+      "expectedWidthInSpaces": 0.35,
+      "expectedHeightInSpaces": 0.35,
+      "sizeTolerance": 0.35
+    },
+    {
+      "id": "gClef",
+      "svgPath": "glyphs/gClef.svg",
+      "kind": "clef-treble",
+      "musicXmlElement": "attributes/clef/sign",
+      "musicXmlValue": "G",
+      "expectedHeightInSpaces": 6.5,
+      "sizeTolerance": 0.55
+    },
+    {
+      "id": "restQuarter",
+      "svgPath": "glyphs/restQuarter.svg",
+      "kind": "rest-quarter",
+      "musicXmlElement": "note/rest+type",
+      "musicXmlValue": "quarter",
+      "expectedHeightInSpaces": 3.0,
+      "sizeTolerance": 0.55
+    }
+  ]
+}

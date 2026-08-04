@@ -1,0 +1,15 @@
+{
+  "symbolKinds": {
+    "f": "notehead-black",
+    "g": "notehead-black",
+    "h": "notehead-black",
+    "i": "notehead-black"
+  },
+  "defaultClef": "G",
+  "defaultClefLine": 2,
+  "divisions": 8,
+  "beats": 4,
+  "beatType": 4,
+  "staffTolerance": 0.25,
+  "maxNoteDistanceInSpaces": 4.0
+}

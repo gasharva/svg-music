@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "SvgToMusicXmlPoc": {
+      "commandName": "Project",
+      "commandLineArgs": "convert Samples\\score_5.svg References\\catalog.json d:\\\\score.musicxml"
+    }
+  }
+}
