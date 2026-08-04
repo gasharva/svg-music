@@ -10,7 +10,7 @@ public sealed class SymbolClassifier
     public ClassificationResult Classify(string scorePath, IReadOnlyList<Staff> staves, string catalogPath)
     {
         var scoreDoc = System.Xml.Linq.XDocument.Load(scorePath);
-        var source = _geometry.ReadSymbols(scoreDoc);
+        var source = _geometry.ReadScoreGeometries(scoreDoc);
         var catalog = JsonSerializer.Deserialize<ReferenceCatalog>(File.ReadAllText(catalogPath), new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
             ?? throw new InvalidOperationException("Не удалось прочитать каталог эталонов");
         var baseDir = Path.GetDirectoryName(Path.GetFullPath(catalogPath))!;
