@@ -73,8 +73,8 @@ public sealed class SvgPrintPostProcessor(double protectAbove, double cropPaddin
 
     private static Bounds? ReadBounds(XElement element, XElement root) => element.Name.LocalName switch
     {
-        "circle" => FromExtents(Number(element,"cx")-Number(element,"r"), Number(element,"cy")-Number(element,"r"), Number(element,"cx")+Number(element,"r"), Number(element,"cy")+Number(element,"r")),
-        "ellipse" => FromExtents(Number(element,"cx")-Number(element,"rx"), Number(element,"cy")-Number(element,"ry"), Number(element,"cx")+Number(element,"rx"), Number(element,"cy")+Number(element,"ry")),
+        "circle" => FromAreaExtents(Number(element,"cx")-Number(element,"r"), Number(element,"cy")-Number(element,"r"), Number(element,"cx")+Number(element,"r"), Number(element,"cy")+Number(element,"r")),
+        "ellipse" => FromAreaExtents(Number(element,"cx")-Number(element,"rx"), Number(element,"cy")-Number(element,"ry"), Number(element,"cx")+Number(element,"rx"), Number(element,"cy")+Number(element,"ry")),
         "rect" => new Bounds(Number(element,"x"), Number(element,"y"), Number(element,"width"), Number(element,"height")),
         "polygon" or "polyline" => PointsBounds((string?)element.Attribute("points")),
         "path" => PathBoundsReader.Read((string?)element.Attribute("d")),
@@ -100,12 +100,12 @@ public sealed class SvgPrintPostProcessor(double protectAbove, double cropPaddin
         if (n.Length < 4) return null;
         var xs = new List<double>(); var ys = new List<double>();
         for (var i=0;i+1<n.Length;i+=2) { xs.Add(n[i]); ys.Add(n[i+1]); }
-        return FromExtents(xs.Min(), ys.Min(), xs.Max(), ys.Max());
+        return Bounds.FromExtents(xs.Min(), ys.Min(), xs.Max(), ys.Max());
     }
 
     private static Bounds ScaleAroundCenter(Bounds b,double factor) => new(b.CenterX-b.Width*factor/2,b.CenterY-b.Height*factor/2,b.Width*factor,b.Height*factor);
     private static Bounds Inflate(Bounds b,double padding) => new(b.X-padding,b.Y-padding,b.Width+padding*2,b.Height+padding*2);
-    private static Bounds? FromExtents(double left,double top,double right,double bottom) => right>left && bottom>top ? Bounds.FromExtents(left,top,right,bottom) : null;
+    private static Bounds? FromAreaExtents(double left,double top,double right,double bottom) => right>left && bottom>top ? Bounds.FromExtents(left,top,right,bottom) : null;
     private static double Number(XElement e,string name) => double.TryParse((string?)e.Attribute(name),NumberStyles.Float,CultureInfo.InvariantCulture,out var v)?v:0;
     private static double[] Numbers(string? value) => string.IsNullOrWhiteSpace(value) ? [] : Regex.Matches(value,@"[-+]?(?:\d*\.\d+|\d+\.?)(?:[eE][-+]?\d+)?").Select(x=>double.Parse(x.Value,CultureInfo.InvariantCulture)).ToArray();
 }
