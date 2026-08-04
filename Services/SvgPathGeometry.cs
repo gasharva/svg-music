@@ -9,6 +9,8 @@ public sealed class SvgPathGeometry
 {
     private static readonly XNamespace Svg = "http://www.w3.org/2000/svg";
     private static readonly Regex TokenRegex = new(@"[A-Za-z]|[-+]?(?:\d*\.\d+|\d+\.?)(?:[eE][-+]?\d+)?", RegexOptions.Compiled);
+    private static readonly Regex TransformRegex = new(@"(?<name>matrix|translate|scale)\s*\((?<args>[^)]*)\)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex NumberRegex = new(@"[-+]?(?:\d*\.\d+|\d+\.?)(?:[eE][-+]?\d+)?", RegexOptions.Compiled);
 
     public Dictionary<string, SymbolGeometry> ReadSymbols(XDocument document, int curveSteps = 12)
     {
@@ -21,18 +23,68 @@ public sealed class SvgPathGeometry
             foreach (var path in symbol.Descendants(Svg + "path"))
             {
                 var d = (string?)path.Attribute("d");
-                if (!string.IsNullOrWhiteSpace(d)) contours.AddRange(Parse(d, curveSteps));
+                if (string.IsNullOrWhiteSpace(d)) continue;
+                var local = Parse(d, curveSteps);
+                var transform = ReadTransformChain(path, symbol);
+                contours.AddRange(Apply(local, transform));
             }
             if (contours.Count > 0) result[id] = new SymbolGeometry(id, contours);
         }
         return result;
     }
 
+    public IReadOnlyList<SvgDirectPath> ReadDirectPaths(XDocument document, int curveSteps = 12)
+    {
+        var result = new List<SvgDirectPath>();
+        var index = 0;
+
+        foreach (var path in document.Descendants(Svg + "path"))
+        {
+            if (path.Ancestors(Svg + "symbol").Any() || path.Ancestors(Svg + "defs").Any())
+                continue;
+
+            var d = (string?)path.Attribute("d");
+            if (string.IsNullOrWhiteSpace(d)) continue;
+            var contours = Parse(d, curveSteps);
+            if (contours.Count == 0) continue;
+
+            var worldContours = Apply(contours, ReadTransformChain(path));
+            var all = worldContours.SelectMany(x => x).ToArray();
+            if (all.Length == 0) continue;
+
+            var id = $"path:{index++:D6}";
+            var minX = all.Min(x => x.X);
+            var maxX = all.Max(x => x.X);
+            var minY = all.Min(x => x.Y);
+            var maxY = all.Max(x => x.Y);
+            result.Add(new SvgDirectPath(
+                id,
+                new SymbolGeometry(id, worldContours),
+                (minX + maxX) / 2.0,
+                (minY + maxY) / 2.0));
+        }
+
+        return result;
+    }
+
+    public Dictionary<string, SymbolGeometry> ReadScoreGeometries(XDocument document, int curveSteps = 12)
+    {
+        var result = ReadSymbols(document, curveSteps);
+        foreach (var path in ReadDirectPaths(document, curveSteps))
+            result[path.SymbolId] = path.Geometry;
+        return result;
+    }
+
     public SymbolGeometry ReadStandaloneSvg(string path, int curveSteps = 12)
     {
         var doc = XDocument.Load(path);
-        var contours = doc.Descendants(Svg + "path")
-            .SelectMany(x => Parse((string?)x.Attribute("d") ?? "", curveSteps)).ToList();
+        var contours = new List<IReadOnlyList<PointD>>();
+        foreach (var element in doc.Descendants(Svg + "path"))
+        {
+            var d = (string?)element.Attribute("d");
+            if (string.IsNullOrWhiteSpace(d)) continue;
+            contours.AddRange(Apply(Parse(d, curveSteps), ReadTransformChain(element)));
+        }
         if (contours.Count == 0) throw new InvalidOperationException($"В эталоне нет path: {path}");
         return new SymbolGeometry(Path.GetFileNameWithoutExtension(path), contours);
     }
@@ -64,6 +116,38 @@ public sealed class SvgPathGeometry
         }
         return new ShapeDescriptor(width, height, width / height, area, Math.Min(1, Math.Abs(area) / (width * height)), perimeter, closed, normalized);
     }
+
+    public static SvgAffine ReadTransformChain(XElement element, XElement? stopBefore = null)
+    {
+        var chain = element.AncestorsAndSelf().TakeWhile(x => x != stopBefore).Reverse();
+        var result = SvgAffine.Identity;
+        foreach (var item in chain)
+            result = result.Then(ParseTransform((string?)item.Attribute("transform")));
+        return result;
+    }
+
+    public static SvgAffine ParseTransform(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return SvgAffine.Identity;
+        var result = SvgAffine.Identity;
+        foreach (Match match in TransformRegex.Matches(value))
+        {
+            var values = NumberRegex.Matches(match.Groups["args"].Value)
+                .Select(x => double.Parse(x.Value, CultureInfo.InvariantCulture)).ToArray();
+            SvgAffine next = match.Groups["name"].Value.ToLowerInvariant() switch
+            {
+                "matrix" when values.Length == 6 => new SvgAffine(values[0], values[1], values[2], values[3], values[4], values[5]),
+                "translate" when values.Length >= 1 => SvgAffine.Translate(values[0], values.Length > 1 ? values[1] : 0),
+                "scale" when values.Length >= 1 => SvgAffine.Scale(values[0], values.Length > 1 ? values[1] : values[0]),
+                _ => SvgAffine.Identity
+            };
+            result = result.Then(next);
+        }
+        return result;
+    }
+
+    private static List<IReadOnlyList<PointD>> Apply(IEnumerable<IReadOnlyList<PointD>> contours, SvgAffine transform) =>
+        contours.Select(c => (IReadOnlyList<PointD>)c.Select(transform.Apply).ToArray()).ToList();
 
     private static List<IReadOnlyList<PointD>> Parse(string d, int curveSteps)
     {
@@ -107,4 +191,22 @@ public sealed class SvgPathGeometry
     }
 
     private static double Distance(PointD a, PointD b) => Math.Sqrt(Math.Pow(a.X-b.X,2)+Math.Pow(a.Y-b.Y,2));
+}
+
+public readonly record struct SvgAffine(double A, double B, double C, double D, double E, double F)
+{
+    public static SvgAffine Identity => new(1, 0, 0, 1, 0, 0);
+    public static SvgAffine Translate(double x, double y) => new(1, 0, 0, 1, x, y);
+    public static SvgAffine Scale(double x, double y) => new(x, 0, 0, y, 0, 0);
+
+    public PointD Apply(PointD point) => new(A * point.X + C * point.Y + E, B * point.X + D * point.Y + F);
+    public PointD Apply(double x, double y) => Apply(new PointD(x, y));
+
+    public SvgAffine Then(SvgAffine next) => new(
+        next.A * A + next.C * B,
+        next.B * A + next.D * B,
+        next.A * C + next.C * D,
+        next.B * C + next.D * D,
+        next.A * E + next.C * F + next.E,
+        next.B * E + next.D * F + next.F);
 }
