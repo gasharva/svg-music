@@ -22,7 +22,6 @@ public sealed class RecognizedEvent
     public double Y { get; init; }
     public int StaffIndex { get; init; }
 
-    // Music semantics. Fields not applicable to a particular event stay null/default.
     public string? Step { get; set; }
     public int? Octave { get; set; }
     public int Alter { get; set; }
