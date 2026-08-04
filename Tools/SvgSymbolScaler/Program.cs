@@ -20,7 +20,7 @@ try
         ? [input]
         : Directory.EnumerateFiles(input, "*.svg", options.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)
             .Where(file => !IsInside(file, outputDirectory))
-            .OrderBy(file => file, StringComparer.OrdinalIgnoreCase)
+            .OrderBy(file => file, NaturalPathComparer.OrdinalIgnoreCase)
             .ToArray();
 
     var outputs = new List<string>();
