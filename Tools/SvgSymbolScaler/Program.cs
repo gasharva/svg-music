@@ -4,37 +4,41 @@ try
 {
     var options = CliOptions.Parse(args);
     var scaler = new CompactSvgScaler(options.Scale, options.MaxSize, options.MaxAspectRatio);
+    var postProcessor = new SvgPrintPostProcessor(options.ProtectAbove, options.CropPadding);
 
-    if (File.Exists(options.Input))
-    {
-        var output = options.Output ?? BuildOutputPath(options.Input);
-        var result = scaler.ProcessFile(options.Input, output);
-        Console.WriteLine($"{Path.GetFileName(options.Input)}: scaled {result.Scaled}, skipped {result.Skipped} -> {output}");
-        return;
-    }
+    var input = Path.GetFullPath(options.Input);
+    var sourceDirectory = File.Exists(input)
+        ? Path.GetDirectoryName(input)!
+        : Directory.Exists(input)
+            ? input
+            : throw new FileNotFoundException($"Input does not exist: {options.Input}");
 
-    if (Directory.Exists(options.Input))
-    {
-        var inputDirectory = Path.GetFullPath(options.Input);
-        var outputDirectory = Path.GetFullPath(options.Output ?? Path.Combine(options.Input, "scaled"));
-        var files = Directory.EnumerateFiles(inputDirectory, "*.svg", options.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)
+    var outputDirectory = Path.Combine(sourceDirectory, "scaled");
+    Directory.CreateDirectory(outputDirectory);
+
+    var files = File.Exists(input)
+        ? [input]
+        : Directory.EnumerateFiles(input, "*.svg", options.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)
             .Where(file => !IsInside(file, outputDirectory))
+            .OrderBy(file => file, StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        Directory.CreateDirectory(outputDirectory);
 
-        foreach (var file in files)
-        {
-            var relative = Path.GetRelativePath(inputDirectory, file);
-            var output = Path.Combine(outputDirectory, relative);
-            Directory.CreateDirectory(Path.GetDirectoryName(output)!);
-            var result = scaler.ProcessFile(file, output);
-            Console.WriteLine($"{relative}: scaled {result.Scaled}, skipped {result.Skipped}");
-        }
-        Console.WriteLine($"Processed {files.Length} SVG file(s) -> {outputDirectory}");
-        return;
+    var outputs = new List<string>();
+    foreach (var file in files)
+    {
+        var relative = File.Exists(input) ? Path.GetFileName(file) : Path.GetRelativePath(input, file);
+        var output = Path.Combine(outputDirectory, relative);
+        Directory.CreateDirectory(Path.GetDirectoryName(output)!);
+        var scaleResult = scaler.ProcessFile(file, output);
+        var postResult = postProcessor.Process(output);
+        outputs.Add(output);
+        Console.WriteLine($"{relative}: scaled {scaleResult.Scaled}, protected {postResult.Protected}, skipped {scaleResult.Skipped}; crop={postResult.CropWidth:F1}x{postResult.CropHeight:F1}");
     }
 
-    throw new FileNotFoundException($"Input does not exist: {options.Input}");
+    var pdfPath = Path.Combine(outputDirectory, "combined.pdf");
+    new SvgPdfWriter().Write(outputs, pdfPath);
+    Console.WriteLine($"Processed {outputs.Count} SVG file(s) -> {outputDirectory}");
+    Console.WriteLine($"Combined PDF -> {pdfPath}");
 }
 catch (Exception ex)
 {
@@ -50,32 +54,30 @@ static bool IsInside(string file, string directory)
     return relative != ".." && !relative.StartsWith(".." + Path.DirectorySeparatorChar);
 }
 
-static string BuildOutputPath(string input) =>
-    Path.Combine(Path.GetDirectoryName(Path.GetFullPath(input))!, Path.GetFileNameWithoutExtension(input) + ".scaled.svg");
-
-internal sealed record CliOptions(string Input, string? Output, double Scale, double MaxSize, double MaxAspectRatio, bool Recursive)
+internal sealed record CliOptions(string Input, double Scale, double MaxSize, double MaxAspectRatio, double ProtectAbove, double CropPadding, bool Recursive)
 {
     public const string Usage = """
 Usage:
-  dotnet run --project Tools/SvgSymbolScaler -- <input.svg> [output.svg] [options]
-  dotnet run --project Tools/SvgSymbolScaler -- <folder> [output-folder] [options]
+  dotnet run --project Tools/SvgSymbolScaler -- <input.svg-or-folder> [options]
+
+Output is always written to a `scaled` subfolder next to the input.
+All generated SVG files are also combined into `scaled/combined.pdf`.
 
 Options:
-  --scale <number>       Scale factor, default 1.5
-  --max-size <number>    Maximum compact-object width and height in SVG units, default 120
-  --max-aspect <number>  Maximum width/height ratio before treating an object as a line, default 12
-  --recursive            Process SVG files recursively
+  --scale <number>          Scale factor, default 1.2
+  --max-size <number>       Maximum compact-object width and height, default 120
+  --max-aspect <number>     Maximum aspect ratio before treating an object as a line, default 2
+  --protect-above <number>  Do not scale objects this far above the first staff, default 80
+  --crop-padding <number>   Padding around final content bbox, default 2
+  --recursive               Process SVG files recursively
 """;
 
     public static CliOptions Parse(string[] args)
     {
-        if (args.Length == 0 || args.Contains("--help") || args.Contains("-h"))
-            throw new ArgumentException(Usage);
-
-        string? input = null, output = null;
-        double scale = 1.2, maxSize = 120, maxAspect = 2;
+        if (args.Length == 0 || args.Contains("--help") || args.Contains("-h")) throw new ArgumentException(Usage);
+        string? input = null;
+        double scale = 1.2, maxSize = 120, maxAspect = 2, protectAbove = 80, cropPadding = 2;
         var recursive = false;
-
         for (var i = 0; i < args.Length; i++)
         {
             switch (args[i])
@@ -83,27 +85,23 @@ Options:
                 case "--scale": scale = ReadDouble(args, ref i, "--scale"); break;
                 case "--max-size": maxSize = ReadDouble(args, ref i, "--max-size"); break;
                 case "--max-aspect": maxAspect = ReadDouble(args, ref i, "--max-aspect"); break;
+                case "--protect-above": protectAbove = ReadDouble(args, ref i, "--protect-above"); break;
+                case "--crop-padding": cropPadding = ReadDouble(args, ref i, "--crop-padding"); break;
                 case "--recursive": recursive = true; break;
                 default:
                     if (args[i].StartsWith('-')) throw new ArgumentException($"Unknown option: {args[i]}");
-                    if (input is null) input = args[i];
-                    else if (output is null) output = args[i];
-                    else throw new ArgumentException($"Unexpected argument: {args[i]}");
+                    if (input is null) input = args[i]; else throw new ArgumentException($"Unexpected argument: {args[i]}");
                     break;
             }
         }
-
         if (string.IsNullOrWhiteSpace(input)) throw new ArgumentException("Input path is required.");
-        if (scale <= 0) throw new ArgumentOutOfRangeException(nameof(scale));
-        if (maxSize <= 0) throw new ArgumentOutOfRangeException(nameof(maxSize));
-        if (maxAspect <= 1) throw new ArgumentOutOfRangeException(nameof(maxAspect));
-        return new CliOptions(input, output, scale, maxSize, maxAspect, recursive);
+        if (scale <= 0 || maxSize <= 0 || maxAspect <= 1 || protectAbove < 0 || cropPadding < 0) throw new ArgumentOutOfRangeException("Numeric options are outside their valid range.");
+        return new CliOptions(input, scale, maxSize, maxAspect, protectAbove, cropPadding, recursive);
     }
 
     private static double ReadDouble(string[] args, ref int index, string option)
     {
-        if (++index >= args.Length || !double.TryParse(args[index], System.Globalization.NumberStyles.Float,
-                System.Globalization.CultureInfo.InvariantCulture, out var value))
+        if (++index >= args.Length || !double.TryParse(args[index], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var value))
             throw new ArgumentException($"{option} requires a number.");
         return value;
     }
