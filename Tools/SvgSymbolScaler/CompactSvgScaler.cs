@@ -59,7 +59,6 @@ public sealed class CompactSvgScaler(double scale, double maxSize, double maxAsp
             className.Contains("Beam", StringComparison.OrdinalIgnoreCase))
             return false;
 
-        // Open, stroke-only polylines are normally staff lines, stems, hairpins or slurs.
         if (element.Name.LocalName is "polyline" &&
             string.Equals((string?)element.Attribute("fill"), "none", StringComparison.OrdinalIgnoreCase))
             return false;
@@ -107,7 +106,7 @@ public sealed class CompactSvgScaler(double scale, double maxSize, double maxAsp
     {
         var href = ((string?)use.Attribute(XLink + "href") ?? (string?)use.Attribute("href") ?? "").TrimStart('#');
         if (!ids.TryGetValue(href, out var referenced)) return null;
-        var x = Number(use, "x"), y = Number(use, "y");
+        double x = Number(use, "x"), y = Number(use, "y");
 
         Bounds? bounds = null;
         var viewBox = ParseNumbers((string?)referenced.Attribute("viewBox"));
@@ -122,19 +121,19 @@ public sealed class CompactSvgScaler(double scale, double maxSize, double maxAsp
 
     private static Bounds? CircleBounds(XElement e)
     {
-        var cx = Number(e, "cx"), cy = Number(e, "cy"), r = Number(e, "r");
+        double cx = Number(e, "cx"), cy = Number(e, "cy"), r = Number(e, "r");
         return r > 0 ? new Bounds(cx - r, cy - r, r * 2, r * 2) : null;
     }
 
     private static Bounds? EllipseBounds(XElement e)
     {
-        var cx = Number(e, "cx"), cy = Number(e, "cy"), rx = Number(e, "rx"), ry = Number(e, "ry");
+        double cx = Number(e, "cx"), cy = Number(e, "cy"), rx = Number(e, "rx"), ry = Number(e, "ry");
         return rx > 0 && ry > 0 ? new Bounds(cx - rx, cy - ry, rx * 2, ry * 2) : null;
     }
 
     private static Bounds? RectBounds(XElement e)
     {
-        var width = Number(e, "width"), height = Number(e, "height");
+        double width = Number(e, "width"), height = Number(e, "height");
         return width > 0 && height > 0 ? new Bounds(Number(e, "x"), Number(e, "y"), width, height) : null;
     }
 
@@ -142,7 +141,8 @@ public sealed class CompactSvgScaler(double scale, double maxSize, double maxAsp
     {
         var values = ParseNumbers(points);
         if (values.Length < 4) return null;
-        var xs = new List<double>(); var ys = new List<double>();
+        var xs = new List<double>();
+        var ys = new List<double>();
         for (var i = 0; i + 1 < values.Length; i += 2) { xs.Add(values[i]); ys.Add(values[i + 1]); }
         return Bounds.FromExtents(xs.Min(), ys.Min(), xs.Max(), ys.Max());
     }
@@ -184,7 +184,9 @@ internal static class PathBoundsReader
         if (string.IsNullOrWhiteSpace(data)) return null;
         var tokens = Tokens.Matches(data).Select(x => x.Value).ToArray();
         var points = new List<(double X, double Y)>();
-        var i = 0; var command = ' '; double x = 0, y = 0, startX = 0, startY = 0;
+        var i = 0;
+        var command = ' ';
+        double x = 0, y = 0, startX = 0, startY = 0;
         bool HasNumber() => i < tokens.Length && !char.IsLetter(tokens[i][0]);
         double Next() => double.Parse(tokens[i++], CultureInfo.InvariantCulture);
         void Add(double px, double py) { x = px; y = py; points.Add((x, y)); }
