@@ -1,0 +1,37 @@
+name: Golden MusicXML quality
+
+on:
+  push:
+    branches: [ master, "agent/**" ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  golden-quality:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore Tests/SvgToMusicXmlPoc.Tests/SvgToMusicXmlPoc.Tests.csproj
+
+      - name: Run golden quality test
+        run: dotnet test Tests/SvgToMusicXmlPoc.Tests/SvgToMusicXmlPoc.Tests.csproj --configuration Release --no-restore --logger "trx;LogFileName=golden-quality.trx"
+
+      - name: Upload quality reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: golden-musicxml-quality
+          path: |
+            TestResults/golden-quality/**
+            Tests/SvgToMusicXmlPoc.Tests/TestResults/*.trx
+          if-no-files-found: warn
