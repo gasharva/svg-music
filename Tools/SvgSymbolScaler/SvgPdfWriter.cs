@@ -21,10 +21,17 @@ public sealed class SvgPdfWriter
             using var svg = new SKSvg();
             svg.Load(file);
             var picture = svg.Picture ?? throw new InvalidOperationException($"Could not render SVG: {file}");
+            var source = picture.CullRect;
+            if (source.Width <= 0 || source.Height <= 0)
+                throw new InvalidOperationException($"SVG has empty rendered bounds: {file}");
 
             var canvas = document.BeginPage((float)page.Width, (float)page.Height);
             canvas.Clear(SKColors.White);
-            canvas.Translate((float)-page.X, (float)-page.Y);
+
+            // Svg.Skia may expose the picture either in viewBox coordinates or in its own viewport.
+            // Normalize the actual rendered bounds to the exact PDF page, adding no margins.
+            canvas.Scale((float)(page.Width / source.Width), (float)(page.Height / source.Height));
+            canvas.Translate(-source.Left, -source.Top);
             canvas.DrawPicture(picture);
             document.EndPage();
         }
@@ -37,12 +44,12 @@ public sealed class SvgPdfWriter
         var root = XDocument.Load(path).Root ?? throw new InvalidOperationException("SVG root is missing.");
         var values = ParseNumbers((string?)root.Attribute("viewBox"));
         if (values.Length == 4 && values[2] > 0 && values[3] > 0)
-            return new PageBox(values[0], values[1], values[2], values[3]);
+            return new PageBox(values[2], values[3]);
 
         var width = ParseLength((string?)root.Attribute("width"));
         var height = ParseLength((string?)root.Attribute("height"));
         if (width <= 0 || height <= 0) throw new InvalidOperationException($"SVG has no usable page size: {path}");
-        return new PageBox(0, 0, width, height);
+        return new PageBox(width, height);
     }
 
     private static double ParseLength(string? value)
@@ -57,5 +64,5 @@ public sealed class SvgPdfWriter
         : System.Text.RegularExpressions.Regex.Matches(value, @"[-+]?(?:\d*\.\d+|\d+\.?)(?:[eE][-+]?\d+)?")
             .Select(x => double.Parse(x.Value, CultureInfo.InvariantCulture)).ToArray();
 
-    private readonly record struct PageBox(double X, double Y, double Width, double Height);
+    private readonly record struct PageBox(double Width, double Height);
 }
