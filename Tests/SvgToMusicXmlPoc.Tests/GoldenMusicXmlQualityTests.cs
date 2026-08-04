@@ -1,3 +1,4 @@
+using System.Xml.Linq;
 using SvgToMusicXmlPoc.Quality;
 using SvgToMusicXmlPoc.Services;
 
@@ -18,9 +19,9 @@ public sealed class GoldenMusicXmlQualityTests
         var catalogPath = Path.Combine(root, "References", "catalog.json");
         var actualPath = Path.Combine(outputDirectory, "actual.musicxml");
 
-        Assert.True(File.Exists(svgPath), $"Golden SVG not found: {svgPath}");
-        Assert.True(File.Exists(expectedPath), $"Golden MusicXML not found: {expectedPath}");
-        Assert.True(File.Exists(catalogPath), $"SMuFL catalog not found: {catalogPath}");
+        Assert.True(File.Exists(svgPath));
+        Assert.True(File.Exists(expectedPath));
+        Assert.True(File.Exists(catalogPath));
 
         var conversion = new ConversionPipeline().Convert(svgPath, catalogPath, actualPath);
         var comparison = new MusicXmlSemanticComparer().Compare(expectedPath, actualPath);
@@ -30,7 +31,7 @@ public sealed class GoldenMusicXmlQualityTests
         Assert.True(File.Exists(Path.Combine(outputDirectory, "quality-report.csv")));
         Assert.True(File.Exists(Path.Combine(outputDirectory, "quality-report.md")));
         Assert.True(File.Exists(Path.Combine(outputDirectory, "performance.csv")));
-        Assert.True(comparison.Metrics.Expected > 0, "Golden MusicXML must contain semantic events.");
+        Assert.True(comparison.Metrics.Expected > 0);
 
         Assert.NotEmpty(conversion.Analysis.Uses);
         Assert.All(conversion.Analysis.Uses, x => Assert.Equal("path", x.SourceKind));
@@ -40,6 +41,16 @@ public sealed class GoldenMusicXmlQualityTests
         Assert.True(conversion.Performance.UniqueGeometries <= conversion.Performance.GlyphInstances);
         Assert.True(conversion.Performance.MaskComparisons > 0);
         Assert.True(conversion.Performance.VectorComparisons <= conversion.Performance.UniqueGeometries * 5L);
+
+        var actual = XDocument.Load(actualPath);
+        Assert.Equal(5, actual.Descendants("measure").Count());
+        Assert.Equal(5, actual.Descendants("staves").Count(x => x.Value == "2"));
+        Assert.Contains(actual.Descendants("note"), x => x.Element("staff")?.Value == "2");
+        Assert.True(actual.Descendants("note").Count(x => x.Element("type")?.Value == "eighth") > 0,
+            "Beam recognition must preserve notes shorter than a quarter.");
+        Assert.True(conversion.Analysis.Events.Count(x => x.Kind == "notehead-black") > 0,
+            "MuseScore round black heads must not remain smufl-unknown.");
+        Assert.Contains(conversion.Analysis.Events, x => x.Chord);
 
         Assert.Equal(comparison.Metrics.Expected,
             comparison.Metrics.Matched + comparison.Metrics.Mismatched + comparison.Metrics.Missing);
