@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using SvgToMusicXmlPoc.Models;
 
@@ -8,6 +9,7 @@ public sealed class SvgParser
 {
     private static readonly XNamespace Svg = "http://www.w3.org/2000/svg";
     private static readonly XNamespace XLink = "http://www.w3.org/1999/xlink";
+    private static readonly Regex Number = new(@"[-+]?(?:\d*\.\d+|\d+\.?)(?:[eE][-+]?\d+)?", RegexOptions.Compiled);
     private readonly SvgPathGeometry _geometry = new();
 
     public XDocument Load(string path) => XDocument.Load(path, LoadOptions.PreserveWhitespace);
@@ -51,24 +53,42 @@ public sealed class SvgParser
             foreach (var contour in path.Geometry.Contours)
             {
                 for (var i = 1; i < contour.Count; i++)
-                {
-                    var p1 = contour[i - 1];
-                    var p2 = contour[i];
-                    if (Math.Abs(p1.Y - p2.Y) <= tolerance && Math.Abs(p2.X - p1.X) > 100)
-                        horizontal.Add((Math.Min(p1.X, p2.X), Math.Max(p1.X, p2.X), (p1.Y + p2.Y) / 2));
-                }
+                    AddHorizontal(horizontal, contour[i - 1], contour[i], tolerance);
             }
         }
 
-        // Some exporters encode staff lines as <line> rather than <path>.
+        // Exporters may encode staff lines as <line>, <polyline> or <polygon>.
         foreach (var line in document.Descendants(Svg + "line"))
         {
-            if (line.Ancestors(Svg + "defs").Any() || line.Ancestors(Svg + "symbol").Any()) continue;
+            if (IsDefinitionElement(line)) continue;
             var transform = SvgPathGeometry.ReadTransformChain(line);
             var p1 = transform.Apply(Parse((string?)line.Attribute("x1")), Parse((string?)line.Attribute("y1")));
             var p2 = transform.Apply(Parse((string?)line.Attribute("x2")), Parse((string?)line.Attribute("y2")));
-            if (Math.Abs(p1.Y - p2.Y) <= tolerance && Math.Abs(p2.X - p1.X) > 100)
-                horizontal.Add((Math.Min(p1.X, p2.X), Math.Max(p1.X, p2.X), (p1.Y + p2.Y) / 2));
+            AddHorizontal(horizontal, new PointD(p1.X, p1.Y), new PointD(p2.X, p2.Y), tolerance);
+        }
+
+        foreach (var polyline in document.Descendants()
+                     .Where(x => x.Name == Svg + "polyline" || x.Name == Svg + "polygon"))
+        {
+            if (IsDefinitionElement(polyline)) continue;
+            var values = Number.Matches((string?)polyline.Attribute("points") ?? string.Empty)
+                .Select(x => Parse(x.Value))
+                .ToArray();
+            if (values.Length < 4) continue;
+
+            var transform = SvgPathGeometry.ReadTransformChain(polyline);
+            var points = new List<PointD>();
+            for (var i = 0; i + 1 < values.Length; i += 2)
+            {
+                var point = transform.Apply(values[i], values[i + 1]);
+                points.Add(new PointD(point.X, point.Y));
+            }
+
+            for (var i = 1; i < points.Count; i++)
+                AddHorizontal(horizontal, points[i - 1], points[i], tolerance);
+
+            if (polyline.Name == Svg + "polygon" && points.Count > 2)
+                AddHorizontal(horizontal, points[^1], points[0], tolerance);
         }
 
         var candidates = horizontal
@@ -83,9 +103,12 @@ public sealed class SvgParser
             var block = candidates.Skip(i).Take(5).ToArray();
             var spaces = block.Zip(block.Skip(1), (a, b) => b.Y - a.Y).ToArray();
             var mean = spaces.Average();
-            if (mean < 2 || mean > 20) continue;
+
+            // SVG exports use very different coordinate scales. Reject only clearly
+            // degenerate groups; the regularity and horizontal overlap are the real tests.
+            if (mean <= tolerance * 2) continue;
             if (spaces.Any(s => Math.Abs(s - mean) > Math.Max(tolerance * 2, mean * 0.08))) continue;
-            if (block.Min(x => x.Right) - block.Max(x => x.Left) < 100) continue;
+            if (block.Min(x => x.Right) - block.Max(x => x.Left) < Math.Max(100, mean * 8)) continue;
 
             staves.Add(new Staff(staves.Count,
                 block.Max(x => x.Left), block.Min(x => x.Right), block.Select(x => x.Y).ToArray()));
@@ -94,6 +117,20 @@ public sealed class SvgParser
 
         return staves;
     }
+
+    private static void AddHorizontal(
+        ICollection<(double X1, double X2, double Y)> target,
+        PointD p1,
+        PointD p2,
+        double tolerance)
+    {
+        if (Math.Abs(p1.Y - p2.Y) > tolerance) return;
+        if (Math.Abs(p2.X - p1.X) <= 100) return;
+        target.Add((Math.Min(p1.X, p2.X), Math.Max(p1.X, p2.X), (p1.Y + p2.Y) / 2));
+    }
+
+    private static bool IsDefinitionElement(XElement element) =>
+        element.Ancestors(Svg + "defs").Any() || element.Ancestors(Svg + "symbol").Any();
 
     private static double Parse(string? value) =>
         double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var result) ? result : 0;
