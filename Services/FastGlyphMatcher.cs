@@ -1,6 +1,7 @@
 using System.Numerics;
 using Clipper2Lib;
 using SvgToMusicXmlPoc.Models;
+using ModelPointD = SvgToMusicXmlPoc.Models.PointD;
 
 namespace SvgToMusicXmlPoc.Services;
 
@@ -86,7 +87,7 @@ internal static class FastGlyphMatcher
         return (value << 32) | (value >> 32);
     }
 
-    private static bool InsideEvenOdd(IReadOnlyList<IReadOnlyList<PointD>> contours, double x, double y)
+    private static bool InsideEvenOdd(IReadOnlyList<IReadOnlyList<ModelPointD>> contours, double x, double y)
     {
         var inside = false;
         foreach (var contour in contours)
@@ -102,13 +103,13 @@ internal static class FastGlyphMatcher
         return inside;
     }
 
-    private static IReadOnlyList<IReadOnlyList<PointD>> NormalizeContours(SymbolGeometry geometry)
+    private static IReadOnlyList<IReadOnlyList<ModelPointD>> NormalizeContours(SymbolGeometry geometry)
     {
         var all = geometry.Contours.SelectMany(x => x).ToArray();
         var minX = all.Min(p => p.X); var maxX = all.Max(p => p.X);
         var minY = all.Min(p => p.Y); var maxY = all.Max(p => p.Y);
         var width = Math.Max(maxX - minX, 1e-9); var height = Math.Max(maxY - minY, 1e-9);
-        return geometry.Contours.Select(c => (IReadOnlyList<PointD>)c.Select(p => new PointD((p.X - minX) / width, (p.Y - minY) / height)).ToArray()).ToArray();
+        return geometry.Contours.Select(c => (IReadOnlyList<ModelPointD>)c.Select(p => new ModelPointD((p.X - minX) / width, (p.Y - minY) / height)).ToArray()).ToArray();
     }
 
     private static Paths64 ToPaths(SymbolGeometry geometry, bool flipX, bool flipY)
