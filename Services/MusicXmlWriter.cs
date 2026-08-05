@@ -101,18 +101,26 @@ public sealed class MusicXmlWriter
         var left = group.Min(x => x.Left);
         var right = group.Max(x => x.Right);
         var averageSpace = group.Average(x => x.Space);
-        var top = group.Min(x => x.Top) - averageSpace;
-        var bottom = group.Max(x => x.Bottom) + averageSpace;
         var classes = analysis.Classifications.ToDictionary(x => x.SymbolId, StringComparer.Ordinal);
 
-        var candidates = analysis.Uses
+        var geometricCandidates = analysis.LineSegments
+            .Where(x => x.CenterX >= left - averageSpace && x.CenterX <= right + averageSpace)
+            .Where(x => IsGeometricBarline(x, group, averageSpace))
+            .Select(x => x.CenterX)
+            .ToList();
+
+        // Keep the classifier-based path as a fallback for exporters that encode barlines
+        // as closed paths rather than SVG line/polyline/rect geometry.
+        var classifiedCandidates = analysis.Uses
             .Where(x => x.X >= left - averageSpace && x.X <= right + averageSpace)
-            .Where(x => x.Y >= top - averageSpace * 2 && x.Y <= bottom + averageSpace * 2)
             .Select(x => new { Use = x, Class = classes.GetValueOrDefault(x.SymbolId) })
             .Where(x => x.Class is not null)
             .Where(x => IsBarlineClass(x.Class!.Kind, x.Class.ReferenceId,
                 x.Class.WidthInSpaces, x.Class.HeightInSpaces))
-            .Select(x => x.Use.X)
+            .Select(x => x.Use.X);
+
+        var candidates = geometricCandidates
+            .Concat(classifiedCandidates)
             .OrderBy(x => x)
             .ToList();
 
@@ -131,6 +139,23 @@ public sealed class MusicXmlWriter
         result.AddRange(merged.Where(x => x > left + averageSpace * 2 && x < right - averageSpace * .8));
         result.Add(right);
         return result.Distinct().OrderBy(x => x).ToList();
+    }
+
+    private static bool IsGeometricBarline(SvgLineSegment line, IReadOnlyList<Staff> group, double averageSpace)
+    {
+        var explicitlyMarked = line.CssClass?.Contains("barline", StringComparison.OrdinalIgnoreCase) == true;
+        var nearlyVertical = line.Width <= averageSpace * (explicitlyMarked ? .8 : .35);
+        if (!nearlyVertical) return false;
+
+        // A barline may be emitted once for each staff of a piano system. Requiring it to
+        // cross the whole grand staff would therefore miss the normal MuseScore representation.
+        return group.Any(staff =>
+        {
+            var minimumHeight = staff.Space * (explicitlyMarked ? 2.8 : 3.4);
+            return line.Height >= minimumHeight &&
+                   line.Top <= staff.Top + staff.Space * .45 &&
+                   line.Bottom >= staff.Bottom - staff.Space * .45;
+        });
     }
 
     private static bool IsBarlineClass(string kind, string referenceId, double width, double height)
@@ -160,28 +185,27 @@ public sealed class MusicXmlWriter
 
         var digits = analysis.Uses
             .Where(x => x.X >= staff.Left && x.X < firstNoteX)
+            .Where(x => x.Y >= staff.Top - staff.Space * 1.5 && x.Y <= staff.Bottom + staff.Space * 1.5)
             .Select(x => new { Use = x, Class = classes.GetValueOrDefault(x.SymbolId) })
             .Where(x => x.Class is not null)
             .Select(x => new { x.Use, Digit = ReadTimeDigit(x.Class!.Kind, x.Class.ReferenceId) })
             .Where(x => x.Digit.HasValue)
             .OrderBy(x => x.Use.X)
+            .ThenBy(x => x.Use.Y)
             .ToList();
 
         if (digits.Count < 2) return (config.Beats, config.BeatType);
 
         // Use the rightmost vertical pair before the first note; clefs and key signatures are farther left.
         var pair = digits
-            .GroupBy(
-                x => (int)Math.Round(x.Use.X / (staff.Space * 0.5)))
+            .GroupBy(x => (int)Math.Round(x.Use.X / (staff.Space * .5)))
             .Select(group =>
             {
                 var column = group.ToList();
-
                 var upper = column
                     .Where(x => x.Use.Y < staff.Center)
                     .OrderBy(x => Math.Abs(x.Use.Y - staff.Center))
                     .FirstOrDefault();
-
                 var lower = column
                     .Where(x => x.Use.Y >= staff.Center)
                     .OrderBy(x => Math.Abs(x.Use.Y - staff.Center))
@@ -189,12 +213,7 @@ public sealed class MusicXmlWriter
 
                 return upper is null || lower is null
                     ? null
-                    : new
-                    {
-                        Upper = upper,
-                        Lower = lower,
-                        X = column.Average(x => x.Use.X)
-                    };
+                    : new { Upper = upper, Lower = lower, X = column.Average(x => x.Use.X) };
             })
             .Where(x => x is not null)
             .OrderByDescending(x => x!.X)
