@@ -49,7 +49,6 @@ public sealed class MusicXmlWriter
                 }
                 else if (segment == 0)
                 {
-                    // A new SVG system may repeat clefs even though it continues the same MusicXML part.
                     var attributes = new XElement("attributes");
                     AddClefs(attributes, analysis, group, config);
                     measure.Add(attributes);
@@ -103,14 +102,21 @@ public sealed class MusicXmlWriter
         var averageSpace = group.Average(x => x.Space);
         var classes = analysis.Classifications.ToDictionary(x => x.SymbolId, StringComparer.Ordinal);
 
-        var geometricCandidates = analysis.LineSegments
+        // Primary source: actual vector contours. MuseScore commonly emits a barline as a
+        // narrow closed path, so its two long vertical sides are available here even when the
+        // whole path is not recognized as a SMuFL glyph.
+        var pathCandidates = analysis.DirectPaths
+            .SelectMany(path => EnumerateSegments(path.Geometry))
+            .Where(segment => IsPathBarlineSegment(segment.P1, segment.P2, group, averageSpace))
+            .Select(segment => (segment.P1.X + segment.P2.X) / 2);
+
+        // Fallback for exporters that use native SVG line/polyline/rect elements.
+        var lineCandidates = analysis.LineSegments
             .Where(x => x.CenterX >= left - averageSpace && x.CenterX <= right + averageSpace)
             .Where(x => IsGeometricBarline(x, group, averageSpace))
-            .Select(x => x.CenterX)
-            .ToList();
+            .Select(x => x.CenterX);
 
-        // Keep the classifier-based path as a fallback for exporters that encode barlines
-        // as closed paths rather than SVG line/polyline/rect geometry.
+        // Final fallback for an exporter that represents the entire barline as one classified glyph.
         var classifiedCandidates = analysis.Uses
             .Where(x => x.X >= left - averageSpace && x.X <= right + averageSpace)
             .Select(x => new { Use = x, Class = classes.GetValueOrDefault(x.SymbolId) })
@@ -119,12 +125,15 @@ public sealed class MusicXmlWriter
                 x.Class.WidthInSpaces, x.Class.HeightInSpaces))
             .Select(x => x.Use.X);
 
-        var candidates = geometricCandidates
+        var candidates = pathCandidates
+            .Concat(lineCandidates)
             .Concat(classifiedCandidates)
+            .Where(x => x >= left - averageSpace && x <= right + averageSpace)
             .OrderBy(x => x)
             .ToList();
 
-        // Merge double/repeated barlines and the same barline represented once per piano staff.
+        // Merge both sides of a narrow rectangular path, double/repeated barlines and
+        // the copies emitted independently for upper and lower piano staves.
         var merged = new List<double>();
         foreach (var x in candidates)
         {
@@ -134,11 +143,41 @@ public sealed class MusicXmlWriter
                 merged[^1] = (merged[^1] + x) / 2;
         }
 
-        // The left edge is a system boundary, not an empty first measure. Internal and right barlines split measures.
         var result = new List<double> { left };
         result.AddRange(merged.Where(x => x > left + averageSpace * 2 && x < right - averageSpace * .8));
         result.Add(right);
         return result.Distinct().OrderBy(x => x).ToList();
+    }
+
+    private static IEnumerable<(PointD P1, PointD P2)> EnumerateSegments(SymbolGeometry geometry)
+    {
+        foreach (var contour in geometry.Contours)
+        {
+            for (var i = 1; i < contour.Count; i++)
+                yield return (contour[i - 1], contour[i]);
+
+            if (contour.Count > 2 && contour[0] != contour[^1])
+                yield return (contour[^1], contour[0]);
+        }
+    }
+
+    private static bool IsPathBarlineSegment(PointD p1, PointD p2,
+        IReadOnlyList<Staff> group, double averageSpace)
+    {
+        var width = Math.Abs(p2.X - p1.X);
+        var height = Math.Abs(p2.Y - p1.Y);
+        if (width > averageSpace * .18 || height < averageSpace * 3.2) return false;
+
+        var centerX = (p1.X + p2.X) / 2;
+        var left = group.Min(x => x.Left);
+        var right = group.Max(x => x.Right);
+        if (centerX < left - averageSpace || centerX > right + averageSpace) return false;
+
+        var top = Math.Min(p1.Y, p2.Y);
+        var bottom = Math.Max(p1.Y, p2.Y);
+        return group.Any(staff =>
+            top <= staff.Top + staff.Space * .45 &&
+            bottom >= staff.Bottom - staff.Space * .45);
     }
 
     private static bool IsGeometricBarline(SvgLineSegment line, IReadOnlyList<Staff> group, double averageSpace)
@@ -147,8 +186,6 @@ public sealed class MusicXmlWriter
         var nearlyVertical = line.Width <= averageSpace * (explicitlyMarked ? .8 : .35);
         if (!nearlyVertical) return false;
 
-        // A barline may be emitted once for each staff of a piano system. Requiring it to
-        // cross the whole grand staff would therefore miss the normal MuseScore representation.
         return group.Any(staff =>
         {
             var minimumHeight = staff.Space * (explicitlyMarked ? 2.8 : 3.4);
@@ -165,7 +202,6 @@ public sealed class MusicXmlWriter
             referenceId.Contains("barLine", StringComparison.OrdinalIgnoreCase))
             return true;
 
-        // Generic direct paths often have no semantic SMuFL name. A barline is tall and very narrow.
         return width is > 0 and <= .55 && height >= 3.2;
     }
 
@@ -196,12 +232,11 @@ public sealed class MusicXmlWriter
 
         if (digits.Count < 2) return (config.Beats, config.BeatType);
 
-        // Use the rightmost vertical pair before the first note; clefs and key signatures are farther left.
         var pair = digits
             .GroupBy(x => (int)Math.Round(x.Use.X / (staff.Space * .5)))
-            .Select(group =>
+            .Select(columnGroup =>
             {
-                var column = group.ToList();
+                var column = columnGroup.ToList();
                 var upper = column
                     .Where(x => x.Use.Y < staff.Center)
                     .OrderBy(x => Math.Abs(x.Use.Y - staff.Center))
