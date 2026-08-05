@@ -14,10 +14,6 @@ public sealed class SvgParser
 
     public XDocument Load(string path) => XDocument.Load(path, LoadOptions.PreserveWhitespace);
 
-    /// <summary>
-    /// Returns one unified stream of glyph instances. Reused SVG symbols keep their
-    /// symbol id; standalone paths receive stable synthetic ids path:000000, ... .
-    /// </summary>
     public List<SvgUse> ReadUses(XDocument document)
     {
         var result = document.Descendants(Svg + "use")
@@ -38,9 +34,10 @@ public sealed class SvgParser
     }
 
     /// <summary>
-    /// Reads layout geometry which should not have to pass through the musical glyph classifier.
-    /// This includes SVG line elements, two-point polylines and narrow rectangles. All coordinates
-    /// are returned in world space after applying inherited transforms.
+    /// Reads layout line geometry without sending it through the glyph classifier.
+    /// Besides line/polyline/rect, extracts straight near-vertical edges from direct paths:
+    /// MuseScore frequently represents barlines as thin closed path rectangles.
+    /// Coordinates returned by SvgPathGeometry are already in world space.
     /// </summary>
     public List<SvgLineSegment> ReadLineSegments(XDocument document)
     {
@@ -86,6 +83,22 @@ public sealed class SvgParser
             result.Add(new SvgLineSegment(top.X, top.Y, bottom.X, bottom.Y, "rect", cssClass));
         }
 
+        // Thin filled barlines are commonly encoded as closed paths. Their flattened
+        // contours contain two long vertical edges. Keep all sufficiently straight
+        // vertical edges here; the writer later rejects stems and other short segments
+        // by requiring the line to cross almost the complete staff height.
+        foreach (var path in _geometry.ReadDirectPaths(document))
+        {
+            foreach (var contour in path.Geometry.Contours)
+            {
+                for (var i = 1; i < contour.Count; i++)
+                    AddVerticalPathSegment(result, contour[i - 1], contour[i], path.SymbolId);
+
+                if (contour.Count > 2)
+                    AddVerticalPathSegment(result, contour[^1], contour[0], path.SymbolId);
+            }
+        }
+
         return result;
     }
 
@@ -98,8 +111,6 @@ public sealed class SvgParser
     {
         var horizontal = new List<(double X1, double X2, double Y)>();
 
-        // All standalone paths are already expanded to world coordinates, including
-        // inherited group transforms. This works for path-only and mixed SVG files.
         foreach (var path in _geometry.ReadDirectPaths(document))
         {
             foreach (var contour in path.Geometry.Contours)
@@ -109,7 +120,6 @@ public sealed class SvgParser
             }
         }
 
-        // Exporters may encode staff lines as <line>, <polyline> or <polygon>.
         foreach (var line in document.Descendants(Svg + "line"))
         {
             if (IsDefinitionElement(line)) continue;
@@ -154,8 +164,6 @@ public sealed class SvgParser
             var spaces = block.Zip(block.Skip(1), (a, b) => b.Y - a.Y).ToArray();
             var mean = spaces.Average();
 
-            // SVG exports use very different coordinate scales. Reject only clearly
-            // degenerate groups; the regularity and horizontal overlap are the real tests.
             if (mean <= tolerance * 2) continue;
             if (spaces.Any(s => Math.Abs(s - mean) > Math.Max(tolerance * 2, mean * 0.08))) continue;
             if (block.Min(x => x.Right) - block.Max(x => x.Left) < Math.Max(100, mean * 8)) continue;
@@ -166,6 +174,23 @@ public sealed class SvgParser
         }
 
         return staves;
+    }
+
+    private static void AddVerticalPathSegment(
+        ICollection<SvgLineSegment> target,
+        PointD p1,
+        PointD p2,
+        string symbolId)
+    {
+        var dx = Math.Abs(p2.X - p1.X);
+        var dy = Math.Abs(p2.Y - p1.Y);
+        if (dy <= 0.5) return;
+
+        // Flattened Bezier curves may contain short almost-vertical pieces. Requiring
+        // a very small horizontal drift avoids flooding the geometry list with curves.
+        if (dx > Math.Max(0.75, dy * 0.015)) return;
+
+        target.Add(new SvgLineSegment(p1.X, p1.Y, p2.X, p2.Y, $"path:{symbolId}", null));
     }
 
     private static void AddHorizontal(
