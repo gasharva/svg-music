@@ -33,6 +33,7 @@ public sealed class ConversionPipeline
 
         watch.Restart();
         var uses = parser.ReadUses(document);
+        var lineSegments = parser.ReadLineSegments(document);
         performance.ReadInstancesMs = watch.Elapsed.TotalMilliseconds;
 
         var classifier = new SymbolClassifier();
@@ -49,6 +50,7 @@ public sealed class ConversionPipeline
 
         watch.Restart();
         var analysis = new MusicSemanticRecognizer().Recognize(uses, staves, classification, config);
+        analysis.LineSegments.AddRange(lineSegments);
         performance.RecognizeSemanticsMs = watch.Elapsed.TotalMilliseconds;
 
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(musicXmlPath))!);
