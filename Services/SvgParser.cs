@@ -37,6 +37,58 @@ public sealed class SvgParser
         return result;
     }
 
+    /// <summary>
+    /// Reads layout geometry which should not have to pass through the musical glyph classifier.
+    /// This includes SVG line elements, two-point polylines and narrow rectangles. All coordinates
+    /// are returned in world space after applying inherited transforms.
+    /// </summary>
+    public List<SvgLineSegment> ReadLineSegments(XDocument document)
+    {
+        var result = new List<SvgLineSegment>();
+
+        foreach (var line in document.Descendants(Svg + "line"))
+        {
+            if (IsDefinitionElement(line)) continue;
+            var transform = SvgPathGeometry.ReadTransformChain(line);
+            var p1 = transform.Apply(Parse((string?)line.Attribute("x1")), Parse((string?)line.Attribute("y1")));
+            var p2 = transform.Apply(Parse((string?)line.Attribute("x2")), Parse((string?)line.Attribute("y2")));
+            result.Add(new SvgLineSegment(p1.X, p1.Y, p2.X, p2.Y, "line", (string?)line.Attribute("class")));
+        }
+
+        foreach (var polyline in document.Descendants(Svg + "polyline"))
+        {
+            if (IsDefinitionElement(polyline)) continue;
+            var values = ParsePointValues(polyline);
+            if (values.Length != 4) continue;
+
+            var transform = SvgPathGeometry.ReadTransformChain(polyline);
+            var p1 = transform.Apply(values[0], values[1]);
+            var p2 = transform.Apply(values[2], values[3]);
+            result.Add(new SvgLineSegment(p1.X, p1.Y, p2.X, p2.Y, "polyline",
+                (string?)polyline.Attribute("class")));
+        }
+
+        foreach (var rect in document.Descendants(Svg + "rect"))
+        {
+            if (IsDefinitionElement(rect)) continue;
+            var x = Parse((string?)rect.Attribute("x"));
+            var y = Parse((string?)rect.Attribute("y"));
+            var width = Parse((string?)rect.Attribute("width"));
+            var height = Parse((string?)rect.Attribute("height"));
+            var cssClass = (string?)rect.Attribute("class");
+
+            if (width <= 0 || height <= 0) continue;
+            if (!ContainsBarline(cssClass) && width > height * .25) continue;
+
+            var transform = SvgPathGeometry.ReadTransformChain(rect);
+            var top = transform.Apply(x + width / 2, y);
+            var bottom = transform.Apply(x + width / 2, y + height);
+            result.Add(new SvgLineSegment(top.X, top.Y, bottom.X, bottom.Y, "rect", cssClass));
+        }
+
+        return result;
+    }
+
     public Dictionary<string, int> CountSymbols(XDocument document) => ReadUses(document)
         .GroupBy(x => $"{x.SourceKind}:{x.SymbolId}")
         .OrderByDescending(x => x.Count())
@@ -71,9 +123,7 @@ public sealed class SvgParser
                      .Where(x => x.Name == Svg + "polyline" || x.Name == Svg + "polygon"))
         {
             if (IsDefinitionElement(polyline)) continue;
-            var values = Number.Matches((string?)polyline.Attribute("points") ?? string.Empty)
-                .Select(x => Parse(x.Value))
-                .ToArray();
+            var values = ParsePointValues(polyline);
             if (values.Length < 4) continue;
 
             var transform = SvgPathGeometry.ReadTransformChain(polyline);
@@ -128,6 +178,15 @@ public sealed class SvgParser
         if (Math.Abs(p2.X - p1.X) <= 100) return;
         target.Add((Math.Min(p1.X, p2.X), Math.Max(p1.X, p2.X), (p1.Y + p2.Y) / 2));
     }
+
+    private static double[] ParsePointValues(XElement element) =>
+        Number.Matches((string?)element.Attribute("points") ?? string.Empty)
+            .Select(x => Parse(x.Value))
+            .ToArray();
+
+    private static bool ContainsBarline(string? cssClass) =>
+        !string.IsNullOrWhiteSpace(cssClass) &&
+        cssClass.Contains("barline", StringComparison.OrdinalIgnoreCase);
 
     private static bool IsDefinitionElement(XElement element) =>
         element.Ancestors(Svg + "defs").Any() || element.Ancestors(Svg + "symbol").Any();
