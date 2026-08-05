@@ -32,15 +32,17 @@ public sealed class SvgParser
             .Where(x => !string.IsNullOrWhiteSpace(x.SymbolId))
             .ToList();
 
-        result.AddRange(_geometry.ReadDirectPaths(document)
+        result.AddRange(ReadDirectPaths(document)
             .Select(x => new SvgUse(x.SymbolId, x.X, x.Y, "path")));
         return result;
     }
 
+    public List<SvgDirectPath> ReadDirectPaths(XDocument document) =>
+        _geometry.ReadDirectPaths(document);
+
     /// <summary>
     /// Reads layout geometry which should not have to pass through the musical glyph classifier.
-    /// This includes SVG line elements, two-point polylines and narrow rectangles. All coordinates
-    /// are returned in world space after applying inherited transforms.
+    /// This remains a fallback for exporters that use native SVG line elements rather than paths.
     /// </summary>
     public List<SvgLineSegment> ReadLineSegments(XDocument document)
     {
@@ -98,9 +100,7 @@ public sealed class SvgParser
     {
         var horizontal = new List<(double X1, double X2, double Y)>();
 
-        // All standalone paths are already expanded to world coordinates, including
-        // inherited group transforms. This works for path-only and mixed SVG files.
-        foreach (var path in _geometry.ReadDirectPaths(document))
+        foreach (var path in ReadDirectPaths(document))
         {
             foreach (var contour in path.Geometry.Contours)
             {
@@ -109,7 +109,6 @@ public sealed class SvgParser
             }
         }
 
-        // Exporters may encode staff lines as <line>, <polyline> or <polygon>.
         foreach (var line in document.Descendants(Svg + "line"))
         {
             if (IsDefinitionElement(line)) continue;
@@ -154,8 +153,6 @@ public sealed class SvgParser
             var spaces = block.Zip(block.Skip(1), (a, b) => b.Y - a.Y).ToArray();
             var mean = spaces.Average();
 
-            // SVG exports use very different coordinate scales. Reject only clearly
-            // degenerate groups; the regularity and horizontal overlap are the real tests.
             if (mean <= tolerance * 2) continue;
             if (spaces.Any(s => Math.Abs(s - mean) > Math.Max(tolerance * 2, mean * 0.08))) continue;
             if (block.Min(x => x.Right) - block.Max(x => x.Left) < Math.Max(100, mean * 8)) continue;
