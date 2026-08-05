@@ -4,6 +4,21 @@ public sealed record SvgUse(string SymbolId, double X, double Y, string SourceKi
 
 public sealed record SvgDirectPath(string SymbolId, SymbolGeometry Geometry, double X, double Y);
 
+public sealed record SvgLineSegment(
+    double X1,
+    double Y1,
+    double X2,
+    double Y2,
+    string SourceKind,
+    string? CssClass = null)
+{
+    public double CenterX => (X1 + X2) / 2;
+    public double Top => Math.Min(Y1, Y2);
+    public double Bottom => Math.Max(Y1, Y2);
+    public double Width => Math.Abs(X2 - X1);
+    public double Height => Math.Abs(Y2 - Y1);
+}
+
 public sealed record Staff(int Index, double Left, double Right, IReadOnlyList<double> Lines)
 {
     public double Space => Lines.Count > 1 ? Lines.Zip(Lines.Skip(1), (a, b) => b - a).Average() : 0;
@@ -38,6 +53,7 @@ public sealed class AnalysisResult
 {
     public List<Staff> Staves { get; init; } = [];
     public List<SvgUse> Uses { get; init; } = [];
+    public List<SvgLineSegment> LineSegments { get; init; } = [];
     public List<SymbolClassification> Classifications { get; init; } = [];
     public List<RecognizedEvent> Events { get; init; } = [];
     public List<string> Warnings { get; init; } = [];
