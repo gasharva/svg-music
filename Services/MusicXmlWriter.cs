@@ -171,10 +171,33 @@ public sealed class MusicXmlWriter
 
         // Use the rightmost vertical pair before the first note; clefs and key signatures are farther left.
         var pair = digits
-            .SelectMany((upper, index) => digits.Skip(index + 1).Select(lower => new { Upper = upper, Lower = lower }))
-            .Where(x => Math.Abs(x.Upper.Use.X - x.Lower.Use.X) <= staff.Space * 1.25)
-            .Where(x => x.Upper.Use.Y < staff.Center && x.Lower.Use.Y >= staff.Center)
-            .OrderByDescending(x => Math.Max(x.Upper.Use.X, x.Lower.Use.X))
+            .GroupBy(
+                x => (int)Math.Round(x.Use.X / (staff.Space * 0.5)))
+            .Select(group =>
+            {
+                var column = group.ToList();
+
+                var upper = column
+                    .Where(x => x.Use.Y < staff.Center)
+                    .OrderBy(x => Math.Abs(x.Use.Y - staff.Center))
+                    .FirstOrDefault();
+
+                var lower = column
+                    .Where(x => x.Use.Y >= staff.Center)
+                    .OrderBy(x => Math.Abs(x.Use.Y - staff.Center))
+                    .FirstOrDefault();
+
+                return upper is null || lower is null
+                    ? null
+                    : new
+                    {
+                        Upper = upper,
+                        Lower = lower,
+                        X = column.Average(x => x.Use.X)
+                    };
+            })
+            .Where(x => x is not null)
+            .OrderByDescending(x => x!.X)
             .FirstOrDefault();
 
         if (pair is null) return (config.Beats, config.BeatType);

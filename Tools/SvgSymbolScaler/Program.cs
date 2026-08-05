@@ -86,7 +86,7 @@ Options:
     {
         if (args.Length == 0 || args.Contains("--help") || args.Contains("-h")) throw new ArgumentException(Usage);
         string? input = null;
-        double scale = 1.15, maxSize = 120, maxAspect = 2, protectAbove = 80, cropPadding = 0, marginMm = 0;
+        double scale = 1.25, maxSize = 120, maxAspect = 4, protectAbove = 80, cropPadding = 0, marginMm = 0;
         var recursive = false;
         for (var i = 0; i < args.Length; i++)
         {
