@@ -53,6 +53,7 @@ public sealed class AnalysisResult
 {
     public List<Staff> Staves { get; init; } = [];
     public List<SvgUse> Uses { get; init; } = [];
+    public List<SvgDirectPath> DirectPaths { get; init; } = [];
     public List<SvgLineSegment> LineSegments { get; init; } = [];
     public List<SymbolClassification> Classifications { get; init; } = [];
     public List<RecognizedEvent> Events { get; init; } = [];

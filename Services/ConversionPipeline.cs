@@ -33,6 +33,7 @@ public sealed class ConversionPipeline
 
         watch.Restart();
         var uses = parser.ReadUses(document);
+        var directPaths = parser.ReadDirectPaths(document);
         var lineSegments = parser.ReadLineSegments(document);
         performance.ReadInstancesMs = watch.Elapsed.TotalMilliseconds;
 
@@ -50,6 +51,7 @@ public sealed class ConversionPipeline
 
         watch.Restart();
         var analysis = new MusicSemanticRecognizer().Recognize(uses, staves, classification, config);
+        analysis.DirectPaths.AddRange(directPaths);
         analysis.LineSegments.AddRange(lineSegments);
         performance.RecognizeSemanticsMs = watch.Elapsed.TotalMilliseconds;
 
