@@ -62,11 +62,19 @@ switch (command)
         var config = new RecognitionConfig();
         var staves = parser.DetectStaves(document, config.StaffTolerance);
         var uses = parser.ReadUses(document);
+        var directPaths = parser.ReadDirectPaths(document);
+        var lineSegments = parser.ReadLineSegments(document);
 
         // The same vector classifier is now the mandatory first stage for both
         // analyze and convert. No recognition.json/manual SymbolKinds are used.
         var classification = new SymbolClassifier().Classify(svgPath, staves, catalogPath);
         var analysis = new MusicSemanticRecognizer().Recognize(uses, staves, classification, config);
+
+        // MusicSemanticRecognizer creates a fresh AnalysisResult containing musical
+        // semantics only. Preserve page/layout geometry explicitly for the writer:
+        // barlines may be closed paths or native SVG line/polyline/rect elements.
+        analysis.DirectPaths.AddRange(directPaths);
+        analysis.LineSegments.AddRange(lineSegments);
 
         if (command == "analyze")
         {
@@ -82,7 +90,7 @@ switch (command)
         var notes = analysis.Events.Count(x => x.Step is not null);
         var rests = analysis.Events.Count(x => x.Kind.StartsWith("rest-", StringComparison.OrdinalIgnoreCase));
         var dots = analysis.Events.Count(x => x.Dotted);
-        Console.WriteLine($"Станов: {staves.Count}; use: {uses.Count}; нот: {notes}; пауз: {rests}; точек: {dots}");
+        Console.WriteLine($"Станов: {staves.Count}; use: {uses.Count}; paths: {directPaths.Count}; lines: {lineSegments.Count}; нот: {notes}; пауз: {rests}; точек: {dots}");
         Console.WriteLine($"Предупреждений: {analysis.Warnings.Count}");
         Console.WriteLine($"Создано: {output}");
         return 0;
