@@ -16,15 +16,16 @@ if (!File.Exists(svgPath))
     return 2;
 }
 
-var parser = new SvgParser();
-var document = parser.Load(svgPath);
-
 switch (command)
 {
     case "symbols":
+    {
+        var parser = new SvgParser();
+        var document = parser.Load(svgPath);
         foreach (var pair in parser.CountSymbols(document))
             Console.WriteLine($"{pair.Key,-8} {pair.Value,4}");
         return 0;
+    }
 
     case "classify":
     {
@@ -34,6 +35,8 @@ switch (command)
             return 1;
         }
 
+        var parser = new SvgParser();
+        var document = parser.Load(svgPath);
         var staves = parser.DetectStaves(document);
         var result = new SymbolClassifier().Classify(svgPath, staves, args[2]);
         WriteJson(args[3], result);
@@ -59,31 +62,36 @@ switch (command)
             return 3;
         }
 
+        var pipeline = new ConversionPipeline();
         var config = new RecognitionConfig();
-        var staves = parser.DetectStaves(document, config.StaffTolerance);
-        var uses = parser.ReadUses(document);
 
-        // The same vector classifier is now the mandatory first stage for both
-        // analyze and convert. No recognition.json/manual SymbolKinds are used.
-        var classification = new SymbolClassifier().Classify(svgPath, staves, catalogPath);
-        var analysis = new MusicSemanticRecognizer().Recognize(uses, staves, classification, config);
-
+        AnalysisPipelineResult pipelineResult;
         if (command == "analyze")
         {
-            WriteJson(output, analysis);
+            pipelineResult = pipeline.Analyze(svgPath, catalogPath, config);
+            WriteJson(output, pipelineResult.Analysis);
+            WriteJson(Path.ChangeExtension(output, ".classification.json"), pipelineResult.Classification);
+            WriteJson(Path.ChangeExtension(output, ".performance.json"), pipelineResult.Performance);
         }
         else
         {
-            new MusicXmlWriter().Write(output, analysis, config);
-            WriteJson(Path.ChangeExtension(output, ".analysis.json"), analysis);
-            WriteJson(Path.ChangeExtension(output, ".classification.json"), classification);
+            var conversion = pipeline.Convert(svgPath, catalogPath, output, config, writeDiagnostics: true);
+            pipelineResult = new AnalysisPipelineResult(
+                conversion.Analysis,
+                conversion.Classification,
+                conversion.Performance);
         }
 
+        var analysis = pipelineResult.Analysis;
         var notes = analysis.Events.Count(x => x.Step is not null);
         var rests = analysis.Events.Count(x => x.Kind.StartsWith("rest-", StringComparison.OrdinalIgnoreCase));
         var dots = analysis.Events.Count(x => x.Dotted);
-        Console.WriteLine($"Станов: {staves.Count}; use: {uses.Count}; нот: {notes}; пауз: {rests}; точек: {dots}");
+        Console.WriteLine(
+            $"Станов: {analysis.Staves.Count}; use: {analysis.Uses.Count}; " +
+            $"path: {analysis.DirectPaths.Count}; lines: {analysis.LineSegments.Count}; " +
+            $"нот: {notes}; пауз: {rests}; точек: {dots}");
         Console.WriteLine($"Предупреждений: {analysis.Warnings.Count}");
+        Console.WriteLine($"Время pipeline: {pipelineResult.Performance.TotalMs:F1} ms");
         Console.WriteLine($"Создано: {output}");
         return 0;
     }
@@ -114,8 +122,8 @@ SVG → MusicXML PoC
   dotnet run -- analyze  <score.svg> <References/catalog.json> <analysis.json>
   dotnet run -- convert  <score.svg> <References/catalog.json> <score.musicxml>
 
-convert теперь всегда использует векторную классификацию по Bravura/SMuFL,
-затем связывает головки, паузы, точки, альтерации и ключи и пишет MusicXML.
-Рядом создаются *.analysis.json и *.classification.json.
+analyze и convert используют один и тот же ConversionPipeline.
+convert дополнительно пишет MusicXML, а рядом создаёт *.analysis.json,
+*.classification.json и *.performance.json.
 """);
 }
