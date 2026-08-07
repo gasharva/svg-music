@@ -431,6 +431,9 @@ public sealed class MusicXmlWriter
             evt.Alter == 0 ? null : new XElement("alter", evt.Alter),
             new XElement("octave", evt.Octave)));
 
+        if (evt.TieStart) note.Add(new XElement("tie", new XAttribute("type", "start")));
+        if (evt.TieStop) note.Add(new XElement("tie", new XAttribute("type", "stop")));
+
         note.Add(new XElement("duration", evt.Duration));
         note.Add(new XElement("voice", 1));
         note.Add(new XElement("type", evt.Type ?? "quarter"));
@@ -440,6 +443,22 @@ public sealed class MusicXmlWriter
             {
                 -2 => "flat-flat", -1 => "flat", 1 => "sharp", 2 => "double-sharp", _ => "natural"
             }));
+
+        if (!string.IsNullOrWhiteSpace(evt.BeamValue))
+            note.Add(new XElement("beam", new XAttribute("number", 1), evt.BeamValue));
+
+        if (evt.SlurStart || evt.SlurStop || evt.TieStart || evt.TieStop)
+        {
+            var notations = new XElement("notations");
+            if (evt.TieStart) notations.Add(new XElement("tied", new XAttribute("type", "start")));
+            if (evt.TieStop) notations.Add(new XElement("tied", new XAttribute("type", "stop")));
+            if (evt.SlurStart) notations.Add(new XElement("slur",
+                new XAttribute("type", "start"), new XAttribute("number", evt.SlurNumber ?? 1)));
+            if (evt.SlurStop) notations.Add(new XElement("slur",
+                new XAttribute("type", "stop"), new XAttribute("number", evt.SlurNumber ?? 1)));
+            note.Add(notations);
+        }
+
         note.Add(new XElement("staff", staffNumber));
         return note;
     }
