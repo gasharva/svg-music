@@ -51,6 +51,11 @@ public sealed class ConversionPipeline
         var analysis = new MusicSemanticRecognizer().Recognize(uses, staves, classification, config);
         analysis.DirectPaths.AddRange(directPaths);
         analysis.LineSegments.AddRange(lineSegments);
+
+        // Relationship reconstruction deliberately runs after symbol recognition and uses
+        // only raw geometry. This keeps CLI and tests on exactly the same conversion path.
+        new MusicGeometryRelationResolver().Resolve(analysis, config);
+
         performance.RecognizeSemanticsMs = watch.Elapsed.TotalMilliseconds;
         performance.TotalMs = total.Elapsed.TotalMilliseconds;
 
