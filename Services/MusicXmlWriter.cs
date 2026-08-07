@@ -102,40 +102,37 @@ public sealed class MusicXmlWriter
         var averageSpace = group.Average(x => x.Space);
         var classes = analysis.Classifications.ToDictionary(x => x.SymbolId, StringComparer.Ordinal);
 
-        // Primary source: actual vector contours. MuseScore commonly emits a barline as a
-        // narrow closed path, so its two long vertical sides are available here even when the
-        // whole path is not recognized as a SMuFL glyph.
-        var pathCandidates = analysis.DirectPaths
-            .SelectMany(path => EnumerateSegments(path.Geometry))
-            .Where(segment => IsPathBarlineSegment(segment.P1, segment.P2, group, averageSpace))
-            .Select(segment => (segment.P1.X + segment.P2.X) / 2);
+        List<double> candidates;
+        if (group.Count == 2)
+        {
+            // Piano/grand staff: a barline is accepted only when vector geometry crosses
+            // BOTH staves at essentially the same X. This rejects stems and other vertical
+            // notation that only belongs to one staff.
+            var upper = CollectGeometricCandidatesForStaff(analysis, group[0], left, right, averageSpace);
+            var lower = CollectGeometricCandidatesForStaff(analysis, group[1], left, right, averageSpace);
+            candidates = MatchCandidatesAcrossStaves(upper, lower, averageSpace * .35);
+        }
+        else
+        {
+            var geometric = group
+                .SelectMany(staff => CollectGeometricCandidatesForStaff(analysis, staff, left, right, averageSpace));
 
-        // Fallback for exporters that use native SVG line/polyline/rect elements.
-        var lineCandidates = analysis.LineSegments
-            .Where(x => x.CenterX >= left - averageSpace && x.CenterX <= right + averageSpace)
-            .Where(x => IsGeometricBarline(x, group, averageSpace))
-            .Select(x => x.CenterX);
+            // For a single staff retain the classifier fallback, because there is no second
+            // staff with which to validate the X coordinate.
+            var classified = analysis.Uses
+                .Where(x => x.X >= left - averageSpace && x.X <= right + averageSpace)
+                .Select(x => new { Use = x, Class = classes.GetValueOrDefault(x.SymbolId) })
+                .Where(x => x.Class is not null)
+                .Where(x => IsBarlineClass(x.Class!.Kind, x.Class.ReferenceId,
+                    x.Class.WidthInSpaces, x.Class.HeightInSpaces))
+                .Select(x => x.Use.X);
 
-        // Final fallback for an exporter that represents the entire barline as one classified glyph.
-        var classifiedCandidates = analysis.Uses
-            .Where(x => x.X >= left - averageSpace && x.X <= right + averageSpace)
-            .Select(x => new { Use = x, Class = classes.GetValueOrDefault(x.SymbolId) })
-            .Where(x => x.Class is not null)
-            .Where(x => IsBarlineClass(x.Class!.Kind, x.Class.ReferenceId,
-                x.Class.WidthInSpaces, x.Class.HeightInSpaces))
-            .Select(x => x.Use.X);
+            candidates = geometric.Concat(classified).OrderBy(x => x).ToList();
+        }
 
-        var candidates = pathCandidates
-            .Concat(lineCandidates)
-            .Concat(classifiedCandidates)
-            .Where(x => x >= left - averageSpace && x <= right + averageSpace)
-            .OrderBy(x => x)
-            .ToList();
-
-        // Merge both sides of a narrow rectangular path, double/repeated barlines and
-        // the copies emitted independently for upper and lower piano staves.
+        // Merge both sides of a narrow rectangular path and double/repeated barlines.
         var merged = new List<double>();
-        foreach (var x in candidates)
+        foreach (var x in candidates.OrderBy(x => x))
         {
             if (merged.Count == 0 || x - merged[^1] > averageSpace * .65)
                 merged.Add(x);
@@ -147,6 +144,51 @@ public sealed class MusicXmlWriter
         result.AddRange(merged.Where(x => x > left + averageSpace * 2 && x < right - averageSpace * .8));
         result.Add(right);
         return result.Distinct().OrderBy(x => x).ToList();
+    }
+
+    private static List<double> CollectGeometricCandidatesForStaff(
+        AnalysisResult analysis,
+        Staff staff,
+        double left,
+        double right,
+        double averageSpace)
+    {
+        var pathCandidates = analysis.DirectPaths
+            .SelectMany(path => EnumerateSegments(path.Geometry))
+            .Where(segment => IsPathBarlineSegmentForStaff(segment.P1, segment.P2, staff, averageSpace))
+            .Select(segment => (segment.P1.X + segment.P2.X) / 2);
+
+        var lineCandidates = analysis.LineSegments
+            .Where(x => x.CenterX >= left - averageSpace && x.CenterX <= right + averageSpace)
+            .Where(x => IsGeometricBarlineForStaff(x, staff, averageSpace))
+            .Select(x => x.CenterX);
+
+        return pathCandidates
+            .Concat(lineCandidates)
+            .Where(x => x >= left - averageSpace && x <= right + averageSpace)
+            .OrderBy(x => x)
+            .ToList();
+    }
+
+    private static List<double> MatchCandidatesAcrossStaves(
+        IReadOnlyList<double> upper,
+        IReadOnlyList<double> lower,
+        double tolerance)
+    {
+        var result = new List<double>();
+        foreach (var upperX in upper)
+        {
+            var lowerX = lower
+                .Where(x => Math.Abs(x - upperX) <= tolerance)
+                .OrderBy(x => Math.Abs(x - upperX))
+                .Cast<double?>()
+                .FirstOrDefault();
+
+            if (lowerX.HasValue)
+                result.Add((upperX + lowerX.Value) / 2);
+        }
+
+        return result.OrderBy(x => x).ToList();
     }
 
     private static IEnumerable<(PointD P1, PointD P2)> EnumerateSegments(SymbolGeometry geometry)
@@ -161,38 +203,31 @@ public sealed class MusicXmlWriter
         }
     }
 
-    private static bool IsPathBarlineSegment(PointD p1, PointD p2,
-        IReadOnlyList<Staff> group, double averageSpace)
+    private static bool IsPathBarlineSegmentForStaff(PointD p1, PointD p2, Staff staff, double averageSpace)
     {
         var width = Math.Abs(p2.X - p1.X);
         var height = Math.Abs(p2.Y - p1.Y);
-        if (width > averageSpace * .18 || height < averageSpace * 3.2) return false;
+        if (width > averageSpace * .18 || height < staff.Space * 3.2) return false;
 
         var centerX = (p1.X + p2.X) / 2;
-        var left = group.Min(x => x.Left);
-        var right = group.Max(x => x.Right);
-        if (centerX < left - averageSpace || centerX > right + averageSpace) return false;
+        if (centerX < staff.Left - averageSpace || centerX > staff.Right + averageSpace) return false;
 
         var top = Math.Min(p1.Y, p2.Y);
         var bottom = Math.Max(p1.Y, p2.Y);
-        return group.Any(staff =>
-            top <= staff.Top + staff.Space * .45 &&
-            bottom >= staff.Bottom - staff.Space * .45);
+        return top <= staff.Top + staff.Space * .45 &&
+               bottom >= staff.Bottom - staff.Space * .45;
     }
 
-    private static bool IsGeometricBarline(SvgLineSegment line, IReadOnlyList<Staff> group, double averageSpace)
+    private static bool IsGeometricBarlineForStaff(SvgLineSegment line, Staff staff, double averageSpace)
     {
         var explicitlyMarked = line.CssClass?.Contains("barline", StringComparison.OrdinalIgnoreCase) == true;
         var nearlyVertical = line.Width <= averageSpace * (explicitlyMarked ? .8 : .35);
         if (!nearlyVertical) return false;
 
-        return group.Any(staff =>
-        {
-            var minimumHeight = staff.Space * (explicitlyMarked ? 2.8 : 3.4);
-            return line.Height >= minimumHeight &&
-                   line.Top <= staff.Top + staff.Space * .45 &&
-                   line.Bottom >= staff.Bottom - staff.Space * .45;
-        });
+        var minimumHeight = staff.Space * (explicitlyMarked ? 2.8 : 3.4);
+        return line.Height >= minimumHeight &&
+               line.Top <= staff.Top + staff.Space * .45 &&
+               line.Bottom >= staff.Bottom - staff.Space * .45;
     }
 
     private static bool IsBarlineClass(string kind, string referenceId, double width, double height)
