@@ -11,6 +11,8 @@ public sealed class MusicXmlWriter
         @"(?:timeSig|timeSignature|timesig|numeral)[^0-9]*(?<digit>[0-9])",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
+    private readonly record struct VerticalInterval(double X, double Top, double Bottom);
+
     public void Write(string path, AnalysisResult analysis, RecognitionConfig config)
     {
         var staffGroups = BuildStaffGroups(analysis);
@@ -105,10 +107,10 @@ public sealed class MusicXmlWriter
         List<double> candidates;
         if (group.Count == 2)
         {
-            // Piano/grand staff: require ONE continuous vector segment that runs through
-            // both staves and the gap between them. Two unrelated verticals at the same X
-            // are deliberately not combined, because they can be note stems or other notation.
-            candidates = CollectContinuousGrandStaffCandidates(analysis, group[0], group[1], left, right, averageSpace);
+            // Grand staff: accept a barline when vertical geometry forms one continuous
+            // Y-chain from the upper staff to the lower staff. The chain may consist of
+            // one long segment or several touching/overlapping segments at the same X.
+            candidates = CollectGrandStaffBarlineChains(analysis, group[0], group[1], left, right, averageSpace);
         }
         else
         {
@@ -141,7 +143,7 @@ public sealed class MusicXmlWriter
         return result.Distinct().OrderBy(x => x).ToList();
     }
 
-    private static List<double> CollectContinuousGrandStaffCandidates(
+    private static List<double> CollectGrandStaffBarlineChains(
         AnalysisResult analysis,
         Staff upper,
         Staff lower,
@@ -149,22 +151,97 @@ public sealed class MusicXmlWriter
         double right,
         double averageSpace)
     {
-        var pathCandidates = analysis.DirectPaths
-            .SelectMany(path => EnumerateSegments(path.Geometry))
-            .Where(segment => IsContinuousGrandStaffBarline(segment.P1, segment.P2, upper, lower, averageSpace))
-            .Select(segment => (segment.P1.X + segment.P2.X) / 2);
+        var intervals = new List<VerticalInterval>();
 
-        var lineCandidates = analysis.LineSegments
-            .Where(x => x.CenterX >= left - averageSpace && x.CenterX <= right + averageSpace)
-            .Where(x => IsContinuousGrandStaffBarline(x, upper, lower, averageSpace))
-            .Select(x => x.CenterX);
+        foreach (var pair in analysis.DirectPaths.SelectMany(path => EnumerateSegments(path.Geometry)))
+        {
+            var width = Math.Abs(pair.P2.X - pair.P1.X);
+            var height = Math.Abs(pair.P2.Y - pair.P1.Y);
+            if (width > averageSpace * .18 || height < averageSpace * .5) continue;
 
-        return pathCandidates
-            .Concat(lineCandidates)
-            .Where(x => x >= left - averageSpace && x <= right + averageSpace)
-            .OrderBy(x => x)
-            .ToList();
+            var x = (pair.P1.X + pair.P2.X) / 2;
+            if (x < left - averageSpace || x > right + averageSpace) continue;
+
+            intervals.Add(new VerticalInterval(
+                x,
+                Math.Min(pair.P1.Y, pair.P2.Y),
+                Math.Max(pair.P1.Y, pair.P2.Y)));
+        }
+
+        foreach (var line in analysis.LineSegments)
+        {
+            var explicitlyMarked = line.CssClass?.Contains("barline", StringComparison.OrdinalIgnoreCase) == true;
+            var maxWidth = averageSpace * (explicitlyMarked ? .8 : .35);
+            if (line.Width > maxWidth || line.Height < averageSpace * .5) continue;
+            if (line.CenterX < left - averageSpace || line.CenterX > right + averageSpace) continue;
+
+            intervals.Add(new VerticalInterval(line.CenterX, line.Top, line.Bottom));
+        }
+
+        if (intervals.Count == 0) return [];
+
+        var xTolerance = averageSpace * .20;
+        var yGapTolerance = averageSpace * .15;
+        var columns = BuildVerticalColumns(intervals, xTolerance);
+        var result = new List<double>();
+
+        foreach (var column in columns)
+        {
+            var ordered = column.OrderBy(x => x.Top).ThenBy(x => x.Bottom).ToList();
+            var chainTop = ordered[0].Top;
+            var chainBottom = ordered[0].Bottom;
+
+            for (var i = 1; i < ordered.Count; i++)
+            {
+                var next = ordered[i];
+                if (next.Top <= chainBottom + yGapTolerance)
+                {
+                    chainBottom = Math.Max(chainBottom, next.Bottom);
+                    continue;
+                }
+
+                if (SpansGrandStaff(chainTop, chainBottom, upper, lower))
+                    result.Add(column.Average(x => x.X));
+
+                chainTop = next.Top;
+                chainBottom = next.Bottom;
+            }
+
+            if (SpansGrandStaff(chainTop, chainBottom, upper, lower))
+                result.Add(column.Average(x => x.X));
+        }
+
+        return result.OrderBy(x => x).ToList();
     }
+
+    private static List<List<VerticalInterval>> BuildVerticalColumns(
+        IEnumerable<VerticalInterval> intervals,
+        double xTolerance)
+    {
+        var result = new List<List<VerticalInterval>>();
+
+        foreach (var interval in intervals.OrderBy(x => x.X))
+        {
+            if (result.Count == 0)
+            {
+                result.Add([interval]);
+                continue;
+            }
+
+            var last = result[^1];
+            var columnX = last.Average(x => x.X);
+            if (Math.Abs(interval.X - columnX) <= xTolerance)
+                last.Add(interval);
+            else
+                result.Add([interval]);
+        }
+
+        return result;
+    }
+
+    private static bool SpansGrandStaff(double top, double bottom, Staff upper, Staff lower) =>
+        top <= upper.Top + upper.Space * .45 &&
+        bottom >= lower.Bottom - lower.Space * .45;
 
     private static List<double> CollectGeometricCandidatesForStaff(
         AnalysisResult analysis,
@@ -200,44 +277,6 @@ public sealed class MusicXmlWriter
             if (contour.Count > 2 && contour[0] != contour[^1])
                 yield return (contour[^1], contour[0]);
         }
-    }
-
-    private static bool IsContinuousGrandStaffBarline(
-        PointD p1,
-        PointD p2,
-        Staff upper,
-        Staff lower,
-        double averageSpace)
-    {
-        var width = Math.Abs(p2.X - p1.X);
-        if (width > averageSpace * .18) return false;
-
-        var centerX = (p1.X + p2.X) / 2;
-        var left = Math.Max(upper.Left, lower.Left) - averageSpace;
-        var right = Math.Min(upper.Right, lower.Right) + averageSpace;
-        if (centerX < left || centerX > right) return false;
-
-        var top = Math.Min(p1.Y, p2.Y);
-        var bottom = Math.Max(p1.Y, p2.Y);
-
-        // One continuous line must reach from the top staff all the way through the
-        // inter-staff gap to the bottom staff. A stem inside either staff cannot pass this.
-        return top <= upper.Top + upper.Space * .45 &&
-               bottom >= lower.Bottom - lower.Space * .45;
-    }
-
-    private static bool IsContinuousGrandStaffBarline(
-        SvgLineSegment line,
-        Staff upper,
-        Staff lower,
-        double averageSpace)
-    {
-        var explicitlyMarked = line.CssClass?.Contains("barline", StringComparison.OrdinalIgnoreCase) == true;
-        var nearlyVertical = line.Width <= averageSpace * (explicitlyMarked ? .8 : .35);
-        if (!nearlyVertical) return false;
-
-        return line.Top <= upper.Top + upper.Space * .45 &&
-               line.Bottom >= lower.Bottom - lower.Space * .45;
     }
 
     private static bool IsPathBarlineSegmentForStaff(PointD p1, PointD p2, Staff staff, double averageSpace)
