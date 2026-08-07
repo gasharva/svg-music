@@ -105,20 +105,16 @@ public sealed class MusicXmlWriter
         List<double> candidates;
         if (group.Count == 2)
         {
-            // Piano/grand staff: a barline is accepted only when vector geometry crosses
-            // BOTH staves at essentially the same X. This rejects stems and other vertical
-            // notation that only belongs to one staff.
-            var upper = CollectGeometricCandidatesForStaff(analysis, group[0], left, right, averageSpace);
-            var lower = CollectGeometricCandidatesForStaff(analysis, group[1], left, right, averageSpace);
-            candidates = MatchCandidatesAcrossStaves(upper, lower, averageSpace * .35);
+            // Piano/grand staff: require ONE continuous vector segment that runs through
+            // both staves and the gap between them. Two unrelated verticals at the same X
+            // are deliberately not combined, because they can be note stems or other notation.
+            candidates = CollectContinuousGrandStaffCandidates(analysis, group[0], group[1], left, right, averageSpace);
         }
         else
         {
             var geometric = group
                 .SelectMany(staff => CollectGeometricCandidatesForStaff(analysis, staff, left, right, averageSpace));
 
-            // For a single staff retain the classifier fallback, because there is no second
-            // staff with which to validate the X coordinate.
             var classified = analysis.Uses
                 .Where(x => x.X >= left - averageSpace && x.X <= right + averageSpace)
                 .Select(x => new { Use = x, Class = classes.GetValueOrDefault(x.SymbolId) })
@@ -130,7 +126,6 @@ public sealed class MusicXmlWriter
             candidates = geometric.Concat(classified).OrderBy(x => x).ToList();
         }
 
-        // Merge both sides of a narrow rectangular path and double/repeated barlines.
         var merged = new List<double>();
         foreach (var x in candidates.OrderBy(x => x))
         {
@@ -144,6 +139,31 @@ public sealed class MusicXmlWriter
         result.AddRange(merged.Where(x => x > left + averageSpace * 2 && x < right - averageSpace * .8));
         result.Add(right);
         return result.Distinct().OrderBy(x => x).ToList();
+    }
+
+    private static List<double> CollectContinuousGrandStaffCandidates(
+        AnalysisResult analysis,
+        Staff upper,
+        Staff lower,
+        double left,
+        double right,
+        double averageSpace)
+    {
+        var pathCandidates = analysis.DirectPaths
+            .SelectMany(path => EnumerateSegments(path.Geometry))
+            .Where(segment => IsContinuousGrandStaffBarline(segment.P1, segment.P2, upper, lower, averageSpace))
+            .Select(segment => (segment.P1.X + segment.P2.X) / 2);
+
+        var lineCandidates = analysis.LineSegments
+            .Where(x => x.CenterX >= left - averageSpace && x.CenterX <= right + averageSpace)
+            .Where(x => IsContinuousGrandStaffBarline(x, upper, lower, averageSpace))
+            .Select(x => x.CenterX);
+
+        return pathCandidates
+            .Concat(lineCandidates)
+            .Where(x => x >= left - averageSpace && x <= right + averageSpace)
+            .OrderBy(x => x)
+            .ToList();
     }
 
     private static List<double> CollectGeometricCandidatesForStaff(
@@ -170,27 +190,6 @@ public sealed class MusicXmlWriter
             .ToList();
     }
 
-    private static List<double> MatchCandidatesAcrossStaves(
-        IReadOnlyList<double> upper,
-        IReadOnlyList<double> lower,
-        double tolerance)
-    {
-        var result = new List<double>();
-        foreach (var upperX in upper)
-        {
-            var lowerX = lower
-                .Where(x => Math.Abs(x - upperX) <= tolerance)
-                .OrderBy(x => Math.Abs(x - upperX))
-                .Cast<double?>()
-                .FirstOrDefault();
-
-            if (lowerX.HasValue)
-                result.Add((upperX + lowerX.Value) / 2);
-        }
-
-        return result.OrderBy(x => x).ToList();
-    }
-
     private static IEnumerable<(PointD P1, PointD P2)> EnumerateSegments(SymbolGeometry geometry)
     {
         foreach (var contour in geometry.Contours)
@@ -201,6 +200,44 @@ public sealed class MusicXmlWriter
             if (contour.Count > 2 && contour[0] != contour[^1])
                 yield return (contour[^1], contour[0]);
         }
+    }
+
+    private static bool IsContinuousGrandStaffBarline(
+        PointD p1,
+        PointD p2,
+        Staff upper,
+        Staff lower,
+        double averageSpace)
+    {
+        var width = Math.Abs(p2.X - p1.X);
+        if (width > averageSpace * .18) return false;
+
+        var centerX = (p1.X + p2.X) / 2;
+        var left = Math.Max(upper.Left, lower.Left) - averageSpace;
+        var right = Math.Min(upper.Right, lower.Right) + averageSpace;
+        if (centerX < left || centerX > right) return false;
+
+        var top = Math.Min(p1.Y, p2.Y);
+        var bottom = Math.Max(p1.Y, p2.Y);
+
+        // One continuous line must reach from the top staff all the way through the
+        // inter-staff gap to the bottom staff. A stem inside either staff cannot pass this.
+        return top <= upper.Top + upper.Space * .45 &&
+               bottom >= lower.Bottom - lower.Space * .45;
+    }
+
+    private static bool IsContinuousGrandStaffBarline(
+        SvgLineSegment line,
+        Staff upper,
+        Staff lower,
+        double averageSpace)
+    {
+        var explicitlyMarked = line.CssClass?.Contains("barline", StringComparison.OrdinalIgnoreCase) == true;
+        var nearlyVertical = line.Width <= averageSpace * (explicitlyMarked ? .8 : .35);
+        if (!nearlyVertical) return false;
+
+        return line.Top <= upper.Top + upper.Space * .45 &&
+               line.Bottom >= lower.Bottom - lower.Space * .45;
     }
 
     private static bool IsPathBarlineSegmentForStaff(PointD p1, PointD p2, Staff staff, double averageSpace)
