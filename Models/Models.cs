@@ -47,6 +47,16 @@ public sealed class RecognizedEvent
     public string? ClefSign { get; set; }
     public int? ClefLine { get; set; }
     public string? AttachedToSymbolId { get; set; }
+
+    // Geometry relationships. These are inferred from shape/position only; SVG CSS classes are not used.
+    public double? StemX { get; set; }
+    public string? BeamValue { get; set; }
+    public int BeamCount { get; set; }
+    public bool SlurStart { get; set; }
+    public bool SlurStop { get; set; }
+    public int? SlurNumber { get; set; }
+    public bool TieStart { get; set; }
+    public bool TieStop { get; set; }
 }
 
 public sealed class AnalysisResult
