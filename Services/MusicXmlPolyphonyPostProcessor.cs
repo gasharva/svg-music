@@ -83,7 +83,10 @@ public sealed class MusicXmlPolyphonyPostProcessor
                 {
                     if (onset.Count == 1)
                     {
-                        RenderUnit(measure, onset[0], baseVoice);
+                        // Voice identity must stay stable between successive onsets.
+                        // Otherwise two beamed notes with the same stem direction can be
+                        // written into different voices and notation software breaks the beam.
+                        RenderUnit(measure, onset[0], VoiceForDirection(baseVoice, onset[0].StemDirection));
                         staffDuration += onset[0].Duration;
                         continue;
                     }
@@ -93,7 +96,6 @@ public sealed class MusicXmlPolyphonyPostProcessor
                     // advance to the longest duration of the simultaneous group.
                     var maxDuration = onset.Max(x => x.Duration);
                     var currentOffset = 0;
-                    var voiceIndex = 0;
 
                     foreach (var unit in onset
                                  .OrderBy(x => VoiceOrder(x.StemDirection))
@@ -102,9 +104,11 @@ public sealed class MusicXmlPolyphonyPostProcessor
                         if (currentOffset > 0)
                             measure.Add(new XElement("backup", new XElement("duration", currentOffset)));
 
-                        RenderUnit(measure, unit, baseVoice + voiceIndex);
+                        // Do not assign voices by the unit's position inside this particular
+                        // onset group. Use the same direction -> voice mapping everywhere on
+                        // the staff so beam membership survives polyphony reconstruction.
+                        RenderUnit(measure, unit, VoiceForDirection(baseVoice, unit.StemDirection));
                         currentOffset = unit.Duration;
-                        voiceIndex++;
                     }
 
                     if (currentOffset < maxDuration)
@@ -177,6 +181,12 @@ public sealed class MusicXmlPolyphonyPostProcessor
         _ => 2
     };
 
+    private static int VoiceForDirection(int baseVoice, string? direction) => direction switch
+    {
+        "down" => baseVoice + 1,
+        _ => baseVoice
+    };
+
     private static void RenderUnit(XElement measure, ChordUnit unit, int voice)
     {
         foreach (var binding in unit.Notes)
@@ -195,6 +205,9 @@ public sealed class MusicXmlPolyphonyPostProcessor
                 voiceElement.Value = voice.ToString();
             }
 
+            // The existing element is reused intentionally. Its duration, type, stem and
+            // beam elements were already reconstructed from SVG geometry and must survive
+            // polyphony processing unchanged.
             measure.Add(element);
         }
     }
