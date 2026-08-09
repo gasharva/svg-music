@@ -13,6 +13,7 @@ public sealed record SvgLineSegment(
     string? CssClass = null)
 {
     public double CenterX => (X1 + X2) / 2;
+    public double CenterY => (Y1 + Y2) / 2;
     public double Top => Math.Min(Y1, Y2);
     public double Bottom => Math.Max(Y1, Y2);
     public double Width => Math.Abs(X2 - X1);
@@ -35,7 +36,7 @@ public sealed class RecognizedEvent
     public double Confidence { get; init; }
     public double X { get; init; }
     public double Y { get; init; }
-    public int StaffIndex { get; init; }
+    public int StaffIndex { get; set; }
 
     public string? Step { get; set; }
     public int? Octave { get; set; }
@@ -50,6 +51,7 @@ public sealed class RecognizedEvent
 
     // Geometry relationships. These are inferred from shape/position only; SVG CSS classes are not used.
     public double? StemX { get; set; }
+    public string? StemDirection { get; set; }
     public string? BeamValue { get; set; }
     public int BeamCount { get; set; }
     public bool SlurStart { get; set; }
