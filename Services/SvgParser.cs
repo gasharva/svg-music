@@ -38,7 +38,7 @@ public sealed class SvgParser
     }
 
     public List<SvgDirectPath> ReadDirectPaths(XDocument document) =>
-        _geometry.ReadDirectPaths(document);
+        _geometry.ReadDirectPaths(document).ToList();
 
     /// <summary>
     /// Reads layout geometry which should not have to pass through the musical glyph classifier.
