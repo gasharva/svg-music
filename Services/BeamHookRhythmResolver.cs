@@ -4,7 +4,7 @@ using SvgToMusicXmlPoc.Models;
 namespace SvgToMusicXmlPoc.Services;
 
 /// <summary>
-/// Detects short secondary beam hooks that are too narrow to be treated as ordinary beams.
+/// Detects secondary beam levels near a stem end.
 /// Uses raw geometry only; SVG CSS classes are deliberately ignored.
 /// </summary>
 public sealed class BeamHookRhythmResolver
@@ -20,7 +20,7 @@ public sealed class BeamHookRhythmResolver
     {
         if (analysis.Staves.Count == 0) return;
 
-        var shortHooks = FindShortBeamHooks(analysis);
+        var beamLikeShapes = FindBeamLikeShapes(analysis);
         var notes = analysis.Events
             .Where(x => x.Kind.Equals("notehead-black", StringComparison.OrdinalIgnoreCase))
             .Where(x => x.StemX.HasValue && x.StaffIndex >= 0)
@@ -39,16 +39,32 @@ public sealed class BeamHookRhythmResolver
                 .ThenBy(x => Math.Abs(x.CenterY - note.Y))
                 .FirstOrDefault();
 
-            if (stem is not null)
+            if (stem is not null && note.BeamCount > 0)
             {
                 var beamEndY = note.StemDirection == "down" ? stem.Bottom : stem.Top;
-                var hasSecondaryHook = shortHooks.Any(hook =>
-                    note.StemX!.Value >= hook.Left - staff.Space * .20 &&
-                    note.StemX.Value <= hook.Right + staff.Space * .20 &&
-                    Math.Abs(hook.CenterY - beamEndY) <= staff.Space * .70 &&
-                    IntervalDistance(stem.Top, stem.Bottom, hook.Top, hook.Bottom) <= staff.Space * .35);
 
-                if (hasSecondaryHook)
+                // A secondary beam lies on the notehead side of the primary beam. It does not
+                // have to touch the stem pixel-for-pixel: engravers commonly leave a small gap
+                // between a short hook and the stem. Therefore use directional Y offset plus a
+                // tolerant horizontal distance rather than requiring X overlap.
+                var hasSecondaryLevel = beamLikeShapes.Any(shape =>
+                {
+                    var horizontalGap = HorizontalDistance(note.StemX!.Value, shape.Left, shape.Right);
+                    if (horizontalGap > staff.Space * .60) return false;
+
+                    var inwardOffset = note.StemDirection == "down"
+                        ? beamEndY - shape.CenterY
+                        : shape.CenterY - beamEndY;
+
+                    // Ignore the primary beam itself (near-zero offset), and only accept another
+                    // thin horizontal band reasonably close to the same stem end.
+                    if (inwardOffset < staff.Space * .16 || inwardOffset > staff.Space * 1.15)
+                        return false;
+
+                    return IntervalDistance(stem.Top, stem.Bottom, shape.Top, shape.Bottom) <= staff.Space * .55;
+                });
+
+                if (hasSecondaryLevel)
                 {
                     note.BeamCount = Math.Max(2, note.BeamCount);
                     note.Type = "16th";
@@ -65,14 +81,14 @@ public sealed class BeamHookRhythmResolver
         }
     }
 
-    private static List<Shape> FindShortBeamHooks(AnalysisResult analysis)
+    private static List<Shape> FindBeamLikeShapes(AnalysisResult analysis)
     {
         var result = new List<Shape>();
 
         foreach (var path in analysis.DirectPaths)
         {
             var points = path.Geometry.Contours.SelectMany(x => x).ToArray();
-            if (points.Length == 0 || points.Length > 14) continue;
+            if (points.Length == 0 || points.Length > 30) continue;
 
             var left = points.Min(x => x.X);
             var right = points.Max(x => x.X);
@@ -86,16 +102,22 @@ public sealed class BeamHookRhythmResolver
                 .FirstOrDefault();
             if (staff is null) continue;
 
-            // Ordinary beams are handled by MusicGeometryRelationResolver. Here we keep only
-            // short, thin beam-like polygons: the little second-level hook of a 16th note.
-            if (shape.Width < staff.Space * .30 || shape.Width >= staff.Space * 1.40) continue;
-            if (shape.Height < staff.Space * .06 || shape.Height > staff.Space * .75) continue;
-            if (shape.Width / Math.Max(shape.Height, .001) < 1.8) continue;
+            // Keep both full beams and tiny partial hooks. The relation to a concrete stem is
+            // decided later from geometry, so there is no need for a brittle minimum hook width.
+            if (shape.Width < staff.Space * .08 || shape.Width > staff.Space * 20) continue;
+            if (shape.Height < staff.Space * .04 || shape.Height > staff.Space * .95) continue;
+            if (shape.Width / Math.Max(shape.Height, .001) < 1.15) continue;
 
             result.Add(shape);
         }
 
         return result;
+    }
+
+    private static double HorizontalDistance(double x, double left, double right)
+    {
+        if (x >= left && x <= right) return 0;
+        return Math.Min(Math.Abs(x - left), Math.Abs(x - right));
     }
 
     private static double IntervalDistance(double a1, double a2, double b1, double b2)
