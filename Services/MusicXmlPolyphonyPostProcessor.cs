@@ -5,8 +5,8 @@ namespace SvgToMusicXmlPoc.Services;
 
 /// <summary>
 /// Restores simultaneous onsets that engraving may spread horizontally.
-/// Independent chords with opposite stem directions and close X positions are emitted
-/// as parallel MusicXML voices using backup/forward instead of being serialized in time.
+/// Chords are treated as structural units (preferably by shared stem), and voices are
+/// assigned only after chord/beam relationships are fixed.
 /// </summary>
 public sealed class MusicXmlPolyphonyPostProcessor
 {
@@ -16,11 +16,17 @@ public sealed class MusicXmlPolyphonyPostProcessor
     {
         public List<NoteBinding> Notes { get; } = [];
         public RecognizedEvent Root => Notes[0].Event;
-        public double X => Root.StemX ?? Root.X;
+        public double X => Notes.Where(x => x.Event.StemX.HasValue)
+            .Select(x => x.Event.StemX!.Value)
+            .DefaultIfEmpty(Notes.Average(x => x.Event.X))
+            .Average();
         public string? StemDirection => Notes
             .Select(x => x.Event.StemDirection)
             .FirstOrDefault(x => !string.IsNullOrWhiteSpace(x));
         public int Duration => Math.Max(0, Root.Duration);
+        public string? BeamValue => Notes.Select(x => x.Event.BeamValue)
+            .FirstOrDefault(x => !string.IsNullOrWhiteSpace(x));
+        public bool IsBlackNote => Notes.Any(x => x.Event.Kind == "notehead-black");
     }
 
     public void Apply(string path, AnalysisResult analysis)
@@ -55,11 +61,9 @@ public sealed class MusicXmlPolyphonyPostProcessor
                 var staffIndex = group[staffNumber - 1].Index;
                 if (!queues.TryGetValue(staffIndex, out var queue) || queue.Count == 0) continue;
 
-                var evt = queue.Dequeue();
-                bindingsByStaff[staffIndex].Add(new NoteBinding(noteElement, evt));
+                bindingsByStaff[staffIndex].Add(new NoteBinding(noteElement, queue.Dequeue()));
             }
 
-            // Rebuild only the timed stream. Attributes and other metadata stay in place.
             measure.Elements("note").Remove();
             measure.Elements("backup").Remove();
             measure.Elements("forward").Remove();
@@ -74,7 +78,8 @@ public sealed class MusicXmlPolyphonyPostProcessor
                 if (previousStaffDuration > 0)
                     measure.Add(new XElement("backup", new XElement("duration", previousStaffDuration)));
 
-                var units = BuildChordUnits(bindings);
+                var units = BuildChordUnits(bindings, staff.Space);
+                RepairShortBeamContinuations(units, staff.Space);
                 var onsetGroups = BuildOnsetGroups(units, staff.Space);
                 var staffDuration = 0;
                 var baseVoice = (staffNumber - 1) * 2 + 1;
@@ -83,17 +88,11 @@ public sealed class MusicXmlPolyphonyPostProcessor
                 {
                     if (onset.Count == 1)
                     {
-                        // Voice identity must stay stable between successive onsets.
-                        // Otherwise two beamed notes with the same stem direction can be
-                        // written into different voices and notation software breaks the beam.
                         RenderUnit(measure, onset[0], VoiceForDirection(baseVoice, onset[0].StemDirection));
                         staffDuration += onset[0].Duration;
                         continue;
                     }
 
-                    // Multiple independent chords share one logical time position.
-                    // Each voice starts at the same cursor position; after the last voice
-                    // advance to the longest duration of the simultaneous group.
                     var maxDuration = onset.Max(x => x.Duration);
                     var currentOffset = 0;
 
@@ -104,9 +103,6 @@ public sealed class MusicXmlPolyphonyPostProcessor
                         if (currentOffset > 0)
                             measure.Add(new XElement("backup", new XElement("duration", currentOffset)));
 
-                        // Do not assign voices by the unit's position inside this particular
-                        // onset group. Use the same direction -> voice mapping everywhere on
-                        // the staff so beam membership survives polyphony reconstruction.
                         RenderUnit(measure, unit, VoiceForDirection(baseVoice, unit.StemDirection));
                         currentOffset = unit.Duration;
                     }
@@ -124,12 +120,40 @@ public sealed class MusicXmlPolyphonyPostProcessor
         document.Save(path);
     }
 
-    private static List<ChordUnit> BuildChordUnits(IReadOnlyList<NoteBinding> bindings)
+    private static List<ChordUnit> BuildChordUnits(IReadOnlyList<NoteBinding> bindings, double staffSpace)
     {
         var result = new List<ChordUnit>();
-        ChordUnit? current = null;
+        var consumed = new HashSet<NoteBinding>();
+        var stemTolerance = staffSpace * .20;
 
-        foreach (var binding in bindings)
+        // Strong rule: all noteheads sharing the same geometrically detected stem are one chord,
+        // regardless of their individual X offsets or their position in the writer's sort order.
+        foreach (var binding in bindings
+                     .Where(x => x.Event.StemX.HasValue)
+                     .OrderBy(x => x.Event.StemX)
+                     .ThenByDescending(x => x.Event.Y))
+        {
+            if (consumed.Contains(binding)) continue;
+
+            var unit = new ChordUnit();
+            var stemX = binding.Event.StemX!.Value;
+            var members = bindings
+                .Where(x => !consumed.Contains(x) && x.Event.StemX.HasValue)
+                .Where(x => Math.Abs(x.Event.StemX!.Value - stemX) <= stemTolerance)
+                .OrderByDescending(x => x.Event.Y)
+                .ToList();
+
+            foreach (var member in members)
+            {
+                unit.Notes.Add(member);
+                consumed.Add(member);
+            }
+            result.Add(unit);
+        }
+
+        // Fallback for stemless notes/rests: retain the pre-existing chord markers.
+        ChordUnit? current = null;
+        foreach (var binding in bindings.Where(x => !consumed.Contains(x)).OrderBy(x => x.Event.X).ThenByDescending(x => x.Event.Y))
         {
             if (current is null || !binding.Event.Chord)
             {
@@ -139,7 +163,61 @@ public sealed class MusicXmlPolyphonyPostProcessor
             current.Notes.Add(binding);
         }
 
-        return result;
+        foreach (var unit in result)
+            NormalizeChordMarkup(unit);
+
+        return result.OrderBy(x => x.X).ToList();
+    }
+
+    private static void NormalizeChordMarkup(ChordUnit unit)
+    {
+        var ordered = unit.Notes.OrderByDescending(x => x.Event.Y).ToList();
+        unit.Notes.Clear();
+        unit.Notes.AddRange(ordered);
+
+        for (var i = 0; i < unit.Notes.Count; i++)
+        {
+            var element = unit.Notes[i].Element;
+            element.Element("chord")?.Remove();
+            if (i == 0) continue;
+
+            var chord = new XElement("chord");
+            var first = element.Elements().FirstOrDefault();
+            if (first is not null) first.AddBeforeSelf(chord);
+            else element.Add(chord);
+        }
+    }
+
+    private static void RepairShortBeamContinuations(IReadOnlyList<ChordUnit> units, double staffSpace)
+    {
+        for (var i = 0; i + 1 < units.Count; i++)
+        {
+            var first = units[i];
+            var second = units[i + 1];
+            if (!string.Equals(first.BeamValue, "begin", StringComparison.OrdinalIgnoreCase)) continue;
+            if (!string.IsNullOrWhiteSpace(second.BeamValue)) continue;
+            if (!first.IsBlackNote || !second.IsBlackNote) continue;
+            if (first.StemDirection != second.StemDirection) continue;
+            if (second.X - first.X > staffSpace * 4.0) continue;
+
+            // A beam cannot legally start and then disappear on the immediately following
+            // compatible stem. Treat this as a missed beam-end classification, not a quarter note.
+            foreach (var binding in second.Notes)
+            {
+                binding.Event.BeamValue = "end";
+                binding.Event.BeamCount = Math.Max(1, binding.Event.BeamCount);
+                binding.Event.Type = "eighth";
+                binding.Event.Duration = first.Duration;
+
+                binding.Element.Element("type")!.Value = "eighth";
+                binding.Element.Element("duration")!.Value = first.Duration.ToString();
+                binding.Element.Element("beam")?.Remove();
+                var beam = new XElement("beam", new XAttribute("number", 1), "end");
+                var insertion = binding.Element.Element("notations") ?? binding.Element.Element("staff");
+                if (insertion is not null) insertion.AddBeforeSelf(beam);
+                else binding.Element.Add(beam);
+            }
+        }
     }
 
     private static List<List<ChordUnit>> BuildOnsetGroups(IReadOnlyList<ChordUnit> units, double staffSpace)
@@ -160,8 +238,6 @@ public sealed class MusicXmlPolyphonyPostProcessor
             var closeInX = Math.Abs(unit.X - centerX) <= tolerance;
             var hasOppositeStem = current.Any(x => OppositeStemDirections(x.StemDirection, unit.StemDirection));
 
-            // Do not merge an ordinary melodic succession merely because its X distance is small.
-            // The strong signal for polyphony is opposite stem direction at nearly the same X.
             if (closeInX && hasOppositeStem)
                 current.Add(unit);
             else
@@ -205,9 +281,6 @@ public sealed class MusicXmlPolyphonyPostProcessor
                 voiceElement.Value = voice.ToString();
             }
 
-            // The existing element is reused intentionally. Its duration, type, stem and
-            // beam elements were already reconstructed from SVG geometry and must survive
-            // polyphony processing unchanged.
             measure.Add(element);
         }
     }
