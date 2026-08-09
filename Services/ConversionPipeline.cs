@@ -53,6 +53,10 @@ public sealed class ConversionPipeline
         analysis.LineSegments.AddRange(lineSegments);
 
         new MusicGeometryRelationResolver().Resolve(analysis, config);
+        // Augmentation dots belong to the whole rhythmic chord. A single SVG dot can be
+        // associated with only one notehead by the symbol recognizer, so normalize the
+        // shared-stem chord before any MusicXML is written.
+        new ChordRhythmNormalizer().Normalize(analysis);
 
         performance.RecognizeSemanticsMs = watch.Elapsed.TotalMilliseconds;
         performance.TotalMs = total.Elapsed.TotalMilliseconds;
