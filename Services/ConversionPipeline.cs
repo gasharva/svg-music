@@ -53,6 +53,9 @@ public sealed class ConversionPipeline
         analysis.LineSegments.AddRange(lineSegments);
 
         new MusicGeometryRelationResolver().Resolve(analysis, config);
+        // Long sloped beams can have a tall axis-aligned bounding box even though the painted
+        // strip itself is thin. Recover them by strip thickness and stem/path intersection.
+        new SlopedBeamRhythmResolver().Resolve(analysis, config);
         // Reattach written accidentals after staff ownership/pitch/chords are final. In close
         // intervals noteheads are displaced horizontally, so staff-position (Y) must outrank X.
         new AccidentalGeometryResolver().Resolve(analysis, config);
