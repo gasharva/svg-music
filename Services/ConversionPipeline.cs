@@ -80,6 +80,9 @@ public sealed class ConversionPipeline
         var watch = Stopwatch.StartNew();
         new MusicXmlWriter().Write(musicXmlPath, result.Analysis, config);
         new MusicXmlStemPostProcessor().Apply(musicXmlPath, result.Analysis);
+        // Preserve the SVG's horizontal engraving coordinates before voice reordering.
+        // The following voice-layout pass reuses the same note elements, so default-x survives.
+        new MusicXmlSvgLayoutPostProcessor().Apply(musicXmlPath, result.Analysis);
         // Render each detected voice as a complete lane. Do not serialize one simultaneous
         // onset at a time: that can move continuation notes behind a long parallel chord.
         new MusicXmlVoiceLayoutPostProcessor().Apply(musicXmlPath, result.Analysis);
