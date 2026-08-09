@@ -57,6 +57,10 @@ public sealed class ConversionPipeline
         // associated with only one notehead by the symbol recognizer, so normalize the
         // shared-stem chord before any MusicXML is written.
         new ChordRhythmNormalizer().Normalize(analysis);
+        // A 16th-note hook is much shorter than an ordinary beam and was intentionally
+        // filtered out by the general beam detector. Detect that second beam level separately
+        // and also restore dotted duration after beam-derived note types are assigned.
+        new BeamHookRhythmResolver().Resolve(analysis, config);
 
         performance.RecognizeSemanticsMs = watch.Elapsed.TotalMilliseconds;
         performance.TotalMs = total.Elapsed.TotalMilliseconds;
@@ -86,6 +90,9 @@ public sealed class ConversionPipeline
         // Render each detected voice as a complete lane. Do not serialize one simultaneous
         // onset at a time: that can move continuation notes behind a long parallel chord.
         new MusicXmlVoiceLayoutPostProcessor().Apply(musicXmlPath, result.Analysis);
+        // MusicXmlWriter emits the primary beam. Add beam level 2 after voice ordering, so
+        // isolated secondary hooks become forward/backward hooks and adjacent 16ths connect.
+        new MusicXmlSecondaryBeamPostProcessor().Apply(musicXmlPath);
         result.Performance.WriteMusicXmlMs = watch.Elapsed.TotalMilliseconds;
         result.Performance.TotalMs += result.Performance.WriteMusicXmlMs;
 
