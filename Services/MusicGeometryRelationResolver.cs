@@ -11,7 +11,18 @@ public sealed class MusicGeometryRelationResolver
 {
     private static readonly string[] Steps = ["C", "D", "E", "F", "G", "A", "B"];
 
-    private sealed record StemCandidate(int StaffIndex, SvgLineSegment Line);
+    private sealed class StemCandidate
+    {
+        public StemCandidate(int staffIndex, SvgLineSegment line)
+        {
+            StaffIndex = staffIndex;
+            Line = line;
+        }
+
+        public int StaffIndex { get; set; }
+        public SvgLineSegment Line { get; }
+    }
+
     private sealed record Box(double Left, double Top, double Right, double Bottom, SvgDirectPath Path)
     {
         public double Width => Right - Left;
@@ -22,7 +33,6 @@ public sealed class MusicGeometryRelationResolver
 
     public void Resolve(AnalysisResult analysis, RecognitionConfig config)
     {
-        // Noteheads are kept even when the first semantic pass could not assign them to a staff.
         var notes = analysis.Events
             .Where(x => x.Kind.StartsWith("notehead-", StringComparison.OrdinalIgnoreCase))
             .ToList();
@@ -49,25 +59,27 @@ public sealed class MusicGeometryRelationResolver
 
         foreach (var line in analysis.LineSegments)
         {
-            // Pure geometry only. Bar lines are much taller; ledger/staff lines are horizontal.
             if (line.Width > averageSpace * .16) continue;
             if (line.Height < averageSpace * 1.35 || line.Height > averageSpace * 7.0) continue;
 
-            var staff = StaffForStem(line, analysis.Staves);
+            // Initial staff is only a provisional hint. For non-crossing stems the final staff
+            // is selected after attachment, when stem direction can be inferred from the notehead.
+            var staff = StaffForStem(line, analysis.Staves, null);
             if (staff is null) continue;
             result.Add(new StemCandidate(staff.Index, line));
         }
         return result;
     }
 
-    private static Staff? StaffForStem(SvgLineSegment line, IReadOnlyList<Staff> staves)
+    private static Staff? StaffForStem(SvgLineSegment line, IReadOnlyList<Staff> staves, string? direction)
     {
         var horizontal = staves
             .Where(s => line.CenterX >= s.Left - s.Space * 1.5 && line.CenterX <= s.Right + s.Space * 1.5)
+            .OrderBy(s => s.Center)
             .ToList();
         if (horizontal.Count == 0) return null;
 
-        // Primary rule: if the stem crosses a staff, that is the owning staff.
+        // Strongest rule: a stem which physically crosses a staff belongs to that staff.
         var intersected = horizontal
             .Select(s => new
             {
@@ -80,16 +92,31 @@ public sealed class MusicGeometryRelationResolver
             .FirstOrDefault();
         if (intersected is not null) return intersected.Staff;
 
-        // Secondary rule requested for ledger notes between staves: use the nearest staff above.
-        var above = horizontal
-            .Where(s => s.Bottom <= line.Top + s.Space * .35)
-            .OrderByDescending(s => s.Bottom)
-            .FirstOrDefault();
-        if (above is not null) return above;
+        // Cross-staff/ledger-note rule:
+        // stem up   -> the note belongs to the lower staff;
+        // stem down -> the note belongs to the upper staff.
+        if (direction == "up")
+        {
+            var lower = horizontal
+                .Where(s => s.Center >= line.CenterY)
+                .OrderBy(s => s.Center)
+                .FirstOrDefault();
+            if (lower is not null) return lower;
+        }
+        else if (direction == "down")
+        {
+            var upper = horizontal
+                .Where(s => s.Center <= line.CenterY)
+                .OrderByDescending(s => s.Center)
+                .FirstOrDefault();
+            if (upper is not null) return upper;
+        }
 
-        // A very high note can have no staff above it. Never lose it: use the nearest staff.
+        // Direction is not known yet (or there is no staff on that side): preserve the note
+        // and use the nearest staff as a safe provisional/fallback assignment.
         return horizontal
             .OrderBy(s => VerticalDistance(line.Top, line.Bottom, s.Top, s.Bottom))
+            .ThenBy(s => Math.Abs(line.CenterY - s.Center))
             .First();
     }
 
@@ -98,20 +125,30 @@ public sealed class MusicGeometryRelationResolver
         IReadOnlyList<StemCandidate> stems,
         IReadOnlyList<Staff> staves)
     {
+        var averageSpace = staves.Average(x => x.Space);
+
         foreach (var note in notes)
         {
             var stem = stems
-                .Select(x => new { Stem = x, Staff = staves[x.StaffIndex] })
-                .Where(x => Math.Abs(x.Stem.Line.CenterX - note.X) <= x.Staff.Space * 1.12)
-                .Where(x => x.Stem.Line.Top <= note.Y + x.Staff.Space * .65 &&
-                            x.Stem.Line.Bottom >= note.Y - x.Staff.Space * .65)
-                .OrderBy(x => Math.Abs(x.Stem.Line.CenterX - note.X))
-                .ThenBy(x => Math.Abs(x.Stem.Line.CenterY - note.Y))
+                .Where(x => Math.Abs(x.Line.CenterX - note.X) <= averageSpace * 1.12)
+                .Where(x => x.Line.Top <= note.Y + averageSpace * .65 &&
+                            x.Line.Bottom >= note.Y - averageSpace * .65)
+                .OrderBy(x => Math.Abs(x.Line.CenterX - note.X))
+                .ThenBy(x => Math.Abs(x.Line.CenterY - note.Y))
                 .FirstOrDefault();
 
             if (stem is null) continue;
-            note.StaffIndex = stem.Stem.StaffIndex;
-            note.StemX = stem.Stem.Line.CenterX;
+
+            var upExtent = Math.Max(0, note.Y - stem.Line.Top);
+            var downExtent = Math.Max(0, stem.Line.Bottom - note.Y);
+            var direction = upExtent >= downExtent ? "up" : "down";
+            var owner = StaffForStem(stem.Line, staves, direction);
+            if (owner is null) continue;
+
+            stem.StaffIndex = owner.Index;
+            note.StaffIndex = owner.Index;
+            note.StemX = stem.Line.CenterX;
+            note.StemDirection = direction;
         }
     }
 
@@ -124,13 +161,7 @@ public sealed class MusicGeometryRelationResolver
                 .ToList();
             if (horizontal.Count == 0) horizontal = staves.ToList();
 
-            // Same fallback semantics as for a stem: prefer the closest staff above the note.
-            var above = horizontal
-                .Where(s => s.Bottom <= note.Y + s.Space * .35)
-                .OrderByDescending(s => s.Bottom)
-                .FirstOrDefault();
-
-            var staff = above ?? horizontal.OrderBy(s => Math.Abs(note.Y - s.Center)).First();
+            var staff = horizontal.OrderBy(s => Math.Abs(note.Y - s.Center)).First();
             note.StaffIndex = staff.Index;
         }
     }
@@ -170,8 +201,6 @@ public sealed class MusicGeometryRelationResolver
         IReadOnlyList<StemCandidate> stems,
         IReadOnlyList<Staff> staves)
     {
-        foreach (var note in notes) note.StemDirection = null;
-
         foreach (var staffNotes in notes.Where(x => x.StemX.HasValue).GroupBy(x => x.StaffIndex))
         {
             if (staffNotes.Key < 0 || staffNotes.Key >= staves.Count) continue;
