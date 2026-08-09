@@ -5,8 +5,9 @@ namespace SvgToMusicXmlPoc.Services;
 
 /// <summary>
 /// Completes long sloped beam groups after the primary sloped-beam detector has found the beam shape.
-/// Uses a fitted beam centreline instead of exact polygon/stem intersection, so edge stems and tiny
-/// exporter gaps do not truncate the group. SVG CSS classes are intentionally ignored.
+/// Beam membership is intentionally independent of StaffIndex: a rising/falling beamed passage can
+/// cross the geometric boundary between staves while still belonging to one continuous beam.
+/// SVG CSS classes are intentionally ignored.
 /// </summary>
 public sealed class SlopedBeamCoverageResolver
 {
@@ -24,71 +25,81 @@ public sealed class SlopedBeamCoverageResolver
     {
         if (analysis.Staves.Count == 0) return;
 
+        var averageSpace = analysis.Staves.Average(x => x.Space);
+
         foreach (var beam in FindBeamModels(analysis))
         {
-            foreach (var staff in analysis.Staves)
-            {
-                var members = analysis.Events
-                    .Where(x => x.StaffIndex == staff.Index)
-                    .Where(x => x.Kind.Equals("notehead-black", StringComparison.OrdinalIgnoreCase))
-                    .Where(x => x.StemX.HasValue)
-                    .Where(x => x.StemX!.Value >= beam.Left - staff.Space * .35 &&
-                                x.StemX.Value <= beam.Right + staff.Space * .35)
-                    .Select(note => new
-                    {
-                        Note = note,
-                        Stem = FindStem(analysis, note, staff)
-                    })
-                    .Where(x => x.Stem is not null)
-                    .Where(x => ReachesBeam(x.Note, x.Stem!, beam, staff))
-                    .OrderBy(x => x.Note.StemX)
-                    .ToList();
-
-                var stemGroups = members
-                    .GroupBy(x => Math.Round(x.Note.StemX!.Value / (staff.Space * .12)))
-                    .OrderBy(x => x.Average(y => y.Note.StemX!.Value))
-                    .ToList();
-
-                if (stemGroups.Count < 2) continue;
-
-                for (var i = 0; i < stemGroups.Count; i++)
+            // Important: do NOT split the candidates by StaffIndex. A single engraved beam can
+            // connect notes whose heads/stems have been provisionally assigned to different staves.
+            // The physical beam is a stronger relationship than that provisional assignment.
+            var members = analysis.Events
+                .Where(x => x.Kind.Equals("notehead-black", StringComparison.OrdinalIgnoreCase))
+                .Where(x => x.StemX.HasValue)
+                .Where(x => x.StemX!.Value >= beam.Left - averageSpace * .35 &&
+                            x.StemX.Value <= beam.Right + averageSpace * .35)
+                .Select(note => new
                 {
-                    var beamValue = i == 0 ? "begin" : i == stemGroups.Count - 1 ? "end" : "continue";
-                    foreach (var member in stemGroups[i])
-                    {
-                        var note = member.Note;
-                        note.BeamCount = Math.Max(1, note.BeamCount);
-                        note.BeamValue = beamValue;
+                    Note = note,
+                    Stem = FindStem(analysis, note, averageSpace)
+                })
+                .Where(x => x.Stem is not null)
+                .Where(x => ReachesBeam(x.Note, x.Stem!, beam, averageSpace))
+                .OrderBy(x => x.Note.StemX)
+                .ToList();
 
-                        // This pass restores only the primary beam. Never downgrade a note that
-                        // already has a secondary beam level.
-                        if (note.BeamCount == 1)
-                            note.Type = "eighth";
+            var stemGroups = members
+                .GroupBy(x => Math.Round(x.Note.StemX!.Value / (averageSpace * .12)))
+                .OrderBy(x => x.Average(y => y.Note.StemX!.Value))
+                .ToList();
 
-                        var baseDuration = DurationForType(note.Type ?? "eighth", config.Divisions);
-                        note.Duration = note.Dotted ? baseDuration * 3 / 2 : baseDuration;
-                    }
+            if (stemGroups.Count < 2) continue;
+
+            for (var i = 0; i < stemGroups.Count; i++)
+            {
+                var beamValue = i == 0 ? "begin" : i == stemGroups.Count - 1 ? "end" : "continue";
+                foreach (var member in stemGroups[i])
+                {
+                    var note = member.Note;
+                    note.BeamCount = Math.Max(1, note.BeamCount);
+                    note.BeamValue = beamValue;
+
+                    // This pass restores only the primary beam. Never downgrade a note that
+                    // already has a secondary beam level.
+                    if (note.BeamCount == 1)
+                        note.Type = "eighth";
+
+                    var baseDuration = DurationForType(note.Type ?? "eighth", config.Divisions);
+                    note.Duration = note.Dotted ? baseDuration * 3 / 2 : baseDuration;
                 }
             }
         }
     }
 
-    private static bool ReachesBeam(RecognizedEvent note, SvgLineSegment stem, BeamModel beam, Staff staff)
+    private static bool ReachesBeam(
+        RecognizedEvent note,
+        SvgLineSegment stem,
+        BeamModel beam,
+        double staffSpace)
     {
         var x = note.StemX!.Value;
         var expectedY = beam.YAt(Math.Clamp(x, beam.Left, beam.Right));
 
-        // Stem-up notes meet the beam at their top end; stem-down notes meet it at their bottom end.
-        // If direction is unavailable, use whichever end is closer to the fitted beam line.
-        var stemEndY = note.StemDirection switch
+        // Prefer the known musical stem direction, but accept whichever end physically reaches
+        // the beam if the provisional direction/staff assignment was wrong. This is important for
+        // passages that travel between the two staves of a grand staff.
+        var preferredEndY = note.StemDirection switch
         {
             "up" => stem.Top,
             "down" => stem.Bottom,
             _ => Math.Abs(stem.Top - expectedY) <= Math.Abs(stem.Bottom - expectedY) ? stem.Top : stem.Bottom
         };
+        var nearestEndY = Math.Abs(stem.Top - expectedY) <= Math.Abs(stem.Bottom - expectedY)
+            ? stem.Top
+            : stem.Bottom;
 
-        var tolerance = Math.Max(staff.Space * .70, beam.Thickness * 1.8);
-        return Math.Abs(stemEndY - expectedY) <= tolerance;
+        var tolerance = Math.Max(staffSpace * .75, beam.Thickness * 2.0);
+        return Math.Abs(preferredEndY - expectedY) <= tolerance ||
+               Math.Abs(nearestEndY - expectedY) <= tolerance;
     }
 
     private static List<BeamModel> FindBeamModels(AnalysisResult analysis)
@@ -122,8 +133,6 @@ public sealed class SlopedBeamCoverageResolver
             var thickness = area / Math.Max(longAxis, .001);
             if (thickness < staff.Space * .05 || thickness > staff.Space * .55) continue;
 
-            // Least-squares fit through all contour points. Because a beam is a thin strip,
-            // fitting all points yields its centreline and is insensitive to small endpoint gaps.
             var meanX = points.Average(p => p.X);
             var meanY = points.Average(p => p.Y);
             var denominator = points.Sum(p => (p.X - meanX) * (p.X - meanX));
@@ -137,12 +146,16 @@ public sealed class SlopedBeamCoverageResolver
         return result;
     }
 
-    private static SvgLineSegment? FindStem(AnalysisResult analysis, RecognizedEvent note, Staff staff) =>
+    private static SvgLineSegment? FindStem(
+        AnalysisResult analysis,
+        RecognizedEvent note,
+        double staffSpace) =>
         analysis.LineSegments
-            .Where(x => Math.Abs(x.CenterX - note.StemX!.Value) <= staff.Space * .14)
-            .Where(x => x.Height >= staff.Space * 1.25 && x.Height <= staff.Space * 7.0)
-            .Where(x => x.Top <= note.Y + staff.Space * .75 && x.Bottom >= note.Y - staff.Space * .75)
+            .Where(x => Math.Abs(x.CenterX - note.StemX!.Value) <= staffSpace * .16)
+            .Where(x => x.Height >= staffSpace * 1.15 && x.Height <= staffSpace * 8.0)
+            .Where(x => x.Top <= note.Y + staffSpace * .85 && x.Bottom >= note.Y - staffSpace * .85)
             .OrderBy(x => Math.Abs(x.CenterX - note.StemX!.Value))
+            .ThenBy(x => Math.Abs(x.CenterY - note.Y))
             .FirstOrDefault();
 
     private static double PolygonArea(IReadOnlyList<PointD> contour)
