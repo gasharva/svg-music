@@ -53,6 +53,9 @@ public sealed class ConversionPipeline
         analysis.LineSegments.AddRange(lineSegments);
 
         new MusicGeometryRelationResolver().Resolve(analysis, config);
+        // Reattach written accidentals after staff ownership/pitch/chords are final. In close
+        // intervals noteheads are displaced horizontally, so staff-position (Y) must outrank X.
+        new AccidentalGeometryResolver().Resolve(analysis, config);
         // Augmentation dots belong to the whole rhythmic chord. A single SVG dot can be
         // associated with only one notehead by the symbol recognizer, so normalize the
         // shared-stem chord before any MusicXML is written.
@@ -93,6 +96,9 @@ public sealed class ConversionPipeline
         // MusicXmlWriter emits the primary beam. Add beam level 2 after voice ordering, so
         // isolated secondary hooks become forward/backward hooks and adjacent 16ths connect.
         new MusicXmlSecondaryBeamPostProcessor().Apply(musicXmlPath);
+        // A written accidental changes pitch spelling for later equal pitches on the same staff
+        // until the barline, but the accidental glyph itself is not repeated.
+        new MusicXmlAccidentalStatePostProcessor().Apply(musicXmlPath);
         result.Performance.WriteMusicXmlMs = watch.Elapsed.TotalMilliseconds;
         result.Performance.TotalMs += result.Performance.WriteMusicXmlMs;
 
