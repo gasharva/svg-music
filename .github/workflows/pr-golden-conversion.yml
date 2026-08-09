@@ -1,0 +1,65 @@
+name: PR golden conversion
+
+on:
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  golden-conversion:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Run tests
+        run: dotnet test --configuration Release --no-build
+
+      - name: Convert golden SVG
+        run: |
+          mkdir -p artifacts
+          dotnet run --project SvgToMusicXmlPoc.csproj --configuration Release --no-build -- \
+            convert \
+            Golden/yellow-leaves-giya-kancheli.svg \
+            References/catalog.json \
+            artifacts/yellow-leaves.musicxml
+
+      - name: List generated files
+        run: ls -lah artifacts
+
+      - name: Upload MuseScore-ready MusicXML
+        uses: actions/upload-artifact@v4
+        with:
+          name: yellow-leaves-pr-${{ github.event.pull_request.number || github.run_number }}
+          path: |
+            artifacts/yellow-leaves.musicxml
+            artifacts/yellow-leaves.analysis.json
+            artifacts/yellow-leaves.classification.json
+            artifacts/yellow-leaves.performance.json
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Add download hint to workflow summary
+        run: |
+          {
+            echo '## Golden conversion'
+            echo
+            echo 'The workflow generated `yellow-leaves.musicxml` from `Golden/yellow-leaves-giya-kancheli.svg`.'
+            echo
+            echo 'Download the **yellow-leaves-pr-…** artifact from the Artifacts section of this workflow run, unzip it, and open `yellow-leaves.musicxml` in MuseScore.'
+          } >> "$GITHUB_STEP_SUMMARY"
