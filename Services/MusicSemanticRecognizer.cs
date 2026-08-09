@@ -17,9 +17,9 @@ public sealed class MusicSemanticRecognizer
         foreach (var use in uses)
         {
             if (!bySymbol.TryGetValue(use.SymbolId, out var cls)) continue;
+            var isNotehead = cls.Kind.StartsWith("notehead-", StringComparison.OrdinalIgnoreCase);
             var noteheadThreshold = config.MinClassificationScore * 0.55;
-            var requiredScore = cls.Kind.StartsWith("notehead-", StringComparison.OrdinalIgnoreCase)
-                ? noteheadThreshold : config.MinClassificationScore;
+            var requiredScore = isNotehead ? noteheadThreshold : config.MinClassificationScore;
             if (cls.Score < requiredScore)
             {
                 warnings.Add($"Низкая уверенность: #{use.SymbolId} -> {cls.ReferenceId}, score={cls.Score:F3}");
@@ -27,7 +27,10 @@ public sealed class MusicSemanticRecognizer
             }
 
             var staff = FindStaff(use, staves, config.MaxSymbolDistanceInSpaces);
-            if (staff is null) continue;
+            // A recognized notehead must never be discarded merely because it is far above/below
+            // a staff. GeometryRelationResolver will attach it to a stem and assign the staff later.
+            if (staff is null && !isNotehead) continue;
+
             instances.Add(new RecognizedEvent
             {
                 SourceSymbolId = use.SymbolId,
@@ -36,7 +39,7 @@ public sealed class MusicSemanticRecognizer
                 Confidence = cls.Score,
                 X = use.X,
                 Y = use.Y,
-                StaffIndex = staff.Index
+                StaffIndex = staff?.Index ?? -1
             });
         }
 
@@ -46,9 +49,12 @@ public sealed class MusicSemanticRecognizer
         {
             if (item.Kind.StartsWith("notehead-", StringComparison.OrdinalIgnoreCase))
             {
-                var staff = staves[item.StaffIndex];
-                var clef = clefs.GetValueOrDefault(item.StaffIndex) ?? DefaultClef(config);
-                SetPitch(item, staff, clef);
+                if (item.StaffIndex >= 0 && item.StaffIndex < staves.Count)
+                {
+                    var staff = staves[item.StaffIndex];
+                    var clef = clefs.GetValueOrDefault(item.StaffIndex) ?? DefaultClef(config);
+                    SetPitch(item, staff, clef);
+                }
                 SetNoteDuration(item, config);
                 events.Add(item);
             }
@@ -164,7 +170,7 @@ public sealed class MusicSemanticRecognizer
             })
             .Where(x => x.Staff is not null).ToList();
 
-        foreach (var note in events.Where(x => x.Kind == "notehead-black"))
+        foreach (var note in events.Where(x => x.Kind == "notehead-black" && x.StaffIndex >= 0 && x.StaffIndex < staves.Count))
         {
             var staff = staves[note.StaffIndex];
             var touching = beamCandidates.Count(beam => beam.Staff!.Index == note.StaffIndex &&
@@ -181,6 +187,7 @@ public sealed class MusicSemanticRecognizer
     {
         foreach (var accidental in instances.Where(x => x.Kind.StartsWith("accidental-", StringComparison.OrdinalIgnoreCase)))
         {
+            if (accidental.StaffIndex < 0 || accidental.StaffIndex >= staves.Count) continue;
             var staff = staves[accidental.StaffIndex];
             var note = events.Where(x => x.StaffIndex == accidental.StaffIndex && x.Step is not null && x.X > accidental.X)
                 .Where(x => x.X - accidental.X <= staff.Space * config.MaxAttachmentDistanceInSpaces)
@@ -201,6 +208,7 @@ public sealed class MusicSemanticRecognizer
     {
         foreach (var dot in instances.Where(x => x.Kind == "augmentation-dot"))
         {
+            if (dot.StaffIndex < 0 || dot.StaffIndex >= staves.Count) continue;
             var staff = staves[dot.StaffIndex];
             var target = events.Where(x => x.StaffIndex == dot.StaffIndex && (x.Step is not null || x.Kind.StartsWith("rest-")))
                 .Where(x => x.X < dot.X && dot.X - x.X <= staff.Space * config.MaxAttachmentDistanceInSpaces)
@@ -213,7 +221,7 @@ public sealed class MusicSemanticRecognizer
 
     private static void MarkChords(IReadOnlyList<RecognizedEvent> events, IReadOnlyList<Staff> staves)
     {
-        foreach (var group in events.Where(x => x.Step is not null).GroupBy(x => x.StaffIndex))
+        foreach (var group in events.Where(x => x.Step is not null && x.StaffIndex >= 0 && x.StaffIndex < staves.Count).GroupBy(x => x.StaffIndex))
         {
             var tolerance = staves[group.Key].Space * .72;
             var clusters = new List<List<RecognizedEvent>>();
