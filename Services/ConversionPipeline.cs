@@ -78,6 +78,7 @@ public sealed class ConversionPipeline
         var watch = Stopwatch.StartNew();
         new MusicXmlWriter().Write(musicXmlPath, result.Analysis, config);
         new MusicXmlStemPostProcessor().Apply(musicXmlPath, result.Analysis);
+        new MusicXmlPolyphonyPostProcessor().Apply(musicXmlPath, result.Analysis);
         result.Performance.WriteMusicXmlMs = watch.Elapsed.TotalMilliseconds;
         result.Performance.TotalMs += result.Performance.WriteMusicXmlMs;
 
