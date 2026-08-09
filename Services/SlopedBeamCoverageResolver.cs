@@ -29,14 +29,16 @@ public sealed class SlopedBeamCoverageResolver
 
         foreach (var beam in FindBeamModels(analysis))
         {
-            // Important: do NOT split the candidates by StaffIndex. A single engraved beam can
-            // connect notes whose heads/stems have been provisionally assigned to different staves.
-            // The physical beam is a stronger relationship than that provisional assignment.
-            var members = analysis.Events
+            var blackNotes = analysis.Events
                 .Where(x => x.Kind.Equals("notehead-black", StringComparison.OrdinalIgnoreCase))
+                .Where(x => EffectiveX(x) >= beam.Left - averageSpace * .35 &&
+                            EffectiveX(x) <= beam.Right + averageSpace * .35)
+                .ToList();
+
+            // First collect the strongest evidence: notes for which we can recover an actual stem
+            // and one end of that stem reaches the fitted beam line.
+            var verified = blackNotes
                 .Where(x => x.StemX.HasValue)
-                .Where(x => x.StemX!.Value >= beam.Left - averageSpace * .35 &&
-                            x.StemX.Value <= beam.Right + averageSpace * .35)
                 .Select(note => new
                 {
                     Note = note,
@@ -44,12 +46,20 @@ public sealed class SlopedBeamCoverageResolver
                 })
                 .Where(x => x.Stem is not null)
                 .Where(x => ReachesBeam(x.Note, x.Stem!, beam, averageSpace))
-                .OrderBy(x => x.Note.StemX)
+                .Select(x => x.Note)
+                .ToList();
+
+            // Some exporters/paths do not expose every visible stem as a usable LineSegment.
+            // Do not let that truncate an otherwise obvious continuous beam. Once at least two
+            // stem-confirmed members establish a beam group, use their head-to-beam geometry as
+            // a local template and recover matching black noteheads directly.
+            var members = RecoverByNoteheadGeometry(blackNotes, verified, beam, averageSpace)
+                .OrderBy(EffectiveX)
                 .ToList();
 
             var stemGroups = members
-                .GroupBy(x => Math.Round(x.Note.StemX!.Value / (averageSpace * .12)))
-                .OrderBy(x => x.Average(y => y.Note.StemX!.Value))
+                .GroupBy(x => Math.Round(EffectiveX(x) / (averageSpace * .12)))
+                .OrderBy(x => x.Average(EffectiveX))
                 .ToList();
 
             if (stemGroups.Count < 2) continue;
@@ -57,9 +67,8 @@ public sealed class SlopedBeamCoverageResolver
             for (var i = 0; i < stemGroups.Count; i++)
             {
                 var beamValue = i == 0 ? "begin" : i == stemGroups.Count - 1 ? "end" : "continue";
-                foreach (var member in stemGroups[i])
+                foreach (var note in stemGroups[i])
                 {
-                    var note = member.Note;
                     note.BeamCount = Math.Max(1, note.BeamCount);
                     note.BeamValue = beamValue;
 
@@ -74,6 +83,59 @@ public sealed class SlopedBeamCoverageResolver
             }
         }
     }
+
+    private static IReadOnlyList<RecognizedEvent> RecoverByNoteheadGeometry(
+        IReadOnlyList<RecognizedEvent> candidates,
+        IReadOnlyList<RecognizedEvent> verified,
+        BeamModel beam,
+        double staffSpace)
+    {
+        if (verified.Count < 2)
+            return verified;
+
+        var verifiedSet = verified.ToHashSet();
+        var offsets = verified
+            .Select(note => note.Y - beam.YAt(Math.Clamp(EffectiveX(note), beam.Left, beam.Right)))
+            .ToArray();
+
+        // A real beam group has all noteheads on the same side of the beam. Median is robust to
+        // one imperfectly attached head/stem and also tells us whether the beam is above or below.
+        var orderedOffsets = offsets.OrderBy(x => x).ToArray();
+        var medianOffset = orderedOffsets[orderedOffsets.Length / 2];
+        var side = Math.Sign(medianOffset);
+        if (side == 0) side = Math.Sign(offsets.Average());
+        if (side == 0) return verified;
+
+        var verifiedDistances = offsets.Select(Math.Abs).ToArray();
+        var maxVerifiedDistance = verifiedDistances.Max();
+        var minVerifiedDistance = verifiedDistances.Min();
+
+        // Missing stems should have roughly the same engraving relation to this beam as the
+        // confirmed members. Give a little room for a rising/falling melodic contour, but keep a
+        // hard ceiling so black notes in the other staff are not swallowed by this beam.
+        var maxDistance = Math.Min(staffSpace * 6.5, maxVerifiedDistance + staffSpace * 1.75);
+        var minDistance = Math.Max(0, minVerifiedDistance - staffSpace * 1.25);
+
+        var result = new List<RecognizedEvent>(verified);
+        foreach (var note in candidates)
+        {
+            if (verifiedSet.Contains(note)) continue;
+
+            var x = EffectiveX(note);
+            var offset = note.Y - beam.YAt(Math.Clamp(x, beam.Left, beam.Right));
+            var noteSide = Math.Sign(offset);
+            var distance = Math.Abs(offset);
+
+            if (noteSide != side) continue;
+            if (distance < minDistance || distance > maxDistance) continue;
+
+            result.Add(note);
+        }
+
+        return result;
+    }
+
+    private static double EffectiveX(RecognizedEvent note) => note.StemX ?? note.X;
 
     private static bool ReachesBeam(
         RecognizedEvent note,
