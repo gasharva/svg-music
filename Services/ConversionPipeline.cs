@@ -52,8 +52,6 @@ public sealed class ConversionPipeline
         analysis.DirectPaths.AddRange(directPaths);
         analysis.LineSegments.AddRange(lineSegments);
 
-        // Relationship reconstruction deliberately runs after symbol recognition and uses
-        // only raw geometry. This keeps CLI and tests on exactly the same conversion path.
         new MusicGeometryRelationResolver().Resolve(analysis, config);
 
         performance.RecognizeSemanticsMs = watch.Elapsed.TotalMilliseconds;
@@ -78,7 +76,9 @@ public sealed class ConversionPipeline
         var watch = Stopwatch.StartNew();
         new MusicXmlWriter().Write(musicXmlPath, result.Analysis, config);
         new MusicXmlStemPostProcessor().Apply(musicXmlPath, result.Analysis);
-        new MusicXmlPolyphonyPostProcessor().Apply(musicXmlPath, result.Analysis);
+        // Render each detected voice as a complete lane. Do not serialize one simultaneous
+        // onset at a time: that can move continuation notes behind a long parallel chord.
+        new MusicXmlVoiceLayoutPostProcessor().Apply(musicXmlPath, result.Analysis);
         result.Performance.WriteMusicXmlMs = watch.Elapsed.TotalMilliseconds;
         result.Performance.TotalMs += result.Performance.WriteMusicXmlMs;
 
