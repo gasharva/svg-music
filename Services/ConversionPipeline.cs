@@ -99,6 +99,9 @@ public sealed class ConversionPipeline
         // Render each detected voice as a complete lane. Do not serialize one simultaneous
         // onset at a time: that can move continuation notes behind a long parallel chord.
         new MusicXmlVoiceLayoutPostProcessor().Apply(musicXmlPath, result.Analysis);
+        // If the first voice pass left opposite-stem notes and a rest in one voice, use occupied
+        // onset geometry to recover the missing parallel voice before later notation passes.
+        new MusicXmlRestVoiceConflictPostProcessor().Apply(musicXmlPath);
         // MusicXmlWriter emits the primary beam. Add beam level 2 after voice ordering, so
         // isolated secondary hooks become forward/backward hooks and adjacent 16ths connect.
         new MusicXmlSecondaryBeamPostProcessor().Apply(musicXmlPath);
