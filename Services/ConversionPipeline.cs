@@ -102,6 +102,9 @@ public sealed class ConversionPipeline
         // If the first voice pass left opposite-stem notes and a rest in one voice, use occupied
         // onset geometry to recover the missing parallel voice before later notation passes.
         new MusicXmlRestVoiceConflictPostProcessor().Apply(musicXmlPath);
+        // MusicXmlWriter emits clef attributes at the first measure of every detected SVG staff
+        // system. Preserve those source line breaks so MuseScore does not repack measures.
+        new MusicXmlSystemBreakPostProcessor().Apply(musicXmlPath);
         // MusicXmlWriter emits the primary beam. Add beam level 2 after voice ordering, so
         // isolated secondary hooks become forward/backward hooks and adjacent 16ths connect.
         new MusicXmlSecondaryBeamPostProcessor().Apply(musicXmlPath);
