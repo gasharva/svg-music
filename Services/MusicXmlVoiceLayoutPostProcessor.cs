@@ -22,6 +22,14 @@ public sealed class MusicXmlVoiceLayoutPostProcessor
         public string? StemDirection => Notes.Select(x => x.Event.StemDirection)
             .FirstOrDefault(x => !string.IsNullOrWhiteSpace(x));
         public int Duration => Math.Max(0, Notes[0].Event.Duration);
+        public bool IsRest => Notes.All(x => x.Event.Kind.StartsWith("rest-", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private sealed class VoiceLane(int key, IEnumerable<ChordUnit> units)
+    {
+        public int Key { get; } = key;
+        public List<ChordUnit> Units { get; } = units.ToList();
+        public int Duration => Units.Sum(x => x.Duration);
     }
 
     public void Apply(string path, AnalysisResult analysis)
@@ -37,9 +45,16 @@ public sealed class MusicXmlVoiceLayoutPostProcessor
                 .OrderBy(x => x.X)
                 .ThenByDescending(x => x.Y)));
 
+        var currentDivisions = 1;
+        var currentBeats = 4;
+        var currentBeatType = 4;
         var groupIndex = -1;
+
         foreach (var measure in document.Descendants("measure"))
         {
+            UpdateTiming(measure, ref currentDivisions, ref currentBeats, ref currentBeatType);
+            var measureDuration = Math.Max(1, currentBeats * currentDivisions * 4 / Math.Max(1, currentBeatType));
+
             var startsSystem = measure.Elements("attributes").Elements("clef").Any();
             if (startsSystem) groupIndex++;
             if (groupIndex < 0) groupIndex = 0;
@@ -72,12 +87,26 @@ public sealed class MusicXmlVoiceLayoutPostProcessor
                     measure.Add(new XElement("backup", new XElement("duration", cursorFromMeasureStart)));
 
                 var units = BuildChordUnits(bindings, staff.Space);
-                var polyphonic = HasSimultaneousOppositeStemUnits(units, staff.Space);
+                var soundingUnits = units.Where(x => !x.IsRest).ToList();
+                var restUnits = units.Where(x => x.IsRest).ToList();
+                var polyphonic = HasSimultaneousOppositeStemUnits(soundingUnits, staff.Space);
                 var baseVoice = (staffNumber - 1) * 2 + 1;
 
-                var lanes = polyphonic
-                    ? units.GroupBy(x => x.StemDirection == "down" ? 1 : 0).OrderBy(x => x.Key).ToList()
-                    : new List<IGrouping<int, ChordUnit>> { new SimpleGrouping<int, ChordUnit>(0, units) };
+                List<VoiceLane> lanes;
+                if (polyphonic)
+                {
+                    lanes = soundingUnits
+                        .GroupBy(x => x.StemDirection == "down" ? 1 : 0)
+                        .OrderBy(x => x.Key)
+                        .Select(x => new VoiceLane(x.Key, x))
+                        .ToList();
+
+                    AssignRestsToLanes(lanes, restUnits, measureDuration);
+                }
+                else
+                {
+                    lanes = [new VoiceLane(0, units)];
+                }
 
                 var lastLaneDuration = 0;
                 for (var laneIndex = 0; laneIndex < lanes.Count; laneIndex++)
@@ -85,7 +114,7 @@ public sealed class MusicXmlVoiceLayoutPostProcessor
                     if (laneIndex > 0 && lastLaneDuration > 0)
                         measure.Add(new XElement("backup", new XElement("duration", lastLaneDuration)));
 
-                    var lane = lanes[laneIndex].OrderBy(x => x.X).ToList();
+                    var lane = lanes[laneIndex].Units.OrderBy(x => x.X).ToList();
                     var voice = baseVoice + lanes[laneIndex].Key;
                     foreach (var unit in lane)
                         RenderUnit(measure, unit, voice);
@@ -98,6 +127,62 @@ public sealed class MusicXmlVoiceLayoutPostProcessor
         }
 
         document.Save(path);
+    }
+
+    private static void AssignRestsToLanes(
+        IReadOnlyList<VoiceLane> lanes,
+        IReadOnlyList<ChordUnit> rests,
+        int measureDuration)
+    {
+        if (rests.Count == 0 || lanes.Count == 0) return;
+
+        foreach (var rest in rests.OrderBy(x => x.X))
+        {
+            var best = lanes
+                .Select(lane => new
+                {
+                    Lane = lane,
+                    NewDuration = lane.Duration + rest.Duration,
+                    Exact = lane.Duration + rest.Duration == measureDuration,
+                    Overshoot = Math.Max(0, lane.Duration + rest.Duration - measureDuration),
+                    Remaining = Math.Abs(measureDuration - (lane.Duration + rest.Duration)),
+                    XDistance = lane.Units.Count == 0
+                        ? double.MaxValue
+                        : lane.Units.Min(x => Math.Abs(x.X - rest.X))
+                })
+                // A rest that makes one voice exactly fill the measure is the strongest evidence.
+                // Otherwise prefer a non-overflowing voice with the smallest remaining duration;
+                // engraving X is only a final tie-breaker.
+                .OrderByDescending(x => x.Exact)
+                .ThenBy(x => x.Overshoot > 0)
+                .ThenBy(x => x.Remaining)
+                .ThenBy(x => x.XDistance)
+                .First();
+
+            best.Lane.Units.Add(rest);
+        }
+    }
+
+    private static void UpdateTiming(
+        XElement measure,
+        ref int divisions,
+        ref int beats,
+        ref int beatType)
+    {
+        var attributes = measure.Element("attributes");
+        if (attributes is null) return;
+
+        var newDivisions = (int?)attributes.Element("divisions");
+        if (newDivisions.HasValue && newDivisions.Value > 0)
+            divisions = newDivisions.Value;
+
+        var time = attributes.Element("time");
+        if (time is null) return;
+
+        var newBeats = (int?)time.Element("beats");
+        var newBeatType = (int?)time.Element("beat-type");
+        if (newBeats.HasValue && newBeats.Value > 0) beats = newBeats.Value;
+        if (newBeatType.HasValue && newBeatType.Value > 0) beatType = newBeatType.Value;
     }
 
     private static List<ChordUnit> BuildChordUnits(IReadOnlyList<NoteBinding> bindings, double staffSpace)
@@ -154,6 +239,8 @@ public sealed class MusicXmlVoiceLayoutPostProcessor
 
     private static void NormalizeChordMarkup(ChordUnit unit)
     {
+        if (unit.IsRest) return;
+
         var ordered = unit.Notes.OrderByDescending(x => x.Event.Y).ToList();
         unit.Notes.Clear();
         unit.Notes.AddRange(ordered);
@@ -205,12 +292,5 @@ public sealed class MusicXmlVoiceLayoutPostProcessor
         for (var i = 0; i < staves.Count; i += 2)
             result.Add(i + 1 < staves.Count ? [staves[i], staves[i + 1]] : [staves[i]]);
         return result;
-    }
-
-    private sealed class SimpleGrouping<TKey, TElement>(TKey key, IEnumerable<TElement> elements) : IGrouping<TKey, TElement>
-    {
-        public TKey Key { get; } = key;
-        public IEnumerator<TElement> GetEnumerator() => elements.GetEnumerator();
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }
