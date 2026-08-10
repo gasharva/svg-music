@@ -4,10 +4,10 @@ using System.Xml.Linq;
 namespace SvgToMusicXmlPoc.Services;
 
 /// <summary>
-/// Repairs a specific ambiguity left after geometric voice reconstruction: a staff may still be
-/// serialized as one voice even though it contains opposite stem directions and a rest that is
-/// vertically aligned with a sounding event. In that case the rest cannot occupy the already
-/// occupied onset and therefore belongs to the parallel voice.
+/// Repairs voice reconstruction left after the first layout pass. If a staff is still serialized
+/// as one voice but contains sounding events with both stem directions, that alone is sufficient
+/// evidence for two parallel voices. Rests are assigned afterwards by onset occupancy, with
+/// measure-duration fitting only as a fallback.
 /// </summary>
 public sealed class MusicXmlRestVoiceConflictPostProcessor
 {
@@ -66,10 +66,10 @@ public sealed class MusicXmlRestVoiceConflictPostProcessor
                 var hasUp = sounding.Any(x => x.StemDirection == "up");
                 var hasDown = sounding.Any(x => x.StemDirection == "down");
 
-                // Do not second-guess already explicit polyphony. This pass only repairs the case
-                // where all events were incorrectly serialized into one voice.
-                if (voices.Count == 1 && rests.Count > 0 && hasUp && hasDown &&
-                    HasRestOnsetConflict(rests, sounding))
+                // Opposite stem directions on the same staff are already sufficient evidence
+                // of parallel voices. Do not require a rest, X proximity, or a perfect duration
+                // sum before creating the two lanes.
+                if (voices.Count == 1 && hasUp && hasDown)
                 {
                     var baseVoice = (staffGroup.Key - 1) * 2 + 1;
                     var upLane = new Lane(baseVoice);
@@ -134,36 +134,20 @@ public sealed class MusicXmlRestVoiceConflictPostProcessor
         document.Save(path);
     }
 
-    private static bool HasRestOnsetConflict(IReadOnlyList<Unit> rests, IReadOnlyList<Unit> sounding)
-    {
-        foreach (var rest in rests)
-        {
-            if (double.IsNaN(rest.X)) continue;
-
-            // MusicXmlSvgLayoutPostProcessor writes roughly 10 tenths per staff space. A rest and
-            // an event within ~1.35 spaces are considered the same engraved onset column.
-            if (sounding.Any(note => !double.IsNaN(note.X) && Math.Abs(note.X - rest.X) <= 13.5))
-                return true;
-        }
-
-        return false;
-    }
-
     private static void AssignRest(Unit rest, Lane upLane, Lane downLane, int measureDuration)
     {
         var upOccupied = OccupiesOnset(upLane, rest);
         var downOccupied = OccupiesOnset(downLane, rest);
 
-        // Strongest rule: one lane already has a sounding event at this engraved onset and the
-        // other does not. The rest necessarily belongs to the unoccupied lane, regardless of
-        // imperfect recognized durations.
+        // Strongest rule: if only one voice already has a sounding event at this engraved onset,
+        // the rest belongs to the other voice regardless of imperfect recognized durations.
         if (upOccupied != downOccupied)
         {
             (upOccupied ? downLane : upLane).Units.Add(rest);
             return;
         }
 
-        // Secondary rule: use measure filling when onset geometry is ambiguous.
+        // Secondary rule: use measure filling only when onset occupancy is ambiguous.
         var upAfter = upLane.Duration + rest.Duration;
         var downAfter = downLane.Duration + rest.Duration;
         var upExact = upAfter == measureDuration;
