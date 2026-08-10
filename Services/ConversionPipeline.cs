@@ -70,6 +70,9 @@ public sealed class ConversionPipeline
         // filtered out by the general beam detector. Detect that second beam level separately
         // and also restore dotted duration after beam-derived note types are assigned.
         new BeamHookRhythmResolver().Resolve(analysis, config);
+        // Standalone flags are compact SMuFL glyphs attached to a free stem end rather than
+        // beams. Reuse the normal classifier and attach flag8th/flag16th/... geometrically.
+        new StandaloneFlagRhythmResolver().Resolve(analysis, config);
 
         performance.RecognizeSemanticsMs = watch.Elapsed.TotalMilliseconds;
         performance.TotalMs = total.Elapsed.TotalMilliseconds;
