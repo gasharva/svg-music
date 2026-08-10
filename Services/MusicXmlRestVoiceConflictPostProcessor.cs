@@ -7,10 +7,13 @@ namespace SvgToMusicXmlPoc.Services;
 /// Repairs voice reconstruction left after the first layout pass. If a staff is still serialized
 /// as one voice but contains sounding events with both stem directions, that alone is sufficient
 /// evidence for two parallel voices. Rests are assigned afterwards by onset occupancy, with
-/// measure-duration fitting only as a fallback.
+/// measure-duration fitting only as a fallback. A reconstructed voice may start later than the
+/// beginning of the measure; its start offset is inferred from the engraved X ordering.
 /// </summary>
 public sealed class MusicXmlRestVoiceConflictPostProcessor
 {
+    private const double OnsetXTolerance = 13.5;
+
     private sealed class Unit
     {
         public List<XElement> Notes { get; } = [];
@@ -32,6 +35,13 @@ public sealed class MusicXmlRestVoiceConflictPostProcessor
         public int Voice { get; } = voice;
         public List<Unit> Units { get; } = [];
         public int Duration => Units.Sum(x => x.Duration);
+        public int StartOffset { get; set; }
+        public int EndPosition => StartOffset + Duration;
+        public double FirstX => Units
+            .Select(x => x.X)
+            .Where(x => !double.IsNaN(x))
+            .DefaultIfEmpty(double.NaN)
+            .Min();
     }
 
     public void Apply(string path)
@@ -66,9 +76,9 @@ public sealed class MusicXmlRestVoiceConflictPostProcessor
                 var hasUp = sounding.Any(x => x.StemDirection == "up");
                 var hasDown = sounding.Any(x => x.StemDirection == "down");
 
-                // Opposite stem directions on the same staff are already sufficient evidence
-                // of parallel voices. Do not require a rest, X proximity, or a perfect duration
-                // sum before creating the two lanes.
+                // Opposite stem directions on the same staff are sufficient evidence of parallel
+                // voices. The voices do NOT have to start at the same time; their start offsets are
+                // reconstructed below from the original engraved horizontal ordering.
                 if (voices.Count == 1 && hasUp && hasDown)
                 {
                     var baseVoice = (staffGroup.Key - 1) * 2 + 1;
@@ -84,7 +94,9 @@ public sealed class MusicXmlRestVoiceConflictPostProcessor
                     foreach (var rest in rests.OrderBy(x => x.X))
                         AssignRest(rest, upLane, downLane, measureDuration);
 
-                    staffLayouts.Add([upLane, downLane]);
+                    var repaired = new List<Lane> { upLane, downLane };
+                    InferLaneStartOffsets(repaired);
+                    staffLayouts.Add(repaired);
                     changed = true;
                 }
                 else
@@ -114,24 +126,64 @@ public sealed class MusicXmlRestVoiceConflictPostProcessor
                 if (cursor > 0)
                     measure.Add(new XElement("backup", new XElement("duration", cursor)));
 
-                var previousLaneDuration = 0;
+                var previousLaneEnd = 0;
                 for (var laneIndex = 0; laneIndex < lanes.Count; laneIndex++)
                 {
                     var lane = lanes[laneIndex];
-                    if (laneIndex > 0 && previousLaneDuration > 0)
-                        measure.Add(new XElement("backup", new XElement("duration", previousLaneDuration)));
+                    if (laneIndex > 0 && previousLaneEnd > 0)
+                        measure.Add(new XElement("backup", new XElement("duration", previousLaneEnd)));
+
+                    if (lane.StartOffset > 0)
+                        measure.Add(new XElement("forward", new XElement("duration", lane.StartOffset)));
 
                     foreach (var unit in lane.Units.OrderBy(x => double.IsNaN(x.X) ? double.MaxValue : x.X))
                         RenderUnit(measure, unit, lane.Voice);
 
-                    previousLaneDuration = lane.Duration;
+                    previousLaneEnd = lane.EndPosition;
                 }
 
-                cursor = previousLaneDuration;
+                // At this point the MusicXML cursor is at the end of the last rendered lane.
+                cursor = previousLaneEnd;
             }
         }
 
         document.Save(path);
+    }
+
+    /// <summary>
+    /// When two reconstructed voices start at different engraved X positions, the later voice
+    /// must not be forced to measure time zero. Use the earliest lane as a temporal ruler and sum
+    /// the durations of its events that are clearly to the left of the later lane's first onset.
+    /// Events in the same X/onset column (within tolerance) contribute no offset.
+    /// </summary>
+    private static void InferLaneStartOffsets(IReadOnlyList<Lane> lanes)
+    {
+        foreach (var lane in lanes) lane.StartOffset = 0;
+        if (lanes.Count < 2) return;
+
+        var ordered = lanes
+            .Where(x => !double.IsNaN(x.FirstX))
+            .OrderBy(x => x.FirstX)
+            .ToList();
+        if (ordered.Count < 2) return;
+
+        var reference = ordered[0];
+        reference.StartOffset = 0;
+
+        foreach (var lane in ordered.Skip(1))
+        {
+            var firstX = lane.FirstX;
+            if (firstX - reference.FirstX <= OnsetXTolerance)
+            {
+                lane.StartOffset = 0;
+                continue;
+            }
+
+            lane.StartOffset = reference.Units
+                .Where(x => !double.IsNaN(x.X) && x.X < firstX - OnsetXTolerance)
+                .OrderBy(x => x.X)
+                .Sum(x => x.Duration);
+        }
     }
 
     private static void AssignRest(Unit rest, Lane upLane, Lane downLane, int measureDuration)
@@ -167,7 +219,7 @@ public sealed class MusicXmlRestVoiceConflictPostProcessor
     {
         if (double.IsNaN(rest.X)) return false;
         return lane.Units.Any(unit =>
-            !unit.IsRest && !double.IsNaN(unit.X) && Math.Abs(unit.X - rest.X) <= 13.5);
+            !unit.IsRest && !double.IsNaN(unit.X) && Math.Abs(unit.X - rest.X) <= OnsetXTolerance);
     }
 
     private static List<Unit> BuildUnits(IReadOnlyList<XElement> notes)
