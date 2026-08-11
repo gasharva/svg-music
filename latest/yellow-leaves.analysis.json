@@ -11098,18 +11098,6 @@
       "MusicXmlValue": null
     },
     {
-      "SymbolId": "ae",
-      "Kind": "rest-longa",
-      "ReferenceId": "restLonga",
-      "Score": 0.8916933957116393,
-      "ShapeScore": 0.99873046875,
-      "SizeScore": 0.4635451035581958,
-      "WidthInSpaces": 0.43538613632001044,
-      "HeightInSpaces": 6.694932618192805,
-      "MusicXmlElement": "note/rest\u002Btype",
-      "MusicXmlValue": "long"
-    },
-    {
       "SymbolId": "af",
       "Kind": "smufl-unknown",
       "ReferenceId": "uniE11A",
