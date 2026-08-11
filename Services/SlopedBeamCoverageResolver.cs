@@ -31,8 +31,7 @@ public sealed class SlopedBeamCoverageResolver
         {
             var blackNotes = analysis.Events
                 .Where(x => x.Kind.Equals("notehead-black", StringComparison.OrdinalIgnoreCase))
-                .Where(x => EffectiveX(x) >= beam.Left - averageSpace * .35 &&
-                            EffectiveX(x) <= beam.Right + averageSpace * .35)
+                .Where(x => IsWithinBeamHorizontalRange(x, beam, averageSpace))
                 .ToList();
 
             // First collect the strongest evidence: notes for which we can recover an actual stem
@@ -84,6 +83,19 @@ public sealed class SlopedBeamCoverageResolver
         }
     }
 
+    private static bool IsWithinBeamHorizontalRange(RecognizedEvent note, BeamModel beam, double staffSpace)
+    {
+        var x = EffectiveX(note);
+
+        // When StemX is known, the physical stem should be almost exactly inside the beam span.
+        // For a note whose stem failed to parse, EffectiveX falls back to the notehead centre. A
+        // down/up stem sits at the notehead edge, so the head centre can legitimately fall roughly
+        // half a staff-space beyond the path endpoint. Give only those stemless candidates a wider
+        // horizontal margin; vertical beam-profile matching below still decides membership.
+        var margin = note.StemX.HasValue ? staffSpace * .35 : staffSpace * .95;
+        return x >= beam.Left - margin && x <= beam.Right + margin;
+    }
+
     private static IReadOnlyList<RecognizedEvent> RecoverByNoteheadGeometry(
         IReadOnlyList<RecognizedEvent> candidates,
         IReadOnlyList<RecognizedEvent> verified,
@@ -94,9 +106,14 @@ public sealed class SlopedBeamCoverageResolver
             return verified;
 
         var verifiedSet = verified.ToHashSet();
-        var offsets = verified
-            .Select(note => note.Y - beam.YAt(Math.Clamp(EffectiveX(note), beam.Left, beam.Right)))
+        var samples = verified
+            .Select(note => new
+            {
+                X = EffectiveX(note),
+                Offset = note.Y - beam.YAt(Math.Clamp(EffectiveX(note), beam.Left, beam.Right))
+            })
             .ToArray();
+        var offsets = samples.Select(x => x.Offset).ToArray();
 
         // A real beam group has all noteheads on the same side of the beam. Median is robust to
         // one imperfectly attached head/stem and also tells us whether the beam is above or below.
@@ -106,15 +123,39 @@ public sealed class SlopedBeamCoverageResolver
         if (side == 0) side = Math.Sign(offsets.Average());
         if (side == 0) return verified;
 
-        var verifiedDistances = offsets.Select(Math.Abs).ToArray();
-        var maxVerifiedDistance = verifiedDistances.Max();
-        var minVerifiedDistance = verifiedDistances.Min();
+        // Head-to-beam distance is not necessarily constant in a rising/falling passage. The last
+        // stem can be much shorter than the preceding stems, which made the old min/max envelope
+        // reject the tail note in Yellow Leaves measure 4. Fit the local offset trend instead and
+        // accept missing-stem heads that stay near that extrapolated engraving profile.
+        var meanX = samples.Average(x => x.X);
+        var meanOffset = samples.Average(x => x.Offset);
+        var denominator = samples.Sum(x => (x.X - meanX) * (x.X - meanX));
+        var offsetSlope = denominator <= .001
+            ? 0
+            : samples.Sum(x => (x.X - meanX) * (x.Offset - meanOffset)) / denominator;
+        var offsetIntercept = meanOffset - offsetSlope * meanX;
 
-        // Missing stems should have roughly the same engraving relation to this beam as the
-        // confirmed members. Give a little room for a rising/falling melodic contour, but keep a
-        // hard ceiling so black notes in the other staff are not swallowed by this beam.
-        var maxDistance = Math.Min(staffSpace * 6.5, maxVerifiedDistance + staffSpace * 1.75);
-        var minDistance = Math.Max(0, minVerifiedDistance - staffSpace * 1.25);
+        var verifiedResidual = samples
+            .Select(x => Math.Abs(x.Offset - (offsetSlope * x.X + offsetIntercept)))
+            .DefaultIfEmpty(0)
+            .Max();
+        var residualTolerance = Math.Min(
+            staffSpace * 2.5,
+            Math.Max(staffSpace * 1.35, verifiedResidual + staffSpace * 1.15));
+
+        // The side/profile tests are the primary guards. Keep only a generous final sanity cap.
+        // In the golden measure-4 run the missing D4 head is ~7.75 spaces from the beam centreline,
+        // while the previous 6.5-space cap rejected it even though the fitted profile predicts it.
+        var maxDistance = Math.Min(
+            staffSpace * 9.0,
+            offsets.Select(Math.Abs).Max() + staffSpace * 2.5);
+
+        var inferredDirection = verified
+            .Where(x => x.StemDirection is "up" or "down")
+            .GroupBy(x => x.StemDirection)
+            .OrderByDescending(x => x.Count())
+            .Select(x => x.Key)
+            .FirstOrDefault() ?? (side < 0 ? "down" : "up");
 
         var result = new List<RecognizedEvent>(verified);
         foreach (var note in candidates)
@@ -122,12 +163,17 @@ public sealed class SlopedBeamCoverageResolver
             if (verifiedSet.Contains(note)) continue;
 
             var x = EffectiveX(note);
-            var offset = note.Y - beam.YAt(Math.Clamp(x, beam.Left, beam.Right));
+            var beamX = Math.Clamp(x, beam.Left, beam.Right);
+            var offset = note.Y - beam.YAt(beamX);
             var noteSide = Math.Sign(offset);
-            var distance = Math.Abs(offset);
-
             if (noteSide != side) continue;
-            if (distance < minDistance || distance > maxDistance) continue;
+            if (Math.Abs(offset) > maxDistance) continue;
+
+            var expectedOffset = offsetSlope * x + offsetIntercept;
+            if (Math.Abs(offset - expectedOffset) > residualTolerance) continue;
+
+            if (note.StemDirection is not ("up" or "down"))
+                note.StemDirection = inferredDirection;
 
             result.Add(note);
         }
