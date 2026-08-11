@@ -4,7 +4,8 @@ namespace SvgToMusicXmlPoc.Services;
 
 /// <summary>
 /// Rebuilds curved-line semantics after pitch/chord reconstruction.
-/// A curve between equal pitches is a tie; a curve between different pitches is a slur.
+/// A curve between equal pitches is a tie only when the curve endpoints also terminate near those
+/// noteheads; a curve between different pitches (or a high arch anchored at stems) is a slur.
 /// Endpoint geometry is matched jointly so separate ties on chord tones do not collapse into
 /// one cross-pitch slur. SVG CSS classes are intentionally ignored.
 /// </summary>
@@ -75,8 +76,9 @@ public sealed class ArcSemanticsResolver
                     .Where(end => !ReferenceEquals(start, end))
                     .Select(end => BuildCandidate(start, end, arc, staff.Space)))
                 .Where(x => !usedPairs.Contains((x.Start, x.End)))
-                // A same-pitch pair gets a meaningful but bounded preference. Geometry still has
-                // to be locally plausible; this is what separates parallel chord ties from slurs.
+                // Same-pitch preference is allowed only after CanTie has established that this is
+                // a physically compact tie ending near both noteheads. A high slur whose endpoints
+                // sit at stem tops must never turn into a tie merely because its outer notes match.
                 .OrderBy(x => x.GeometryScore - (x.TieCompatible ? 1.65 : 0))
                 .ThenBy(x => x.GeometryScore)
                 .FirstOrDefault();
@@ -115,12 +117,26 @@ public sealed class ArcSemanticsResolver
         var endScore = Math.Abs(end.X - arc.Right) / Math.Max(staffSpace, .001) +
                        .9 * Math.Abs(end.Y - arc.RightY) / Math.Max(staffSpace, .001);
 
-        return new PairCandidate(start, end, startScore + endScore, CanTie(start, end));
+        return new PairCandidate(start, end, startScore + endScore, CanTie(start, end, arc, staffSpace));
     }
 
-    private static bool CanTie(RecognizedEvent start, RecognizedEvent end)
+    private static bool CanTie(
+        RecognizedEvent start,
+        RecognizedEvent end,
+        Arc arc,
+        double staffSpace)
     {
         if (!string.Equals(start.Step, end.Step, StringComparison.Ordinal) || start.Octave != end.Octave)
+            return false;
+
+        // Musical identity is necessary but not sufficient. A tie physically starts/ends at the
+        // noteheads it prolongs. In measure 5 the long legato arc runs from stem top to stem top,
+        // about 3-4 staff spaces above the equal F4 noteheads; treating that as F4->F4 created a
+        // false tie. Genuine chord ties in measure 6 terminate within about one staff space of
+        // their A3/Bb3 heads. Keep a small exporter/layout allowance, but reject stem-top arches.
+        var maxEndpointYOffset = staffSpace * 1.25;
+        if (Math.Abs(start.Y - arc.LeftY) > maxEndpointYOffset ||
+            Math.Abs(end.Y - arc.RightY) > maxEndpointYOffset)
             return false;
 
         if (start.Alter == end.Alter) return true;
@@ -171,7 +187,8 @@ public sealed class ArcSemanticsResolver
             if (staff is null) continue;
 
             if (width < staff.Space * 2.0 || width > staff.Space * 18) continue;
-            if (height < staff.Space * .35 || height > staff.Space * 2.6) continue;
+            // Ties are compact, but legato slurs can arch several staff-spaces above the notes.
+            if (height < staff.Space * .35 || height > staff.Space * 4.8) continue;
             if (width / Math.Max(height, .001) < 2.0) continue;
             if (points.Length < 16) continue;
 
