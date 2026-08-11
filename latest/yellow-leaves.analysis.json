@@ -285306,9 +285306,9 @@
       "StemDirection": "up",
       "BeamValue": "end",
       "BeamCount": 2,
-      "SlurStart": false,
+      "SlurStart": true,
       "SlurStop": false,
-      "SlurNumber": null,
+      "SlurNumber": 1,
       "TieStart": false,
       "TieStop": false
     },
@@ -285335,8 +285335,8 @@
       "BeamValue": null,
       "BeamCount": 0,
       "SlurStart": false,
-      "SlurStop": false,
-      "SlurNumber": null,
+      "SlurStop": true,
+      "SlurNumber": 1,
       "TieStart": false,
       "TieStop": false
     },
@@ -285364,7 +285364,7 @@
       "BeamCount": 1,
       "SlurStart": true,
       "SlurStop": false,
-      "SlurNumber": 2,
+      "SlurNumber": 4,
       "TieStart": false,
       "TieStop": false
     },
@@ -285448,7 +285448,7 @@
       "BeamCount": 0,
       "SlurStart": false,
       "SlurStop": true,
-      "SlurNumber": 2,
+      "SlurNumber": 4,
       "TieStart": false,
       "TieStop": false
     },
@@ -285532,7 +285532,7 @@
       "BeamCount": 0,
       "SlurStart": true,
       "SlurStop": false,
-      "SlurNumber": 4,
+      "SlurNumber": 7,
       "TieStart": false,
       "TieStop": false
     },
@@ -285588,7 +285588,7 @@
       "BeamCount": 0,
       "SlurStart": false,
       "SlurStop": true,
-      "SlurNumber": 4,
+      "SlurNumber": 7,
       "TieStart": false,
       "TieStop": false
     },
@@ -286093,7 +286093,7 @@
       "SlurStart": false,
       "SlurStop": false,
       "SlurNumber": null,
-      "TieStart": false,
+      "TieStart": true,
       "TieStop": false
     },
     {
@@ -286178,7 +286178,7 @@
       "SlurStop": false,
       "SlurNumber": null,
       "TieStart": false,
-      "TieStop": false
+      "TieStop": true
     },
     {
       "SourceSymbolId": "path:000070",
@@ -286258,9 +286258,9 @@
       "StemDirection": "up",
       "BeamValue": "begin",
       "BeamCount": 1,
-      "SlurStart": false,
+      "SlurStart": true,
       "SlurStop": false,
-      "SlurNumber": null,
+      "SlurNumber": 3,
       "TieStart": false,
       "TieStop": false
     },
@@ -286287,8 +286287,8 @@
       "BeamValue": "end",
       "BeamCount": 2,
       "SlurStart": false,
-      "SlurStop": false,
-      "SlurNumber": null,
+      "SlurStop": true,
+      "SlurNumber": 3,
       "TieStart": false,
       "TieStop": false
     },
@@ -286426,9 +286426,9 @@
       "StemDirection": "up",
       "BeamValue": null,
       "BeamCount": 0,
-      "SlurStart": false,
+      "SlurStart": true,
       "SlurStop": false,
-      "SlurNumber": null,
+      "SlurNumber": 9,
       "TieStart": false,
       "TieStop": false
     },
@@ -286455,8 +286455,8 @@
       "BeamValue": null,
       "BeamCount": 0,
       "SlurStart": false,
-      "SlurStop": false,
-      "SlurNumber": null,
+      "SlurStop": true,
+      "SlurNumber": 9,
       "TieStart": false,
       "TieStop": false
     },
@@ -287296,7 +287296,7 @@
       "BeamCount": 1,
       "SlurStart": true,
       "SlurStop": false,
-      "SlurNumber": 1,
+      "SlurNumber": 2,
       "TieStart": false,
       "TieStop": false
     },
@@ -287380,7 +287380,7 @@
       "BeamCount": 0,
       "SlurStart": false,
       "SlurStop": true,
-      "SlurNumber": 1,
+      "SlurNumber": 2,
       "TieStart": false,
       "TieStop": false
     },
@@ -287464,7 +287464,7 @@
       "BeamCount": 0,
       "SlurStart": true,
       "SlurStop": false,
-      "SlurNumber": 3,
+      "SlurNumber": 6,
       "TieStart": false,
       "TieStop": false
     },
@@ -287520,7 +287520,7 @@
       "BeamCount": 0,
       "SlurStart": false,
       "SlurStop": true,
-      "SlurNumber": 3,
+      "SlurNumber": 6,
       "TieStart": false,
       "TieStop": false
     },
@@ -288053,7 +288053,7 @@
       "SlurStart": false,
       "SlurStop": false,
       "SlurNumber": null,
-      "TieStart": false,
+      "TieStart": true,
       "TieStop": false
     },
     {
@@ -288138,7 +288138,7 @@
       "SlurStop": false,
       "SlurNumber": null,
       "TieStart": false,
-      "TieStop": false
+      "TieStop": true
     },
     {
       "SourceSymbolId": "path:000091",
@@ -288218,9 +288218,9 @@
       "StemDirection": "up",
       "BeamValue": "begin",
       "BeamCount": 1,
-      "SlurStart": false,
+      "SlurStart": true,
       "SlurStop": false,
-      "SlurNumber": null,
+      "SlurNumber": 5,
       "TieStart": false,
       "TieStop": false
     },
@@ -288247,8 +288247,8 @@
       "BeamValue": "end",
       "BeamCount": 2,
       "SlurStart": false,
-      "SlurStop": false,
-      "SlurNumber": null,
+      "SlurStop": true,
+      "SlurNumber": 5,
       "TieStart": false,
       "TieStop": false
     },
@@ -288330,9 +288330,9 @@
       "StemDirection": "up",
       "BeamValue": null,
       "BeamCount": 0,
-      "SlurStart": false,
+      "SlurStart": true,
       "SlurStop": false,
-      "SlurNumber": null,
+      "SlurNumber": 8,
       "TieStart": false,
       "TieStop": false
     },
@@ -288499,8 +288499,8 @@
       "BeamValue": null,
       "BeamCount": 0,
       "SlurStart": false,
-      "SlurStop": false,
-      "SlurNumber": null,
+      "SlurStop": true,
+      "SlurNumber": 8,
       "TieStart": false,
       "TieStop": false
     },

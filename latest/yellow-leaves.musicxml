@@ -50,6 +50,9 @@
         <stem>up</stem>
         <beam number="1">end</beam>
         <beam number="2">backward hook</beam>
+        <notations>
+          <slur type="start" number="1" />
+        </notations>
         <staff>1</staff>
       </note>
       <note default-x="172.907">
@@ -61,6 +64,9 @@
         <voice>1</voice>
         <type>half</type>
         <stem>up</stem>
+        <notations>
+          <slur type="stop" number="1" />
+        </notations>
         <staff>1</staff>
       </note>
       <backup>
@@ -146,7 +152,7 @@
         <stem>up</stem>
         <beam number="1">begin</beam>
         <notations>
-          <slur type="start" number="2" />
+          <slur type="start" number="4" />
         </notations>
         <staff>1</staff>
       </note>
@@ -189,7 +195,7 @@
         <type>half</type>
         <stem>up</stem>
         <notations>
-          <slur type="stop" number="2" />
+          <slur type="stop" number="4" />
         </notations>
         <staff>1</staff>
       </note>
@@ -247,7 +253,7 @@
         <accidental>flat</accidental>
         <stem>up</stem>
         <notations>
-          <slur type="start" number="4" />
+          <slur type="start" number="7" />
         </notations>
         <staff>1</staff>
       </note>
@@ -272,7 +278,7 @@
         <type>quarter</type>
         <stem>up</stem>
         <notations>
-          <slur type="stop" number="4" />
+          <slur type="stop" number="7" />
         </notations>
         <staff>1</staff>
       </note>
@@ -442,11 +448,15 @@
           <alter>1</alter>
           <octave>4</octave>
         </pitch>
+        <tie type="start" />
         <duration>16</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>sharp</accidental>
         <stem>up</stem>
+        <notations>
+          <tied type="start" />
+        </notations>
         <staff>1</staff>
       </note>
       <note default-x="125.288">
@@ -478,10 +488,14 @@
           <alter>1</alter>
           <octave>4</octave>
         </pitch>
+        <tie type="stop" />
         <duration>16</duration>
         <voice>1</voice>
         <type>quarter</type>
         <stem>up</stem>
+        <notations>
+          <tied type="stop" />
+        </notations>
         <staff>1</staff>
       </note>
       <note default-x="190.575">
@@ -552,6 +566,9 @@
         <dot />
         <stem>up</stem>
         <beam number="1">begin</beam>
+        <notations>
+          <slur type="start" number="3" />
+        </notations>
         <staff>1</staff>
       </note>
       <note default-x="142.586">
@@ -567,6 +584,9 @@
         <stem>up</stem>
         <beam number="1">end</beam>
         <beam number="2">backward hook</beam>
+        <notations>
+          <slur type="stop" number="3" />
+        </notations>
         <staff>1</staff>
       </note>
       <note default-x="187.925">
@@ -717,6 +737,9 @@
         <voice>1</voice>
         <type>quarter</type>
         <stem>up</stem>
+        <notations>
+          <slur type="start" number="9" />
+        </notations>
         <staff>1</staff>
       </note>
       <note default-x="202.468">
@@ -728,6 +751,9 @@
         <voice>1</voice>
         <type>quarter</type>
         <stem>up</stem>
+        <notations>
+          <slur type="stop" number="9" />
+        </notations>
         <staff>1</staff>
       </note>
       <backup>
@@ -1063,7 +1089,7 @@
         <stem>up</stem>
         <beam number="1">begin</beam>
         <notations>
-          <slur type="start" number="1" />
+          <slur type="start" number="2" />
         </notations>
         <staff>1</staff>
       </note>
@@ -1106,7 +1132,7 @@
         <type>half</type>
         <stem>up</stem>
         <notations>
-          <slur type="stop" number="1" />
+          <slur type="stop" number="2" />
         </notations>
         <staff>1</staff>
       </note>
@@ -1164,7 +1190,7 @@
         <accidental>flat</accidental>
         <stem>up</stem>
         <notations>
-          <slur type="start" number="3" />
+          <slur type="start" number="6" />
         </notations>
         <staff>1</staff>
       </note>
@@ -1189,7 +1215,7 @@
         <type>quarter</type>
         <stem>up</stem>
         <notations>
-          <slur type="stop" number="3" />
+          <slur type="stop" number="6" />
         </notations>
         <staff>1</staff>
       </note>
@@ -1359,11 +1385,15 @@
           <alter>1</alter>
           <octave>4</octave>
         </pitch>
+        <tie type="start" />
         <duration>16</duration>
         <voice>1</voice>
         <type>quarter</type>
         <accidental>sharp</accidental>
         <stem>up</stem>
+        <notations>
+          <tied type="start" />
+        </notations>
         <staff>1</staff>
       </note>
       <note default-x="127.481">
@@ -1395,10 +1425,14 @@
           <alter>1</alter>
           <octave>4</octave>
         </pitch>
+        <tie type="stop" />
         <duration>16</duration>
         <voice>1</voice>
         <type>quarter</type>
         <stem>up</stem>
+        <notations>
+          <tied type="stop" />
+        </notations>
         <staff>1</staff>
       </note>
       <note default-x="194.962">
@@ -1469,6 +1503,9 @@
         <dot />
         <stem>up</stem>
         <beam number="1">begin</beam>
+        <notations>
+          <slur type="start" number="5" />
+        </notations>
         <staff>1</staff>
       </note>
       <note default-x="122.564">
@@ -1484,6 +1521,9 @@
         <stem>up</stem>
         <beam number="1">end</beam>
         <beam number="2">backward hook</beam>
+        <notations>
+          <slur type="stop" number="5" />
+        </notations>
         <staff>1</staff>
       </note>
       <note default-x="169.425">
@@ -1566,6 +1606,9 @@
         <type>quarter</type>
         <accidental>flat</accidental>
         <stem>up</stem>
+        <notations>
+          <slur type="start" number="8" />
+        </notations>
         <staff>1</staff>
       </note>
       <note default-x="97.112">
@@ -1623,6 +1666,9 @@
         <voice>1</voice>
         <type>quarter</type>
         <stem>up</stem>
+        <notations>
+          <slur type="stop" number="8" />
+        </notations>
         <staff>1</staff>
       </note>
       <backup>
