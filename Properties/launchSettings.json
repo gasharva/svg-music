@@ -2,8 +2,7 @@
   "profiles": {
     "SvgToMusicXmlPoc": {
       "commandName": "Project",
-      //"commandLineArgs": "convert Samples\\score_5.svg References\\catalog.json d:\\\\score.musicxml"
-      //D:\Repos\svg-music\Golden\yellow-leaves-giya-kancheli.musicxml
+      //"commandLineArgs": "convert d:\\musica\\kancheli\\33_mins\\score_15.svg References\\\\catalog.json d:\\\\\\\\score.musicxml"
       "commandLineArgs": "convert D:\\Repos\\svg-music\\Golden\\yellow-leaves-giya-kancheli.svg References\\catalog.json d:\\\\score.musicxml"
     }
   }
