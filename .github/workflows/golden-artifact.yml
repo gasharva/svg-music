@@ -29,6 +29,34 @@ jobs:
       - name: Build main project
         run: dotnet build SvgToMusicXmlPoc.csproj --configuration Release --no-restore
 
+      - name: Inspect real SVG use targets
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          p = 'Samples/score_15.svg'
+          root = ET.parse(p).getroot()
+          ids = {e.attrib['id']: e for e in root.iter() if 'id' in e.attrib}
+          uses = []
+          for e in root.iter():
+              if e.tag.split('}')[-1] != 'use':
+                  continue
+              href = e.attrib.get('{http://www.w3.org/1999/xlink}href') or e.attrib.get('href') or ''
+              if href.startswith('#'):
+                  uses.append(href[1:])
+          print('id count:', len(ids), 'use target count:', len(set(uses)))
+          for target in ['w', 'x']:
+              e = ids.get(target)
+              if e is None:
+                  print(target, 'TARGET NOT FOUND')
+                  continue
+              print(target, 'tag=', e.tag.split('}')[-1], 'attrs=', e.attrib)
+              for child in list(e)[:8]:
+                  print('  child', child.tag.split('}')[-1], child.attrib)
+          missing = sorted(set(uses) - ids.keys())
+          print('missing use targets:', missing[:100])
+          PY
+
       - name: Convert Yellow Leaves golden SVG
         id: convert
         continue-on-error: true
