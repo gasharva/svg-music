@@ -62,6 +62,10 @@ public sealed class ConversionPipeline
         // Reattach written accidentals after staff ownership/pitch/chords are final. In close
         // intervals noteheads are displaced horizontally, so staff-position (Y) must outrank X.
         new AccidentalGeometryResolver().Resolve(analysis, config);
+        // Curves have two different musical meanings: equal pitches are ties (duration continues),
+        // different pitches are slurs (legato). Rebuild arc attachment after accidental ownership
+        // is final so parallel chord ties do not collapse into a cross-pitch slur.
+        new ArcSemanticsResolver().Resolve(analysis);
         // Augmentation dots belong to the whole rhythmic chord. A single SVG dot can be
         // associated with only one notehead by the symbol recognizer, so normalize the
         // shared-stem chord before any MusicXML is written.
