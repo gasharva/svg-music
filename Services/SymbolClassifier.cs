@@ -19,6 +19,7 @@ public sealed class SymbolClassifier
         var source = _geometry.ReadScoreGeometries(scoreDoc);
         var staffSpace = staves.Count > 0 ? staves.Average(s => s.Space) : 1.0;
         var staffContextSymbols = FindStaffContextSymbols(scoreDoc, staves);
+        var leftEdgeSymbols = FindLeftEdgeSymbols(scoreDoc, staves);
         var catalogWatch = Stopwatch.StartNew();
         var (references, cacheHit) = LoadReferences(catalogPath);
         catalogWatch.Stop();
@@ -57,7 +58,9 @@ public sealed class SymbolClassifier
             if (best.Reference is null) continue;
 
             var isUsedNearStaff = group.SymbolIds.Any(staffContextSymbols.Contains);
-            var semanticKind = RecognizeStaffLocalNotehead(mask, widthSpaces, heightSpaces, isUsedNearStaff)
+            var isUsedAtStaffLeft = group.SymbolIds.Any(leftEdgeSymbols.Contains);
+            var semanticKind = RecognizeStaffLocalClef(widthSpaces, heightSpaces, isUsedAtStaffLeft)
+                               ?? RecognizeStaffLocalNotehead(mask, widthSpaces, heightSpaces, isUsedNearStaff)
                                ?? NormalizeKind(best.Reference.Id, best.Reference.Kind);
             foreach (var symbolId in group.SymbolIds)
                 result.Symbols.Add(new SymbolClassification(symbolId, semanticKind, best.Reference.Id, best.Total,
@@ -96,6 +99,47 @@ public sealed class SymbolClassifier
                 use.Y <= staff.Bottom + staff.Space * 5))
             .Select(use => use.SymbolId)
             .ToHashSet(StringComparer.Ordinal);
+    }
+
+    private static HashSet<string> FindLeftEdgeSymbols(
+        System.Xml.Linq.XDocument scoreDoc,
+        IReadOnlyList<Staff> staves)
+    {
+        if (staves.Count == 0) return [];
+
+        var uses = new SvgParser().ReadUses(scoreDoc);
+        return uses
+            .Where(use => staves.Any(staff =>
+                use.X >= staff.Left - staff.Space * .5 &&
+                use.X <= staff.Left + staff.Space * 2.2 &&
+                use.Y >= staff.Top - staff.Space * 5 &&
+                use.Y <= staff.Bottom + staff.Space * 5))
+            .Select(use => use.SymbolId)
+            .ToHashSet(StringComparer.Ordinal);
+    }
+
+    /// <summary>
+    /// Clefs are exceptionally stable by layout even when their exact outline comes from a
+    /// non-Bravura font: they sit immediately after the left edge of every staff. Use that
+    /// structural position plus a broad size envelope before trusting a font-specific glyph match.
+    /// </summary>
+    private static string? RecognizeStaffLocalClef(
+        double widthSpaces,
+        double heightSpaces,
+        bool isUsedAtStaffLeft)
+    {
+        if (!isUsedAtStaffLeft) return null;
+
+        // Treble clef: tall symbol spanning well beyond the five staff lines.
+        if (widthSpaces is >= 2.2 and <= 4.2 && heightSpaces is >= 4.5 and <= 8.0)
+            return "clef-treble";
+
+        // Bass clef: compact, roughly two staff spaces in both dimensions. Time signatures
+        // occupy a similar box but are several staff spaces to the right, outside leftEdgeSymbols.
+        if (widthSpaces is >= 1.5 and <= 3.0 && heightSpaces is >= 1.5 and <= 3.4)
+            return "clef-bass";
+
+        return null;
     }
 
     /// <summary>
