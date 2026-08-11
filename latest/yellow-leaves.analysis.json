@@ -15077,14 +15077,14 @@
     {
       "SymbolId": "z",
       "Kind": "time-signature-digit",
-      "ReferenceId": "timeSig7",
+      "ReferenceId": "timeSig3",
       "Score": 0.5461829258895051,
       "ShapeScore": 0.47843961696594084,
       "SizeScore": 0.8171561615837621,
       "WidthInSpaces": 2.0241101477517285,
       "HeightInSpaces": 1.9424752471917262,
       "MusicXmlElement": "attributes/time/digit",
-      "MusicXmlValue": "7"
+      "MusicXmlValue": "3"
     }
   ],
   "Events": [

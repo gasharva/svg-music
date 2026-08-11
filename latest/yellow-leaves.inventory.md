@@ -52,7 +52,7 @@ These are frequent staff-local glyphs that are still semantically unknown or hav
 | `x` | 5 | clef-bass | uniE06C | 0.509 | 2.208 | 2.266 | low confidence |
 | `A` | 3 | smufl-unknown | uniE1C9 | 0.532 | 3.019 | 2.585 | unknown semantic kind |
 | `ab` | 3 | smufl-unknown | uniE06C | 0.639 | 2.184 | 3.571 | unknown semantic kind |
-| `z` | 2 | time-signature-digit | timeSig7 | 0.546 | 2.024 | 1.942 | low confidence |
+| `z` | 2 | time-signature-digit | timeSig3 | 0.546 | 2.024 | 1.942 | low confidence |
 | `F` | 2 | smufl-unknown | uniE1AF | 0.807 | 1.340 | 1.119 | unknown semantic kind |
 | `V` | 2 | smufl-unknown | uniE110 | 0.689 | 3.334 | 1.965 | unknown semantic kind |
 | `X` | 2 | smufl-unknown | uniE4D2 | 0.652 | 3.408 | 2.561 | unknown semantic kind |
