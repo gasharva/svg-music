@@ -82,7 +82,10 @@ public sealed class ArcSemanticsResolver
                 .FirstOrDefault();
 
             if (best is null) continue;
-            if (best.GeometryScore > 6.0) continue;
+            // Legato slurs can arch several staff spaces away from their noteheads, unlike compact
+            // ties. Horizontal endpoint windows already keep candidates local, so allow the larger
+            // vertical score while still rejecting clearly unrelated pairs.
+            if (best.GeometryScore > 10.0) continue;
 
             usedPairs.Add((best.Start, best.End));
             if (best.TieCompatible)
