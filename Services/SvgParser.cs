@@ -42,7 +42,9 @@ public sealed class SvgParser
 
     /// <summary>
     /// Reads layout geometry which should not have to pass through the musical glyph classifier.
-    /// This remains a fallback for exporters that use native SVG line elements rather than paths.
+    /// Exporters may encode the same visual primitive as a native SVG line/rect or as a bare
+    /// outlined path. Normalize both representations into SvgLineSegment so downstream stem,
+    /// chord and beam reconstruction does not depend on the exporter.
     /// </summary>
     public List<SvgLineSegment> ReadLineSegments(XDocument document)
     {
@@ -86,6 +88,30 @@ public sealed class SvgParser
             var top = transform.Apply(x + width / 2, y);
             var bottom = transform.Apply(x + width / 2, y + height);
             result.Add(new SvgLineSegment(top.X, top.Y, bottom.X, bottom.Y, "rect", cssClass));
+        }
+
+        // PDF-derived SVGs commonly outline stems and barlines as standalone paths instead of
+        // emitting <line>/<rect>. The laboratory MuseScore SVG happened to use native primitives,
+        // so the relation resolver previously saw plenty of stems there but exactly zero in the
+        // real score. Recover only strongly vertical, narrow bare paths here; musical curves,
+        // beams and staff lines have very different aspect ratios and stay in DirectPaths.
+        foreach (var path in ReadDirectPaths(document))
+        {
+            var points = path.Geometry.Contours.SelectMany(x => x).ToArray();
+            if (points.Length < 2) continue;
+
+            var left = points.Min(x => x.X);
+            var right = points.Max(x => x.X);
+            var top = points.Min(x => x.Y);
+            var bottom = points.Max(x => x.Y);
+            var width = right - left;
+            var height = bottom - top;
+
+            if (height < 2.5) continue;
+            if (width > Math.Max(.8, height * .12)) continue;
+
+            var centerX = (left + right) / 2;
+            result.Add(new SvgLineSegment(centerX, top, centerX, bottom, "path", null));
         }
 
         return result;
