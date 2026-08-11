@@ -1,0 +1,16 @@
+{
+  "ParseSvgMs": 176.8844,
+  "DetectStavesMs": 455.8429,
+  "ReadInstancesMs": 103.2546,
+  "LoadCatalogMs": 8746.8076,
+  "ClassifyMs": 3246.962,
+  "RecognizeSemanticsMs": 161.2103,
+  "WriteMusicXmlMs": 156.933,
+  "TotalMs": 13161.4051,
+  "GlyphInstances": 351,
+  "UniqueGeometries": 84,
+  "CatalogGlyphs": 905,
+  "MaskComparisons": 76020,
+  "VectorComparisons": 420,
+  "CatalogCacheHit": false
+}
