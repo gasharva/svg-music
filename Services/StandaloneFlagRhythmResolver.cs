@@ -42,18 +42,37 @@ public sealed class StandaloneFlagRhythmResolver
             .ToList();
 
         var consumed = new HashSet<FlagInstance>();
+        var processedStemKeys = new HashSet<(int StaffIndex, long StemBucket)>();
 
         foreach (var note in notes)
         {
             var staff = analysis.Staves.FirstOrDefault(x => x.Index == note.StaffIndex);
             if (staff is null || note.StemDirection is not ("up" or "down")) continue;
 
+            // A flag belongs to a stem, not to an individual notehead. Several noteheads of a
+            // chord may share the same stem, and processing them independently can consume the
+            // flag on one member while leaving the chord root at quarter-note duration.
+            var stemTolerance = staff.Space * .20;
+            var stemBucket = (long)Math.Round(note.StemX!.Value / Math.Max(stemTolerance, .001));
+            if (!processedStemKeys.Add((note.StaffIndex, stemBucket))) continue;
+
+            var chordMembers = notes
+                .Where(x => x.StaffIndex == note.StaffIndex)
+                .Where(x => x.StemX.HasValue && Math.Abs(x.StemX.Value - note.StemX.Value) <= stemTolerance)
+                .Where(x => x.StemDirection == note.StemDirection)
+                .ToList();
+            if (chordMembers.Count == 0) chordMembers = [note];
+
+            // Use the member nearest to the stem midpoint for locating the physical stem. A chord
+            // can span several staff positions, while the stem itself is common to every member.
+            var chordCenterY = chordMembers.Average(x => x.Y);
             var stem = analysis.LineSegments
                 .Where(x => Math.Abs(x.CenterX - note.StemX!.Value) <= staff.Space * .18)
                 .Where(x => x.Height >= staff.Space * 1.2 && x.Height <= staff.Space * 8.0)
-                .Where(x => x.Top <= note.Y + staff.Space * .8 && x.Bottom >= note.Y - staff.Space * .8)
+                .Where(x => x.Top <= chordMembers.Max(n => n.Y) + staff.Space * .8 &&
+                            x.Bottom >= chordMembers.Min(n => n.Y) - staff.Space * .8)
                 .OrderBy(x => Math.Abs(x.CenterX - note.StemX!.Value))
-                .ThenBy(x => Math.Abs(x.CenterY - note.Y))
+                .ThenBy(x => Math.Abs(x.CenterY - chordCenterY))
                 .FirstOrDefault();
             if (stem is null) continue;
 
@@ -78,7 +97,12 @@ public sealed class StandaloneFlagRhythmResolver
             if (match.Dx * .8 + match.Dy > 2.55) continue;
 
             consumed.Add(match.Flag);
-            ApplyLevel(note, match.Flag.Level, config.Divisions);
+
+            // Rhythm is a property of the whole stem/chord. Apply the decoded flag level to every
+            // notehead sharing that stem so MusicXmlVoiceLayoutPostProcessor cannot later choose a
+            // quarter-duration chord root while another chord member was correctly made eighth.
+            foreach (var member in chordMembers)
+                ApplyLevel(member, match.Flag.Level, config.Divisions);
         }
     }
 
