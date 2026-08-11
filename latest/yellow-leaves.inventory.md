@@ -26,18 +26,20 @@
 | beam begin/continue/end | 6 | 3.9% |
 | eighth notes | 6 | 3.9% |
 | 16th notes | 0 | 0.0% |
-| dotted notes | 0 | 0.0% |
+| dotted notes | 59 | 38.8% |
 | slur starts | 1 | 0.7% |
 | slur stops | 1 | 0.7% |
 | tie starts | 0 | 0.0% |
 | tie stops | 0 | 0.0% |
-| altered pitches | 8 | 5.3% |
+| altered pitches | 26 | 17.1% |
 
 ## Warning groups
 
-Total warnings: **137**
+Total warnings: **139**
 
 - low confidence: **137**
+- Не удалось привязать точку в x=309.3: **1**
+- Не удалось привязать точку в x=95.3: **1**
 
 ## High-value suspicious symbols near staves
 
@@ -45,8 +47,7 @@ These are frequent staff-local glyphs that are still semantically unknown or hav
 
 | id | uses | kind | reference | score | width sp | height sp | reason |
 |---|---:|---|---|---:|---:|---:|---|
-| `B` | 73 | smufl-unknown | uniE4A2 | 0.761 | 0.268 | 0.197 | unknown semantic kind |
-| `T` | 16 | smufl-unknown | uniE2DE | 0.555 | 0.644 | 2.487 | unknown semantic kind |
+| `T` | 16 | accidental-flat | uniE2DE | 0.555 | 0.644 | 2.487 | low confidence |
 | `w` | 5 | clef-treble | uniE0F0 | 0.571 | 3.183 | 6.636 | low confidence |
 | `x` | 5 | clef-bass | uniE06C | 0.509 | 2.208 | 2.266 | low confidence |
 | `A` | 3 | smufl-unknown | uniE1C9 | 0.532 | 3.019 | 2.585 | unknown semantic kind |
@@ -57,7 +58,7 @@ These are frequent staff-local glyphs that are still semantically unknown or hav
 | `X` | 2 | smufl-unknown | uniE4D2 | 0.652 | 3.408 | 2.561 | unknown semantic kind |
 | `aa` | 2 | smufl-unknown | uniE13B | 0.754 | 0.996 | 2.643 | unknown semantic kind |
 | `ac` | 2 | smufl-unknown | uniE581 | 0.783 | 0.568 | 0.530 | unknown semantic kind |
-| `ad` | 2 | smufl-unknown | uniE2DE | 0.555 | 0.644 | 2.487 | unknown semantic kind |
+| `ad` | 2 | accidental-flat | uniE2DE | 0.555 | 0.644 | 2.487 | low confidence |
 | `E` | 1 | smufl-unknown | uniE127 | 0.818 | 1.466 | 1.612 | unknown semantic kind |
 | `G` | 1 | smufl-unknown | uniE1C1 | 0.809 | 1.167 | 1.095 | unknown semantic kind |
 | `H` | 1 | smufl-unknown | uniE27A | 0.690 | 0.714 | 1.466 | unknown semantic kind |
@@ -75,3 +76,4 @@ These are frequent staff-local glyphs that are still semantically unknown or hav
 | `path:000002` | 1 | smufl-unknown | uniE000 | 0.656 | 1.016 | 15.166 | unknown semantic kind |
 | `path:000003` | 1 | smufl-unknown | uniE1FE | 0.119 | 18.832 | 15.916 | unknown semantic kind |
 | `path:000004` | 1 | smufl-unknown | uniE090 | 0.100 | 1.791 | 0.000 | unknown semantic kind |
+| `path:000005` | 1 | clef-bass | fClef | 0.100 | 0.000 | 3.583 | low confidence |

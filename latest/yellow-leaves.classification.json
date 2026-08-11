@@ -14,7 +14,7 @@
     },
     {
       "SymbolId": "B",
-      "Kind": "smufl-unknown",
+      "Kind": "augmentation-dot",
       "ReferenceId": "uniE4A2",
       "Score": 0.7606361983264234,
       "ShapeScore": 0.8133833922261484,
@@ -218,7 +218,7 @@
     },
     {
       "SymbolId": "T",
-      "Kind": "smufl-unknown",
+      "Kind": "accidental-flat",
       "ReferenceId": "uniE2DE",
       "Score": 0.5554237219940436,
       "ShapeScore": 0.48583388769583424,
@@ -662,7 +662,7 @@
     },
     {
       "SymbolId": "ad",
-      "Kind": "smufl-unknown",
+      "Kind": "accidental-flat",
       "ReferenceId": "uniE2DE",
       "Score": 0.5554237219940436,
       "ShapeScore": 0.48583388769583424,

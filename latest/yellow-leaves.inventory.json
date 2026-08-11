@@ -21,12 +21,12 @@
     "withBeamValue": 6,
     "eighth": 6,
     "sixteenth": 0,
-    "dotted": 0,
+    "dotted": 59,
     "slurStarts": 1,
     "slurStops": 1,
     "tieStarts": 0,
     "tieStops": 0,
-    "altered": 8
+    "altered": 26
   },
   "relationCoveragePercent": {
     "withStem": 32.2,
@@ -36,39 +36,31 @@
     "withBeamValue": 3.9,
     "eighth": 3.9,
     "sixteenth": 0.0,
-    "dotted": 0.0,
+    "dotted": 38.8,
     "slurStarts": 0.7,
     "slurStops": 0.7,
     "tieStarts": 0.0,
     "tieStops": 0.0,
-    "altered": 5.3
+    "altered": 17.1
   },
   "warnings": {
-    "total": 137,
+    "total": 139,
     "groups": {
-      "low confidence": 137
+      "low confidence": 137,
+      "Не удалось привязать точку в x=309.3": 1,
+      "Не удалось привязать точку в x=95.3": 1
     }
   },
   "suspiciousNearStaffSymbols": [
     {
-      "symbolId": "B",
-      "usesNearStaff": 73,
-      "kind": "smufl-unknown",
-      "referenceId": "uniE4A2",
-      "score": 0.7606361983264234,
-      "widthInSpaces": 0.2684155530412865,
-      "heightInSpaces": 0.19722991975296472,
-      "reason": "unknown semantic kind"
-    },
-    {
       "symbolId": "T",
       "usesNearStaff": 16,
-      "kind": "smufl-unknown",
+      "kind": "accidental-flat",
       "referenceId": "uniE2DE",
       "score": 0.5554237219940436,
       "widthInSpaces": 0.6436276971040688,
       "heightInSpaces": 2.4869256106599,
-      "reason": "unknown semantic kind"
+      "reason": "low confidence"
     },
     {
       "symbolId": "w",
@@ -173,12 +165,12 @@
     {
       "symbolId": "ad",
       "usesNearStaff": 2,
-      "kind": "smufl-unknown",
+      "kind": "accidental-flat",
       "referenceId": "uniE2DE",
       "score": 0.5554237219940436,
       "widthInSpaces": 0.6436276971040688,
       "heightInSpaces": 2.4869256106599,
-      "reason": "unknown semantic kind"
+      "reason": "low confidence"
     },
     {
       "symbolId": "E",
@@ -349,6 +341,16 @@
       "widthInSpaces": 1.7908990643364515,
       "heightInSpaces": 2.1769306816000523e-10,
       "reason": "unknown semantic kind"
+    },
+    {
+      "symbolId": "path:000005",
+      "usesNearStaff": 1,
+      "kind": "clef-bass",
+      "referenceId": "fClef",
+      "score": 0.09979078332731868,
+      "widthInSpaces": 2.1769306816000523e-10,
+      "heightInSpaces": 3.583494096997451,
+      "reason": "low confidence"
     }
   ]
 }
