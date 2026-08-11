@@ -1,5 +1,7 @@
 # SVG → MusicXML PoC v4
 
+🎼 **Latest Yellow Leaves:** [MusicXML](https://raw.githubusercontent.com/gasharva/svg-music/ci-output/latest/yellow-leaves.musicxml) · [analysis](https://raw.githubusercontent.com/gasharva/svg-music/ci-output/latest/yellow-leaves.analysis.json) · [classification](https://raw.githubusercontent.com/gasharva/svg-music/ci-output/latest/yellow-leaves.classification.json) · [performance](https://raw.githubusercontent.com/gasharva/svg-music/ci-output/latest/yellow-leaves.performance.json) · [source PR](https://raw.githubusercontent.com/gasharva/svg-music/ci-output/latest/source.txt)
+
 Векторный конвертер нотного SVG в MusicXML без промежуточной растеризации.
 
 ## Главный сценарий

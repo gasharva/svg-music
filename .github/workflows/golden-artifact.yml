@@ -3,6 +3,13 @@ name: Golden conversion artifact
 on:
   pull_request:
 
+permissions:
+  contents: write
+
+concurrency:
+  group: golden-ci-output
+  cancel-in-progress: false
+
 jobs:
   golden-artifact:
     runs-on: ubuntu-24.04
@@ -53,6 +60,46 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+      - name: Publish latest conversion to ci-output
+        if: steps.convert.outcome == 'success' && github.event.pull_request.head.repo.full_name == github.repository
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p /tmp/golden-latest
+          cp artifacts/yellow-leaves.musicxml /tmp/golden-latest/
+          cp artifacts/yellow-leaves.analysis.json /tmp/golden-latest/
+          cp artifacts/yellow-leaves.classification.json /tmp/golden-latest/
+          cp artifacts/yellow-leaves.performance.json /tmp/golden-latest/
+
+          cat > /tmp/golden-latest/source.txt <<EOF
+          PR: #${{ github.event.pull_request.number }}
+          Head SHA: ${{ github.event.pull_request.head.sha }}
+          Workflow run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          EOF
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if git fetch origin ci-output:refs/remotes/origin/ci-output 2>/dev/null; then
+            git switch -C ci-output origin/ci-output
+          else
+            git switch --orphan ci-output
+            git rm -rf . >/dev/null 2>&1 || true
+          fi
+
+          rm -rf latest
+          mkdir -p latest
+          cp /tmp/golden-latest/* latest/
+
+          git add -A latest
+          if git diff --cached --quiet; then
+            echo "ci-output/latest is already up to date"
+          else
+            git commit -m "Update Yellow Leaves from PR #${{ github.event.pull_request.number }}"
+            git push origin ci-output
+          fi
+
       - name: Add download hint to workflow summary
         if: always()
         run: |
@@ -61,5 +108,8 @@ jobs:
             echo
             echo 'Download **yellow-leaves-pr-${{ github.event.pull_request.number }}** from the Artifacts section at the bottom of this workflow run.'
             echo
-            echo 'Open `yellow-leaves.musicxml` directly in MuseScore after unzipping.'
+            echo '- [Latest MusicXML](https://raw.githubusercontent.com/${{ github.repository }}/ci-output/latest/yellow-leaves.musicxml)'
+            echo '- [Analysis](https://raw.githubusercontent.com/${{ github.repository }}/ci-output/latest/yellow-leaves.analysis.json)'
+            echo '- [Classification](https://raw.githubusercontent.com/${{ github.repository }}/ci-output/latest/yellow-leaves.classification.json)'
+            echo '- [Performance](https://raw.githubusercontent.com/${{ github.repository }}/ci-output/latest/yellow-leaves.performance.json)'
           } >> "$GITHUB_STEP_SUMMARY"
