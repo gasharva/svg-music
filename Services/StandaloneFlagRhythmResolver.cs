@@ -11,7 +11,7 @@ namespace SvgToMusicXmlPoc.Services;
 /// </summary>
 public sealed class StandaloneFlagRhythmResolver
 {
-    private sealed record FlagInstance(double X, double Y, int Level, string Direction);
+    private sealed record FlagInstance(double X, double Y, int Level);
 
     public void Resolve(AnalysisResult analysis, RecognitionConfig config)
     {
@@ -23,10 +23,10 @@ public sealed class StandaloneFlagRhythmResolver
             .Where(x => x.Class is not null)
             .Select(x =>
             {
-                var decoded = DecodeFlag(x.Class!.ReferenceId, x.Class.Kind);
-                return decoded is null
-                    ? null
-                    : new FlagInstance(x.Use.X, x.Use.Y, decoded.Value.Level, decoded.Value.Direction);
+                var level = DecodeFlagLevel(x.Class!.ReferenceId, x.Class.Kind);
+                return level.HasValue
+                    ? new FlagInstance(x.Use.X, x.Use.Y, level.Value)
+                    : null;
             })
             .Where(x => x is not null)
             .Select(x => x!)
@@ -63,8 +63,8 @@ public sealed class StandaloneFlagRhythmResolver
                 .ToList();
             if (chordMembers.Count == 0) chordMembers = [note];
 
-            // Use the member nearest to the stem midpoint for locating the physical stem. A chord
-            // can span several staff positions, while the stem itself is common to every member.
+            // Use the whole chord span to locate the physical stem. A chord can span several
+            // staff positions, while the stem itself is common to every member.
             var chordCenterY = chordMembers.Average(x => x.Y);
             var stem = analysis.LineSegments
                 .Where(x => Math.Abs(x.CenterX - note.StemX!.Value) <= staff.Space * .18)
@@ -80,15 +80,16 @@ public sealed class StandaloneFlagRhythmResolver
 
             var match = flags
                 .Where(x => !consumed.Contains(x))
-                .Where(x => x.Direction == note.StemDirection)
                 .Select(flag => new
                 {
                     Flag = flag,
                     Dx = Math.Abs(flag.X - note.StemX!.Value) / Math.Max(staff.Space, .001),
                     Dy = Math.Abs(flag.Y - freeEndY) / Math.Max(staff.Space, .001)
                 })
-                // Flag origins differ slightly between exporters/fonts, so keep a generous local
-                // window but require the combined normalized distance to be close to the stem end.
+                // The classifier is reliable for flag level, but up/down glyph orientation can
+                // be confused by exporter transforms or close shape matches. Stem direction is
+                // already known geometrically, so use the glyph only for rhythmic level and let
+                // physical proximity to the free stem end decide attachment.
                 .Where(x => x.Dx <= 1.6 && x.Dy <= 2.4)
                 .OrderBy(x => x.Dx * .8 + x.Dy)
                 .FirstOrDefault();
@@ -106,25 +107,25 @@ public sealed class StandaloneFlagRhythmResolver
         }
     }
 
-    private static (int Level, string Direction)? DecodeFlag(string referenceId, string kind)
+    private static int? DecodeFlagLevel(string referenceId, string kind)
     {
         var value = $"{referenceId} {kind}".ToUpperInvariant();
 
-        // SMuFL Standard Glyph Names / codepoints:
-        // E240/E241 = 8th up/down, E242/E243 = 16th, E244/E245 = 32nd.
-        // Supporting the following pairs costs nothing and gives us 64th/128th as well.
-        var mappings = new (string Code, int Level, string Direction)[]
+        // SMuFL flag glyphs come in up/down pairs. For rhythm we only care about the pair's
+        // level; actual stem direction is inferred from note/stem geometry instead of trusting
+        // the classifier's orientation result.
+        var mappings = new (string[] Codes, int Level)[]
         {
-            ("E240", 1, "up"), ("E241", 1, "down"),
-            ("E242", 2, "up"), ("E243", 2, "down"),
-            ("E244", 3, "up"), ("E245", 3, "down"),
-            ("E246", 4, "up"), ("E247", 4, "down"),
-            ("E248", 5, "up"), ("E249", 5, "down")
+            (["E240", "E241"], 1),
+            (["E242", "E243"], 2),
+            (["E244", "E245"], 3),
+            (["E246", "E247"], 4),
+            (["E248", "E249"], 5)
         };
 
         foreach (var mapping in mappings)
-            if (value.Contains(mapping.Code, StringComparison.Ordinal))
-                return (mapping.Level, mapping.Direction);
+            if (mapping.Codes.Any(code => value.Contains(code, StringComparison.Ordinal)))
+                return mapping.Level;
 
         return null;
     }
