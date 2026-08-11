@@ -1,0 +1,66 @@
+name: Golden conversion artifact
+
+on:
+  pull_request:
+
+jobs:
+  golden-artifact:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore main project
+        run: dotnet restore SvgToMusicXmlPoc.csproj
+
+      - name: Build main project
+        run: dotnet build SvgToMusicXmlPoc.csproj --configuration Release --no-restore
+
+      - name: Convert Yellow Leaves golden SVG
+        id: convert
+        continue-on-error: true
+        run: |
+          mkdir -p artifacts
+          dotnet run --project SvgToMusicXmlPoc.csproj --configuration Release --no-build -- \
+            convert \
+            Golden/yellow-leaves-giya-kancheli.svg \
+            artifacts/yellow-leaves.musicxml
+
+      - name: Collect generated diagnostics
+        if: always()
+        shell: bash
+        run: |
+          shopt -s nullglob
+          for f in \
+            artifacts/yellow-leaves.musicxml \
+            artifacts/yellow-leaves.analysis.json \
+            artifacts/yellow-leaves.classification.json \
+            artifacts/yellow-leaves.performance.json \
+            yellow-leaves.analysis.json \
+            yellow-leaves.classification.json \
+            yellow-leaves.performance.json \
+            score.analysis.json \
+            score.classification.json \
+            score.performance.json; do
+            if [ -f "$f" ]; then
+              cp "$f" artifacts/$(basename "$f") 2>/dev/null || true
+            fi
+          done
+
+          echo "Generated artifact contents:"
+          find artifacts -maxdepth 1 -type f -printf '%f\n' | sort || true
+
+      - name: Upload golden conversion artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: yellow-leaves-pr-${{ github.event.pull_request.number }}
+          path: artifacts/
+          if-no-files-found: warn
+          retention-days: 14
