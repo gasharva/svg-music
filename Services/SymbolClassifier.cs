@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Numerics;
 using System.Text.Json;
 using SvgToMusicXmlPoc.Models;
 
@@ -17,6 +18,7 @@ public sealed class SymbolClassifier
         var scoreDoc = System.Xml.Linq.XDocument.Load(scorePath);
         var source = _geometry.ReadScoreGeometries(scoreDoc);
         var staffSpace = staves.Count > 0 ? staves.Average(s => s.Space) : 1.0;
+        var staffContextSymbols = FindStaffContextSymbols(scoreDoc, staves);
         var catalogWatch = Stopwatch.StartNew();
         var (references, cacheHit) = LoadReferences(catalogPath);
         catalogWatch.Stop();
@@ -54,7 +56,9 @@ public sealed class SymbolClassifier
                 .OrderByDescending(x => x.Total).FirstOrDefault();
             if (best.Reference is null) continue;
 
-            var semanticKind = NormalizeKind(best.Reference.Id, best.Reference.Kind);
+            var isUsedNearStaff = group.SymbolIds.Any(staffContextSymbols.Contains);
+            var semanticKind = RecognizeStaffLocalNotehead(mask, widthSpaces, heightSpaces, isUsedNearStaff)
+                               ?? NormalizeKind(best.Reference.Id, best.Reference.Kind);
             foreach (var symbolId in group.SymbolIds)
                 result.Symbols.Add(new SymbolClassification(symbolId, semanticKind, best.Reference.Id, best.Total,
                     best.Shape, best.Size, widthSpaces, heightSpaces,
@@ -75,6 +79,53 @@ public sealed class SymbolClassifier
             CatalogCacheHit = cacheHit
         };
         return result;
+    }
+
+    private static HashSet<string> FindStaffContextSymbols(
+        System.Xml.Linq.XDocument scoreDoc,
+        IReadOnlyList<Staff> staves)
+    {
+        if (staves.Count == 0) return [];
+
+        var uses = new SvgParser().ReadUses(scoreDoc);
+        return uses
+            .Where(use => staves.Any(staff =>
+                use.X >= staff.Left - staff.Space * 2 &&
+                use.X <= staff.Right + staff.Space * 2 &&
+                use.Y >= staff.Top - staff.Space * 5 &&
+                use.Y <= staff.Bottom + staff.Space * 5))
+            .Select(use => use.SymbolId)
+            .ToHashSet(StringComparer.Ordinal);
+    }
+
+    /// <summary>
+    /// Real-world score SVGs frequently outline a music font that is not Bravura. A filled or
+    /// hollow oval notehead is nevertheless much more stable geometrically than its exact font
+    /// outline. Use this only for symbols actually instantiated around a detected staff, so text
+    /// glyphs elsewhere on the page cannot be mistaken for notes.
+    /// </summary>
+    private static string? RecognizeStaffLocalNotehead(
+        IReadOnlyList<ulong> mask,
+        double widthSpaces,
+        double heightSpaces,
+        bool isUsedNearStaff)
+    {
+        if (!isUsedNearStaff) return null;
+
+        // Normal noteheads are roughly one staff-space wide and distinctly wider than tall.
+        // Keep the window deliberately conservative: accidentals, rests, clefs and dynamics are
+        // either much taller or have a very different bounding-box aspect.
+        if (widthSpaces < 0.85 || widthSpaces > 1.45) return null;
+        if (heightSpaces < 0.60 || heightSpaces > 1.05) return null;
+        if (widthSpaces / Math.Max(heightSpaces, 1e-6) < 1.05) return null;
+
+        long painted = 0;
+        foreach (var row in mask) painted += BitOperations.PopCount(row);
+        var fill = painted / (double)(FastGlyphMatcher.MaskSize * FastGlyphMatcher.MaskSize);
+
+        // Filled noteheads occupy most of their normalized oval box; half-note heads retain a
+        // substantial central hole. Both are independent of symbol ids and of the source font.
+        return fill >= 0.62 ? "notehead-black" : "notehead-half";
     }
 
     private static string NormalizeKind(string referenceId, string kind) => referenceId switch

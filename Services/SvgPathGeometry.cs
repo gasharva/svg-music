@@ -8,28 +8,73 @@ namespace SvgToMusicXmlPoc.Services;
 public sealed class SvgPathGeometry
 {
     private static readonly XNamespace Svg = "http://www.w3.org/2000/svg";
+    private static readonly XNamespace XLink = "http://www.w3.org/1999/xlink";
     private static readonly Regex TokenRegex = new(@"[A-Za-z]|[-+]?(?:\d*\.\d+|\d+\.?)(?:[eE][-+]?\d+)?", RegexOptions.Compiled);
     private static readonly Regex TransformRegex = new(@"(?<name>matrix|translate|scale)\s*\((?<args>[^)]*)\)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex NumberRegex = new(@"[-+]?(?:\d*\.\d+|\d+\.?)(?:[eE][-+]?\d+)?", RegexOptions.Compiled);
 
     public Dictionary<string, SymbolGeometry> ReadSymbols(XDocument document, int curveSteps = 12)
     {
+        var symbolElements = document.Descendants(Svg + "symbol")
+            .Select(x => new { Element = x, Id = (string?)x.Attribute("id") })
+            .Where(x => !string.IsNullOrWhiteSpace(x.Id))
+            .ToDictionary(x => x.Id!, x => x.Element, StringComparer.Ordinal);
+
         var result = new Dictionary<string, SymbolGeometry>(StringComparer.Ordinal);
-        foreach (var symbol in document.Descendants(Svg + "symbol"))
+        var resolving = new HashSet<string>(StringComparer.Ordinal);
+
+        SymbolGeometry? Resolve(string id)
         {
-            var id = (string?)symbol.Attribute("id");
-            if (string.IsNullOrWhiteSpace(id)) continue;
-            var contours = new List<IReadOnlyList<PointD>>();
-            foreach (var path in symbol.Descendants(Svg + "path"))
+            if (result.TryGetValue(id, out var cached)) return cached;
+            if (!symbolElements.TryGetValue(id, out var symbol)) return null;
+            if (!resolving.Add(id)) return null;
+
+            try
             {
-                var d = (string?)path.Attribute("d");
-                if (string.IsNullOrWhiteSpace(d)) continue;
-                var local = Parse(d, curveSteps);
-                var transform = ReadTransformChain(path, symbol);
-                contours.AddRange(Apply(local, transform));
+                var contours = new List<IReadOnlyList<PointD>>();
+
+                // Ordinary outlined glyphs.
+                foreach (var path in symbol.Descendants(Svg + "path"))
+                {
+                    // Do not accidentally pull geometry from a nested symbol definition.
+                    if (path.Ancestors(Svg + "symbol").FirstOrDefault() != symbol) continue;
+                    var d = (string?)path.Attribute("d");
+                    if (string.IsNullOrWhiteSpace(d)) continue;
+                    var local = Parse(d, curveSteps);
+                    var transform = ReadTransformChain(path, symbol);
+                    contours.AddRange(Apply(local, transform));
+                }
+
+                // Real PDF/SVG exporters often obfuscate or deduplicate glyphs by defining one
+                // symbol in terms of another <use>. The old reader ignored those completely,
+                // which made important glyphs such as clefs disappear before classification.
+                foreach (var use in symbol.Descendants(Svg + "use"))
+                {
+                    if (use.Ancestors(Svg + "symbol").FirstOrDefault() != symbol) continue;
+                    var targetId = ((string?)use.Attribute(XLink + "href") ?? (string?)use.Attribute("href") ?? "")
+                        .TrimStart('#');
+                    if (string.IsNullOrWhiteSpace(targetId)) continue;
+                    var target = Resolve(targetId);
+                    if (target is null) continue;
+
+                    var x = ParseNumber((string?)use.Attribute("x"));
+                    var y = ParseNumber((string?)use.Attribute("y"));
+                    var placement = SvgAffine.Translate(x, y).Then(ReadTransformChain(use, symbol));
+                    contours.AddRange(Apply(target.Contours, placement));
+                }
+
+                if (contours.Count == 0) return null;
+                var geometry = new SymbolGeometry(id, contours);
+                result[id] = geometry;
+                return geometry;
             }
-            if (contours.Count > 0) result[id] = new SymbolGeometry(id, contours);
+            finally
+            {
+                resolving.Remove(id);
+            }
         }
+
+        foreach (var id in symbolElements.Keys) Resolve(id);
         return result;
     }
 
@@ -145,6 +190,9 @@ public sealed class SvgPathGeometry
         }
         return result;
     }
+
+    private static double ParseNumber(string? value) =>
+        double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var number) ? number : 0;
 
     private static List<IReadOnlyList<PointD>> Apply(IEnumerable<IReadOnlyList<PointD>> contours, SvgAffine transform) =>
         contours.Select(c => (IReadOnlyList<PointD>)c.Select(transform.Apply).ToArray()).ToList();
