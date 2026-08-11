@@ -6,21 +6,21 @@
     "lineSegments": 104
   },
   "eventKinds": {
-    "notehead-black": 150,
+    "notehead-black": 152,
     "clef-treble": 5,
     "clef-bass": 5,
     "rest-eighth": 4,
     "notehead-half": 2
   },
   "relations": {
-    "notes": 152,
-    "withStem": 49,
-    "withStemDirection": 49,
-    "chordMembers": 38,
+    "notes": 154,
+    "withStem": 51,
+    "withStemDirection": 51,
+    "chordMembers": 39,
     "withBeam": 6,
     "withBeamValue": 6,
     "eighth": 6,
-    "sixteenth": 0,
+    "sixteenth": 2,
     "dotted": 59,
     "slurStarts": 1,
     "slurStops": 1,
@@ -29,19 +29,19 @@
     "altered": 26
   },
   "relationCoveragePercent": {
-    "withStem": 32.2,
-    "withStemDirection": 32.2,
-    "chordMembers": 25.0,
+    "withStem": 33.1,
+    "withStemDirection": 33.1,
+    "chordMembers": 25.3,
     "withBeam": 3.9,
     "withBeamValue": 3.9,
     "eighth": 3.9,
-    "sixteenth": 0.0,
-    "dotted": 38.8,
-    "slurStarts": 0.7,
-    "slurStops": 0.7,
+    "sixteenth": 1.3,
+    "dotted": 38.3,
+    "slurStarts": 0.6,
+    "slurStops": 0.6,
     "tieStarts": 0.0,
     "tieStops": 0.0,
-    "altered": 17.1
+    "altered": 16.9
   },
   "warnings": {
     "total": 139,
@@ -150,16 +150,6 @@
       "score": 0.7542858276805711,
       "widthInSpaces": 0.9962299972265661,
       "heightInSpaces": 2.643011540530624,
-      "reason": "unknown semantic kind"
-    },
-    {
-      "symbolId": "ac",
-      "usesNearStaff": 2,
-      "kind": "smufl-unknown",
-      "referenceId": "uniE581",
-      "score": 0.7825736912476844,
-      "widthInSpaces": 0.5675379227524759,
-      "heightInSpaces": 0.5296033938681771,
       "reason": "unknown semantic kind"
     },
     {
@@ -344,6 +334,16 @@
     },
     {
       "symbolId": "path:000005",
+      "usesNearStaff": 1,
+      "kind": "clef-bass",
+      "referenceId": "fClef",
+      "score": 0.09979078332731868,
+      "widthInSpaces": 2.1769306816000523e-10,
+      "heightInSpaces": 3.583494096997451,
+      "reason": "low confidence"
+    },
+    {
+      "symbolId": "path:000006",
       "usesNearStaff": 1,
       "kind": "clef-bass",
       "referenceId": "fClef",

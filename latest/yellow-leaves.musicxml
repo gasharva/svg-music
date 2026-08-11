@@ -1384,6 +1384,30 @@
         <accidental>flat</accidental>
         <staff>1</staff>
       </note>
+      <note default-x="124.583">
+        <grace />
+        <pitch>
+          <step>B</step>
+          <alter>-1</alter>
+          <octave>4</octave>
+        </pitch>
+        <voice>1</voice>
+        <type>16th</type>
+        <stem>up</stem>
+        <staff>1</staff>
+      </note>
+      <note default-x="111.669">
+        <chord />
+        <grace />
+        <pitch>
+          <step>C</step>
+          <octave>5</octave>
+        </pitch>
+        <voice>1</voice>
+        <type>16th</type>
+        <stem>up</stem>
+        <staff>1</staff>
+      </note>
       <note default-x="137.502">
         <pitch>
           <step>A</step>

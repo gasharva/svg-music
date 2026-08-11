@@ -9,7 +9,7 @@
 
 ## Semantic events
 
-- notehead-black: **150**
+- notehead-black: **152**
 - clef-treble: **5**
 - clef-bass: **5**
 - rest-eighth: **4**
@@ -19,19 +19,19 @@
 
 | Relation | Count | % of notes |
 |---|---:|---:|
-| stem attached | 49 | 32.2% |
-| stem direction | 49 | 32.2% |
-| chord members | 38 | 25.0% |
+| stem attached | 51 | 33.1% |
+| stem direction | 51 | 33.1% |
+| chord members | 39 | 25.3% |
 | notes touching beams | 6 | 3.9% |
 | beam begin/continue/end | 6 | 3.9% |
 | eighth notes | 6 | 3.9% |
-| 16th notes | 0 | 0.0% |
-| dotted notes | 59 | 38.8% |
-| slur starts | 1 | 0.7% |
-| slur stops | 1 | 0.7% |
+| 16th notes | 2 | 1.3% |
+| dotted notes | 59 | 38.3% |
+| slur starts | 1 | 0.6% |
+| slur stops | 1 | 0.6% |
 | tie starts | 0 | 0.0% |
 | tie stops | 0 | 0.0% |
-| altered pitches | 26 | 17.1% |
+| altered pitches | 26 | 16.9% |
 
 ## Warning groups
 
@@ -57,7 +57,6 @@ These are frequent staff-local glyphs that are still semantically unknown or hav
 | `V` | 2 | smufl-unknown | uniE110 | 0.689 | 3.334 | 1.965 | unknown semantic kind |
 | `X` | 2 | smufl-unknown | uniE4D2 | 0.652 | 3.408 | 2.561 | unknown semantic kind |
 | `aa` | 2 | smufl-unknown | uniE13B | 0.754 | 0.996 | 2.643 | unknown semantic kind |
-| `ac` | 2 | smufl-unknown | uniE581 | 0.783 | 0.568 | 0.530 | unknown semantic kind |
 | `ad` | 2 | accidental-flat | uniE2DE | 0.555 | 0.644 | 2.487 | low confidence |
 | `E` | 1 | smufl-unknown | uniE127 | 0.818 | 1.466 | 1.612 | unknown semantic kind |
 | `G` | 1 | smufl-unknown | uniE1C1 | 0.809 | 1.167 | 1.095 | unknown semantic kind |
@@ -77,3 +76,4 @@ These are frequent staff-local glyphs that are still semantically unknown or hav
 | `path:000003` | 1 | smufl-unknown | uniE1FE | 0.119 | 18.832 | 15.916 | unknown semantic kind |
 | `path:000004` | 1 | smufl-unknown | uniE090 | 0.100 | 1.791 | 0.000 | unknown semantic kind |
 | `path:000005` | 1 | clef-bass | fClef | 0.100 | 0.000 | 3.583 | low confidence |
+| `path:000006` | 1 | clef-bass | fClef | 0.100 | 0.000 | 3.583 | low confidence |
