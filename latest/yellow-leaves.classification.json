@@ -26,7 +26,7 @@
     },
     {
       "SymbolId": "C",
-      "Kind": "smufl-unknown",
+      "Kind": "notehead-black",
       "ReferenceId": "uniE113",
       "Score": 0.916546152694291,
       "ShapeScore": 0.9229249011857708,
@@ -38,7 +38,7 @@
     },
     {
       "SymbolId": "D",
-      "Kind": "smufl-unknown",
+      "Kind": "notehead-black",
       "ReferenceId": "uniE0FB",
       "Score": 0.8177933904321488,
       "ShapeScore": 0.8279295689131754,
@@ -170,7 +170,7 @@
     },
     {
       "SymbolId": "P",
-      "Kind": "smufl-unknown",
+      "Kind": "notehead-half",
       "ReferenceId": "uniE01D",
       "Score": 0.7564763317271888,
       "ShapeScore": 0.7833333333333333,
@@ -194,7 +194,7 @@
     },
     {
       "SymbolId": "R",
-      "Kind": "smufl-unknown",
+      "Kind": "notehead-half",
       "ReferenceId": "uniE1CB",
       "Score": 0.7786338116341824,
       "ShapeScore": 0.752755065766086,
@@ -254,7 +254,7 @@
     },
     {
       "SymbolId": "W",
-      "Kind": "smufl-unknown",
+      "Kind": "notehead-black",
       "ReferenceId": "uniE113",
       "Score": 0.916546152694291,
       "ShapeScore": 0.9229249011857708,
