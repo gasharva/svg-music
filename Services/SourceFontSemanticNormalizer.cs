@@ -2,6 +2,10 @@ using SvgToMusicXmlPoc.Models;
 
 namespace SvgToMusicXmlPoc.Services;
 
+/// <summary>
+/// Repairs source-font semantic ambiguities after generic glyph matching. Rules are based on
+/// staff-relative geometry/layout and normalized glyph shape, never on obfuscated symbol ids.
+/// </summary>
 public sealed class SourceFontSemanticNormalizer
 {
     private readonly SvgPathGeometry _geometry = new();
@@ -36,10 +40,14 @@ public sealed class SourceFontSemanticNormalizer
                 continue;
             }
 
-            if (!timeSlot.Contains(symbolId)) continue;
-            Console.WriteLine($"TIME-PROFILE {symbolId} {cls.ReferenceId} value={cls.MusicXmlValue} rows={Profile(mask)}");
-            if (LooksLikeThree(mask, cls))
-                classification.Symbols[index] = cls with { Kind = "time-signature-digit", ReferenceId = "timeSig3", MusicXmlElement = "attributes/time/digit", MusicXmlValue = "3" };
+            if (timeSlot.Contains(symbolId) && LooksLikeThree(mask, cls))
+                classification.Symbols[index] = cls with
+                {
+                    Kind = "time-signature-digit",
+                    ReferenceId = "timeSig3",
+                    MusicXmlElement = "attributes/time/digit",
+                    MusicXmlValue = "3"
+                };
         }
     }
 
@@ -61,35 +69,34 @@ public sealed class SourceFontSemanticNormalizer
         return aspect is >= .82 and <= 1.45;
     }
 
-    private static string Profile(IReadOnlyList<ulong> mask) =>
-        string.Join(",", new[] { 20, 35, 50, 65, 80 }.Select(p => $"{p}:{RowSpan(mask, FastGlyphMatcher.MaskSize * p / 100):F2}"));
-
-    private static double RowSpan(IReadOnlyList<ulong> mask, int row)
+    private static double RowSpan(IReadOnlyList<ulong> mask, int percent)
     {
-        var bits = mask[Math.Clamp(row, 0, FastGlyphMatcher.MaskSize - 1)];
+        var row = Math.Clamp(FastGlyphMatcher.MaskSize * percent / 100, 0, FastGlyphMatcher.MaskSize - 1);
+        var bits = mask[row];
         if (bits == 0) return 0;
-        var first = 64; var last = -1;
+        var first = 64;
+        var last = -1;
         for (var bit = 0; bit < FastGlyphMatcher.MaskSize; bit++)
-            if ((bits & (1UL << bit)) != 0) { first = Math.Min(first, bit); last = Math.Max(last, bit); }
+            if ((bits & (1UL << bit)) != 0)
+            {
+                first = Math.Min(first, bit);
+                last = Math.Max(last, bit);
+            }
         return (last - first + 1) / (double)FastGlyphMatcher.MaskSize;
     }
 
     private static bool LooksLikeThree(IReadOnlyList<ulong> mask, SymbolClassification cls)
     {
+        // Generic matching confuses some ornate 3s with 7s. A 3 has two rounded lobes separated
+        // by a pronounced waist: broad near the top, very narrow around the middle, then broadens
+        // again near the lower lobe. A 7 does not have that narrow-then-broad lower profile.
         if (!cls.Kind.Equals("time-signature-digit", StringComparison.OrdinalIgnoreCase)) return false;
         if (!cls.ReferenceId.Contains("7", StringComparison.OrdinalIgnoreCase) && cls.MusicXmlValue != "7") return false;
         if (cls.WidthInSpaces is < 1.4 or > 2.5 || cls.HeightInSpaces is < 1.5 or > 2.5) return false;
 
-        var startRow = FastGlyphMatcher.MaskSize * 55 / 100;
-        var endRow = FastGlyphMatcher.MaskSize * 90 / 100;
-        var broadRows = 0; var paintedRows = 0;
-        for (var row = startRow; row < endRow; row++)
-        {
-            var span = RowSpan(mask, row);
-            if (span <= 0) continue;
-            paintedRows++;
-            if (span >= .35) broadRows++;
-        }
-        return paintedRows >= 5 && broadRows >= Math.Max(3, paintedRows / 2);
+        var upper = RowSpan(mask, 20);
+        var waist = RowSpan(mask, 50);
+        var lower = RowSpan(mask, 80);
+        return upper >= .65 && waist <= .22 && lower >= .28;
     }
 }
