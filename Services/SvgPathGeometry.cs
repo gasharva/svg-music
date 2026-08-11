@@ -15,14 +15,10 @@ public sealed class SvgPathGeometry
 
     public Dictionary<string, SymbolGeometry> ReadSymbols(XDocument document, int curveSteps = 12)
     {
-        // SVG <use> may reference any element with an id; it is not restricted to
-        // <symbol> or even to children of <defs>. PDF/SVG exporters exploit that freedom,
-        // so index every id-bearing element and recursively resolve the referenced geometry.
-        var definitionElements = document.Descendants()
+        var symbolElements = document.Descendants(Svg + "symbol")
             .Select(x => new { Element = x, Id = (string?)x.Attribute("id") })
             .Where(x => !string.IsNullOrWhiteSpace(x.Id))
-            .GroupBy(x => x.Id!, StringComparer.Ordinal)
-            .ToDictionary(x => x.Key, x => x.First().Element, StringComparer.Ordinal);
+            .ToDictionary(x => x.Id!, x => x.Element, StringComparer.Ordinal);
 
         var result = new Dictionary<string, SymbolGeometry>(StringComparer.Ordinal);
         var resolving = new HashSet<string>(StringComparer.Ordinal);
@@ -30,47 +26,40 @@ public sealed class SvgPathGeometry
         SymbolGeometry? Resolve(string id)
         {
             if (result.TryGetValue(id, out var cached)) return cached;
-            if (!definitionElements.TryGetValue(id, out var definition)) return null;
+            if (!symbolElements.TryGetValue(id, out var symbol)) return null;
             if (!resolving.Add(id)) return null;
 
             try
             {
                 var contours = new List<IReadOnlyList<PointD>>();
-                var stopBefore = definition.Parent;
 
-                // A definition can itself be a <path>, or it can be a <g>/<symbol> containing
-                // paths. Skip paths hidden inside nested <defs>/<symbol> blocks: those are
-                // definitions, not rendered children, unless a <use> explicitly references them.
-                foreach (var path in definition.DescendantsAndSelf().Where(x => x.Name == Svg + "path"))
+                // Ordinary outlined glyphs.
+                foreach (var path in symbol.Descendants(Svg + "path"))
                 {
-                    if (path != definition && path.Ancestors()
-                            .TakeWhile(x => x != definition)
-                            .Any(x => x.Name == Svg + "defs" || x.Name == Svg + "symbol"))
-                        continue;
-
+                    // Do not accidentally pull geometry from a nested symbol definition.
+                    if (path.Ancestors(Svg + "symbol").FirstOrDefault() != symbol) continue;
                     var d = (string?)path.Attribute("d");
                     if (string.IsNullOrWhiteSpace(d)) continue;
                     var local = Parse(d, curveSteps);
-                    contours.AddRange(Apply(local, ReadTransformChain(path, stopBefore)));
+                    var transform = ReadTransformChain(path, symbol);
+                    contours.AddRange(Apply(local, transform));
                 }
 
-                foreach (var use in definition.DescendantsAndSelf().Where(x => x.Name == Svg + "use"))
+                // Real PDF/SVG exporters often obfuscate or deduplicate glyphs by defining one
+                // symbol in terms of another <use>. The old reader ignored those completely,
+                // which made important glyphs such as clefs disappear before classification.
+                foreach (var use in symbol.Descendants(Svg + "use"))
                 {
-                    if (use != definition && use.Ancestors()
-                            .TakeWhile(x => x != definition)
-                            .Any(x => x.Name == Svg + "defs" || x.Name == Svg + "symbol"))
-                        continue;
-
+                    if (use.Ancestors(Svg + "symbol").FirstOrDefault() != symbol) continue;
                     var targetId = ((string?)use.Attribute(XLink + "href") ?? (string?)use.Attribute("href") ?? "")
                         .TrimStart('#');
                     if (string.IsNullOrWhiteSpace(targetId)) continue;
-
                     var target = Resolve(targetId);
                     if (target is null) continue;
 
                     var x = ParseNumber((string?)use.Attribute("x"));
                     var y = ParseNumber((string?)use.Attribute("y"));
-                    var placement = SvgAffine.Translate(x, y).Then(ReadTransformChain(use, stopBefore));
+                    var placement = SvgAffine.Translate(x, y).Then(ReadTransformChain(use, symbol));
                     contours.AddRange(Apply(target.Contours, placement));
                 }
 
@@ -85,7 +74,7 @@ public sealed class SvgPathGeometry
             }
         }
 
-        foreach (var id in definitionElements.Keys) Resolve(id);
+        foreach (var id in symbolElements.Keys) Resolve(id);
         return result;
     }
 
