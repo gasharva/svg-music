@@ -60,6 +60,8 @@ public sealed class SymbolClassifier
             var isUsedNearStaff = group.SymbolIds.Any(staffContextSymbols.Contains);
             var isUsedAtStaffLeft = group.SymbolIds.Any(leftEdgeSymbols.Contains);
             var semanticKind = RecognizeStaffLocalClef(widthSpaces, heightSpaces, isUsedAtStaffLeft)
+                               ?? RecognizeStaffLocalDot(widthSpaces, heightSpaces, isUsedNearStaff)
+                               ?? RecognizeStaffLocalAccidental(widthSpaces, heightSpaces, isUsedNearStaff)
                                ?? RecognizeStaffLocalNotehead(mask, widthSpaces, heightSpaces, isUsedNearStaff)
                                ?? NormalizeKind(best.Reference.Id, best.Reference.Kind);
             foreach (var symbolId in group.SymbolIds)
@@ -140,6 +142,42 @@ public sealed class SymbolClassifier
             return "clef-bass";
 
         return null;
+    }
+
+    /// <summary>
+    /// Augmentation dots are tiny filled glyphs whose exact outline varies little across music
+    /// fonts. Restrict the geometry rule to glyphs actually used around a detected staff. The
+    /// semantic recognizer still requires the dot to sit just to the right of a note/rest before
+    /// it changes duration, so an unrelated tiny mark cannot dot a remote event.
+    /// </summary>
+    private static string? RecognizeStaffLocalDot(
+        double widthSpaces,
+        double heightSpaces,
+        bool isUsedNearStaff)
+    {
+        if (!isUsedNearStaff) return null;
+        if (widthSpaces is < .12 or > .45) return null;
+        if (heightSpaces is < .10 or > .40) return null;
+
+        var aspect = widthSpaces / Math.Max(heightSpaces, 1e-6);
+        return aspect is >= .65 and <= 1.8 ? "augmentation-dot" : null;
+    }
+
+    /// <summary>
+    /// A flat accidental has a much more stable staff-relative envelope than its exact font
+    /// outline: it is narrow (well under one staff space) and roughly 2.5 spaces tall. This
+    /// recovers outlined non-Bravura flat glyphs while deliberately excluding wider rests,
+    /// noteheads and clefs. Final ownership still requires the normal accidental-to-note geometry.
+    /// </summary>
+    private static string? RecognizeStaffLocalAccidental(
+        double widthSpaces,
+        double heightSpaces,
+        bool isUsedNearStaff)
+    {
+        if (!isUsedNearStaff) return null;
+        return widthSpaces is >= .45 and <= .85 && heightSpaces is >= 2.10 and <= 2.90
+            ? "accidental-flat"
+            : null;
     }
 
     /// <summary>
