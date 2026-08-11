@@ -113,6 +113,9 @@ public sealed class ConversionPipeline
         // If the first voice pass left opposite-stem notes and a rest in one voice, use occupied
         // onset geometry to recover the missing parallel voice before later notation passes.
         new MusicXmlRestVoiceConflictPostProcessor().Apply(musicXmlPath);
+        // A grace cluster consumes no metrical duration. If another voice begins at the following
+        // engraved onset, restore that delayed start with a forward instead of snapping it to bar 0.
+        new MusicXmlGraceVoiceTimingPostProcessor().Apply(musicXmlPath);
         // MusicXmlWriter emits clef attributes at the first measure of every detected SVG staff
         // system. Preserve those source line breaks so MuseScore does not repack measures.
         new MusicXmlSystemBreakPostProcessor().Apply(musicXmlPath);
