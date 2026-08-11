@@ -142,9 +142,13 @@ public sealed class SlopedBeamCoverageResolver
         var residualTolerance = Math.Min(
             staffSpace * 2.5,
             Math.Max(staffSpace * 1.35, verifiedResidual + staffSpace * 1.15));
+
+        // The side/profile tests are the primary guards. Keep only a generous final sanity cap.
+        // In the golden measure-4 run the missing D4 head is ~7.75 spaces from the beam centreline,
+        // while the previous 6.5-space cap rejected it even though the fitted profile predicts it.
         var maxDistance = Math.Min(
-            staffSpace * 6.5,
-            offsets.Select(Math.Abs).Max() + staffSpace * 2.0);
+            staffSpace * 9.0,
+            offsets.Select(Math.Abs).Max() + staffSpace * 2.5);
 
         var inferredDirection = verified
             .Where(x => x.StemDirection is "up" or "down")
