@@ -5,7 +5,7 @@
 - staves: **10**
 - reusable/direct uses: **594**
 - direct paths: **153**
-- normalized line segments: **104**
+- normalized line segments: **137**
 
 ## Semantic events
 
@@ -19,14 +19,14 @@
 
 | Relation | Count | % of notes |
 |---|---:|---:|
-| stem attached | 51 | 33.1% |
-| stem direction | 51 | 33.1% |
-| chord members | 39 | 25.3% |
+| stem attached | 66 | 42.9% |
+| stem direction | 66 | 42.9% |
+| chord members | 34 | 22.1% |
 | notes touching beams | 6 | 3.9% |
 | beam begin/continue/end | 6 | 3.9% |
 | eighth notes | 6 | 3.9% |
 | 16th notes | 2 | 1.3% |
-| dotted notes | 59 | 38.3% |
+| dotted notes | 60 | 39.0% |
 | slur starts | 1 | 0.6% |
 | slur stops | 1 | 0.6% |
 | tie starts | 0 | 0.0% |

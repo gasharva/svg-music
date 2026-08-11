@@ -3,7 +3,7 @@
     "staves": 10,
     "uses": 594,
     "directPaths": 153,
-    "lineSegments": 104
+    "lineSegments": 137
   },
   "eventKinds": {
     "notehead-black": 152,
@@ -14,14 +14,14 @@
   },
   "relations": {
     "notes": 154,
-    "withStem": 51,
-    "withStemDirection": 51,
-    "chordMembers": 39,
+    "withStem": 66,
+    "withStemDirection": 66,
+    "chordMembers": 34,
     "withBeam": 6,
     "withBeamValue": 6,
     "eighth": 6,
     "sixteenth": 2,
-    "dotted": 59,
+    "dotted": 60,
     "slurStarts": 1,
     "slurStops": 1,
     "tieStarts": 0,
@@ -29,14 +29,14 @@
     "altered": 26
   },
   "relationCoveragePercent": {
-    "withStem": 33.1,
-    "withStemDirection": 33.1,
-    "chordMembers": 25.3,
+    "withStem": 42.9,
+    "withStemDirection": 42.9,
+    "chordMembers": 22.1,
     "withBeam": 3.9,
     "withBeamValue": 3.9,
     "eighth": 3.9,
     "sixteenth": 1.3,
-    "dotted": 38.3,
+    "dotted": 39.0,
     "slurStarts": 0.6,
     "slurStops": 0.6,
     "tieStarts": 0.0,
