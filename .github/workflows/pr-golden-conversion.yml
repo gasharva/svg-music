@@ -1,8 +1,7 @@
 name: PR golden conversion
 
+# Temporarily disabled in favor of golden-artifact.yml, which is independent of unit tests.
 on:
-  pull_request:
-    branches: [ master ]
   workflow_dispatch:
 
 permissions:
@@ -33,7 +32,7 @@ jobs:
       - name: Convert golden SVG
         run: |
           mkdir -p artifacts
-          dotnet run --project SvgToMusicXmlPoc.csproj --configuration Release --no-build -- \
+          dotnet run --project SvgToMusicXmlPoc.csproj --configuration Release --no-build --no-launch-profile -- \
             convert \
             Golden/yellow-leaves-giya-kancheli.svg \
             References/catalog.json \
