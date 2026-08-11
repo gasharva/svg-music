@@ -15,14 +15,12 @@ public sealed class SvgPathGeometry
 
     public Dictionary<string, SymbolGeometry> ReadSymbols(XDocument document, int curveSteps = 12)
     {
-        // PDF/SVG exporters do not necessarily use <symbol> for reusable glyphs. In the
-        // real Yellow Leaves sample some top-level <use href="#..."> instances point to
-        // arbitrary id-bearing elements in <defs> (for example paths/groups). Treat every
-        // id-bearing definition as a reusable geometry node and resolve <use> recursively.
+        // SVG <use> may reference any element with an id; it is not restricted to
+        // <symbol> or even to children of <defs>. PDF/SVG exporters exploit that freedom,
+        // so index every id-bearing element and recursively resolve the referenced geometry.
         var definitionElements = document.Descendants()
             .Select(x => new { Element = x, Id = (string?)x.Attribute("id") })
             .Where(x => !string.IsNullOrWhiteSpace(x.Id))
-            .Where(x => x.Element.Name == Svg + "symbol" || x.Element.Ancestors(Svg + "defs").Any())
             .GroupBy(x => x.Id!, StringComparer.Ordinal)
             .ToDictionary(x => x.Key, x => x.First().Element, StringComparer.Ordinal);
 
