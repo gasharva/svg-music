@@ -100,6 +100,10 @@ public sealed class ConversionPipeline
         var watch = Stopwatch.StartNew();
         new MusicXmlWriter().Write(musicXmlPath, result.Analysis, config);
         new MusicXmlStemPostProcessor().Apply(musicXmlPath, result.Analysis);
+        // Grace noteheads use the same glyph identity as ordinary black heads but are physically
+        // scaled to about 70%. Restore zero-duration grace semantics and their compact beams before
+        // voice layout so lane duration/backup calculations do not count them as quarter notes.
+        new MusicXmlGraceNotePostProcessor().Apply(musicXmlPath, result.Analysis);
         // Preserve the SVG's horizontal engraving coordinates before voice reordering.
         // The following voice-layout pass reuses the same note elements, so default-x survives.
         new MusicXmlSvgLayoutPostProcessor().Apply(musicXmlPath, result.Analysis);
