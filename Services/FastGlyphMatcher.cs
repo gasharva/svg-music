@@ -138,6 +138,12 @@ internal static class FastGlyphMatcher
         var union = Clipper.Union(combined, FillRule.EvenOdd);
         var intersectionArea = Math.Abs(Clipper.Area(intersection));
         var unionArea = Math.Abs(Clipper.Area(union));
-        return unionArea <= 0 ? 0 : intersectionArea / unionArea;
+        if (unionArea <= 0) return 0;
+
+        // IoU is a probability-like similarity and mathematically cannot exceed 1. With complex
+        // multi-contour glyphs Clipper.Area(Paths64) can partially cancel contour orientations,
+        // making the aggregate union area artificially small and producing values > 1. Those
+        // impossible values used to dominate the classifier and select arbitrary SMuFL glyphs.
+        return Math.Clamp(intersectionArea / unionArea, 0.0, 1.0);
     }
 }
