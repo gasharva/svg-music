@@ -53,18 +53,7 @@
     <measure number="30" />
     <measure number="31" />
     <measure number="32" />
-    <measure number="33">
-      <note default-x="60">
-        <pitch>
-          <step>D</step>
-          <octave>10</octave>
-        </pitch>
-        <duration>16</duration>
-        <voice>1</voice>
-        <type>quarter</type>
-        <staff>1</staff>
-      </note>
-    </measure>
+    <measure number="33" />
     <measure number="34" />
     <measure number="35" />
     <measure number="36" />
@@ -80,18 +69,7 @@
     <measure number="46" />
     <measure number="47" />
     <measure number="48" />
-    <measure number="49">
-      <note default-x="60">
-        <pitch>
-          <step>E</step>
-          <octave>7</octave>
-        </pitch>
-        <duration>64</duration>
-        <voice>1</voice>
-        <type>whole</type>
-        <staff>1</staff>
-      </note>
-    </measure>
+    <measure number="49" />
     <measure number="50" />
     <measure number="51">
       <print new-system="yes" />
@@ -641,40 +619,8 @@
     <measure number="492" />
     <measure number="493" />
     <measure number="494" />
-    <measure number="495">
-      <note default-x="60">
-        <pitch>
-          <step>B</step>
-          <octave>1</octave>
-        </pitch>
-        <duration>64</duration>
-        <voice>1</voice>
-        <type>whole</type>
-        <staff>1</staff>
-      </note>
-    </measure>
-    <measure number="496">
-      <note default-x="60">
-        <pitch>
-          <step>B</step>
-          <octave>1</octave>
-        </pitch>
-        <duration>64</duration>
-        <voice>1</voice>
-        <type>whole</type>
-        <staff>1</staff>
-      </note>
-      <note default-x="69.251">
-        <pitch>
-          <step>B</step>
-          <octave>1</octave>
-        </pitch>
-        <duration>64</duration>
-        <voice>1</voice>
-        <type>whole</type>
-        <staff>1</staff>
-      </note>
-    </measure>
+    <measure number="495" />
+    <measure number="496" />
     <measure number="497" />
     <measure number="498" />
     <measure number="499" />
