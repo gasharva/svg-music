@@ -27,32 +27,16 @@ jobs:
         continue-on-error: true
         run: |
           mkdir -p artifacts
-          dotnet run --project SvgToMusicXmlPoc.csproj --configuration Release --no-build -- \
+          dotnet run --project SvgToMusicXmlPoc.csproj --configuration Release --no-build --no-launch-profile -- \
             convert \
             Golden/yellow-leaves-giya-kancheli.svg \
+            References/catalog.json \
             artifacts/yellow-leaves.musicxml
 
-      - name: Collect generated diagnostics
+      - name: Show generated files
         if: always()
         shell: bash
         run: |
-          shopt -s nullglob
-          for f in \
-            artifacts/yellow-leaves.musicxml \
-            artifacts/yellow-leaves.analysis.json \
-            artifacts/yellow-leaves.classification.json \
-            artifacts/yellow-leaves.performance.json \
-            yellow-leaves.analysis.json \
-            yellow-leaves.classification.json \
-            yellow-leaves.performance.json \
-            score.analysis.json \
-            score.classification.json \
-            score.performance.json; do
-            if [ -f "$f" ]; then
-              cp "$f" artifacts/$(basename "$f") 2>/dev/null || true
-            fi
-          done
-
           echo "Generated artifact contents:"
           find artifacts -maxdepth 1 -type f -printf '%f\n' | sort || true
 
@@ -61,6 +45,21 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: yellow-leaves-pr-${{ github.event.pull_request.number }}
-          path: artifacts/
-          if-no-files-found: warn
+          path: |
+            artifacts/yellow-leaves.musicxml
+            artifacts/yellow-leaves.analysis.json
+            artifacts/yellow-leaves.classification.json
+            artifacts/yellow-leaves.performance.json
+          if-no-files-found: error
           retention-days: 14
+
+      - name: Add download hint to workflow summary
+        if: always()
+        run: |
+          {
+            echo '## Golden conversion artifact'
+            echo
+            echo 'Download **yellow-leaves-pr-${{ github.event.pull_request.number }}** from the Artifacts section at the bottom of this workflow run.'
+            echo
+            echo 'Open `yellow-leaves.musicxml` directly in MuseScore after unzipping.'
+          } >> "$GITHUB_STEP_SUMMARY"
