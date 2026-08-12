@@ -53,30 +53,21 @@ public sealed class ConversionPipeline
         var analysis = new MusicSemanticRecognizer().Recognize(uses, staves, classification, config);
         analysis.PageGeometry.AddRange(pageGeometry);
 
-        // Transitional compatibility surface: existing beam/arc/barline resolvers already consume
-        // DirectPaths. Feed that surface from the unified instantiated geometry stream so all of
-        // them immediately see both reusable <use>/<symbol> shapes and standalone paths. The new
-        // PageGeometry property preserves source identity while those resolvers are migrated later.
         analysis.DirectPaths.AddRange(pageGeometry.Select(x =>
             new SvgDirectPath(x.InstanceId, x.Geometry, x.X, x.Y)));
         analysis.LineSegments.AddRange(lineSegments);
 
-        // PDF-derived SVGs often use the <use> glyph origin as x while stems are separate painted
-        // paths in absolute page coordinates. Normalize noteheads to their painted horizontal
-        // centre before any spatial relation logic compares them to stems/beams/chords.
         new PaintedGlyphPositionNormalizer().Normalize(analysis);
-
-        // Very steep/remote beams can create stems substantially longer than the ordinary 7-space
-        // stem window. Accept those only when a long vertical segment actually starts/ends at a
-        // notehead, which prevents long barlines from becoming stems.
         new LongStemRelationResolver().Resolve(analysis);
-
         new MusicGeometryRelationResolver().Resolve(analysis, config);
+
+        // Text close to the first system can contain hollow glyphs that resemble noteheads.
+        // Once stem/ledger relations are known, reject only hollow "half-note" candidates that
+        // lie outside the staff and have neither a stem nor ledger-line support.
+        new StemlessHollowFalsePositiveResolver().Resolve(analysis);
+
         new SlopedBeamRhythmResolver().Resolve(analysis, config);
         new SlopedBeamCoverageResolver().Resolve(analysis, config);
-        // Real PDF-derived beams can have a ~1sp axis-aligned bbox because of slope/thickness.
-        // Re-run primary beam membership from painted strip thickness and allow the long stems
-        // recovered above, rather than depending on the older thin-box beam detector.
         new UnifiedBeamGeometryResolver().Resolve(analysis, config);
         new AccidentalGeometryResolver().Resolve(analysis, config);
         new ArcSemanticsResolver().Resolve(analysis);
