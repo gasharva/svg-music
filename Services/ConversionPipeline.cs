@@ -74,6 +74,10 @@ public sealed class ConversionPipeline
         new MusicGeometryRelationResolver().Resolve(analysis, config);
         new SlopedBeamRhythmResolver().Resolve(analysis, config);
         new SlopedBeamCoverageResolver().Resolve(analysis, config);
+        // Real PDF-derived beams can have a ~1sp axis-aligned bbox because of slope/thickness.
+        // Re-run primary beam membership from painted strip thickness and allow the long stems
+        // recovered above, rather than depending on the older thin-box beam detector.
+        new UnifiedBeamGeometryResolver().Resolve(analysis, config);
         new AccidentalGeometryResolver().Resolve(analysis, config);
         new ArcSemanticsResolver().Resolve(analysis);
         new ChordRhythmNormalizer().Normalize(analysis);
