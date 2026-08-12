@@ -22,9 +22,9 @@
 | stem attached | 152 | 98.7% |
 | stem direction | 152 | 98.7% |
 | chord members | 48 | 31.2% |
-| notes touching beams | 24 | 15.6% |
-| beam begin/continue/end | 24 | 15.6% |
-| eighth notes | 24 | 15.6% |
+| notes touching beams | 32 | 20.8% |
+| beam begin/continue/end | 32 | 20.8% |
+| eighth notes | 32 | 20.8% |
 | 16th notes | 2 | 1.3% |
 | dotted notes | 71 | 46.1% |
 | slur starts | 5 | 3.2% |
