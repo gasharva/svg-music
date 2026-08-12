@@ -58,6 +58,11 @@ jobs:
             artifacts/yellow-leaves.analysis.json \
             artifacts/yellow-leaves.classification.json \
             artifacts/yellow-leaves.flag-probe.md
+          python3 Scripts/text_glyph_inventory.py \
+            artifacts/yellow-leaves.analysis.json \
+            artifacts/yellow-leaves.classification.json \
+            artifacts/yellow-leaves.text-glyphs.html \
+            --json artifacts/yellow-leaves.text-glyphs.json
 
       - name: Show generated files
         if: always()
@@ -81,6 +86,8 @@ jobs:
             artifacts/yellow-leaves.beam-probe.md
             artifacts/yellow-leaves.notation-gaps.md
             artifacts/yellow-leaves.flag-probe.md
+            artifacts/yellow-leaves.text-glyphs.html
+            artifacts/yellow-leaves.text-glyphs.json
           if-no-files-found: error
           retention-days: 14
 
@@ -100,6 +107,8 @@ jobs:
           cp artifacts/yellow-leaves.beam-probe.md /tmp/golden-latest/
           cp artifacts/yellow-leaves.notation-gaps.md /tmp/golden-latest/
           cp artifacts/yellow-leaves.flag-probe.md /tmp/golden-latest/
+          cp artifacts/yellow-leaves.text-glyphs.html /tmp/golden-latest/
+          cp artifacts/yellow-leaves.text-glyphs.json /tmp/golden-latest/
 
           cat > /tmp/golden-latest/source.txt <<EOF
           PR: #${{ github.event.pull_request.number }}
@@ -145,4 +154,6 @@ jobs:
             echo '- [Missing-stem beam probe](https://raw.githubusercontent.com/${{ github.repository }}/ci-output/latest/yellow-leaves.beam-probe.md)'
             echo '- [Notation gap inventory](https://raw.githubusercontent.com/${{ github.repository }}/ci-output/latest/yellow-leaves.notation-gaps.md)'
             echo '- [Standalone flag probe](https://raw.githubusercontent.com/${{ github.repository }}/ci-output/latest/yellow-leaves.flag-probe.md)'
+            echo '- [Vector text-glyph inventory HTML](https://raw.githubusercontent.com/${{ github.repository }}/ci-output/latest/yellow-leaves.text-glyphs.html)'
+            echo '- [Vector text-glyph inventory JSON](https://raw.githubusercontent.com/${{ github.repository }}/ci-output/latest/yellow-leaves.text-glyphs.json)'
           } >> "$GITHUB_STEP_SUMMARY"
