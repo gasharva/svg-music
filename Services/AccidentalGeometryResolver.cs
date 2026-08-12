@@ -18,7 +18,6 @@ public sealed class AccidentalGeometryResolver
         var classes = analysis.Classifications.ToDictionary(x => x.SymbolId, StringComparer.Ordinal);
         var notes = analysis.Events.Where(x => x.Step is not null).ToList();
 
-        // Remove provisional assignments made before final stem/chord/staff reconstruction.
         foreach (var note in notes)
         {
             note.Alter = 0;
@@ -40,7 +39,7 @@ public sealed class AccidentalGeometryResolver
             if (staff is null) continue;
 
             var accidentalPosition = StaffPosition(use.Y, staff);
-            var target = notes
+            var candidates = notes
                 .Where(x => x.StaffIndex == staff.Index)
                 .Where(x => x.X > use.X)
                 .Where(x => x.X - use.X <= staff.Space * config.MaxAttachmentDistanceInSpaces)
@@ -52,16 +51,16 @@ public sealed class AccidentalGeometryResolver
                     YDelta = Math.Abs(x.Y - use.Y),
                     XDelta = x.X - use.X
                 })
-                // First choose the same musical row (line or space). This is the SVG equivalent
-                // of asking which staff line/space passes through the accidental. Only then use
-                // exact Y and horizontal proximity to break ties.
                 .OrderBy(x => x.PositionDelta)
                 .ThenBy(x => x.YDelta)
                 .ThenBy(x => x.XDelta)
-                .Select(x => x.Note)
-                .FirstOrDefault();
+                .ToList();
 
+            var target = candidates.FirstOrDefault()?.Note;
             if (target is null) continue;
+
+            analysis.Warnings.Add(
+                $"acc-probe #{use.SymbolId} staff={staff.Index} x={use.X:F1} y={use.Y:F1} row={accidentalPosition} -> {target.Step}{target.Octave} x={target.X:F1} y={target.Y:F1} row={StaffPosition(target.Y, staff)} pd={candidates[0].PositionDelta} dy={candidates[0].YDelta:F2} dx={candidates[0].XDelta:F2}");
 
             target.Alter = cls.Kind switch
             {
