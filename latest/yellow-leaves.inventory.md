@@ -33,6 +33,55 @@
 | tie stops | 0 | 0.0% |
 | altered pitches | 26 | 16.9% |
 
+## Missing-stem triage
+
+Unattached noteheads: **88**
+Normalized stem candidates: **99**
+Broad raw vertical candidates: **103**
+Raw vertical candidates not normalized: **4**
+
+| Category | Count | Meaning |
+|---|---:|---|
+| normalization gap | 4 | stem-like raw path exists near the note, but no normalized line candidate does |
+| attachment geometry gap | 1 | normalized stem is nearby, but current note↔stem endpoint/intersection tolerance rejects it |
+| unexpected resolver gap | 0 | a normalized candidate satisfies the resolver's current attachment window but StemX is still empty |
+| no stem geometry candidate | 83 | neither normalized nor broad raw vertical geometry was found near the note |
+
+### Sample unattached notes
+
+| category | symbol | staff | x | y | line dx sp | line y-gap sp | raw dx sp | raw y-gap sp | raw path |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---|
+| noStemGeometryCandidate | `P` | 0 | 158.21 | 140.19 |  |  |  |  | `` |
+| noStemGeometryCandidate | `R` | 0 | 172.15 | 140.19 |  |  |  |  | `` |
+| noStemGeometryCandidate | `D` | 0 | 113.28 | 184.41 |  |  |  |  | `` |
+| attachmentGeometryGap | `C` | 0 | 118.64 | 177.51 | 0.073 | 1.165 |  |  | `` |
+| noStemGeometryCandidate | `C` | 0 | 144.48 | 170.62 |  |  |  |  | `` |
+| noStemGeometryCandidate | `D` | 0 | 156.54 | 166.03 |  |  |  |  | `` |
+| noStemGeometryCandidate | `C` | 0 | 218.18 | 166.03 |  |  |  |  | `` |
+| noStemGeometryCandidate | `C` | 0 | 245.34 | 166.03 |  |  |  |  | `` |
+| noStemGeometryCandidate | `D` | 0 | 257.97 | 168.33 |  |  |  |  | `` |
+| noStemGeometryCandidate | `C` | 0 | 322.86 | 166.03 |  |  |  |  | `` |
+| noStemGeometryCandidate | `C` | 0 | 352.14 | 166.03 |  |  |  |  | `` |
+| noStemGeometryCandidate | `C` | 0 | 381.61 | 168.33 |  |  |  |  | `` |
+| noStemGeometryCandidate | `D` | 0 | 417.79 | 170.62 |  |  |  |  | `` |
+| noStemGeometryCandidate | `D` | 1 | 118.64 | 226.51 |  |  |  |  | `` |
+| noStemGeometryCandidate | `D` | 1 | 118.64 | 217.32 |  |  |  |  | `` |
+| normalizationGap | `C` | 1 | 470.03 | 210.43 |  |  | 0.074 | 0.164 | `path:000029#0` |
+| noStemGeometryCandidate | `C` | 1 | 487.26 | 205.84 |  |  |  |  | `` |
+| noStemGeometryCandidate | `C` | 1 | 504.68 | 198.95 |  |  |  |  | `` |
+| noStemGeometryCandidate | `W` | 2 | 83.05 | 307.47 |  |  |  |  | `` |
+| noStemGeometryCandidate | `C` | 2 | 114.43 | 309.76 |  |  |  |  | `` |
+| noStemGeometryCandidate | `C` | 2 | 114.43 | 305.17 |  |  |  |  | `` |
+| noStemGeometryCandidate | `W` | 2 | 145.63 | 307.47 |  |  |  |  | `` |
+| noStemGeometryCandidate | `C` | 2 | 145.63 | 302.88 |  |  |  |  | `` |
+| noStemGeometryCandidate | `C` | 2 | 182.76 | 298.27 |  |  |  |  | `` |
+| noStemGeometryCandidate | `C` | 2 | 217.02 | 300.58 |  |  |  |  | `` |
+| noStemGeometryCandidate | `D` | 2 | 231.18 | 300.58 |  |  |  |  | `` |
+| noStemGeometryCandidate | `D` | 2 | 296.44 | 312.06 |  |  |  |  | `` |
+| noStemGeometryCandidate | `C` | 2 | 333.00 | 307.47 |  |  |  |  | `` |
+| noStemGeometryCandidate | `C` | 2 | 364.20 | 305.17 |  |  |  |  | `` |
+| noStemGeometryCandidate | `D` | 2 | 402.28 | 314.36 |  |  |  |  | `` |
+
 ## Warning groups
 
 Total warnings: **139**
