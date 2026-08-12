@@ -2,8 +2,8 @@
   "structuralInputs": {
     "staves": 10,
     "uses": 594,
-    "directPaths": 153,
-    "lineSegments": 137
+    "directPaths": 577,
+    "lineSegments": 138
   },
   "eventKinds": {
     "notehead-black": 152,
@@ -46,8 +46,8 @@
   "stemGapTriage": {
     "unattachedNotes": 88,
     "normalizedStemCandidates": 99,
-    "broadRawVerticalCandidates": 103,
-    "rawVerticalCandidatesNotNormalized": 4,
+    "broadRawVerticalCandidates": 108,
+    "rawVerticalCandidatesNotNormalized": 9,
     "categories": {
       "noStemGeometryCandidate": 83,
       "attachmentGeometryGap": 1,

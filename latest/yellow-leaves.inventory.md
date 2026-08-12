@@ -4,8 +4,8 @@
 
 - staves: **10**
 - reusable/direct uses: **594**
-- direct paths: **153**
-- normalized line segments: **137**
+- direct paths: **577**
+- normalized line segments: **138**
 
 ## Semantic events
 
@@ -37,8 +37,8 @@
 
 Unattached noteheads: **88**
 Normalized stem candidates: **99**
-Broad raw vertical candidates: **103**
-Raw vertical candidates not normalized: **4**
+Broad raw vertical candidates: **108**
+Raw vertical candidates not normalized: **9**
 
 | Category | Count | Meaning |
 |---|---:|---|
