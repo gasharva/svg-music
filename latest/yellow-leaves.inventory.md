@@ -19,23 +19,23 @@
 
 | Relation | Count | % of notes |
 |---|---:|---:|
-| stem attached | 66 | 42.9% |
-| stem direction | 66 | 42.9% |
-| chord members | 34 | 22.1% |
-| notes touching beams | 6 | 3.9% |
-| beam begin/continue/end | 6 | 3.9% |
-| eighth notes | 6 | 3.9% |
+| stem attached | 144 | 93.5% |
+| stem direction | 146 | 94.8% |
+| chord members | 48 | 31.2% |
+| notes touching beams | 18 | 11.7% |
+| beam begin/continue/end | 18 | 11.7% |
+| eighth notes | 18 | 11.7% |
 | 16th notes | 2 | 1.3% |
-| dotted notes | 60 | 39.0% |
+| dotted notes | 71 | 46.1% |
 | slur starts | 1 | 0.6% |
 | slur stops | 1 | 0.6% |
 | tie starts | 0 | 0.0% |
 | tie stops | 0 | 0.0% |
-| altered pitches | 26 | 16.9% |
+| altered pitches | 25 | 16.2% |
 
 ## Missing-stem triage
 
-Unattached noteheads: **88**
+Unattached noteheads: **10**
 Normalized stem candidates: **99**
 Broad raw vertical candidates: **108**
 Raw vertical candidates not normalized: **9**
@@ -43,44 +43,24 @@ Raw vertical candidates not normalized: **9**
 | Category | Count | Meaning |
 |---|---:|---|
 | normalization gap | 4 | stem-like raw path exists near the note, but no normalized line candidate does |
-| attachment geometry gap | 1 | normalized stem is nearby, but current note↔stem endpoint/intersection tolerance rejects it |
+| attachment geometry gap | 0 | normalized stem is nearby, but current note↔stem endpoint/intersection tolerance rejects it |
 | unexpected resolver gap | 0 | a normalized candidate satisfies the resolver's current attachment window but StemX is still empty |
-| no stem geometry candidate | 83 | neither normalized nor broad raw vertical geometry was found near the note |
+| no stem geometry candidate | 6 | neither normalized nor broad raw vertical geometry was found near the note |
 
 ### Sample unattached notes
 
 | category | symbol | staff | x | y | line dx sp | line y-gap sp | raw dx sp | raw y-gap sp | raw path |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---|
-| noStemGeometryCandidate | `P` | 0 | 158.21 | 140.19 |  |  |  |  | `` |
-| noStemGeometryCandidate | `R` | 0 | 172.15 | 140.19 |  |  |  |  | `` |
-| noStemGeometryCandidate | `D` | 0 | 113.28 | 184.41 |  |  |  |  | `` |
-| attachmentGeometryGap | `C` | 0 | 118.64 | 177.51 | 0.073 | 1.165 |  |  | `` |
-| noStemGeometryCandidate | `C` | 0 | 144.48 | 170.62 |  |  |  |  | `` |
-| noStemGeometryCandidate | `D` | 0 | 156.54 | 166.03 |  |  |  |  | `` |
-| noStemGeometryCandidate | `C` | 0 | 218.18 | 166.03 |  |  |  |  | `` |
-| noStemGeometryCandidate | `C` | 0 | 245.34 | 166.03 |  |  |  |  | `` |
-| noStemGeometryCandidate | `D` | 0 | 257.97 | 168.33 |  |  |  |  | `` |
-| noStemGeometryCandidate | `C` | 0 | 322.86 | 166.03 |  |  |  |  | `` |
-| noStemGeometryCandidate | `C` | 0 | 352.14 | 166.03 |  |  |  |  | `` |
-| noStemGeometryCandidate | `C` | 0 | 381.61 | 168.33 |  |  |  |  | `` |
-| noStemGeometryCandidate | `D` | 0 | 417.79 | 170.62 |  |  |  |  | `` |
-| noStemGeometryCandidate | `D` | 1 | 118.64 | 226.51 |  |  |  |  | `` |
-| noStemGeometryCandidate | `D` | 1 | 118.64 | 217.32 |  |  |  |  | `` |
-| normalizationGap | `C` | 1 | 470.03 | 210.43 |  |  | 0.074 | 0.164 | `path:000029#0` |
-| noStemGeometryCandidate | `C` | 1 | 487.26 | 205.84 |  |  |  |  | `` |
-| noStemGeometryCandidate | `C` | 1 | 504.68 | 198.95 |  |  |  |  | `` |
-| noStemGeometryCandidate | `W` | 2 | 83.05 | 307.47 |  |  |  |  | `` |
-| noStemGeometryCandidate | `C` | 2 | 114.43 | 309.76 |  |  |  |  | `` |
-| noStemGeometryCandidate | `C` | 2 | 114.43 | 305.17 |  |  |  |  | `` |
-| noStemGeometryCandidate | `W` | 2 | 145.63 | 307.47 |  |  |  |  | `` |
-| noStemGeometryCandidate | `C` | 2 | 145.63 | 302.88 |  |  |  |  | `` |
-| noStemGeometryCandidate | `C` | 2 | 182.76 | 298.27 |  |  |  |  | `` |
-| noStemGeometryCandidate | `C` | 2 | 217.02 | 300.58 |  |  |  |  | `` |
-| noStemGeometryCandidate | `D` | 2 | 231.18 | 300.58 |  |  |  |  | `` |
-| noStemGeometryCandidate | `D` | 2 | 296.44 | 312.06 |  |  |  |  | `` |
-| noStemGeometryCandidate | `C` | 2 | 333.00 | 307.47 |  |  |  |  | `` |
-| noStemGeometryCandidate | `C` | 2 | 364.20 | 305.17 |  |  |  |  | `` |
-| noStemGeometryCandidate | `D` | 2 | 402.28 | 314.36 |  |  |  |  | `` |
+| noStemGeometryCandidate | `P` | 0 | 162.26 | 140.19 |  |  |  |  | `` |
+| noStemGeometryCandidate | `R` | 0 | 176.09 | 140.19 |  |  |  |  | `` |
+| normalizationGap | `C` | 1 | 472.48 | 210.43 |  |  | 0.459 | 0.164 | `path:000029#0` |
+| noStemGeometryCandidate | `C` | 1 | 489.71 | 205.84 |  |  |  |  | `` |
+| noStemGeometryCandidate | `C` | 1 | 507.13 | 198.95 |  |  |  |  | `` |
+| normalizationGap | `C` | 3 | 404.73 | 363.36 |  |  | 0.671 | 0.169 | `path:000060#0` |
+| normalizationGap | `C` | 5 | 470.00 | 484.12 |  |  | 0.458 | 0.166 | `path:000091#0` |
+| noStemGeometryCandidate | `C` | 5 | 488.18 | 479.53 |  |  |  |  | `` |
+| noStemGeometryCandidate | `C` | 5 | 506.36 | 472.64 |  |  |  |  | `` |
+| normalizationGap | `C` | 7 | 415.64 | 637.05 |  |  | 0.671 | 0.169 | `path:000121#0` |
 
 ## Warning groups
 
