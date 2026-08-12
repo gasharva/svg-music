@@ -60,6 +60,11 @@ public sealed class ConversionPipeline
             new SvgDirectPath(x.InstanceId, x.Geometry, x.X, x.Y)));
         analysis.LineSegments.AddRange(lineSegments);
 
+        // PDF-derived SVGs often use the <use> glyph origin as x while stems are separate painted
+        // paths in absolute page coordinates. Normalize noteheads to their painted horizontal
+        // centre before any spatial relation logic compares them to stems/beams/chords.
+        new PaintedGlyphPositionNormalizer().Normalize(analysis);
+
         new MusicGeometryRelationResolver().Resolve(analysis, config);
         new SlopedBeamRhythmResolver().Resolve(analysis, config);
         new SlopedBeamCoverageResolver().Resolve(analysis, config);
