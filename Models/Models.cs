@@ -47,7 +47,7 @@ public sealed class RecognizedEvent
     public string Kind { get; set; } = "unknown";
     public string ReferenceId { get; init; } = "";
     public double Confidence { get; init; }
-    public double X { get; init; }
+    public double X { get; set; }
     public double Y { get; init; }
     public int StaffIndex { get; set; }
 
