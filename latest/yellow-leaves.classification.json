@@ -38,7 +38,7 @@
     },
     {
       "SymbolId": "D",
-      "Kind": "notehead-half",
+      "Kind": "notehead-black",
       "ReferenceId": "uniE0FB",
       "Score": 0.8177933904321488,
       "ShapeScore": 0.8279295689131754,
@@ -626,7 +626,7 @@
     },
     {
       "SymbolId": "aa",
-      "Kind": "smufl-unknown",
+      "Kind": "rest-quarter",
       "ReferenceId": "uniE13B",
       "Score": 0.7542858276805711,
       "ShapeScore": 0.7576938610662358,
@@ -650,7 +650,7 @@
     },
     {
       "SymbolId": "ac",
-      "Kind": "notehead-black",
+      "Kind": "smufl-unknown",
       "ReferenceId": "uniE581",
       "Score": 0.7825736912476844,
       "ShapeScore": 0.8057825611090843,
@@ -3195,14 +3195,14 @@
     {
       "SymbolId": "z",
       "Kind": "time-signature-digit",
-      "ReferenceId": "timeSig3",
+      "ReferenceId": "timeSig7",
       "Score": 0.5461829258895051,
       "ShapeScore": 0.47843961696594084,
       "SizeScore": 0.8171561615837621,
       "WidthInSpaces": 2.0241101477517285,
       "HeightInSpaces": 1.9424752471917262,
       "MusicXmlElement": "attributes/time/digit",
-      "MusicXmlValue": "3"
+      "MusicXmlValue": "7"
     }
   ]
 }
