@@ -27,8 +27,6 @@ public sealed class MusicSemanticRecognizer
             }
 
             var staff = FindStaff(use, staves, config.MaxSymbolDistanceInSpaces);
-            // A recognized notehead must never be discarded merely because it is far above/below
-            // a staff. GeometryRelationResolver will attach it to a stem and assign the staff later.
             if (staff is null && !isNotehead) continue;
 
             instances.Add(new RecognizedEvent
@@ -189,11 +187,35 @@ public sealed class MusicSemanticRecognizer
         {
             if (accidental.StaffIndex < 0 || accidental.StaffIndex >= staves.Count) continue;
             var staff = staves[accidental.StaffIndex];
-            var note = events.Where(x => x.StaffIndex == accidental.StaffIndex && x.Step is not null && x.X > accidental.X)
+            var accidentalPosition = StaffPosition(accidental.Y, staff);
+
+            // Accidentals encode pitch primarily by the line/space through their anchor, not by
+            // which notehead happens to be horizontally closest. In outlined/PDF SVG a displaced
+            // notehead in a close interval can be ~1 staff-space nearer in X and steal the flat.
+            // Prefer the note on the same quantized half-space position, then geometric Y, then X.
+            var note = events
+                .Where(x => x.StaffIndex == accidental.StaffIndex && x.Step is not null && x.X > accidental.X)
                 .Where(x => x.X - accidental.X <= staff.Space * config.MaxAttachmentDistanceInSpaces)
                 .Where(x => Math.Abs(x.Y - accidental.Y) <= staff.Space * 1.2)
-                .OrderBy(x => x.X - accidental.X).ThenBy(x => Math.Abs(x.Y - accidental.Y)).FirstOrDefault();
-            if (note is null) { warnings.Add($"Не удалось привязать {accidental.Kind} в x={accidental.X:F1}"); continue; }
+                .Select(x => new
+                {
+                    Note = x,
+                    PositionDelta = Math.Abs(StaffPosition(x.Y, staff) - accidentalPosition),
+                    YDelta = Math.Abs(x.Y - accidental.Y),
+                    XDelta = x.X - accidental.X
+                })
+                .OrderBy(x => x.PositionDelta)
+                .ThenBy(x => x.YDelta)
+                .ThenBy(x => x.XDelta)
+                .Select(x => x.Note)
+                .FirstOrDefault();
+
+            if (note is null)
+            {
+                warnings.Add($"Не удалось привязать {accidental.Kind} в x={accidental.X:F1}");
+                continue;
+            }
+
             note.Alter = accidental.Kind switch
             {
                 "accidental-flat" => -1, "accidental-double-flat" => -2,
@@ -202,6 +224,9 @@ public sealed class MusicSemanticRecognizer
             note.AttachedToSymbolId = accidental.SourceSymbolId;
         }
     }
+
+    private static int StaffPosition(double y, Staff staff) =>
+        (int)Math.Round((staff.Bottom - y) / Math.Max(staff.Space / 2, .001));
 
     private static void AttachDots(IReadOnlyList<RecognizedEvent> instances, IReadOnlyList<RecognizedEvent> events,
         IReadOnlyList<Staff> staves, RecognitionConfig config, List<string> warnings)
