@@ -53,7 +53,10 @@ public sealed class CompoundVerticalStrokeExtractor
                     var dx = Math.Abs(b.X - a.X);
                     var dy = Math.Abs(b.Y - a.Y);
 
-                    if (dy < space * 1.0 || dy > space * 7.0) continue;
+                    // Sloped beamed passages in the real PDF-derived score contain stems up to
+                    // roughly 9.6 staff spaces long. Keep a generous structural ceiling here;
+                    // the relation pass later requires one end of the line to touch a notehead.
+                    if (dy < space * 1.0 || dy > space * 11.0) continue;
                     if (dx > Math.Max(space * .08, dy * .08)) continue;
 
                     var x = (a.X + b.X) / 2;
