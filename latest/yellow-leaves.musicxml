@@ -143,14 +143,12 @@
       <note default-x="60">
         <pitch>
           <step>A</step>
-          <alter>-1</alter>
           <octave>4</octave>
         </pitch>
         <duration>12</duration>
         <voice>1</voice>
         <type>eighth</type>
         <dot />
-        <accidental>flat</accidental>
         <stem>up</stem>
         <beam number="1">begin</beam>
         <notations>
@@ -162,12 +160,14 @@
         <chord />
         <pitch>
           <step>B</step>
+          <alter>-1</alter>
           <octave>4</octave>
         </pitch>
         <duration>12</duration>
         <voice>1</voice>
         <type>eighth</type>
         <dot />
+        <accidental>flat</accidental>
         <stem>up</stem>
         <beam number="1">begin</beam>
         <staff>1</staff>
@@ -175,7 +175,6 @@
       <note default-x="119.14">
         <pitch>
           <step>A</step>
-          <alter>-1</alter>
           <octave>4</octave>
         </pitch>
         <duration>4</duration>
@@ -233,13 +232,11 @@
       <note default-x="60">
         <pitch>
           <step>A</step>
-          <alter>-1</alter>
           <octave>4</octave>
         </pitch>
         <duration>16</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <accidental>flat</accidental>
         <stem>up</stem>
         <staff>1</staff>
       </note>
@@ -247,11 +244,13 @@
         <chord />
         <pitch>
           <step>B</step>
+          <alter>-1</alter>
           <octave>4</octave>
         </pitch>
         <duration>16</duration>
         <voice>1</voice>
         <type>quarter</type>
+        <accidental>flat</accidental>
         <stem>up</stem>
         <notations>
           <slur type="start" number="10" />
@@ -261,7 +260,6 @@
       <note default-x="123.733">
         <pitch>
           <step>A</step>
-          <alter>-1</alter>
           <octave>4</octave>
         </pitch>
         <duration>16</duration>
@@ -630,6 +628,22 @@
       <note default-x="115.338">
         <pitch>
           <step>A</step>
+          <octave>3</octave>
+        </pitch>
+        <tie type="start" />
+        <duration>8</duration>
+        <voice>3</voice>
+        <type>eighth</type>
+        <stem>up</stem>
+        <notations>
+          <tied type="start" />
+        </notations>
+        <staff>2</staff>
+      </note>
+      <note default-x="126.577">
+        <chord />
+        <pitch>
+          <step>B</step>
           <alter>-1</alter>
           <octave>3</octave>
         </pitch>
@@ -644,26 +658,9 @@
         </notations>
         <staff>2</staff>
       </note>
-      <note default-x="126.577">
-        <chord />
-        <pitch>
-          <step>B</step>
-          <octave>3</octave>
-        </pitch>
-        <tie type="start" />
-        <duration>8</duration>
-        <voice>3</voice>
-        <type>eighth</type>
-        <stem>up</stem>
-        <notations>
-          <tied type="start" />
-        </notations>
-        <staff>2</staff>
-      </note>
       <note default-x="172.187">
         <pitch>
           <step>A</step>
-          <alter>-1</alter>
           <octave>3</octave>
         </pitch>
         <tie type="stop" />
@@ -680,6 +677,7 @@
         <chord />
         <pitch>
           <step>B</step>
+          <alter>-1</alter>
           <octave>3</octave>
         </pitch>
         <tie type="stop" />
@@ -1081,14 +1079,12 @@
       <note default-x="60">
         <pitch>
           <step>A</step>
-          <alter>-1</alter>
           <octave>4</octave>
         </pitch>
         <duration>12</duration>
         <voice>1</voice>
         <type>eighth</type>
         <dot />
-        <accidental>flat</accidental>
         <stem>up</stem>
         <beam number="1">begin</beam>
         <notations>
@@ -1100,12 +1096,14 @@
         <chord />
         <pitch>
           <step>B</step>
+          <alter>-1</alter>
           <octave>4</octave>
         </pitch>
         <duration>12</duration>
         <voice>1</voice>
         <type>eighth</type>
         <dot />
+        <accidental>flat</accidental>
         <stem>up</stem>
         <beam number="1">begin</beam>
         <staff>1</staff>
@@ -1113,7 +1111,6 @@
       <note default-x="122.061">
         <pitch>
           <step>A</step>
-          <alter>-1</alter>
           <octave>4</octave>
         </pitch>
         <duration>4</duration>
@@ -1171,13 +1168,11 @@
       <note default-x="60">
         <pitch>
           <step>A</step>
-          <alter>-1</alter>
           <octave>4</octave>
         </pitch>
         <duration>16</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <accidental>flat</accidental>
         <stem>up</stem>
         <staff>1</staff>
       </note>
@@ -1185,11 +1180,13 @@
         <chord />
         <pitch>
           <step>B</step>
+          <alter>-1</alter>
           <octave>4</octave>
         </pitch>
         <duration>16</duration>
         <voice>1</voice>
         <type>quarter</type>
+        <accidental>flat</accidental>
         <stem>up</stem>
         <notations>
           <slur type="start" number="9" />
@@ -1199,7 +1196,6 @@
       <note default-x="127.066">
         <pitch>
           <step>A</step>
-          <alter>-1</alter>
           <octave>4</octave>
         </pitch>
         <duration>16</duration>
@@ -2059,12 +2055,14 @@
       <note default-x="72.712">
         <pitch>
           <step>F</step>
+          <alter>1</alter>
           <octave>4</octave>
         </pitch>
         <duration>72</duration>
         <voice>2</voice>
         <type>half</type>
         <dot />
+        <accidental>sharp</accidental>
         <stem>down</stem>
         <staff>1</staff>
       </note>
