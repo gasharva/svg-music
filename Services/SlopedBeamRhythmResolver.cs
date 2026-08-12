@@ -115,7 +115,7 @@ public sealed class SlopedBeamRhythmResolver
     private static SvgLineSegment? FindStem(AnalysisResult analysis, RecognizedEvent note, Staff staff) =>
         analysis.LineSegments
             .Where(x => Math.Abs(x.CenterX - note.StemX!.Value) <= staff.Space * .14)
-            .Where(x => x.Height >= staff.Space * 1.25 && x.Height <= staff.Space * 7.0)
+            .Where(x => x.Height >= staff.Space * 1.25 && x.Height <= staff.Space * 11.0)
             .Where(x => x.Top <= note.Y + staff.Space * .75 && x.Bottom >= note.Y - staff.Space * .75)
             .OrderBy(x => Math.Abs(x.CenterX - note.StemX!.Value))
             .FirstOrDefault();
