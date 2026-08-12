@@ -685868,9 +685868,9 @@
       "StemDirection": "up",
       "BeamValue": "begin",
       "BeamCount": 1,
-      "SlurStart": true,
+      "SlurStart": false,
       "SlurStop": false,
-      "SlurNumber": 3,
+      "SlurNumber": null,
       "TieStart": false,
       "TieStop": false
     },
@@ -685896,9 +685896,9 @@
       "StemDirection": "up",
       "BeamValue": "end",
       "BeamCount": 2,
-      "SlurStart": false,
+      "SlurStart": true,
       "SlurStop": false,
-      "SlurNumber": null,
+      "SlurNumber": 3,
       "TieStart": false,
       "TieStop": false
     },
@@ -686820,9 +686820,9 @@
       "StemDirection": "up",
       "BeamValue": "begin",
       "BeamCount": 1,
-      "SlurStart": true,
+      "SlurStart": false,
       "SlurStop": false,
-      "SlurNumber": 4,
+      "SlurNumber": null,
       "TieStart": false,
       "TieStop": false
     },
@@ -686876,9 +686876,9 @@
       "StemDirection": "up",
       "BeamValue": "end",
       "BeamCount": 2,
-      "SlurStart": false,
+      "SlurStart": true,
       "SlurStop": false,
-      "SlurNumber": null,
+      "SlurNumber": 4,
       "TieStart": false,
       "TieStop": false
     },
@@ -687803,7 +687803,7 @@
       "SlurStart": false,
       "SlurStop": false,
       "SlurNumber": null,
-      "TieStart": false,
+      "TieStart": true,
       "TieStop": false
     },
     {
@@ -687832,7 +687832,7 @@
       "SlurStop": false,
       "SlurNumber": null,
       "TieStart": false,
-      "TieStop": false
+      "TieStop": true
     },
     {
       "SourceSymbolId": "D",
@@ -688808,9 +688808,9 @@
       "StemDirection": "up",
       "BeamValue": "begin",
       "BeamCount": 1,
-      "SlurStart": true,
+      "SlurStart": false,
       "SlurStop": false,
-      "SlurNumber": 5,
+      "SlurNumber": null,
       "TieStart": false,
       "TieStop": false
     },
@@ -688836,9 +688836,9 @@
       "StemDirection": "up",
       "BeamValue": "end",
       "BeamCount": 2,
-      "SlurStart": false,
+      "SlurStart": true,
       "SlurStop": false,
-      "SlurNumber": null,
+      "SlurNumber": 5,
       "TieStart": false,
       "TieStop": false
     },
