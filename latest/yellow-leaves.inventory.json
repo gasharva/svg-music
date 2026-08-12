@@ -14,12 +14,12 @@
   },
   "relations": {
     "notes": 154,
-    "withStem": 144,
-    "withStemDirection": 146,
+    "withStem": 152,
+    "withStemDirection": 152,
     "chordMembers": 48,
-    "withBeam": 18,
-    "withBeamValue": 18,
-    "eighth": 18,
+    "withBeam": 22,
+    "withBeamValue": 22,
+    "eighth": 22,
     "sixteenth": 2,
     "dotted": 71,
     "slurStarts": 1,
@@ -29,12 +29,12 @@
     "altered": 25
   },
   "relationCoveragePercent": {
-    "withStem": 93.5,
-    "withStemDirection": 94.8,
+    "withStem": 98.7,
+    "withStemDirection": 98.7,
     "chordMembers": 31.2,
-    "withBeam": 11.7,
-    "withBeamValue": 11.7,
-    "eighth": 11.7,
+    "withBeam": 14.3,
+    "withBeamValue": 14.3,
+    "eighth": 14.3,
     "sixteenth": 1.3,
     "dotted": 46.1,
     "slurStarts": 0.6,
@@ -44,13 +44,12 @@
     "altered": 16.2
   },
   "stemGapTriage": {
-    "unattachedNotes": 10,
+    "unattachedNotes": 2,
     "normalizedStemCandidates": 105,
     "broadRawVerticalCandidates": 108,
     "rawVerticalCandidatesNotNormalized": 9,
     "categories": {
-      "noStemGeometryCandidate": 6,
-      "normalizationGap": 4
+      "noStemGeometryCandidate": 2
     },
     "samples": [
       {
@@ -78,110 +77,6 @@
         "nearestRawOnlyYGapSpaces": null,
         "rawPathId": null,
         "rawContour": null
-      },
-      {
-        "category": "normalizationGap",
-        "symbolId": "C",
-        "staff": 1,
-        "x": 472.4843194444444,
-        "y": 210.434,
-        "nearestNormalizedDxSpaces": null,
-        "nearestNormalizedYGapSpaces": null,
-        "nearestRawOnlyDxSpaces": 0.459,
-        "nearestRawOnlyYGapSpaces": 0.164,
-        "rawPathId": "path:000029",
-        "rawContour": 0
-      },
-      {
-        "category": "noStemGeometryCandidate",
-        "symbolId": "C",
-        "staff": 1,
-        "x": 489.7093194444444,
-        "y": 205.84,
-        "nearestNormalizedDxSpaces": null,
-        "nearestNormalizedYGapSpaces": null,
-        "nearestRawOnlyDxSpaces": null,
-        "nearestRawOnlyYGapSpaces": null,
-        "rawPathId": null,
-        "rawContour": null
-      },
-      {
-        "category": "noStemGeometryCandidate",
-        "symbolId": "C",
-        "staff": 1,
-        "x": 507.1253194444445,
-        "y": 198.95,
-        "nearestNormalizedDxSpaces": null,
-        "nearestNormalizedYGapSpaces": null,
-        "nearestRawOnlyDxSpaces": null,
-        "nearestRawOnlyYGapSpaces": null,
-        "rawPathId": null,
-        "rawContour": null
-      },
-      {
-        "category": "normalizationGap",
-        "symbolId": "C",
-        "staff": 3,
-        "x": 404.7343194444444,
-        "y": 363.359,
-        "nearestNormalizedDxSpaces": null,
-        "nearestNormalizedYGapSpaces": null,
-        "nearestRawOnlyDxSpaces": 0.671,
-        "nearestRawOnlyYGapSpaces": 0.169,
-        "rawPathId": "path:000060",
-        "rawContour": 0
-      },
-      {
-        "category": "normalizationGap",
-        "symbolId": "C",
-        "staff": 5,
-        "x": 469.9953194444445,
-        "y": 484.12,
-        "nearestNormalizedDxSpaces": null,
-        "nearestNormalizedYGapSpaces": null,
-        "nearestRawOnlyDxSpaces": 0.458,
-        "nearestRawOnlyYGapSpaces": 0.166,
-        "rawPathId": "path:000091",
-        "rawContour": 0
-      },
-      {
-        "category": "noStemGeometryCandidate",
-        "symbolId": "C",
-        "staff": 5,
-        "x": 488.17831944444447,
-        "y": 479.527,
-        "nearestNormalizedDxSpaces": null,
-        "nearestNormalizedYGapSpaces": null,
-        "nearestRawOnlyDxSpaces": null,
-        "nearestRawOnlyYGapSpaces": null,
-        "rawPathId": null,
-        "rawContour": null
-      },
-      {
-        "category": "noStemGeometryCandidate",
-        "symbolId": "C",
-        "staff": 5,
-        "x": 506.3603194444445,
-        "y": 472.636,
-        "nearestNormalizedDxSpaces": null,
-        "nearestNormalizedYGapSpaces": null,
-        "nearestRawOnlyDxSpaces": null,
-        "nearestRawOnlyYGapSpaces": null,
-        "rawPathId": null,
-        "rawContour": null
-      },
-      {
-        "category": "normalizationGap",
-        "symbolId": "C",
-        "staff": 7,
-        "x": 415.64131944444443,
-        "y": 637.046,
-        "nearestNormalizedDxSpaces": null,
-        "nearestNormalizedYGapSpaces": null,
-        "nearestRawOnlyDxSpaces": 0.671,
-        "nearestRawOnlyYGapSpaces": 0.169,
-        "rawPathId": "path:000121",
-        "rawContour": 0
       }
     ]
   },

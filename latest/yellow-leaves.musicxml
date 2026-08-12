@@ -387,7 +387,7 @@
         <voice>3</voice>
         <type>eighth</type>
         <stem>down</stem>
-        <beam number="1">end</beam>
+        <beam number="1">continue</beam>
         <staff>2</staff>
       </note>
       <note default-x="173.738">
@@ -395,9 +395,11 @@
           <step>F</step>
           <octave>3</octave>
         </pitch>
-        <duration>16</duration>
+        <duration>8</duration>
         <voice>3</voice>
-        <type>quarter</type>
+        <type>eighth</type>
+        <stem>down</stem>
+        <beam number="1">continue</beam>
         <staff>2</staff>
       </note>
       <note default-x="211.234">
@@ -405,9 +407,11 @@
           <step>A</step>
           <octave>3</octave>
         </pitch>
-        <duration>16</duration>
+        <duration>8</duration>
         <voice>3</voice>
-        <type>quarter</type>
+        <type>eighth</type>
+        <stem>down</stem>
+        <beam number="1">end</beam>
         <staff>2</staff>
       </note>
       <note default-x="249.145">
@@ -418,6 +422,7 @@
         <duration>16</duration>
         <voice>3</voice>
         <type>quarter</type>
+        <stem>down</stem>
         <staff>2</staff>
       </note>
     </measure>
@@ -1256,7 +1261,7 @@
         <voice>3</voice>
         <type>eighth</type>
         <stem>down</stem>
-        <beam number="1">end</beam>
+        <beam number="1">continue</beam>
         <staff>2</staff>
       </note>
       <note default-x="179.151">
@@ -1264,9 +1269,11 @@
           <step>F</step>
           <octave>3</octave>
         </pitch>
-        <duration>16</duration>
+        <duration>8</duration>
         <voice>3</voice>
-        <type>quarter</type>
+        <type>eighth</type>
+        <stem>down</stem>
+        <beam number="1">continue</beam>
         <staff>2</staff>
       </note>
       <note default-x="218.732">
@@ -1274,9 +1281,11 @@
           <step>A</step>
           <octave>3</octave>
         </pitch>
-        <duration>16</duration>
+        <duration>8</duration>
         <voice>3</voice>
-        <type>quarter</type>
+        <type>eighth</type>
+        <stem>down</stem>
+        <beam number="1">end</beam>
         <staff>2</staff>
       </note>
       <note default-x="258.312">
@@ -1287,6 +1296,7 @@
         <duration>16</duration>
         <voice>3</voice>
         <type>quarter</type>
+        <stem>down</stem>
         <staff>2</staff>
       </note>
     </measure>
