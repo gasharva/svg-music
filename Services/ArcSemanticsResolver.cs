@@ -6,8 +6,8 @@ namespace SvgToMusicXmlPoc.Services;
 /// Rebuilds curved-line semantics after pitch/chord reconstruction.
 /// A curve between equal pitches is a tie only when the curve endpoints also terminate near those
 /// noteheads; a curve between different pitches (or a high arch anchored at stems) is a slur.
-/// Endpoint geometry is matched jointly so separate ties on chord tones do not collapse into
-/// one cross-pitch slur. SVG CSS classes are intentionally ignored.
+/// Compound PDF-derived paths are decomposed contour-by-contour because one SVG path can contain
+/// several unrelated slurs across neighbouring measures.
 /// </summary>
 public sealed class ArcSemanticsResolver
 {
@@ -18,7 +18,7 @@ public sealed class ArcSemanticsResolver
         double Bottom,
         double LeftY,
         double RightY,
-        SvgDirectPath Path)
+        string SourceId)
     {
         public double Width => Right - Left;
         public double Height => Bottom - Top;
@@ -51,8 +51,8 @@ public sealed class ArcSemanticsResolver
             note.SlurNumber = null;
         }
 
-        var beams = FindBeamPaths(analysis);
-        var arcs = FindArcs(analysis, beams);
+        var beamContours = FindBeamContours(analysis);
+        var arcs = FindArcs(analysis, beamContours);
         var usedPairs = new HashSet<(RecognizedEvent Start, RecognizedEvent End)>();
         var slurNumber = 1;
 
@@ -78,8 +78,7 @@ public sealed class ArcSemanticsResolver
                 .ThenBy(x => x.GeometryScore)
                 .FirstOrDefault();
 
-            if (best is null) continue;
-            if (best.GeometryScore > 10.0) continue;
+            if (best is null || best.GeometryScore > 10.0) continue;
 
             usedPairs.Add((best.Start, best.End));
             if (best.TieCompatible)
@@ -130,38 +129,62 @@ public sealed class ArcSemanticsResolver
         return string.IsNullOrWhiteSpace(end.AttachedToSymbolId);
     }
 
-    private static HashSet<SvgDirectPath> FindBeamPaths(AnalysisResult analysis)
+    /// <summary>
+    /// Identify beam contours, not whole SVG paths. A PDF exporter often stores the primary beam
+    /// and a short hook as sibling contours in one path. Conversely, another compound path can hold
+    /// several slurs. Whole-path exclusion therefore destroys real arcs.
+    /// </summary>
+    private static HashSet<(string PathId, int ContourIndex)> FindBeamContours(AnalysisResult analysis)
     {
-        var result = new HashSet<SvgDirectPath>();
+        var result = new HashSet<(string, int)>();
+
         foreach (var path in analysis.DirectPaths)
+        for (var contourIndex = 0; contourIndex < path.Geometry.Contours.Count; contourIndex++)
         {
-            var bounds = Bounds(path);
-            var staff = ClosestStaff(bounds.Left + bounds.Width / 2, bounds.Top + bounds.Height / 2, analysis.Staves, 6);
+            var contour = path.Geometry.Contours[contourIndex];
+            if (contour.Count is < 3 or > 14) continue;
+
+            var left = contour.Min(x => x.X);
+            var right = contour.Max(x => x.X);
+            var top = contour.Min(x => x.Y);
+            var bottom = contour.Max(x => x.Y);
+            var width = right - left;
+            var height = bottom - top;
+            var staff = ClosestStaff((left + right) / 2, (top + bottom) / 2, analysis.Staves, 6);
             if (staff is null) continue;
 
-            var points = path.Geometry.Contours.Sum(x => x.Count);
-            if (bounds.Width < staff.Space * 1.4) continue;
-            // Real PDF-derived beams are about one staff-space thick in axis-aligned bbox terms,
-            // and compound/slightly sloped strips can reach ~1.3 spaces. Keep them out of arc
-            // recognition by using the same broader visual envelope here.
-            if (bounds.Height < staff.Space * .08 || bounds.Height > staff.Space * 1.35) continue;
-            if (bounds.Width / Math.Max(bounds.Height, .001) < 2.2) continue;
-            if (points > 14) continue;
-            result.Add(path);
+            if (width < staff.Space * 1.4 || width > staff.Space * 22) continue;
+            if (height < staff.Space * .06 || height > staff.Space * 2.0) continue;
+            if (width / Math.Max(height, .001) < 1.4) continue;
+
+            // Beam strips are materially thicker than the tapered outline of a slur. This keeps
+            // compact 8-point polygonized slurs out of the beam exclusion set.
+            var area = PolygonArea(contour);
+            var longAxis = Math.Sqrt(width * width + height * height);
+            var thickness = area / Math.Max(longAxis, .001);
+            if (thickness < staff.Space * .20 || thickness > staff.Space * .72) continue;
+
+            result.Add((path.SymbolId, contourIndex));
         }
+
         return result;
     }
 
-    private static List<Arc> FindArcs(AnalysisResult analysis, IReadOnlySet<SvgDirectPath> beams)
+    private static List<Arc> FindArcs(
+        AnalysisResult analysis,
+        IReadOnlySet<(string PathId, int ContourIndex)> beamContours)
     {
         var result = new List<Arc>();
+
         foreach (var path in analysis.DirectPaths)
+        for (var contourIndex = 0; contourIndex < path.Geometry.Contours.Count; contourIndex++)
         {
-            if (beams.Contains(path)) continue;
+            if (beamContours.Contains((path.SymbolId, contourIndex))) continue;
 
-            var points = path.Geometry.Contours.SelectMany(x => x).ToArray();
-            if (points.Length == 0) continue;
+            var contour = path.Geometry.Contours[contourIndex];
+            if (contour.Count == 0) continue;
 
+            var points = contour.ToArray();
             var left = points.Min(x => x.X);
             var right = points.Max(x => x.X);
             var top = points.Min(x => x.Y);
@@ -175,17 +198,16 @@ public sealed class ArcSemanticsResolver
             if (height < staff.Space * .35 || height > staff.Space * 4.8) continue;
             if (width / Math.Max(height, .001) < 2.0) continue;
 
-            // MuseScore-like SVGs expose smooth arcs with many flattened points. The real
-            // PDF-derived source frequently polygonizes the same filled slur/tie outline to just
-            // eight vertices. Accept that compact standalone-path representation while retaining
-            // the stricter threshold for reusable glyph outlines.
+            // Direct PDF outlines can be compact 8-point polygons; reusable glyph curves normally
+            // contain many more flattened points. Apply the threshold to each contour independently.
             var minPoints = path.SymbolId.StartsWith("path:", StringComparison.Ordinal) ? 8 : 16;
             if (points.Length < minPoints) continue;
 
             var leftY = EndpointY(points, left, staff.Space);
             var rightY = EndpointY(points, right, staff.Space);
-            result.Add(new Arc(left, right, top, bottom, leftY, rightY, path));
+            result.Add(new Arc(left, right, top, bottom, leftY, rightY, $"{path.SymbolId}#{contourIndex}"));
         }
+
         return result;
     }
 
@@ -198,14 +220,17 @@ public sealed class ArcSemanticsResolver
             : points.OrderBy(x => Math.Abs(x.X - endpointX)).First().Y;
     }
 
-    private static (double Left, double Top, double Width, double Height) Bounds(SvgDirectPath path)
+    private static double PolygonArea(IReadOnlyList<PointD> contour)
     {
-        var points = path.Geometry.Contours.SelectMany(x => x).ToArray();
-        var left = points.Min(x => x.X);
-        var right = points.Max(x => x.X);
-        var top = points.Min(x => x.Y);
-        var bottom = points.Max(x => x.Y);
-        return (left, top, right - left, bottom - top);
+        if (contour.Count < 3) return 0;
+        double twiceArea = 0;
+        for (var i = 0; i < contour.Count; i++)
+        {
+            var a = contour[i];
+            var b = contour[(i + 1) % contour.Count];
+            twiceArea += a.X * b.Y - b.X * a.Y;
+        }
+        return Math.Abs(twiceArea) / 2;
     }
 
     private static Staff? ClosestStaff(
