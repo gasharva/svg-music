@@ -24,13 +24,13 @@
 | chord members | 48 | 31.6% |
 | notes touching beams | 32 | 21.1% |
 | beam begin/continue/end | 32 | 21.1% |
-| eighth notes | 33 | 21.7% |
-| 16th notes | 6 | 3.9% |
+| eighth notes | 29 | 19.1% |
+| 16th notes | 10 | 6.6% |
 | dotted notes | 71 | 46.7% |
-| slur starts | 5 | 3.3% |
-| slur stops | 5 | 3.3% |
-| tie starts | 0 | 0.0% |
-| tie stops | 0 | 0.0% |
+| slur starts | 12 | 7.9% |
+| slur stops | 12 | 7.9% |
+| tie starts | 2 | 1.3% |
+| tie stops | 2 | 1.3% |
 | altered pitches | 25 | 16.4% |
 
 ## Missing-stem triage
