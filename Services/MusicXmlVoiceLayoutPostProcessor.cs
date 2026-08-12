@@ -150,9 +150,6 @@ public sealed class MusicXmlVoiceLayoutPostProcessor
                         ? double.MaxValue
                         : lane.Units.Min(x => Math.Abs(x.X - rest.X))
                 })
-                // A rest that makes one voice exactly fill the measure is the strongest evidence.
-                // Otherwise prefer a non-overflowing voice with the smallest remaining duration;
-                // engraving X is only a final tie-breaker.
                 .OrderByDescending(x => x.Exact)
                 .ThenBy(x => x.Overshoot > 0)
                 .ThenBy(x => x.Remaining)
@@ -195,10 +192,12 @@ public sealed class MusicXmlVoiceLayoutPostProcessor
         {
             if (consumed.Contains(binding)) continue;
             var stemX = binding.Event.StemX!.Value;
+            var stemDirection = binding.Event.StemDirection;
             var unit = new ChordUnit();
             foreach (var member in bindings
                          .Where(x => !consumed.Contains(x) && x.Event.StemX.HasValue)
                          .Where(x => Math.Abs(x.Event.StemX!.Value - stemX) <= stemTolerance)
+                         .Where(x => string.Equals(x.Event.StemDirection, stemDirection, StringComparison.OrdinalIgnoreCase))
                          .OrderByDescending(x => x.Event.Y))
             {
                 unit.Notes.Add(member);
