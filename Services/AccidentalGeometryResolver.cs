@@ -5,8 +5,8 @@ namespace SvgToMusicXmlPoc.Services;
 
 /// <summary>
 /// Re-attaches written accidentals after final staff/pitch reconstruction.
-/// In close intervals/chords noteheads are intentionally displaced horizontally, so vertical
-/// staff position is a stronger accidental-to-note cue than smallest X distance.
+/// In close intervals/chords noteheads are intentionally displaced horizontally, so the staff
+/// line/space crossed by the accidental is a stronger cue than smallest X distance.
 /// SVG CSS classes are not used; only the symbol classifier result and geometry are consulted.
 /// </summary>
 public sealed class AccidentalGeometryResolver
@@ -18,10 +18,12 @@ public sealed class AccidentalGeometryResolver
         var classes = analysis.Classifications.ToDictionary(x => x.SymbolId, StringComparer.Ordinal);
         var notes = analysis.Events.Where(x => x.Step is not null).ToList();
 
-        // Remove the provisional accidental assignment made before stems/chords/staff ownership
-        // were reconstructed. We rebuild it below from the final geometry.
+        // Remove provisional assignments made before final stem/chord/staff reconstruction.
         foreach (var note in notes)
+        {
             note.Alter = 0;
+            note.AttachedToSymbolId = null;
+        }
 
         foreach (var use in analysis.Uses)
         {
@@ -37,16 +39,26 @@ public sealed class AccidentalGeometryResolver
                 .FirstOrDefault();
             if (staff is null) continue;
 
+            var accidentalPosition = StaffPosition(use.Y, staff);
             var target = notes
                 .Where(x => x.StaffIndex == staff.Index)
                 .Where(x => x.X > use.X)
                 .Where(x => x.X - use.X <= staff.Space * config.MaxAttachmentDistanceInSpaces)
                 .Where(x => Math.Abs(x.Y - use.Y) <= staff.Space * 1.35)
-                // Staff position is the primary cue. X is only a tie breaker: noteheads in a
-                // second/chord may be shifted left/right while the accidental remains aligned
-                // with the pitch row it modifies.
-                .OrderBy(x => Math.Abs(x.Y - use.Y))
-                .ThenBy(x => x.X - use.X)
+                .Select(x => new
+                {
+                    Note = x,
+                    PositionDelta = Math.Abs(StaffPosition(x.Y, staff) - accidentalPosition),
+                    YDelta = Math.Abs(x.Y - use.Y),
+                    XDelta = x.X - use.X
+                })
+                // First choose the same musical row (line or space). This is the SVG equivalent
+                // of asking which staff line/space passes through the accidental. Only then use
+                // exact Y and horizontal proximity to break ties.
+                .OrderBy(x => x.PositionDelta)
+                .ThenBy(x => x.YDelta)
+                .ThenBy(x => x.XDelta)
+                .Select(x => x.Note)
                 .FirstOrDefault();
 
             if (target is null) continue;
@@ -62,4 +74,7 @@ public sealed class AccidentalGeometryResolver
             target.AttachedToSymbolId = use.SymbolId;
         }
     }
+
+    private static int StaffPosition(double y, Staff staff) =>
+        (int)Math.Round((staff.Bottom - y) / Math.Max(staff.Space / 2, .001));
 }
