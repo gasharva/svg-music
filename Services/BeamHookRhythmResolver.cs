@@ -50,7 +50,10 @@ public sealed class BeamHookRhythmResolver
                             : shape.CenterY - beamEndY
                     })
                     .Where(x => x.HorizontalGap <= staff.Space * .68)
-                    .Where(x => x.InwardOffset >= -staff.Space * .15 && x.InwardOffset <= staff.Space * 1.55)
+                    // A sloped primary beam can cross slightly beyond the recovered stem endpoint.
+                    // Keep that primary band in the comparison; otherwise a real secondary hook is
+                    // left as the only band and the 16th is incorrectly downgraded to an eighth.
+                    .Where(x => x.InwardOffset >= -staff.Space * .32 && x.InwardOffset <= staff.Space * 1.55)
                     .Where(x => IntervalDistance(stem.Top, stem.Bottom, x.Shape.Top, x.Shape.Bottom) <=
                                 Math.Max(staff.Space * .65, x.Shape.Thickness * 1.8))
                     .OrderBy(x => x.InwardOffset)
