@@ -2,46 +2,55 @@
   "structuralInputs": {
     "staves": 10,
     "uses": 594,
-    "directPaths": 153,
-    "lineSegments": 104
+    "directPaths": 577,
+    "lineSegments": 144
   },
   "eventKinds": {
-    "notehead-black": 150,
+    "notehead-half": 78,
+    "notehead-black": 74,
     "clef-treble": 5,
     "clef-bass": 5,
     "rest-eighth": 4,
-    "notehead-half": 2
+    "rest-quarter": 2
   },
   "relations": {
     "notes": 152,
-    "withStem": 49,
-    "withStemDirection": 49,
-    "chordMembers": 15,
-    "withBeam": 6,
-    "withBeamValue": 6,
-    "eighth": 6,
-    "sixteenth": 0,
-    "dotted": 59,
-    "slurStarts": 1,
-    "slurStops": 1,
-    "tieStarts": 0,
-    "tieStops": 0,
+    "withStem": 152,
+    "withStemDirection": 152,
+    "chordMembers": 36,
+    "withBeam": 32,
+    "withBeamValue": 32,
+    "eighth": 29,
+    "sixteenth": 10,
+    "dotted": 68,
+    "slurStarts": 12,
+    "slurStops": 12,
+    "tieStarts": 3,
+    "tieStops": 3,
     "altered": 26
   },
   "relationCoveragePercent": {
-    "withStem": 32.2,
-    "withStemDirection": 32.2,
-    "chordMembers": 9.9,
-    "withBeam": 3.9,
-    "withBeamValue": 3.9,
-    "eighth": 3.9,
-    "sixteenth": 0.0,
-    "dotted": 38.8,
-    "slurStarts": 0.7,
-    "slurStops": 0.7,
-    "tieStarts": 0.0,
-    "tieStops": 0.0,
+    "withStem": 100.0,
+    "withStemDirection": 100.0,
+    "chordMembers": 23.7,
+    "withBeam": 21.1,
+    "withBeamValue": 21.1,
+    "eighth": 19.1,
+    "sixteenth": 6.6,
+    "dotted": 44.7,
+    "slurStarts": 7.9,
+    "slurStops": 7.9,
+    "tieStarts": 2.0,
+    "tieStops": 2.0,
     "altered": 17.1
+  },
+  "stemGapTriage": {
+    "unattachedNotes": 0,
+    "normalizedStemCandidates": 105,
+    "broadRawVerticalCandidates": 108,
+    "rawVerticalCandidatesNotNormalized": 9,
+    "categories": {},
+    "samples": []
   },
   "warnings": {
     "total": 139,
@@ -106,7 +115,7 @@
       "symbolId": "z",
       "usesNearStaff": 2,
       "kind": "time-signature-digit",
-      "referenceId": "timeSig7",
+      "referenceId": "timeSig3",
       "score": 0.5461829258895051,
       "widthInSpaces": 2.0241101477517285,
       "heightInSpaces": 1.9424752471917262,
@@ -140,26 +149,6 @@
       "score": 0.6524372488908026,
       "widthInSpaces": 3.4079849820448818,
       "heightInSpaces": 2.5613766399706215,
-      "reason": "unknown semantic kind"
-    },
-    {
-      "symbolId": "aa",
-      "usesNearStaff": 2,
-      "kind": "smufl-unknown",
-      "referenceId": "uniE13B",
-      "score": 0.7542858276805711,
-      "widthInSpaces": 0.9962299972265661,
-      "heightInSpaces": 2.643011540530624,
-      "reason": "unknown semantic kind"
-    },
-    {
-      "symbolId": "ac",
-      "usesNearStaff": 2,
-      "kind": "smufl-unknown",
-      "referenceId": "uniE581",
-      "score": 0.7825736912476844,
-      "widthInSpaces": 0.5675379227524759,
-      "heightInSpaces": 0.5296033938681771,
       "reason": "unknown semantic kind"
     },
     {
@@ -351,6 +340,26 @@
       "widthInSpaces": 2.1769306816000523e-10,
       "heightInSpaces": 3.583494096997451,
       "reason": "low confidence"
+    },
+    {
+      "symbolId": "path:000006",
+      "usesNearStaff": 1,
+      "kind": "clef-bass",
+      "referenceId": "fClef",
+      "score": 0.09979078332731868,
+      "widthInSpaces": 2.1769306816000523e-10,
+      "heightInSpaces": 3.583494096997451,
+      "reason": "low confidence"
+    },
+    {
+      "symbolId": "path:000007",
+      "usesNearStaff": 1,
+      "kind": "smufl-unknown",
+      "referenceId": "uniE2E0",
+      "score": 0.6599535624367514,
+      "widthInSpaces": 5.770607850785417,
+      "heightInSpaces": 1.283300636803227,
+      "reason": "unknown semantic kind"
     }
   ]
 }
