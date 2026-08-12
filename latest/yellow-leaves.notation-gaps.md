@@ -74,8 +74,7 @@ Compact reusable glyphs repeatedly found near free ends of currently unbeamed st
 | symbol | hits | current kind | reference | samples (dx,dy,w,h sp) |
 |---|---:|---|---|---|
 | `ac` | 4 | notehead-black | uniE581 | `[(0.42, 1.96, 0.57, 0.53), (0.87, 2.46, 0.57, 0.53), (1.71, 1.67, 0.57, 0.53)]` |
-| `C` | 4 | notehead-black | uniE113 | `[(0.67, 0.21, 1.02, 0.88), (0.67, 2.55, 1.02, 0.88), (0.67, 2.55, 1.02, 0.88)]` |
+| `C` | 4 | notehead-black | uniE113 | `[(0.67, 2.55, 1.02, 0.88), (0.67, 2.55, 1.02, 0.88), (0.67, 2.55, 1.02, 0.88)]` |
 | `ab` | 3 | smufl-unknown | uniE06C | `[(1.02, 1.39, 2.18, 3.57), (1.01, 1.39, 2.18, 3.57), (1.01, 1.39, 2.18, 3.57)]` |
 | `Z` | 2 | smufl-unknown | uniE251 | `[(0.48, 0.96, 1.1, 2.72), (0.48, 0.96, 1.1, 2.72)]` |
-| `D` | 2 | notehead-half | uniE0FB | `[(0.6, 0.63, 1.27, 0.78), (0.57, 1.13, 1.27, 0.78)]` |
 | `W` | 1 | notehead-black | uniE113 | `[(0.67, 2.55, 1.02, 0.88)]` |
