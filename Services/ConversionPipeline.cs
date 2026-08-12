@@ -61,12 +61,7 @@ public sealed class ConversionPipeline
         new LongStemRelationResolver().Resolve(analysis);
         new MusicGeometryRelationResolver().Resolve(analysis, config);
         new OpposedStemVoiceResolver().Resolve(analysis);
-
-        // Text close to the first system can contain hollow glyphs that resemble noteheads.
-        // Once stem/ledger relations are known, reject only hollow "half-note" candidates that
-        // lie outside the staff and have neither a stem nor ledger-line support.
         new StemlessHollowFalsePositiveResolver().Resolve(analysis);
-
         new SlopedBeamRhythmResolver().Resolve(analysis, config);
         new SlopedBeamCoverageResolver().Resolve(analysis, config);
         new UnifiedBeamGeometryResolver().Resolve(analysis, config);
@@ -75,6 +70,7 @@ public sealed class ConversionPipeline
         new ChordRhythmNormalizer().Normalize(analysis);
         new BeamHookRhythmResolver().Resolve(analysis, config);
         new StandaloneFlagRhythmResolver().Resolve(analysis, config);
+        new DynamicsGeometryResolver().Resolve(analysis);
 
         performance.RecognizeSemanticsMs = watch.Elapsed.TotalMilliseconds;
         performance.TotalMs = total.Elapsed.TotalMilliseconds;
@@ -106,6 +102,7 @@ public sealed class ConversionPipeline
         new MusicXmlSystemBreakPostProcessor().Apply(musicXmlPath);
         new MusicXmlSecondaryBeamPostProcessor().Apply(musicXmlPath);
         new MusicXmlAccidentalStatePostProcessor().Apply(musicXmlPath);
+        new MusicXmlDynamicsPostProcessor().Apply(musicXmlPath, result.Analysis);
         result.Performance.WriteMusicXmlMs = watch.Elapsed.TotalMilliseconds;
         result.Performance.TotalMs += result.Performance.WriteMusicXmlMs;
 
