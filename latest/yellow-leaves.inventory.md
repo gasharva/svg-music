@@ -14,6 +14,7 @@
 - clef-treble: **5**
 - clef-bass: **5**
 - rest-eighth: **4**
+- rest-quarter: **2**
 
 ## Relation coverage
 
@@ -75,7 +76,6 @@ These are frequent staff-local glyphs that are still semantically unknown or hav
 | `F` | 2 | smufl-unknown | uniE1AF | 0.807 | 1.340 | 1.119 | unknown semantic kind |
 | `V` | 2 | smufl-unknown | uniE110 | 0.689 | 3.334 | 1.965 | unknown semantic kind |
 | `X` | 2 | smufl-unknown | uniE4D2 | 0.652 | 3.408 | 2.561 | unknown semantic kind |
-| `aa` | 2 | smufl-unknown | uniE13B | 0.754 | 0.996 | 2.643 | unknown semantic kind |
 | `ad` | 2 | accidental-flat | uniE2DE | 0.555 | 0.644 | 2.487 | low confidence |
 | `E` | 1 | smufl-unknown | uniE127 | 0.818 | 1.466 | 1.612 | unknown semantic kind |
 | `G` | 1 | smufl-unknown | uniE1C1 | 0.809 | 1.167 | 1.095 | unknown semantic kind |
@@ -96,3 +96,4 @@ These are frequent staff-local glyphs that are still semantically unknown or hav
 | `path:000004` | 1 | smufl-unknown | uniE090 | 0.100 | 1.791 | 0.000 | unknown semantic kind |
 | `path:000005` | 1 | clef-bass | fClef | 0.100 | 0.000 | 3.583 | low confidence |
 | `path:000006` | 1 | clef-bass | fClef | 0.100 | 0.000 | 3.583 | low confidence |
+| `path:000007` | 1 | smufl-unknown | uniE2E0 | 0.660 | 5.771 | 1.283 | unknown semantic kind |

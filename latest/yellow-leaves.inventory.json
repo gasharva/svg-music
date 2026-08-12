@@ -10,7 +10,8 @@
     "notehead-black": 74,
     "clef-treble": 5,
     "clef-bass": 5,
-    "rest-eighth": 4
+    "rest-eighth": 4,
+    "rest-quarter": 2
   },
   "relations": {
     "notes": 152,
@@ -148,16 +149,6 @@
       "score": 0.6524372488908026,
       "widthInSpaces": 3.4079849820448818,
       "heightInSpaces": 2.5613766399706215,
-      "reason": "unknown semantic kind"
-    },
-    {
-      "symbolId": "aa",
-      "usesNearStaff": 2,
-      "kind": "smufl-unknown",
-      "referenceId": "uniE13B",
-      "score": 0.7542858276805711,
-      "widthInSpaces": 0.9962299972265661,
-      "heightInSpaces": 2.643011540530624,
       "reason": "unknown semantic kind"
     },
     {
@@ -359,6 +350,16 @@
       "widthInSpaces": 2.1769306816000523e-10,
       "heightInSpaces": 3.583494096997451,
       "reason": "low confidence"
+    },
+    {
+      "symbolId": "path:000007",
+      "usesNearStaff": 1,
+      "kind": "smufl-unknown",
+      "referenceId": "uniE2E0",
+      "score": 0.6599535624367514,
+      "widthInSpaces": 5.770607850785417,
+      "heightInSpaces": 1.283300636803227,
+      "reason": "unknown semantic kind"
     }
   ]
 }
