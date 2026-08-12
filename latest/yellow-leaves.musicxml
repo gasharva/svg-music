@@ -292,6 +292,29 @@
       </note>
     </measure>
     <measure number="4">
+      <direction placement="below">
+        <direction-type>
+          <wedge type="crescendo" number="1" default-x="112.602" />
+        </direction-type>
+        <offset>24</offset>
+        <staff>1</staff>
+      </direction>
+      <direction placement="below">
+        <direction-type>
+          <wedge type="stop" number="1" default-x="234.251" />
+        </direction-type>
+        <offset>80</offset>
+        <staff>1</staff>
+      </direction>
+      <direction placement="below">
+        <direction-type>
+          <dynamics default-x="248.817">
+            <mp />
+          </dynamics>
+        </direction-type>
+        <offset>87</offset>
+        <staff>1</staff>
+      </direction>
       <note default-x="60">
         <pitch>
           <step>F</step>
@@ -396,6 +419,15 @@
           <line>4</line>
         </clef>
       </attributes>
+      <direction placement="below">
+        <direction-type>
+          <dynamics default-x="109.166">
+            <pp />
+          </dynamics>
+        </direction-type>
+        <offset>20</offset>
+        <staff>1</staff>
+      </direction>
       <note default-x="60">
         <pitch>
           <step>C</step>
@@ -1071,6 +1103,29 @@
       </note>
     </measure>
     <measure number="12">
+      <direction placement="below">
+        <direction-type>
+          <wedge type="crescendo" number="1" default-x="112.185" />
+        </direction-type>
+        <offset>23</offset>
+        <staff>1</staff>
+      </direction>
+      <direction placement="below">
+        <direction-type>
+          <wedge type="stop" number="1" default-x="244.251" />
+        </direction-type>
+        <offset>81</offset>
+        <staff>1</staff>
+      </direction>
+      <direction placement="below">
+        <direction-type>
+          <dynamics default-x="261.736">
+            <mp />
+          </dynamics>
+        </direction-type>
+        <offset>89</offset>
+        <staff>1</staff>
+      </direction>
       <note default-x="60">
         <pitch>
           <step>F</step>
@@ -1175,6 +1230,15 @@
           <line>4</line>
         </clef>
       </attributes>
+      <direction placement="below">
+        <direction-type>
+          <dynamics default-x="114.567">
+            <pp />
+          </dynamics>
+        </direction-type>
+        <offset>22</offset>
+        <staff>1</staff>
+      </direction>
       <note default-x="60">
         <pitch>
           <step>C</step>

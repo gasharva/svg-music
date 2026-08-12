@@ -19737,6 +19737,62 @@
       "TieStop": false
     }
   ],
+  "Directions": [
+    {
+      "Kind": "wedge",
+      "Value": "crescendo",
+      "X": 435.40099108,
+      "EndX": 491.28465012,
+      "Y": 188.98619679999996,
+      "StaffIndex": 0,
+      "SourceSymbolId": "path:000003"
+    },
+    {
+      "Kind": "dynamic",
+      "Value": "mp",
+      "X": 497.976,
+      "EndX": null,
+      "Y": 190.72,
+      "StaffIndex": 0,
+      "SourceSymbolId": "V"
+    },
+    {
+      "Kind": "dynamic",
+      "Value": "pp",
+      "X": 76.54,
+      "EndX": null,
+      "Y": 334.066,
+      "StaffIndex": 2,
+      "SourceSymbolId": "X"
+    },
+    {
+      "Kind": "wedge",
+      "Value": "crescendo",
+      "X": 430.23290024000005,
+      "EndX": 490.90181008,
+      "Y": 463.06051247999994,
+      "StaffIndex": 4,
+      "SourceSymbolId": "path:000070"
+    },
+    {
+      "Kind": "dynamic",
+      "Value": "mp",
+      "X": 498.934,
+      "EndX": null,
+      "Y": 465.747,
+      "StaffIndex": 4,
+      "SourceSymbolId": "V"
+    },
+    {
+      "Kind": "dynamic",
+      "Value": "pp",
+      "X": 79.021,
+      "EndX": null,
+      "Y": 607.183,
+      "StaffIndex": 6,
+      "SourceSymbolId": "X"
+    }
+  ],
   "Warnings": [
     "\u041D\u0438\u0437\u043A\u0430\u044F \u0443\u0432\u0435\u0440\u0435\u043D\u043D\u043E\u0441\u0442\u044C: #aJ -\u003E uniE595, score=0.403",
     "\u041D\u0438\u0437\u043A\u0430\u044F \u0443\u0432\u0435\u0440\u0435\u043D\u043D\u043E\u0441\u0442\u044C: #path:000000 -\u003E rest1024th, score=0.040",
