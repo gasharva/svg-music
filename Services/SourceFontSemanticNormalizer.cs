@@ -34,6 +34,16 @@ public sealed class SourceFontSemanticNormalizer
             var cls = classification.Symbols[index];
             var mask = FastGlyphMatcher.CreateMask(geometry);
 
+            // FastGlyphMatcher currently unions contour masks, which visually fills an inner hole
+            // and can make a hollow source-font notehead look like a black head. The SVG outline
+            // itself still preserves the strongest font-independent signal: a compact notehead
+            // contour containing a second, nested contour for the hole.
+            if (LooksLikeHollowNotehead(geometry, cls.WidthInSpaces, cls.HeightInSpaces))
+            {
+                classification.Symbols[index] = cls with { Kind = "notehead-half" };
+                continue;
+            }
+
             if (LooksLikeScaledGraceHead(cls.WidthInSpaces, cls.HeightInSpaces))
             {
                 classification.Symbols[index] = cls with { Kind = "notehead-black" };
@@ -62,6 +72,48 @@ public sealed class SourceFontSemanticNormalizer
             .Select(x => x.SymbolId).ToHashSet(StringComparer.Ordinal);
     }
 
+    private static bool LooksLikeHollowNotehead(SymbolGeometry geometry, double widthSpaces, double heightSpaces)
+    {
+        if (widthSpaces is < .85 or > 1.45 || heightSpaces is < .58 or > 1.08) return false;
+        if (widthSpaces / Math.Max(heightSpaces, 1e-6) < 1.05) return false;
+        if (geometry.Contours.Count < 2) return false;
+
+        var boxes = geometry.Contours
+            .Where(x => x.Count >= 3)
+            .Select(contour => new
+            {
+                Left = contour.Min(p => p.X),
+                Right = contour.Max(p => p.X),
+                Top = contour.Min(p => p.Y),
+                Bottom = contour.Max(p => p.Y)
+            })
+            .ToArray();
+
+        for (var outerIndex = 0; outerIndex < boxes.Length; outerIndex++)
+        for (var innerIndex = 0; innerIndex < boxes.Length; innerIndex++)
+        {
+            if (outerIndex == innerIndex) continue;
+            var outer = boxes[outerIndex];
+            var inner = boxes[innerIndex];
+            var outerWidth = outer.Right - outer.Left;
+            var outerHeight = outer.Bottom - outer.Top;
+            var innerWidth = inner.Right - inner.Left;
+            var innerHeight = inner.Bottom - inner.Top;
+            if (outerWidth <= 0 || outerHeight <= 0 || innerWidth <= 0 || innerHeight <= 0) continue;
+
+            var contained = inner.Left > outer.Left && inner.Right < outer.Right &&
+                            inner.Top > outer.Top && inner.Bottom < outer.Bottom;
+            if (!contained) continue;
+
+            // The hole must be substantial enough to be engraving semantics, not a tiny internal
+            // detail. Half/whole noteheads typically retain a large central opening.
+            if (innerWidth / outerWidth >= .20 && innerHeight / outerHeight >= .20)
+                return true;
+        }
+
+        return false;
+    }
+
     private static bool LooksLikeScaledGraceHead(double widthSpaces, double heightSpaces)
     {
         if (widthSpaces is < .45 or > .78 || heightSpaces is < .38 or > .70) return false;
@@ -87,9 +139,6 @@ public sealed class SourceFontSemanticNormalizer
 
     private static bool LooksLikeThree(IReadOnlyList<ulong> mask, SymbolClassification cls)
     {
-        // Generic matching confuses some ornate 3s with 7s. A 3 has two rounded lobes separated
-        // by a pronounced waist: broad near the top, very narrow around the middle, then broadens
-        // again near the lower lobe. A 7 does not have that narrow-then-broad lower profile.
         if (!cls.Kind.Equals("time-signature-digit", StringComparison.OrdinalIgnoreCase)) return false;
         if (!cls.ReferenceId.Contains("7", StringComparison.OrdinalIgnoreCase) && cls.MusicXmlValue != "7") return false;
         if (cls.WidthInSpaces is < 1.4 or > 2.5 || cls.HeightInSpaces is < 1.5 or > 2.5) return false;
