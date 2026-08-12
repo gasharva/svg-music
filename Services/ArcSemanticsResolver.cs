@@ -117,13 +117,14 @@ public sealed class ArcSemanticsResolver
 
         // A PDF renderer can let the painted slur tip overshoot the semantic endpoint. This is
         // particularly visible when a beamed short note is immediately followed by a longer note
-        // of exactly the same pitch: pure endpoint distance then attaches the slur to the later
-        // duplicate. Prefer the earlier beamed note; a genuine tie is handled before this method.
+        // of the same written pitch: pure endpoint distance then attaches the slur to the later
+        // duplicate. The later note may omit its accidental because it is carried by notation
+        // state, so absence of an attached accidental is treated the same way as tie recognition.
         if (end.BeamCount == 0)
         {
             var precedingSamePitch = ordered
                 .Where(x => x.BeamCount > 0 && x.X < end.X - staff.Space * .20)
-                .Where(x => SamePitch(x, end))
+                .Where(x => SameWrittenPitch(x, end))
                 .Where(x => end.X - x.X <= staff.Space * 4.0)
                 .OrderByDescending(x => x.X)
                 .FirstOrDefault();
@@ -139,9 +140,6 @@ public sealed class ArcSemanticsResolver
 
         if (end.BeamCount > 0)
         {
-            // When the refined endpoint lies inside the same beamed gesture, the slur spans the
-            // beamed gesture itself. Attach its start to the first member rather than to a later
-            // note whose painted stem happens to lie closer to the curve outline.
             var sameRun = beamed
                 .Where(x => x.X <= end.X + staff.Space * .25)
                 .Where(x => end.X - x.X <= staff.Space * 10)
@@ -151,9 +149,6 @@ public sealed class ArcSemanticsResolver
         }
         else if (arc.CenterY < staff.Center && beamed.Count >= 2 && start.BeamCount > 0)
         {
-            // For an upper slur leaving a beamed group and landing on a following long note, the
-            // outlined curve often begins over the beam itself. Its left bbox edge can therefore
-            // sit nearer the first stem even when the semantic start is the last beamed note.
             var beforeEnd = beamed
                 .Where(x => x.X < end.X)
                 .Where(x => end.X - x.X <= staff.Space * 12)
@@ -165,10 +160,13 @@ public sealed class ArcSemanticsResolver
         return new PairCandidate(start, end, candidate.GeometryScore, false);
     }
 
-    private static bool SamePitch(RecognizedEvent a, RecognizedEvent b) =>
-        string.Equals(a.Step, b.Step, StringComparison.Ordinal) &&
-        a.Octave == b.Octave &&
-        a.Alter == b.Alter;
+    private static bool SameWrittenPitch(RecognizedEvent a, RecognizedEvent b)
+    {
+        if (!string.Equals(a.Step, b.Step, StringComparison.Ordinal) || a.Octave != b.Octave)
+            return false;
+        if (a.Alter == b.Alter) return true;
+        return string.IsNullOrWhiteSpace(b.AttachedToSymbolId);
+    }
 
     private static PairCandidate BuildCandidate(
         RecognizedEvent start,
@@ -202,11 +200,6 @@ public sealed class ArcSemanticsResolver
         return string.IsNullOrWhiteSpace(end.AttachedToSymbolId);
     }
 
-    /// <summary>
-    /// Identify beam contours, not whole SVG paths. A PDF exporter often stores the primary beam
-    /// and a short hook as sibling contours in one path. Conversely, another compound path can hold
-    /// several slurs. Whole-path exclusion therefore destroys real arcs.
-    /// </summary>
     private static HashSet<(string PathId, int ContourIndex)> FindBeamContours(AnalysisResult analysis)
     {
         var result = new HashSet<(string, int)>();
@@ -265,8 +258,6 @@ public sealed class ArcSemanticsResolver
             var staff = ClosestStaff((left + right) / 2, (top + bottom) / 2, analysis.Staves, 5);
             if (staff is null) continue;
 
-            // Short ties between a 16th and a following half note in the real PDF-derived SVG can
-            // be only ~1.6 staff-spaces wide. The previous 2.0sp floor discarded them entirely.
             if (width < staff.Space * 1.45 || width > staff.Space * 18) continue;
             if (height < staff.Space * .35 || height > staff.Space * 4.8) continue;
             if (width / Math.Max(height, .001) < 2.0) continue;
