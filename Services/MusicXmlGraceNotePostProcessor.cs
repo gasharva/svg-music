@@ -5,10 +5,10 @@ namespace SvgToMusicXmlPoc.Services;
 
 /// <summary>
 /// Restores grace-note semantics that are not encoded in the notehead glyph identity itself.
-/// MuseScore scales grace noteheads, stems and beams as a group, so the same black-notehead
-/// reference is used at about 70% of the normal engraved size. This pass uses the raw SVG path
-/// bounds to recognize that scale, removes timed duration, and restores the visible beam levels.
-/// SVG CSS classes are intentionally ignored.
+/// Music engravers scale grace noteheads, stems and beams as a group, so the same black-notehead
+/// semantics can be represented by either direct paths or reusable outlined glyphs at about 70%
+/// of normal size. This pass uses staff-relative bounds, removes timed duration, and restores the
+/// visible beam levels. SVG CSS classes and source symbol ids are intentionally ignored.
 /// </summary>
 public sealed class MusicXmlGraceNotePostProcessor
 {
@@ -20,7 +20,7 @@ public sealed class MusicXmlGraceNotePostProcessor
 
     public void Apply(string path, AnalysisResult analysis)
     {
-        if (analysis.Staves.Count == 0 || analysis.DirectPaths.Count == 0) return;
+        if (analysis.Staves.Count == 0) return;
 
         var document = XDocument.Load(path);
         var groups = BuildStaffGroups(analysis);
@@ -29,6 +29,9 @@ public sealed class MusicXmlGraceNotePostProcessor
         var pathBounds = analysis.DirectPaths
             .Select(x => new { Path = x, Bounds = Bounds(x) })
             .ToDictionary(x => x.Path.SymbolId, x => x.Bounds);
+        var classifications = analysis.Classifications
+            .GroupBy(x => x.SymbolId, StringComparer.Ordinal)
+            .ToDictionary(x => x.Key, x => x.First(), StringComparer.Ordinal);
 
         var beamStrips = FindCompactBeamStrips(analysis);
         var queues = analysis.Staves.ToDictionary(
@@ -61,7 +64,7 @@ public sealed class MusicXmlGraceNotePostProcessor
 
             foreach (var binding in bindings)
             {
-                if (!IsScaledGraceHead(binding, pathBounds)) continue;
+                if (!IsScaledGraceHead(binding, pathBounds, classifications)) continue;
                 MarkGrace(binding);
             }
 
@@ -78,21 +81,38 @@ public sealed class MusicXmlGraceNotePostProcessor
 
     private static bool IsScaledGraceHead(
         NoteBinding binding,
-        IReadOnlyDictionary<string, (double Left, double Top, double Right, double Bottom)> pathBounds)
+        IReadOnlyDictionary<string, (double Left, double Top, double Right, double Bottom)> pathBounds,
+        IReadOnlyDictionary<string, SymbolClassification> classifications)
     {
         var evt = binding.Event;
         if (!evt.Kind.Equals("notehead-black", StringComparison.OrdinalIgnoreCase)) return false;
         if (string.IsNullOrWhiteSpace(evt.SourceSymbolId)) return false;
-        if (!pathBounds.TryGetValue(evt.SourceSymbolId, out var box)) return false;
 
-        var width = box.Right - box.Left;
-        var height = box.Bottom - box.Top;
+        double widthSpaces;
+        double heightSpaces;
+        if (pathBounds.TryGetValue(evt.SourceSymbolId, out var box))
+        {
+            widthSpaces = (box.Right - box.Left) / Math.Max(binding.Staff.Space, .001);
+            heightSpaces = (box.Bottom - box.Top) / Math.Max(binding.Staff.Space, .001);
+        }
+        else if (classifications.TryGetValue(evt.SourceSymbolId, out var cls))
+        {
+            // Real-world PDFs/SVG exporters commonly put music-font outlines in <symbol>/<use>.
+            // Classifier dimensions are already normalized to staff spaces and therefore provide
+            // exactly the scale signal that the older direct-path-only implementation lacked.
+            widthSpaces = cls.WidthInSpaces;
+            heightSpaces = cls.HeightInSpaces;
+        }
+        else
+        {
+            return false;
+        }
 
-        // Normal black heads in Yellow Leaves are ~1.30 x 1.06 staff spaces. Grace heads are
-        // exported at 70%, ~0.91 x 0.74 spaces. Leave a gap between the two populations instead
-        // of depending on a score-specific absolute SVG size.
-        return width <= binding.Staff.Space * 1.05 &&
-               height <= binding.Staff.Space * .88;
+        // Normal heads in this source family are roughly 1.0-1.3 x 0.8-0.9 spaces; grace heads
+        // are about 70% of that. Leave a deliberate gap so ordinary compact noteheads are not
+        // accidentally made zero-duration.
+        return widthSpaces is >= .42 and <= .82 &&
+               heightSpaces is >= .36 and <= .72;
     }
 
     private static void MarkGrace(NoteBinding binding)
@@ -108,9 +128,6 @@ public sealed class MusicXmlGraceNotePostProcessor
         note.Element("duration")?.Remove();
         SetType(note, "16th");
 
-        // Grace notes occupy no metrical duration. Mutating the analysis event is deliberate:
-        // MusicXmlVoiceLayoutPostProcessor runs after this pass and uses Event.Duration when it
-        // computes lane lengths and backup distances.
         binding.Event.Duration = 0;
         binding.Event.Type = "16th";
     }
@@ -215,8 +232,6 @@ public sealed class MusicXmlGraceNotePostProcessor
                 .FirstOrDefault();
             if (staff is null) continue;
 
-            // These are deliberately below the normal beam detector's 1.4-space width floor:
-            // a two-note 70%-scaled grace beam in measure 15 is only ~1.29 spaces wide.
             if (width < staff.Space * .60 || width > staff.Space * 3.0) continue;
             if (height > staff.Space * 1.15) continue;
             if (width / Math.Max(height, staff.Space * .05) < 1.5) continue;
