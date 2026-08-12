@@ -4,16 +4,13 @@ using SvgToMusicXmlPoc.Models;
 namespace SvgToMusicXmlPoc.Services;
 
 /// <summary>
-/// Detects secondary beam levels near a stem end. Beam/hook recognition is based on painted strip
-/// thickness rather than a very small axis-aligned bbox: in PDF-derived SVG a sloped strip can be
-/// about one staff-space tall even though its physical thickness is normal.
+/// Detects secondary beam levels near a stem end. A compound SVG path may contain both the
+/// primary beam and a short secondary hook, so contours are analyzed independently.
 /// </summary>
 public sealed class BeamHookRhythmResolver
 {
     private sealed record Shape(double Left, double Top, double Right, double Bottom, double Thickness)
     {
-        public double Width => Right - Left;
-        public double Height => Bottom - Top;
         public double CenterY => (Top + Bottom) / 2;
     }
 
@@ -40,33 +37,38 @@ public sealed class BeamHookRhythmResolver
                 .ThenBy(x => Math.Abs(x.CenterY - note.Y))
                 .FirstOrDefault();
 
-            if (stem is not null && note.BeamCount > 0)
+            if (stem is not null && note.BeamCount > 0 && note.StemDirection is "up" or "down")
             {
                 var beamEndY = note.StemDirection == "down" ? stem.Bottom : stem.Top;
+                var bands = beamLikeShapes
+                    .Select(shape => new
+                    {
+                        Shape = shape,
+                        HorizontalGap = HorizontalDistance(note.StemX!.Value, shape.Left, shape.Right),
+                        InwardOffset = note.StemDirection == "down"
+                            ? beamEndY - shape.CenterY
+                            : shape.CenterY - beamEndY
+                    })
+                    .Where(x => x.HorizontalGap <= staff.Space * .68)
+                    .Where(x => x.InwardOffset >= -staff.Space * .15 && x.InwardOffset <= staff.Space * 1.55)
+                    .Where(x => IntervalDistance(stem.Top, stem.Bottom, x.Shape.Top, x.Shape.Bottom) <=
+                                Math.Max(staff.Space * .65, x.Shape.Thickness * 1.8))
+                    .OrderBy(x => x.InwardOffset)
+                    .ToList();
 
-                var hasSecondaryLevel = beamLikeShapes.Any(shape =>
+                // The closest band is the primary beam. A 16th needs a second distinct band/hook
+                // touching the same stem. This avoids treating a thick/sloped primary beam itself
+                // as level 2, while still recognizing a short backward/forward hook at one end.
+                if (bands.Count > 1)
                 {
-                    var horizontalGap = HorizontalDistance(note.StemX!.Value, shape.Left, shape.Right);
-                    if (horizontalGap > staff.Space * .68) return false;
-
-                    var inwardOffset = note.StemDirection == "down"
-                        ? beamEndY - shape.CenterY
-                        : shape.CenterY - beamEndY;
-
-                    // Primary beam is at/very near the free end. A second beam or hook is displaced
-                    // toward the notehead by roughly a fraction to one staff-space. Keep enough
-                    // room for thick/sloped exporter strips, but not for remote ledger/slur shapes.
-                    if (inwardOffset < staff.Space * .12 || inwardOffset > staff.Space * 1.45)
-                        return false;
-
-                    return IntervalDistance(stem.Top, stem.Bottom, shape.Top, shape.Bottom) <=
-                           Math.Max(staff.Space * .65, shape.Thickness * 1.8);
-                });
-
-                if (hasSecondaryLevel)
-                {
-                    note.BeamCount = Math.Max(2, note.BeamCount);
-                    note.Type = "16th";
+                    var primary = bands[0].InwardOffset;
+                    var hasSecondary = bands.Skip(1).Any(x =>
+                        x.InwardOffset - primary >= staff.Space * .22);
+                    if (hasSecondary)
+                    {
+                        note.BeamCount = Math.Max(2, note.BeamCount);
+                        note.Type = "16th";
+                    }
                 }
             }
 
@@ -83,14 +85,14 @@ public sealed class BeamHookRhythmResolver
         var result = new List<Shape>();
 
         foreach (var path in analysis.DirectPaths)
+        foreach (var contour in path.Geometry.Contours)
         {
-            var points = path.Geometry.Contours.SelectMany(x => x).ToArray();
-            if (points.Length is < 3 or > 30) continue;
+            if (contour.Count is < 3 or > 30) continue;
 
-            var left = points.Min(x => x.X);
-            var right = points.Max(x => x.X);
-            var top = points.Min(x => x.Y);
-            var bottom = points.Max(x => x.Y);
+            var left = contour.Min(x => x.X);
+            var right = contour.Max(x => x.X);
+            var top = contour.Min(x => x.Y);
+            var bottom = contour.Max(x => x.Y);
             var width = right - left;
             var height = bottom - top;
 
@@ -100,13 +102,11 @@ public sealed class BeamHookRhythmResolver
                 .FirstOrDefault();
             if (staff is null) continue;
 
-            // Full beams and short secondary hooks are the same painted primitive at different
-            // lengths. Axis-aligned height is allowed up to 1.55sp because slope inflates it.
             if (width < staff.Space * .08 || width > staff.Space * 20) continue;
             if (height < staff.Space * .04 || height > staff.Space * 1.55) continue;
             if (width / Math.Max(height, staff.Space * .03) < 1.10) continue;
 
-            var area = path.Geometry.Contours.Sum(PolygonArea);
+            var area = PolygonArea(contour);
             var longAxis = Math.Sqrt(width * width + height * height);
             var thickness = area / Math.Max(longAxis, .001);
             if (thickness < staff.Space * .04 || thickness > staff.Space * .68) continue;
