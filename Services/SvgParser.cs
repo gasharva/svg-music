@@ -11,6 +11,7 @@ public sealed class SvgParser
     private static readonly XNamespace XLink = "http://www.w3.org/1999/xlink";
     private static readonly Regex Number = new(@"[-+]?(?:\d*\.\d+|\d+\.?)(?:[eE][-+]?\d+)?", RegexOptions.Compiled);
     private readonly SvgPathGeometry _geometry = new();
+    private readonly SvgPageGeometryProvider _pageGeometry = new();
 
     public XDocument Load(string path) => XDocument.Load(path, LoadOptions.PreserveWhitespace);
 
@@ -33,12 +34,12 @@ public sealed class SvgParser
 
     public List<SvgDirectPath> ReadDirectPaths(XDocument document) => _geometry.ReadDirectPaths(document).ToList();
 
+    public List<SvgPageGeometry> ReadPageGeometry(XDocument document) => _pageGeometry.Read(document);
+
     /// <summary>
-    /// Normalizes linear layout geometry independently of how an exporter encoded it. In
-    /// particular, PDF-derived SVGs often pack a stem and one or more ledger lines into one
-    /// compound path. Each path sub-contour therefore has to be inspected independently; using
-    /// only the bounding box of the whole path loses most stems as soon as a horizontal ledger
-    /// line widens that box.
+    /// Normalizes linear layout geometry independently of how an exporter encoded it. The same
+    /// contour extractor is applied to instantiated reusable symbols and standalone paths, so a
+    /// stem does not disappear merely because an exporter moved it behind a use/symbol indirection.
     /// </summary>
     public List<SvgLineSegment> ReadLineSegments(XDocument document)
     {
@@ -81,9 +82,9 @@ public sealed class SvgParser
             result.Add(new SvgLineSegment(top.X, top.Y, bottom.X, bottom.Y, "rect", cssClass));
         }
 
-        foreach (var path in ReadDirectPaths(document))
+        foreach (var instance in ReadPageGeometry(document))
         {
-            foreach (var contour in path.Geometry.Contours)
+            foreach (var contour in instance.Geometry.Contours)
             {
                 if (contour.Count < 2) continue;
                 var left = contour.Min(x => x.X);
@@ -100,7 +101,9 @@ public sealed class SvgParser
                 if (width > Math.Max(.8, height * .12)) continue;
 
                 var centerX = (left + right) / 2;
-                result.Add(new SvgLineSegment(centerX, top, centerX, bottom, "path-contour", null));
+                result.Add(new SvgLineSegment(
+                    centerX, top, centerX, bottom,
+                    $"{instance.SourceKind}-contour", null));
             }
         }
 
@@ -128,7 +131,7 @@ public sealed class SvgParser
     public List<Staff> DetectStaves(XDocument document, double tolerance = 0.25)
     {
         var horizontal = new List<(double X1, double X2, double Y)>();
-        foreach (var path in ReadDirectPaths(document))
+        foreach (var path in ReadPageGeometry(document))
             foreach (var contour in path.Geometry.Contours)
                 for (var i = 1; i < contour.Count; i++)
                     AddHorizontal(horizontal, contour[i - 1], contour[i], tolerance);
