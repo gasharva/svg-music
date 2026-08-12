@@ -24,8 +24,8 @@
 | chord members | 48 | 31.2% |
 | notes touching beams | 32 | 20.8% |
 | beam begin/continue/end | 32 | 20.8% |
-| eighth notes | 32 | 20.8% |
-| 16th notes | 2 | 1.3% |
+| eighth notes | 26 | 16.9% |
+| 16th notes | 13 | 8.4% |
 | dotted notes | 71 | 46.1% |
 | slur starts | 5 | 3.2% |
 | slur stops | 5 | 3.2% |
