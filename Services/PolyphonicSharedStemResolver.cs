@@ -60,16 +60,9 @@ public sealed class PolyphonicSharedStemResolver
                 // members are intentionally left on their existing shared stem assignment.
                 if (best.EndpointGap > staff.Space * .90) continue;
 
-                var currentEndpointGap = note.StemX.HasValue
-                    ? sameAxis
-                        .Where(x => Math.Abs(x.Line.CenterX - note.StemX.Value) <= staff.Space * .08)
-                        .Select(x => x.EndpointGap)
-                        .DefaultIfEmpty(double.MaxValue)
-                        .Min()
-                    : double.MaxValue;
-
-                if (best.EndpointGap + staff.Space * .18 >= currentEndpointGap) continue;
-
+                // MusicGeometryRelationResolver may already have selected the correct X but then
+                // overwritten its direction while clustering all near-identical X stems together.
+                // Therefore endpoint ownership is authoritative here even when StemX barely moves.
                 note.StemX = best.Line.CenterX;
                 var upExtent = Math.Max(0, note.Y - best.Line.Top);
                 var downExtent = Math.Max(0, best.Line.Bottom - note.Y);
