@@ -4,35 +4,53 @@
 
 - staves: **10**
 - reusable/direct uses: **594**
-- direct paths: **153**
-- normalized line segments: **104**
+- direct paths: **577**
+- normalized line segments: **144**
 
 ## Semantic events
 
-- notehead-black: **150**
+- notehead-half: **78**
+- notehead-black: **74**
 - clef-treble: **5**
 - clef-bass: **5**
 - rest-eighth: **4**
-- notehead-half: **2**
-- rest-quarter: **2**
 
 ## Relation coverage
 
 | Relation | Count | % of notes |
 |---|---:|---:|
-| stem attached | 49 | 32.2% |
-| stem direction | 49 | 32.2% |
-| chord members | 38 | 25.0% |
-| notes touching beams | 6 | 3.9% |
-| beam begin/continue/end | 6 | 3.9% |
-| eighth notes | 6 | 3.9% |
-| 16th notes | 0 | 0.0% |
-| dotted notes | 59 | 38.8% |
-| slur starts | 1 | 0.7% |
-| slur stops | 1 | 0.7% |
-| tie starts | 0 | 0.0% |
-| tie stops | 0 | 0.0% |
-| altered pitches | 26 | 17.1% |
+| stem attached | 152 | 100.0% |
+| stem direction | 152 | 100.0% |
+| chord members | 48 | 31.6% |
+| notes touching beams | 32 | 21.1% |
+| beam begin/continue/end | 32 | 21.1% |
+| eighth notes | 29 | 19.1% |
+| 16th notes | 10 | 6.6% |
+| dotted notes | 71 | 46.7% |
+| slur starts | 12 | 7.9% |
+| slur stops | 12 | 7.9% |
+| tie starts | 2 | 1.3% |
+| tie stops | 2 | 1.3% |
+| altered pitches | 25 | 16.4% |
+
+## Missing-stem triage
+
+Unattached noteheads: **0**
+Normalized stem candidates: **105**
+Broad raw vertical candidates: **108**
+Raw vertical candidates not normalized: **9**
+
+| Category | Count | Meaning |
+|---|---:|---|
+| normalization gap | 0 | stem-like raw path exists near the note, but no normalized line candidate does |
+| attachment geometry gap | 0 | normalized stem is nearby, but current note↔stem endpoint/intersection tolerance rejects it |
+| unexpected resolver gap | 0 | a normalized candidate satisfies the resolver's current attachment window but StemX is still empty |
+| no stem geometry candidate | 0 | neither normalized nor broad raw vertical geometry was found near the note |
+
+### Sample unattached notes
+
+| category | symbol | staff | x | y | line dx sp | line y-gap sp | raw dx sp | raw y-gap sp | raw path |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---|
 
 ## Warning groups
 
@@ -53,11 +71,11 @@ These are frequent staff-local glyphs that are still semantically unknown or hav
 | `x` | 5 | clef-bass | uniE06C | 0.509 | 2.208 | 2.266 | low confidence |
 | `A` | 3 | smufl-unknown | uniE1C9 | 0.532 | 3.019 | 2.585 | unknown semantic kind |
 | `ab` | 3 | smufl-unknown | uniE06C | 0.639 | 2.184 | 3.571 | unknown semantic kind |
-| `z` | 2 | time-signature-digit | timeSig7 | 0.546 | 2.024 | 1.942 | low confidence |
+| `z` | 2 | time-signature-digit | timeSig3 | 0.546 | 2.024 | 1.942 | low confidence |
 | `F` | 2 | smufl-unknown | uniE1AF | 0.807 | 1.340 | 1.119 | unknown semantic kind |
 | `V` | 2 | smufl-unknown | uniE110 | 0.689 | 3.334 | 1.965 | unknown semantic kind |
 | `X` | 2 | smufl-unknown | uniE4D2 | 0.652 | 3.408 | 2.561 | unknown semantic kind |
-| `ac` | 2 | smufl-unknown | uniE581 | 0.783 | 0.568 | 0.530 | unknown semantic kind |
+| `aa` | 2 | smufl-unknown | uniE13B | 0.754 | 0.996 | 2.643 | unknown semantic kind |
 | `ad` | 2 | accidental-flat | uniE2DE | 0.555 | 0.644 | 2.487 | low confidence |
 | `E` | 1 | smufl-unknown | uniE127 | 0.818 | 1.466 | 1.612 | unknown semantic kind |
 | `G` | 1 | smufl-unknown | uniE1C1 | 0.809 | 1.167 | 1.095 | unknown semantic kind |
