@@ -33,6 +33,7 @@ public sealed class ConversionPipeline
         var uses = parser.ReadUses(document);
         var pageGeometry = parser.ReadPageGeometry(document);
         var lineSegments = parser.ReadLineSegments(document);
+        lineSegments.AddRange(new CompoundVerticalStrokeExtractor().Extract(pageGeometry, staves, lineSegments));
         performance.ReadInstancesMs = watch.Elapsed.TotalMilliseconds;
 
         var classifier = new SymbolClassifier();
