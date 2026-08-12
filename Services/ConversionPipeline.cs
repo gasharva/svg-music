@@ -66,6 +66,11 @@ public sealed class ConversionPipeline
         // centre before any spatial relation logic compares them to stems/beams/chords.
         new PaintedGlyphPositionNormalizer().Normalize(analysis);
 
+        // Very steep/remote beams can create stems substantially longer than the ordinary 7-space
+        // stem window. Accept those only when a long vertical segment actually starts/ends at a
+        // notehead, which prevents long barlines from becoming stems.
+        new LongStemRelationResolver().Resolve(analysis);
+
         new MusicGeometryRelationResolver().Resolve(analysis, config);
         new SlopedBeamRhythmResolver().Resolve(analysis, config);
         new SlopedBeamCoverageResolver().Resolve(analysis, config);
