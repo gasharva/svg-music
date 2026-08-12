@@ -47,6 +47,9 @@ jobs:
             artifacts/yellow-leaves.analysis.json \
             artifacts/yellow-leaves.classification.json \
             artifacts/yellow-leaves
+          python3 Scripts/missing_stem_beam_probe.py \
+            artifacts/yellow-leaves.analysis.json \
+            artifacts/yellow-leaves.beam-probe.md
 
       - name: Show generated files
         if: always()
@@ -67,6 +70,7 @@ jobs:
             artifacts/yellow-leaves.performance.json
             artifacts/yellow-leaves.inventory.json
             artifacts/yellow-leaves.inventory.md
+            artifacts/yellow-leaves.beam-probe.md
           if-no-files-found: error
           retention-days: 14
 
@@ -83,6 +87,7 @@ jobs:
           cp artifacts/yellow-leaves.performance.json /tmp/golden-latest/
           cp artifacts/yellow-leaves.inventory.json /tmp/golden-latest/
           cp artifacts/yellow-leaves.inventory.md /tmp/golden-latest/
+          cp artifacts/yellow-leaves.beam-probe.md /tmp/golden-latest/
 
           cat > /tmp/golden-latest/source.txt <<EOF
           PR: #${{ github.event.pull_request.number }}
@@ -125,4 +130,5 @@ jobs:
             echo '- [Classification](https://raw.githubusercontent.com/${{ github.repository }}/ci-output/latest/yellow-leaves.classification.json)'
             echo '- [Performance](https://raw.githubusercontent.com/${{ github.repository }}/ci-output/latest/yellow-leaves.performance.json)'
             echo '- [Recognition inventory](https://raw.githubusercontent.com/${{ github.repository }}/ci-output/latest/yellow-leaves.inventory.md)'
+            echo '- [Missing-stem beam probe](https://raw.githubusercontent.com/${{ github.repository }}/ci-output/latest/yellow-leaves.beam-probe.md)'
           } >> "$GITHUB_STEP_SUMMARY"
