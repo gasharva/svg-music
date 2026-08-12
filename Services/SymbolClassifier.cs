@@ -61,6 +61,7 @@ public sealed class SymbolClassifier
             var isUsedAtStaffLeft = group.SymbolIds.Any(leftEdgeSymbols.Contains);
             var semanticKind = RecognizeStaffLocalClef(widthSpaces, heightSpaces, isUsedAtStaffLeft)
                                ?? RecognizeStaffLocalDot(widthSpaces, heightSpaces, isUsedNearStaff)
+                               ?? RecognizeStaffLocalQuarterRest(geometry, widthSpaces, heightSpaces, isUsedNearStaff)
                                ?? RecognizeStaffLocalAccidental(widthSpaces, heightSpaces, isUsedNearStaff)
                                ?? RecognizeStaffLocalNotehead(mask, widthSpaces, heightSpaces, isUsedNearStaff)
                                ?? NormalizeKind(best.Reference.Id, best.Reference.Kind);
@@ -120,36 +121,19 @@ public sealed class SymbolClassifier
             .ToHashSet(StringComparer.Ordinal);
     }
 
-    /// <summary>
-    /// Clefs are exceptionally stable by layout even when their exact outline comes from a
-    /// non-Bravura font: they sit immediately after the left edge of every staff. Use that
-    /// structural position plus a broad size envelope before trusting a font-specific glyph match.
-    /// </summary>
     private static string? RecognizeStaffLocalClef(
         double widthSpaces,
         double heightSpaces,
         bool isUsedAtStaffLeft)
     {
         if (!isUsedAtStaffLeft) return null;
-
-        // Treble clef: tall symbol spanning well beyond the five staff lines.
         if (widthSpaces is >= 2.2 and <= 4.2 && heightSpaces is >= 4.5 and <= 8.0)
             return "clef-treble";
-
-        // Bass clef: compact, roughly two staff spaces in both dimensions. Time signatures
-        // occupy a similar box but are several staff spaces to the right, outside leftEdgeSymbols.
         if (widthSpaces is >= 1.5 and <= 3.0 && heightSpaces is >= 1.5 and <= 3.4)
             return "clef-bass";
-
         return null;
     }
 
-    /// <summary>
-    /// Augmentation dots are tiny filled glyphs whose exact outline varies little across music
-    /// fonts. Restrict the geometry rule to glyphs actually used around a detected staff. The
-    /// semantic recognizer still requires the dot to sit just to the right of a note/rest before
-    /// it changes duration, so an unrelated tiny mark cannot dot a remote event.
-    /// </summary>
     private static string? RecognizeStaffLocalDot(
         double widthSpaces,
         double heightSpaces,
@@ -158,17 +142,35 @@ public sealed class SymbolClassifier
         if (!isUsedNearStaff) return null;
         if (widthSpaces is < .12 or > .45) return null;
         if (heightSpaces is < .10 or > .40) return null;
-
         var aspect = widthSpaces / Math.Max(heightSpaces, 1e-6);
         return aspect is >= .65 and <= 1.8 ? "augmentation-dot" : null;
     }
 
-    /// <summary>
-    /// A flat accidental has a much more stable staff-relative envelope than its exact font
-    /// outline: it is narrow (well under one staff space) and roughly 2.5 spaces tall. This
-    /// recovers outlined non-Bravura flat glyphs while deliberately excluding wider rests,
-    /// noteheads and clefs. Final ownership still requires the normal accidental-to-note geometry.
-    /// </summary>
+    private static string? RecognizeStaffLocalQuarterRest(
+        SymbolGeometry geometry,
+        double widthSpaces,
+        double heightSpaces,
+        bool isUsedNearStaff)
+    {
+        if (!isUsedNearStaff) return null;
+        if (widthSpaces is < .82 or > 1.20) return null;
+        if (heightSpaces is < 2.30 or > 2.95) return null;
+        if (geometry.Contours.Count != 1) return null;
+
+        var points = geometry.Contours[0];
+        if (points.Count < 8) return null;
+        var minX = points.Min(p => p.X);
+        var maxX = points.Max(p => p.X);
+        var minY = points.Min(p => p.Y);
+        var maxY = points.Max(p => p.Y);
+        var boxArea = Math.Max((maxX - minX) * (maxY - minY), 1e-6);
+        var fill = PolygonArea(points) / boxArea;
+
+        // A quarter rest is a dense zig-zag. Real one-hook flags can occupy almost the same
+        // staff-relative box, but their painted polygon density is dramatically lower.
+        return fill >= .22 ? "rest-quarter" : null;
+    }
+
     private static string? RecognizeStaffLocalAccidental(
         double widthSpaces,
         double heightSpaces,
@@ -180,12 +182,6 @@ public sealed class SymbolClassifier
             : null;
     }
 
-    /// <summary>
-    /// Real-world score SVGs frequently outline a music font that is not Bravura. A filled or
-    /// hollow oval notehead is nevertheless much more stable geometrically than its exact font
-    /// outline. Use this only for symbols actually instantiated around a detected staff, so text
-    /// glyphs elsewhere on the page cannot be mistaken for notes.
-    /// </summary>
     private static string? RecognizeStaffLocalNotehead(
         IReadOnlyList<ulong> mask,
         double widthSpaces,
@@ -193,10 +189,6 @@ public sealed class SymbolClassifier
         bool isUsedNearStaff)
     {
         if (!isUsedNearStaff) return null;
-
-        // Normal noteheads are roughly one staff-space wide and distinctly wider than tall.
-        // Keep the window deliberately conservative: accidentals, rests, clefs and dynamics are
-        // either much taller or have a very different bounding-box aspect.
         if (widthSpaces < 0.85 || widthSpaces > 1.45) return null;
         if (heightSpaces < 0.60 || heightSpaces > 1.05) return null;
         if (widthSpaces / Math.Max(heightSpaces, 1e-6) < 1.05) return null;
@@ -204,17 +196,24 @@ public sealed class SymbolClassifier
         long painted = 0;
         foreach (var row in mask) painted += BitOperations.PopCount(row);
         var fill = painted / (double)(FastGlyphMatcher.MaskSize * FastGlyphMatcher.MaskSize);
-
-        // Filled noteheads occupy most of their normalized oval box; half-note heads retain a
-        // substantial central hole. Both are independent of symbol ids and of the source font.
         return fill >= 0.62 ? "notehead-black" : "notehead-half";
+    }
+
+    private static double PolygonArea(IReadOnlyList<PointD> contour)
+    {
+        if (contour.Count < 3) return 0;
+        double twiceArea = 0;
+        for (var i = 0; i < contour.Count; i++)
+        {
+            var a = contour[i];
+            var b = contour[(i + 1) % contour.Count];
+            twiceArea += a.X * b.Y - b.X * a.Y;
+        }
+        return Math.Abs(twiceArea) / 2;
     }
 
     private static string NormalizeKind(string referenceId, string kind) => referenceId switch
     {
-        // MuseScore's round noteheads are geometrically closer to SMuFL shape-note
-        // variants than to Bravura's default oval noteheads. Musically they have the
-        // same filled/hollow semantics and must not remain smufl-unknown.
         "uniE1B1" => "notehead-black",
         "uniE1B0" => "notehead-half",
         _ => kind
