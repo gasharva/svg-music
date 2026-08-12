@@ -60,6 +60,7 @@ public sealed class ConversionPipeline
         new PaintedGlyphPositionNormalizer().Normalize(analysis);
         new LongStemRelationResolver().Resolve(analysis);
         new MusicGeometryRelationResolver().Resolve(analysis, config);
+        new OpposedStemVoiceResolver().Resolve(analysis);
 
         // Text close to the first system can contain hollow glyphs that resemble noteheads.
         // Once stem/ledger relations are known, reject only hollow "half-note" candidates that
