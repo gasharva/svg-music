@@ -176,6 +176,9 @@
         <type>quarter</type>
         <dot />
         <stem>up</stem>
+        <notations>
+          <slur type="start" number="4" />
+        </notations>
         <staff>1</staff>
       </note>
       <note default-x="119.14">
@@ -188,6 +191,9 @@
         <voice>1</voice>
         <type>quarter</type>
         <stem>up</stem>
+        <notations>
+          <slur type="stop" number="4" />
+        </notations>
         <staff>1</staff>
       </note>
       <note default-x="148.097">
@@ -419,10 +425,11 @@
           <step>D</step>
           <octave>4</octave>
         </pitch>
-        <duration>16</duration>
+        <duration>8</duration>
         <voice>3</voice>
-        <type>quarter</type>
+        <type>eighth</type>
         <stem>down</stem>
+        <beam number="1">end</beam>
         <staff>2</staff>
       </note>
     </measure>
@@ -555,6 +562,9 @@
         <dot />
         <stem>up</stem>
         <beam number="1">begin</beam>
+        <notations>
+          <slur type="start" number="1" />
+        </notations>
         <staff>1</staff>
       </note>
       <note default-x="139.908">
@@ -569,6 +579,9 @@
         <accidental>flat</accidental>
         <stem>up</stem>
         <beam number="1">end</beam>
+        <notations>
+          <slur type="stop" number="1" />
+        </notations>
         <staff>1</staff>
       </note>
       <note default-x="172.2">
@@ -1050,6 +1063,9 @@
         <type>quarter</type>
         <dot />
         <stem>up</stem>
+        <notations>
+          <slur type="start" number="3" />
+        </notations>
         <staff>1</staff>
       </note>
       <note default-x="122.061">
@@ -1062,6 +1078,9 @@
         <voice>1</voice>
         <type>quarter</type>
         <stem>up</stem>
+        <notations>
+          <slur type="stop" number="3" />
+        </notations>
         <staff>1</staff>
       </note>
       <note default-x="152.686">
@@ -1293,10 +1312,11 @@
           <step>D</step>
           <octave>4</octave>
         </pitch>
-        <duration>16</duration>
+        <duration>8</duration>
         <voice>3</voice>
-        <type>quarter</type>
+        <type>eighth</type>
         <stem>down</stem>
+        <beam number="1">end</beam>
         <staff>2</staff>
       </note>
     </measure>
@@ -1429,6 +1449,9 @@
         <dot />
         <stem>up</stem>
         <beam number="1">begin</beam>
+        <notations>
+          <slur type="start" number="2" />
+        </notations>
         <staff>1</staff>
       </note>
       <note default-x="124.568">
@@ -1443,6 +1466,9 @@
         <accidental>flat</accidental>
         <stem>up</stem>
         <beam number="1">end</beam>
+        <notations>
+          <slur type="stop" number="2" />
+        </notations>
         <staff>1</staff>
       </note>
       <note default-x="155.611">
@@ -1960,7 +1986,7 @@
         <type>quarter</type>
         <stem>up</stem>
         <notations>
-          <slur type="stop" number="1" />
+          <slur type="stop" number="5" />
         </notations>
         <staff>1</staff>
       </note>
@@ -2019,7 +2045,7 @@
         <accidental>flat</accidental>
         <stem>down</stem>
         <notations>
-          <slur type="start" number="1" />
+          <slur type="start" number="5" />
         </notations>
         <staff>1</staff>
       </note>
