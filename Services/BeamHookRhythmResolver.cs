@@ -4,12 +4,13 @@ using SvgToMusicXmlPoc.Models;
 namespace SvgToMusicXmlPoc.Services;
 
 /// <summary>
-/// Detects secondary beam levels near a stem end.
-/// Uses raw geometry only; SVG CSS classes are deliberately ignored.
+/// Detects secondary beam levels near a stem end. Beam/hook recognition is based on painted strip
+/// thickness rather than a very small axis-aligned bbox: in PDF-derived SVG a sloped strip can be
+/// about one staff-space tall even though its physical thickness is normal.
 /// </summary>
 public sealed class BeamHookRhythmResolver
 {
-    private sealed record Shape(double Left, double Top, double Right, double Bottom)
+    private sealed record Shape(double Left, double Top, double Right, double Bottom, double Thickness)
     {
         public double Width => Right - Left;
         public double Height => Bottom - Top;
@@ -32,9 +33,9 @@ public sealed class BeamHookRhythmResolver
             if (staff is null) continue;
 
             var stem = analysis.LineSegments
-                .Where(x => Math.Abs(x.CenterX - note.StemX!.Value) <= staff.Space * .14)
-                .Where(x => x.Height >= staff.Space * 1.35 && x.Height <= staff.Space * 7.0)
-                .Where(x => x.Top <= note.Y + staff.Space * .7 && x.Bottom >= note.Y - staff.Space * .7)
+                .Where(x => Math.Abs(x.CenterX - note.StemX!.Value) <= staff.Space * .18)
+                .Where(x => x.Height >= staff.Space * 1.10 && x.Height <= staff.Space * 11.2)
+                .Where(x => x.Top <= note.Y + staff.Space * .90 && x.Bottom >= note.Y - staff.Space * .90)
                 .OrderBy(x => Math.Abs(x.CenterX - note.StemX!.Value))
                 .ThenBy(x => Math.Abs(x.CenterY - note.Y))
                 .FirstOrDefault();
@@ -43,25 +44,23 @@ public sealed class BeamHookRhythmResolver
             {
                 var beamEndY = note.StemDirection == "down" ? stem.Bottom : stem.Top;
 
-                // A secondary beam lies on the notehead side of the primary beam. It does not
-                // have to touch the stem pixel-for-pixel: engravers commonly leave a small gap
-                // between a short hook and the stem. Therefore use directional Y offset plus a
-                // tolerant horizontal distance rather than requiring X overlap.
                 var hasSecondaryLevel = beamLikeShapes.Any(shape =>
                 {
                     var horizontalGap = HorizontalDistance(note.StemX!.Value, shape.Left, shape.Right);
-                    if (horizontalGap > staff.Space * .60) return false;
+                    if (horizontalGap > staff.Space * .68) return false;
 
                     var inwardOffset = note.StemDirection == "down"
                         ? beamEndY - shape.CenterY
                         : shape.CenterY - beamEndY;
 
-                    // Ignore the primary beam itself (near-zero offset), and only accept another
-                    // thin horizontal band reasonably close to the same stem end.
-                    if (inwardOffset < staff.Space * .16 || inwardOffset > staff.Space * 1.15)
+                    // Primary beam is at/very near the free end. A second beam or hook is displaced
+                    // toward the notehead by roughly a fraction to one staff-space. Keep enough
+                    // room for thick/sloped exporter strips, but not for remote ledger/slur shapes.
+                    if (inwardOffset < staff.Space * .12 || inwardOffset > staff.Space * 1.45)
                         return false;
 
-                    return IntervalDistance(stem.Top, stem.Bottom, shape.Top, shape.Bottom) <= staff.Space * .55;
+                    return IntervalDistance(stem.Top, stem.Bottom, shape.Top, shape.Bottom) <=
+                           Math.Max(staff.Space * .65, shape.Thickness * 1.8);
                 });
 
                 if (hasSecondaryLevel)
@@ -71,8 +70,6 @@ public sealed class BeamHookRhythmResolver
                 }
             }
 
-            // Beam recognition may change the base note type after augmentation-dot recognition.
-            // Keep the dot in the actual MusicXML duration as well as in the visual <dot/> element.
             if (note.BeamCount > 0)
             {
                 var baseDuration = DurationForType(note.Type ?? "eighth", config.Divisions);
@@ -88,30 +85,49 @@ public sealed class BeamHookRhythmResolver
         foreach (var path in analysis.DirectPaths)
         {
             var points = path.Geometry.Contours.SelectMany(x => x).ToArray();
-            if (points.Length == 0 || points.Length > 30) continue;
+            if (points.Length is < 3 or > 30) continue;
 
             var left = points.Min(x => x.X);
             var right = points.Max(x => x.X);
             var top = points.Min(x => x.Y);
             var bottom = points.Max(x => x.Y);
-            var shape = new Shape(left, top, right, bottom);
+            var width = right - left;
+            var height = bottom - top;
 
             var staff = analysis.Staves
-                .Where(s => shape.Right >= s.Left - s.Space * 3 && shape.Left <= s.Right + s.Space * 3)
-                .OrderBy(s => Math.Abs(shape.CenterY - s.Center) / Math.Max(s.Space, .001))
+                .Where(s => right >= s.Left - s.Space * 3 && left <= s.Right + s.Space * 3)
+                .OrderBy(s => Math.Abs((top + bottom) / 2 - s.Center) / Math.Max(s.Space, .001))
                 .FirstOrDefault();
             if (staff is null) continue;
 
-            // Keep both full beams and tiny partial hooks. The relation to a concrete stem is
-            // decided later from geometry, so there is no need for a brittle minimum hook width.
-            if (shape.Width < staff.Space * .08 || shape.Width > staff.Space * 20) continue;
-            if (shape.Height < staff.Space * .04 || shape.Height > staff.Space * .95) continue;
-            if (shape.Width / Math.Max(shape.Height, .001) < 1.15) continue;
+            // Full beams and short secondary hooks are the same painted primitive at different
+            // lengths. Axis-aligned height is allowed up to 1.55sp because slope inflates it.
+            if (width < staff.Space * .08 || width > staff.Space * 20) continue;
+            if (height < staff.Space * .04 || height > staff.Space * 1.55) continue;
+            if (width / Math.Max(height, staff.Space * .03) < 1.10) continue;
 
-            result.Add(shape);
+            var area = path.Geometry.Contours.Sum(PolygonArea);
+            var longAxis = Math.Sqrt(width * width + height * height);
+            var thickness = area / Math.Max(longAxis, .001);
+            if (thickness < staff.Space * .04 || thickness > staff.Space * .68) continue;
+
+            result.Add(new Shape(left, top, right, bottom, thickness));
         }
 
         return result;
+    }
+
+    private static double PolygonArea(IReadOnlyList<PointD> contour)
+    {
+        if (contour.Count < 3) return 0;
+        double twiceArea = 0;
+        for (var i = 0; i < contour.Count; i++)
+        {
+            var a = contour[i];
+            var b = contour[(i + 1) % contour.Count];
+            twiceArea += a.X * b.Y - b.X * a.Y;
+        }
+        return Math.Abs(twiceArea) / 2;
     }
 
     private static double HorizontalDistance(double x, double left, double right)
