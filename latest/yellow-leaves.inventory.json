@@ -53,11 +53,36 @@
     "samples": []
   },
   "warnings": {
-    "total": 139,
+    "total": 164,
     "groups": {
       "low confidence": 137,
       "Не удалось привязать точку в x=309.3": 1,
-      "Не удалось привязать точку в x=95.3": 1
+      "Не удалось привязать точку в x=95.3": 1,
+      "acc-probe #T staff=0 x=212.8 y=163.7 row=4 -> A4 x=220.6 y=166.0 row=3 pd=1 dy=2.30 dx=7.82": 1,
+      "acc-probe #T staff=0 x=317.5 y=163.7 row=4 -> A4 x=325.3 y=166.0 row=3 pd=1 dy=2.30 dx=7.82": 1,
+      "acc-probe #U staff=0 x=316.9 y=177.5 row=-2 -> C4 x=326.0 y=177.5 row=-2 pd=0 dy=0.00 dx=9.06": 1,
+      "acc-probe #U staff=2 x=77.1 y=307.5 row=1 -> F4 x=85.5 y=307.5 row=1 pd=0 dy=0.00 dx=8.39": 1,
+      "acc-probe #U staff=2 x=139.7 y=307.5 row=1 -> F4 x=148.1 y=307.5 row=1 pd=0 dy=0.00 dx=8.39": 1,
+      "acc-probe #T staff=2 x=211.7 y=300.6 row=4 -> B4 x=219.5 y=300.6 row=4 pd=0 dy=0.00 dx=7.82": 1,
+      "acc-probe #T staff=3 x=200.4 y=340.4 row=9 -> A3 x=208.2 y=342.7 row=8 pd=1 dy=2.30 dx=7.82": 1,
+      "acc-probe #T staff=3 x=296.4 y=340.4 row=9 -> B3 x=304.9 y=340.4 row=9 pd=0 dy=0.00 dx=8.49": 1,
+      "acc-probe #T staff=3 x=477.1 y=340.4 row=9 -> B3 x=484.9 y=340.4 row=9 pd=0 dy=0.00 dx=7.82": 1,
+      "acc-probe #T staff=4 x=198.6 y=437.4 row=4 -> A4 x=206.5 y=439.7 row=3 pd=1 dy=2.30 dx=7.82": 1,
+      "acc-probe #T staff=4 x=308.1 y=437.4 row=4 -> A4 x=315.9 y=439.7 row=3 pd=1 dy=2.30 dx=7.82": 1,
+      "acc-probe #U staff=4 x=307.5 y=451.2 row=-2 -> C4 x=316.6 y=451.2 row=-2 pd=0 dy=0.00 dx=9.06": 1,
+      "acc-probe #U staff=6 x=77.1 y=581.2 row=1 -> F4 x=85.5 y=581.2 row=1 pd=0 dy=0.00 dx=8.39": 1,
+      "acc-probe #U staff=6 x=143.5 y=581.2 row=1 -> F4 x=151.9 y=581.2 row=1 pd=0 dy=0.00 dx=8.38": 1,
+      "acc-probe #T staff=6 x=212.8 y=574.3 row=4 -> B4 x=220.6 y=574.3 row=4 pd=0 dy=0.00 dx=7.82": 1,
+      "acc-probe #T staff=6 x=295.5 y=574.3 row=4 -> B4 x=303.3 y=574.3 row=4 pd=0 dy=0.00 dx=7.82": 1,
+      "acc-probe #T staff=7 x=295.5 y=614.1 row=9 -> B3 x=304.0 y=614.1 row=9 pd=0 dy=0.00 dx=8.49": 1,
+      "acc-probe #T staff=8 x=77.1 y=720.3 row=0 -> E4 x=85.6 y=720.3 row=0 pd=0 dy=0.00 dx=8.49": 1,
+      "acc-probe #T staff=9 x=82.5 y=750.9 row=9 -> B3 x=91.0 y=750.9 row=9 pd=0 dy=0.00 dx=8.49": 1,
+      "acc-probe #T staff=8 x=197.5 y=720.3 row=0 -> E4 x=206.0 y=720.3 row=0 pd=0 dy=0.00 dx=8.47": 1,
+      "acc-probe #T staff=9 x=202.8 y=760.1 row=5 -> E3 x=211.3 y=760.1 row=5 pd=0 dy=0.00 dx=8.49": 1,
+      "acc-probe #T staff=8 x=318.6 y=704.2 row=7 -> E5 x=326.5 y=704.2 row=7 pd=0 dy=0.00 dx=7.82": 1,
+      "acc-probe #ad staff=8 x=423.3 y=711.1 row=4 -> B4 x=431.8 y=711.1 row=4 pd=0 dy=0.00 dx=8.49": 1,
+      "acc-probe #ad staff=8 x=423.3 y=727.2 row=-3 -> B3 x=431.8 y=727.2 row=-3 pd=0 dy=0.00 dx=8.49": 1,
+      "acc-probe #U staff=9 x=454.0 y=757.8 row=6 -> F3 x=462.3 y=757.8 row=6 pd=0 dy=0.00 dx=8.39": 1
     }
   },
   "suspiciousNearStaffSymbols": [
