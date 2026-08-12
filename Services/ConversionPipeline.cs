@@ -32,6 +32,7 @@ public sealed class ConversionPipeline
         watch.Restart();
         var uses = parser.ReadUses(document);
         var directPaths = parser.ReadDirectPaths(document);
+        var pageGeometry = parser.ReadPageGeometry(document);
         var lineSegments = parser.ReadLineSegments(document);
         performance.ReadInstancesMs = watch.Elapsed.TotalMilliseconds;
 
@@ -51,6 +52,7 @@ public sealed class ConversionPipeline
         watch.Restart();
         var analysis = new MusicSemanticRecognizer().Recognize(uses, staves, classification, config);
         analysis.DirectPaths.AddRange(directPaths);
+        analysis.PageGeometry.AddRange(pageGeometry);
         analysis.LineSegments.AddRange(lineSegments);
 
         new MusicGeometryRelationResolver().Resolve(analysis, config);
@@ -101,30 +103,13 @@ public sealed class ConversionPipeline
         var watch = Stopwatch.StartNew();
         new MusicXmlWriter().Write(musicXmlPath, result.Analysis, config);
         new MusicXmlStemPostProcessor().Apply(musicXmlPath, result.Analysis);
-        // Grace noteheads use the same glyph identity as ordinary black heads but are physically
-        // scaled to about 70%. Restore zero-duration grace semantics and their compact beams before
-        // voice layout so lane duration/backup calculations do not count them as quarter notes.
         new MusicXmlGraceNotePostProcessor().Apply(musicXmlPath, result.Analysis);
-        // Preserve the SVG's horizontal engraving coordinates before voice reordering.
-        // The following voice-layout pass reuses the same note elements, so default-x survives.
         new MusicXmlSvgLayoutPostProcessor().Apply(musicXmlPath, result.Analysis);
-        // Render each detected voice as a complete lane. Do not serialize one simultaneous
-        // onset at a time: that can move continuation notes behind a long parallel chord.
         new MusicXmlVoiceLayoutPostProcessor().Apply(musicXmlPath, result.Analysis);
-        // If the first voice pass left opposite-stem notes and a rest in one voice, use occupied
-        // onset geometry to recover the missing parallel voice before later notation passes.
         new MusicXmlRestVoiceConflictPostProcessor().Apply(musicXmlPath);
-        // A grace cluster consumes no metrical duration. If another voice begins at the following
-        // engraved onset, restore that delayed start with a forward instead of snapping it to bar 0.
         new MusicXmlGraceVoiceTimingPostProcessor().Apply(musicXmlPath);
-        // MusicXmlWriter emits clef attributes at the first measure of every detected SVG staff
-        // system. Preserve those source line breaks so MuseScore does not repack measures.
         new MusicXmlSystemBreakPostProcessor().Apply(musicXmlPath);
-        // MusicXmlWriter emits the primary beam. Add beam level 2 after voice ordering, so
-        // isolated secondary hooks become forward/backward hooks and adjacent 16ths connect.
         new MusicXmlSecondaryBeamPostProcessor().Apply(musicXmlPath);
-        // A written accidental changes pitch spelling for later equal pitches on the same staff
-        // until the barline, but the accidental glyph itself is not repeated.
         new MusicXmlAccidentalStatePostProcessor().Apply(musicXmlPath);
         result.Performance.WriteMusicXmlMs = watch.Elapsed.TotalMilliseconds;
         result.Performance.TotalMs += result.Performance.WriteMusicXmlMs;
