@@ -74,6 +74,21 @@ public sealed class RecognizedEvent
     public bool TieStop { get; set; }
 }
 
+/// <summary>
+/// A non-timed engraving direction recovered from page geometry. X/EndX stay in source SVG
+/// coordinates; the MusicXML postprocessor maps them to the corresponding measure and offset.
+/// </summary>
+public sealed class DirectionMark
+{
+    public string Kind { get; init; } = "dynamic";
+    public string Value { get; init; } = "";
+    public double X { get; init; }
+    public double? EndX { get; init; }
+    public double Y { get; init; }
+    public int StaffIndex { get; init; }
+    public string? SourceSymbolId { get; init; }
+}
+
 public sealed class AnalysisResult
 {
     public List<Staff> Staves { get; init; } = [];
@@ -83,5 +98,6 @@ public sealed class AnalysisResult
     public List<SvgLineSegment> LineSegments { get; init; } = [];
     public List<SymbolClassification> Classifications { get; init; } = [];
     public List<RecognizedEvent> Events { get; init; } = [];
+    public List<DirectionMark> Directions { get; init; } = [];
     public List<string> Warnings { get; init; } = [];
 }
