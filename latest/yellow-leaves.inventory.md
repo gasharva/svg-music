@@ -9,11 +9,11 @@
 
 ## Semantic events
 
-- notehead-black: **152**
+- notehead-half: **80**
+- notehead-black: **74**
 - clef-treble: **5**
 - clef-bass: **5**
 - rest-eighth: **4**
-- notehead-half: **2**
 
 ## Relation coverage
 
