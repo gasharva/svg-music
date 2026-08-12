@@ -60,7 +60,7 @@ public sealed class ConversionPipeline
         new PaintedGlyphPositionNormalizer().Normalize(analysis);
         new LongStemRelationResolver().Resolve(analysis);
         new MusicGeometryRelationResolver().Resolve(analysis, config);
-        new OpposedStemVoiceResolver().Resolve(analysis);
+        new PolyphonicSharedStemResolver().Resolve(analysis);
         new StemlessHollowFalsePositiveResolver().Resolve(analysis);
         new SlopedBeamRhythmResolver().Resolve(analysis, config);
         new SlopedBeamCoverageResolver().Resolve(analysis, config);
