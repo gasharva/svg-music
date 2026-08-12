@@ -6,8 +6,8 @@ namespace SvgToMusicXmlPoc.Services;
 /// Rebuilds curved-line semantics after pitch/chord reconstruction.
 /// A curve between equal pitches is a tie only when the curve endpoints also terminate near those
 /// noteheads; a curve between different pitches (or a high arch anchored at stems) is a slur.
-/// Endpoint geometry is matched jointly so separate ties on chord tones do not collapse into
-/// one cross-pitch slur. SVG CSS classes are intentionally ignored.
+/// Compound PDF-derived paths are decomposed contour-by-contour because one SVG path can contain
+/// several unrelated slurs across neighbouring measures.
 /// </summary>
 public sealed class ArcSemanticsResolver
 {
@@ -18,7 +18,7 @@ public sealed class ArcSemanticsResolver
         double Bottom,
         double LeftY,
         double RightY,
-        SvgDirectPath Path)
+        string SourceId)
     {
         public double Width => Right - Left;
         public double Height => Bottom - Top;
@@ -42,8 +42,6 @@ public sealed class ArcSemanticsResolver
             .ToList();
         if (notes.Count == 0) return;
 
-        // MusicGeometryRelationResolver already provides a first-pass attachment. Rebuild only
-        // arc semantics here with endpoint-aware chord matching.
         foreach (var note in notes)
         {
             note.TieStart = false;
@@ -53,8 +51,8 @@ public sealed class ArcSemanticsResolver
             note.SlurNumber = null;
         }
 
-        var beams = FindBeamPaths(analysis);
-        var arcs = FindArcs(analysis, beams);
+        var beamContours = FindBeamContours(analysis);
+        var arcs = FindArcs(analysis, beamContours);
         var usedPairs = new HashSet<(RecognizedEvent Start, RecognizedEvent End)>();
         var slurNumber = 1;
 
@@ -76,20 +74,18 @@ public sealed class ArcSemanticsResolver
                     .Where(end => !ReferenceEquals(start, end))
                     .Select(end => BuildCandidate(start, end, arc, staff.Space)))
                 .Where(x => !usedPairs.Contains((x.Start, x.End)))
-                // Same-pitch preference is allowed only after CanTie has established that this is
-                // a physically compact tie ending near both noteheads. A high slur whose endpoints
-                // sit at stem tops must never turn into a tie merely because its outer notes match.
                 .OrderBy(x => x.GeometryScore - (x.TieCompatible ? 1.65 : 0))
                 .ThenBy(x => x.GeometryScore)
                 .FirstOrDefault();
 
-            if (best is null) continue;
-            // Legato slurs can arch several staff spaces away from their noteheads, unlike compact
-            // ties. Horizontal endpoint windows already keep candidates local, so allow the larger
-            // vertical score while still rejecting clearly unrelated pairs.
-            if (best.GeometryScore > 10.0) continue;
+            if (best is null || best.GeometryScore > 10.0) continue;
 
+            if (!best.TieCompatible)
+                best = RefineSlurAnchors(best, staffNotes, arc, staff);
+
+            if (usedPairs.Contains((best.Start, best.End))) continue;
             usedPairs.Add((best.Start, best.End));
+
             if (best.TieCompatible)
             {
                 best.Start.TieStart = true;
@@ -104,6 +100,72 @@ public sealed class ArcSemanticsResolver
                 slurNumber++;
             }
         }
+    }
+
+    private static PairCandidate RefineSlurAnchors(
+        PairCandidate candidate,
+        IReadOnlyList<RecognizedEvent> staffNotes,
+        Arc arc,
+        Staff staff)
+    {
+        var start = candidate.Start;
+        var end = candidate.End;
+        var ordered = staffNotes
+            .Where(x => x.X >= arc.Left - staff.Space * 2.0 && x.X <= arc.Right + staff.Space * 2.0)
+            .OrderBy(x => x.X)
+            .ToList();
+
+        // A PDF renderer can let the painted slur tip overshoot the semantic endpoint. This is
+        // particularly visible when a beamed short note is immediately followed by a longer note
+        // of the same written pitch: pure endpoint distance then attaches the slur to the later
+        // duplicate. The later note may omit its accidental because it is carried by notation
+        // state, so absence of an attached accidental is treated the same way as tie recognition.
+        if (end.BeamCount == 0)
+        {
+            var precedingSamePitch = ordered
+                .Where(x => x.BeamCount > 0 && x.X < end.X - staff.Space * .20)
+                .Where(x => SameWrittenPitch(x, end))
+                .Where(x => end.X - x.X <= staff.Space * 4.0)
+                .OrderByDescending(x => x.X)
+                .FirstOrDefault();
+
+            if (precedingSamePitch is not null)
+                end = precedingSamePitch;
+        }
+
+        var beamed = ordered
+            .Where(x => x.BeamCount > 0)
+            .OrderBy(x => x.X)
+            .ToList();
+
+        if (end.BeamCount > 0)
+        {
+            var sameRun = beamed
+                .Where(x => x.X <= end.X + staff.Space * .25)
+                .Where(x => end.X - x.X <= staff.Space * 10)
+                .ToList();
+            if (sameRun.Count >= 2)
+                start = sameRun.First();
+        }
+        else if (arc.CenterY < staff.Center && beamed.Count >= 2 && start.BeamCount > 0)
+        {
+            var beforeEnd = beamed
+                .Where(x => x.X < end.X)
+                .Where(x => end.X - x.X <= staff.Space * 12)
+                .ToList();
+            if (beforeEnd.Count >= 2)
+                start = beforeEnd.Last();
+        }
+
+        return new PairCandidate(start, end, candidate.GeometryScore, false);
+    }
+
+    private static bool SameWrittenPitch(RecognizedEvent a, RecognizedEvent b)
+    {
+        if (!string.Equals(a.Step, b.Step, StringComparison.Ordinal) || a.Octave != b.Octave)
+            return false;
+        if (a.Alter == b.Alter) return true;
+        return string.IsNullOrWhiteSpace(b.AttachedToSymbolId);
     }
 
     private static PairCandidate BuildCandidate(
@@ -129,54 +191,64 @@ public sealed class ArcSemanticsResolver
         if (!string.Equals(start.Step, end.Step, StringComparison.Ordinal) || start.Octave != end.Octave)
             return false;
 
-        // Musical identity is necessary but not sufficient. A tie physically starts/ends at the
-        // noteheads it prolongs. In measure 5 the long legato arc runs from stem top to stem top,
-        // about 3-4 staff spaces above the equal F4 noteheads; treating that as F4->F4 created a
-        // false tie. Genuine chord ties in measure 6 terminate within about one staff space of
-        // their A3/Bb3 heads. Keep a small exporter/layout allowance, but reject stem-top arches.
         var maxEndpointYOffset = staffSpace * 1.25;
         if (Math.Abs(start.Y - arc.LeftY) > maxEndpointYOffset ||
             Math.Abs(end.Y - arc.RightY) > maxEndpointYOffset)
             return false;
 
         if (start.Alter == end.Alter) return true;
-
-        // Accidentals persist through the measure. At this geometry stage the following note can
-        // still have Alter=0 even though it inherits the explicit accidental from the first note;
-        // MusicXmlAccidentalStatePostProcessor applies that state later. An explicit conflicting
-        // accidental on the destination, however, means these are genuinely different pitches.
         return string.IsNullOrWhiteSpace(end.AttachedToSymbolId);
     }
 
-    private static HashSet<SvgDirectPath> FindBeamPaths(AnalysisResult analysis)
+    private static HashSet<(string PathId, int ContourIndex)> FindBeamContours(AnalysisResult analysis)
     {
-        var result = new HashSet<SvgDirectPath>();
+        var result = new HashSet<(string, int)>();
+
         foreach (var path in analysis.DirectPaths)
+        for (var contourIndex = 0; contourIndex < path.Geometry.Contours.Count; contourIndex++)
         {
-            var bounds = Bounds(path);
-            var staff = ClosestStaff(bounds.Left + bounds.Width / 2, bounds.Top + bounds.Height / 2, analysis.Staves, 6);
+            var contour = path.Geometry.Contours[contourIndex];
+            if (contour.Count is < 3 or > 14) continue;
+
+            var left = contour.Min(x => x.X);
+            var right = contour.Max(x => x.X);
+            var top = contour.Min(x => x.Y);
+            var bottom = contour.Max(x => x.Y);
+            var width = right - left;
+            var height = bottom - top;
+            var staff = ClosestStaff((left + right) / 2, (top + bottom) / 2, analysis.Staves, 6);
             if (staff is null) continue;
 
-            var points = path.Geometry.Contours.Sum(x => x.Count);
-            if (bounds.Width < staff.Space * 1.4) continue;
-            if (bounds.Height < staff.Space * .08 || bounds.Height > staff.Space * .95) continue;
-            if (bounds.Width / Math.Max(bounds.Height, .001) < 2.2) continue;
-            if (points > 14) continue;
-            result.Add(path);
+            if (width < staff.Space * 1.4 || width > staff.Space * 22) continue;
+            if (height < staff.Space * .06 || height > staff.Space * 2.0) continue;
+            if (width / Math.Max(height, .001) < 1.4) continue;
+
+            var area = PolygonArea(contour);
+            var longAxis = Math.Sqrt(width * width + height * height);
+            var thickness = area / Math.Max(longAxis, .001);
+            if (thickness < staff.Space * .20 || thickness > staff.Space * .72) continue;
+
+            result.Add((path.SymbolId, contourIndex));
         }
+
         return result;
     }
 
-    private static List<Arc> FindArcs(AnalysisResult analysis, IReadOnlySet<SvgDirectPath> beams)
+    private static List<Arc> FindArcs(
+        AnalysisResult analysis,
+        IReadOnlySet<(string PathId, int ContourIndex)> beamContours)
     {
         var result = new List<Arc>();
+
         foreach (var path in analysis.DirectPaths)
+        for (var contourIndex = 0; contourIndex < path.Geometry.Contours.Count; contourIndex++)
         {
-            if (beams.Contains(path)) continue;
+            if (beamContours.Contains((path.SymbolId, contourIndex))) continue;
 
-            var points = path.Geometry.Contours.SelectMany(x => x).ToArray();
-            if (points.Length == 0) continue;
+            var contour = path.Geometry.Contours[contourIndex];
+            if (contour.Count == 0) continue;
 
+            var points = contour.ToArray();
             var left = points.Min(x => x.X);
             var right = points.Max(x => x.X);
             var top = points.Min(x => x.Y);
@@ -186,16 +258,18 @@ public sealed class ArcSemanticsResolver
             var staff = ClosestStaff((left + right) / 2, (top + bottom) / 2, analysis.Staves, 5);
             if (staff is null) continue;
 
-            if (width < staff.Space * 2.0 || width > staff.Space * 18) continue;
-            // Ties are compact, but legato slurs can arch several staff-spaces above the notes.
+            if (width < staff.Space * 1.45 || width > staff.Space * 18) continue;
             if (height < staff.Space * .35 || height > staff.Space * 4.8) continue;
             if (width / Math.Max(height, .001) < 2.0) continue;
-            if (points.Length < 16) continue;
+
+            var minPoints = path.SymbolId.StartsWith("path:", StringComparison.Ordinal) ? 8 : 16;
+            if (points.Length < minPoints) continue;
 
             var leftY = EndpointY(points, left, staff.Space);
             var rightY = EndpointY(points, right, staff.Space);
-            result.Add(new Arc(left, right, top, bottom, leftY, rightY, path));
+            result.Add(new Arc(left, right, top, bottom, leftY, rightY, $"{path.SymbolId}#{contourIndex}"));
         }
+
         return result;
     }
 
@@ -208,14 +282,17 @@ public sealed class ArcSemanticsResolver
             : points.OrderBy(x => Math.Abs(x.X - endpointX)).First().Y;
     }
 
-    private static (double Left, double Top, double Width, double Height) Bounds(SvgDirectPath path)
+    private static double PolygonArea(IReadOnlyList<PointD> contour)
     {
-        var points = path.Geometry.Contours.SelectMany(x => x).ToArray();
-        var left = points.Min(x => x.X);
-        var right = points.Max(x => x.X);
-        var top = points.Min(x => x.Y);
-        var bottom = points.Max(x => x.Y);
-        return (left, top, right - left, bottom - top);
+        if (contour.Count < 3) return 0;
+        double twiceArea = 0;
+        for (var i = 0; i < contour.Count; i++)
+        {
+            var a = contour[i];
+            var b = contour[(i + 1) % contour.Count];
+            twiceArea += a.X * b.Y - b.X * a.Y;
+        }
+        return Math.Abs(twiceArea) / 2;
     }
 
     private static Staff? ClosestStaff(

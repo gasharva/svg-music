@@ -3,12 +3,6 @@ using SvgToMusicXmlPoc.Models;
 
 namespace SvgToMusicXmlPoc.Services;
 
-/// <summary>
-/// Recovers expressive directions from source-page geometry rather than exporter-specific IDs.
-/// Dynamics are anchored in the gap between the two piano staves; hairpins are recognized from
-/// their three-point open-chevron contour. Classified SMuFL dynamics are accepted directly, with
-/// conservative real-font geometry fallbacks for the mp/pp shapes present in the production SVG.
-/// </summary>
 public sealed partial class DynamicsGeometryResolver
 {
     private sealed record StaffGap(Staff Upper, Staff Lower);
@@ -44,28 +38,19 @@ public sealed partial class DynamicsGeometryResolver
         analysis.Directions.AddRange(deduped);
     }
 
-    private static void ResolveDynamics(
-        AnalysisResult analysis,
-        IReadOnlyList<StaffGap> gaps,
+    private static void ResolveDynamics(AnalysisResult analysis, IReadOnlyList<StaffGap> gaps,
         IReadOnlyDictionary<string, SymbolClassification> classes)
     {
         foreach (var use in analysis.Uses.Where(x => x.SourceKind == "use"))
         {
             var gap = GapForPoint(use.X, use.Y, gaps);
-            if (gap is null) continue;
-            if (!classes.TryGetValue(use.SymbolId, out var cls)) continue;
-
+            if (gap is null || !classes.TryGetValue(use.SymbolId, out var cls)) continue;
             var value = ReadClassifiedDynamic(cls) ?? ReadProductionFontDynamic(cls);
             if (value is null) continue;
-
             analysis.Directions.Add(new DirectionMark
             {
-                Kind = "dynamic",
-                Value = value,
-                X = use.X,
-                Y = use.Y,
-                StaffIndex = gap.Upper.Index,
-                SourceSymbolId = use.SymbolId
+                Kind = "dynamic", Value = value, X = use.X, Y = use.Y,
+                StaffIndex = gap.Upper.Index, SourceSymbolId = use.SymbolId
             });
         }
     }
@@ -78,7 +63,6 @@ public sealed partial class DynamicsGeometryResolver
             var compact = NonLetters().Replace(source.ToLowerInvariant(), string.Empty);
             var dynamicIndex = compact.IndexOf("dynamic", StringComparison.Ordinal);
             if (dynamicIndex < 0) continue;
-
             var tail = compact[(dynamicIndex + "dynamic".Length)..];
             foreach (var value in KnownDynamics)
                 if (tail.Contains(value, StringComparison.Ordinal)) return value;
@@ -88,18 +72,10 @@ public sealed partial class DynamicsGeometryResolver
 
     private static string? ReadProductionFontDynamic(SymbolClassification cls)
     {
-        // The PDF-derived source outlines complete italic dynamic abbreviations as reusable glyphs.
-        // Their normalized envelopes are stable even though the source IDs are obfuscated and the
-        // Bravura matcher calls them unknown. Keep these ranges deliberately narrow so ordinary text
-        // and pedal marks do not become dynamics merely because they are nearby.
         var width = cls.WidthInSpaces;
         var height = cls.HeightInSpaces;
-
-        if (width is >= 3.12 and <= 3.58 && height is >= 1.72 and <= 2.16)
-            return "mp";
-        if (width is >= 3.22 and <= 3.68 && height is >= 2.32 and <= 2.80)
-            return "pp";
-
+        if (width is >= 3.12 and <= 3.58 && height is >= 1.72 and <= 2.16) return "mp";
+        if (width is >= 3.22 and <= 3.68 && height is >= 2.32 and <= 2.80) return "pp";
         return null;
     }
 
@@ -110,7 +86,6 @@ public sealed partial class DynamicsGeometryResolver
         {
             var contour = NormalizeContour(sourceContour);
             if (contour.Count != 3) continue;
-
             var left = contour.Min(x => x.X);
             var right = contour.Max(x => x.X);
             var top = contour.Min(x => x.Y);
@@ -119,33 +94,21 @@ public sealed partial class DynamicsGeometryResolver
             var centerY = (top + bottom) / 2;
             var gap = GapForPoint(centerX, centerY, gaps);
             if (gap is null) continue;
-
             var space = gap.Upper.Space;
             var width = (right - left) / Math.Max(space, .001);
             var height = (bottom - top) / Math.Max(space, .001);
-            if (width is < 5.5 or > 20.0) continue;
-            if (height is < .65 or > 2.5) continue;
-
+            if (width is < 5.5 or > 20.0 || height is < .65 or > 2.5) continue;
             var edgeTolerance = space * .28;
             var leftPoints = contour.Count(x => Math.Abs(x.X - left) <= edgeTolerance);
             var rightPoints = contour.Count(x => Math.Abs(x.X - right) <= edgeTolerance);
-
             string? value = null;
-            if (leftPoints == 1 && rightPoints >= 2)
-                value = "crescendo";      // < : narrow at the left, open at the right
-            else if (leftPoints >= 2 && rightPoints == 1)
-                value = "diminuendo";     // > : open at the left, narrow at the right
+            if (leftPoints == 1 && rightPoints >= 2) value = "crescendo";
+            else if (leftPoints >= 2 && rightPoints == 1) value = "diminuendo";
             if (value is null) continue;
-
             analysis.Directions.Add(new DirectionMark
             {
-                Kind = "wedge",
-                Value = value,
-                X = left,
-                EndX = right,
-                Y = centerY,
-                StaffIndex = gap.Upper.Index,
-                SourceSymbolId = path.SymbolId
+                Kind = "wedge", Value = value, X = left, EndX = right, Y = centerY,
+                StaffIndex = gap.Upper.Index, SourceSymbolId = path.SymbolId
             });
         }
     }
@@ -153,8 +116,7 @@ public sealed partial class DynamicsGeometryResolver
     private static List<PointD> NormalizeContour(IReadOnlyList<PointD> contour)
     {
         var points = contour.ToList();
-        if (points.Count > 1 && Distance(points[0], points[^1]) < .01)
-            points.RemoveAt(points.Count - 1);
+        if (points.Count > 1 && Distance(points[0], points[^1]) < .01) points.RemoveAt(points.Count - 1);
         return points;
     }
 
@@ -178,8 +140,7 @@ public sealed partial class DynamicsGeometryResolver
     private static StaffGap? GapForPoint(double x, double y, IReadOnlyList<StaffGap> gaps) => gaps
         .Where(g => x >= Math.Min(g.Upper.Left, g.Lower.Left) - g.Upper.Space * 1.5 &&
                     x <= Math.Max(g.Upper.Right, g.Lower.Right) + g.Upper.Space * 1.5)
-        .Where(g => y >= g.Upper.Bottom + g.Upper.Space * .35 &&
-                    y <= g.Lower.Top - g.Upper.Space * .35)
+        .Where(g => y >= g.Upper.Bottom + g.Upper.Space * .35 && y <= g.Lower.Top - g.Upper.Space * .35)
         .OrderBy(g => Math.Abs(y - (g.Upper.Bottom + g.Lower.Top) / 2))
         .FirstOrDefault();
 

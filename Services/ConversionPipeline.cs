@@ -31,12 +31,14 @@ public sealed class ConversionPipeline
 
         watch.Restart();
         var uses = parser.ReadUses(document);
-        var directPaths = parser.ReadDirectPaths(document);
+        var pageGeometry = parser.ReadPageGeometry(document);
         var lineSegments = parser.ReadLineSegments(document);
+        lineSegments.AddRange(new CompoundVerticalStrokeExtractor().Extract(pageGeometry, staves, lineSegments));
         performance.ReadInstancesMs = watch.Elapsed.TotalMilliseconds;
 
         var classifier = new SymbolClassifier();
         var classification = classifier.Classify(svgPath, staves, catalogPath);
+        new SourceFontSemanticNormalizer().Normalize(svgPath, staves, classification);
         var cp = classifier.LastPerformance;
         performance.LoadCatalogMs = cp.LoadCatalogMs;
         performance.ClassifyMs = cp.ClassifyMs;
@@ -49,37 +51,25 @@ public sealed class ConversionPipeline
 
         watch.Restart();
         var analysis = new MusicSemanticRecognizer().Recognize(uses, staves, classification, config);
-        analysis.DirectPaths.AddRange(directPaths);
+        analysis.PageGeometry.AddRange(pageGeometry);
+
+        analysis.DirectPaths.AddRange(pageGeometry.Select(x =>
+            new SvgDirectPath(x.InstanceId, x.Geometry, x.X, x.Y)));
         analysis.LineSegments.AddRange(lineSegments);
 
+        new PaintedGlyphPositionNormalizer().Normalize(analysis);
+        new LongStemRelationResolver().Resolve(analysis);
         new MusicGeometryRelationResolver().Resolve(analysis, config);
-        new PolyphonicSharedStemResolver().Resolve(analysis);
-        // Long sloped beams can have a tall axis-aligned bounding box even though the painted
-        // strip itself is thin. Recover them by strip thickness and stem/path intersection.
+        new OpposedStemVoiceResolver().Resolve(analysis);
+        new StemlessHollowFalsePositiveResolver().Resolve(analysis);
         new SlopedBeamRhythmResolver().Resolve(analysis, config);
-        // Exact path slices can miss edge stems or tiny exporter gaps. Once a long thin beam
-        // has been identified, fit its centreline and complete the whole stem group against it.
         new SlopedBeamCoverageResolver().Resolve(analysis, config);
-        // Reattach written accidentals after staff ownership/pitch/chords are final. In close
-        // intervals noteheads are displaced horizontally, so staff-position (Y) must outrank X.
+        new UnifiedBeamGeometryResolver().Resolve(analysis, config);
         new AccidentalGeometryResolver().Resolve(analysis, config);
-        // Curves have two different musical meanings: equal pitches are ties (duration continues),
-        // different pitches are slurs (legato). Rebuild arc attachment after accidental ownership
-        // is final so parallel chord ties do not collapse into a cross-pitch slur.
         new ArcSemanticsResolver().Resolve(analysis);
-        // Augmentation dots belong to the whole rhythmic chord. A single SVG dot can be
-        // associated with only one notehead by the symbol recognizer, so normalize the
-        // shared-stem chord before any MusicXML is written.
         new ChordRhythmNormalizer().Normalize(analysis);
-        // A 16th-note hook is much shorter than an ordinary beam and was intentionally
-        // filtered out by the general beam detector. Detect that second beam level separately
-        // and also restore dotted duration after beam-derived note types are assigned.
         new BeamHookRhythmResolver().Resolve(analysis, config);
-        // Standalone flags are compact SMuFL glyphs attached to a free stem end rather than
-        // beams. Reuse the normal classifier and attach flag8th/flag16th/... geometrically.
         new StandaloneFlagRhythmResolver().Resolve(analysis, config);
-        // Dynamics and hairpins are page directions, not timed note glyphs. Recover them only
-        // after staff geometry is stable and keep their source X coordinates for MusicXML layout.
         new DynamicsGeometryResolver().Resolve(analysis);
 
         performance.RecognizeSemanticsMs = watch.Elapsed.TotalMilliseconds;
@@ -112,8 +102,6 @@ public sealed class ConversionPipeline
         new MusicXmlSystemBreakPostProcessor().Apply(musicXmlPath);
         new MusicXmlSecondaryBeamPostProcessor().Apply(musicXmlPath);
         new MusicXmlAccidentalStatePostProcessor().Apply(musicXmlPath);
-        // Write expressions last: voice postprocessors reorder note elements, while these direction
-        // marks carry explicit offsets and should remain anchored to the original SVG position.
         new MusicXmlDynamicsPostProcessor().Apply(musicXmlPath, result.Analysis);
         result.Performance.WriteMusicXmlMs = watch.Elapsed.TotalMilliseconds;
         result.Performance.TotalMs += result.Performance.WriteMusicXmlMs;

@@ -21,9 +21,12 @@ public sealed class ChordRhythmNormalizer
 
             var tolerance = staff.Space * .20;
 
+            // Coincident up/down stems are parallel voices, not one chord. PDF/SVG engravers can
+            // place those stems at virtually the same X, so StemX alone is not a safe cluster key.
             foreach (var directionGroup in notes.GroupBy(x => x.StemDirection ?? string.Empty))
             {
                 var clusters = new List<List<RecognizedEvent>>();
+
                 foreach (var note in directionGroup.OrderBy(x => x.StemX))
                 {
                     var cluster = clusters.LastOrDefault();
@@ -40,12 +43,18 @@ public sealed class ChordRhythmNormalizer
 
                 foreach (var chord in clusters.Where(x => x.Count > 1))
                 {
+                    // A single visible augmentation dot belongs to the rhythmic event, not
+                    // to one particular pitch. If any notehead in the shared-stem chord was
+                    // associated with a dot, propagate that rhythm to every chord member.
                     if (!chord.Any(x => x.Dotted)) continue;
 
                     var dottedDuration = chord.Where(x => x.Dotted).Select(x => x.Duration).DefaultIfEmpty(0).Max();
                     if (dottedDuration <= 0)
                         dottedDuration = chord.Max(x => x.Duration);
 
+                    // Prefer the type already carried by a dotted member. In a valid chord all
+                    // noteheads represent the same duration, but this also repairs partial
+                    // recognition where only one member received the rhythmic annotation.
                     var dottedType = chord.FirstOrDefault(x => x.Dotted && !string.IsNullOrWhiteSpace(x.Type))?.Type
                                      ?? chord.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x.Type))?.Type;
 

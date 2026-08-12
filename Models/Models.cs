@@ -4,6 +4,19 @@ public sealed record SvgUse(string SymbolId, double X, double Y, string SourceKi
 
 public sealed record SvgDirectPath(string SymbolId, SymbolGeometry Geometry, double X, double Y);
 
+/// <summary>
+/// One actual painted path geometry on the SVG page, regardless of whether it originated as a
+/// standalone path or as a reusable symbol instantiated through use. Geometry is already in page
+/// coordinates; downstream structural recognition must not need to know the SVG storage form.
+/// </summary>
+public sealed record SvgPageGeometry(
+    string InstanceId,
+    string? SourceSymbolId,
+    string SourceKind,
+    SymbolGeometry Geometry,
+    double X,
+    double Y);
+
 public sealed record SvgLineSegment(
     double X1,
     double Y1,
@@ -34,7 +47,7 @@ public sealed class RecognizedEvent
     public string Kind { get; set; } = "unknown";
     public string ReferenceId { get; init; } = "";
     public double Confidence { get; init; }
-    public double X { get; init; }
+    public double X { get; set; }
     public double Y { get; init; }
     public int StaffIndex { get; set; }
 
@@ -67,8 +80,8 @@ public sealed class RecognizedEvent
 /// </summary>
 public sealed class DirectionMark
 {
-    public string Kind { get; init; } = "dynamic"; // dynamic | wedge
-    public string Value { get; init; } = "";       // pp/mp/... | crescendo/diminuendo
+    public string Kind { get; init; } = "dynamic";
+    public string Value { get; init; } = "";
     public double X { get; init; }
     public double? EndX { get; init; }
     public double Y { get; init; }
@@ -81,6 +94,7 @@ public sealed class AnalysisResult
     public List<Staff> Staves { get; init; } = [];
     public List<SvgUse> Uses { get; init; } = [];
     public List<SvgDirectPath> DirectPaths { get; init; } = [];
+    public List<SvgPageGeometry> PageGeometry { get; init; } = [];
     public List<SvgLineSegment> LineSegments { get; init; } = [];
     public List<SymbolClassification> Classifications { get; init; } = [];
     public List<RecognizedEvent> Events { get; init; } = [];
