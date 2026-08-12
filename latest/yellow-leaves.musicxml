@@ -31,13 +31,12 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>6</duration>
+        <duration>12</duration>
         <voice>1</voice>
-        <type>16th</type>
+        <type>eighth</type>
         <dot />
         <stem>up</stem>
         <beam number="1">begin</beam>
-        <beam number="2">begin</beam>
         <staff>1</staff>
       </note>
       <note default-x="126.45">
@@ -50,7 +49,7 @@
         <type>16th</type>
         <stem>up</stem>
         <beam number="1">end</beam>
-        <beam number="2">end</beam>
+        <beam number="2">backward hook</beam>
         <staff>1</staff>
       </note>
       <note default-x="154.159">
@@ -64,28 +63,8 @@
         <stem>up</stem>
         <staff>1</staff>
       </note>
-      <note default-x="159.818">
-        <pitch>
-          <step>E</step>
-          <octave>6</octave>
-        </pitch>
-        <duration>32</duration>
-        <voice>1</voice>
-        <type>half</type>
-        <staff>1</staff>
-      </note>
-      <note default-x="189.924">
-        <pitch>
-          <step>E</step>
-          <octave>6</octave>
-        </pitch>
-        <duration>32</duration>
-        <voice>1</voice>
-        <type>half</type>
-        <staff>1</staff>
-      </note>
       <backup>
-        <duration>106</duration>
+        <duration>48</duration>
       </backup>
       <note default-x="71.668">
         <pitch>
@@ -372,12 +351,11 @@
           <step>D</step>
           <octave>2</octave>
         </pitch>
-        <duration>4</duration>
+        <duration>8</duration>
         <voice>3</voice>
-        <type>16th</type>
+        <type>eighth</type>
         <stem>down</stem>
         <beam number="1">begin</beam>
-        <beam number="2">begin</beam>
         <staff>2</staff>
       </note>
       <note default-x="97.912">
@@ -385,12 +363,11 @@
           <step>A</step>
           <octave>2</octave>
         </pitch>
-        <duration>4</duration>
+        <duration>8</duration>
         <voice>3</voice>
-        <type>16th</type>
+        <type>eighth</type>
         <stem>down</stem>
         <beam number="1">continue</beam>
-        <beam number="2">end</beam>
         <staff>2</staff>
       </note>
       <note default-x="135.826">
@@ -896,19 +873,18 @@
           <step>A</step>
           <octave>3</octave>
         </pitch>
-        <duration>4</duration>
+        <duration>8</duration>
         <voice>3</voice>
-        <type>16th</type>
+        <type>eighth</type>
         <stem>up</stem>
         <beam number="1">end</beam>
-        <beam number="2">backward hook</beam>
         <staff>2</staff>
       </note>
       <backup>
-        <duration>28</duration>
+        <duration>32</duration>
       </backup>
       <forward>
-        <duration>28</duration>
+        <duration>32</duration>
       </forward>
       <note default-x="234.572">
         <pitch>
@@ -1265,12 +1241,11 @@
           <step>D</step>
           <octave>2</octave>
         </pitch>
-        <duration>4</duration>
+        <duration>8</duration>
         <voice>3</voice>
-        <type>16th</type>
+        <type>eighth</type>
         <stem>down</stem>
         <beam number="1">begin</beam>
-        <beam number="2">begin</beam>
         <staff>2</staff>
       </note>
       <note default-x="99.579">
@@ -1278,12 +1253,11 @@
           <step>A</step>
           <octave>2</octave>
         </pitch>
-        <duration>4</duration>
+        <duration>8</duration>
         <voice>3</voice>
-        <type>16th</type>
+        <type>eighth</type>
         <stem>down</stem>
         <beam number="1">continue</beam>
-        <beam number="2">end</beam>
         <staff>2</staff>
       </note>
       <note default-x="139.158">
@@ -1730,19 +1704,18 @@
           <step>A</step>
           <octave>3</octave>
         </pitch>
-        <duration>4</duration>
+        <duration>8</duration>
         <voice>3</voice>
-        <type>16th</type>
+        <type>eighth</type>
         <stem>up</stem>
         <beam number="1">end</beam>
-        <beam number="2">backward hook</beam>
         <staff>2</staff>
       </note>
       <backup>
-        <duration>28</duration>
+        <duration>32</duration>
       </backup>
       <forward>
-        <duration>28</duration>
+        <duration>32</duration>
       </forward>
       <note default-x="228.752">
         <pitch>

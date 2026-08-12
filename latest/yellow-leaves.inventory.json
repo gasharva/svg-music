@@ -6,21 +6,21 @@
     "lineSegments": 144
   },
   "eventKinds": {
-    "notehead-half": 80,
+    "notehead-half": 78,
     "notehead-black": 74,
     "clef-treble": 5,
     "clef-bass": 5,
     "rest-eighth": 4
   },
   "relations": {
-    "notes": 154,
+    "notes": 152,
     "withStem": 152,
     "withStemDirection": 152,
     "chordMembers": 48,
     "withBeam": 32,
     "withBeamValue": 32,
-    "eighth": 26,
-    "sixteenth": 13,
+    "eighth": 33,
+    "sixteenth": 6,
     "dotted": 71,
     "slurStarts": 5,
     "slurStops": 5,
@@ -29,56 +29,27 @@
     "altered": 25
   },
   "relationCoveragePercent": {
-    "withStem": 98.7,
-    "withStemDirection": 98.7,
-    "chordMembers": 31.2,
-    "withBeam": 20.8,
-    "withBeamValue": 20.8,
-    "eighth": 16.9,
-    "sixteenth": 8.4,
-    "dotted": 46.1,
-    "slurStarts": 3.2,
-    "slurStops": 3.2,
+    "withStem": 100.0,
+    "withStemDirection": 100.0,
+    "chordMembers": 31.6,
+    "withBeam": 21.1,
+    "withBeamValue": 21.1,
+    "eighth": 21.7,
+    "sixteenth": 3.9,
+    "dotted": 46.7,
+    "slurStarts": 3.3,
+    "slurStops": 3.3,
     "tieStarts": 0.0,
     "tieStops": 0.0,
-    "altered": 16.2
+    "altered": 16.4
   },
   "stemGapTriage": {
-    "unattachedNotes": 2,
+    "unattachedNotes": 0,
     "normalizedStemCandidates": 105,
     "broadRawVerticalCandidates": 108,
     "rawVerticalCandidatesNotNormalized": 9,
-    "categories": {
-      "noStemGeometryCandidate": 2
-    },
-    "samples": [
-      {
-        "category": "noStemGeometryCandidate",
-        "symbolId": "P",
-        "staff": 0,
-        "x": 162.26,
-        "y": 140.194,
-        "nearestNormalizedDxSpaces": null,
-        "nearestNormalizedYGapSpaces": null,
-        "nearestRawOnlyDxSpaces": null,
-        "nearestRawOnlyYGapSpaces": null,
-        "rawPathId": null,
-        "rawContour": null
-      },
-      {
-        "category": "noStemGeometryCandidate",
-        "symbolId": "R",
-        "staff": 0,
-        "x": 176.09,
-        "y": 140.194,
-        "nearestNormalizedDxSpaces": null,
-        "nearestNormalizedYGapSpaces": null,
-        "nearestRawOnlyDxSpaces": null,
-        "nearestRawOnlyYGapSpaces": null,
-        "rawPathId": null,
-        "rawContour": null
-      }
-    ]
+    "categories": {},
+    "samples": []
   },
   "warnings": {
     "total": 139,

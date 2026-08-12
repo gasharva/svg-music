@@ -9,7 +9,7 @@
 
 ## Semantic events
 
-- notehead-half: **80**
+- notehead-half: **78**
 - notehead-black: **74**
 - clef-treble: **5**
 - clef-bass: **5**
@@ -19,23 +19,23 @@
 
 | Relation | Count | % of notes |
 |---|---:|---:|
-| stem attached | 152 | 98.7% |
-| stem direction | 152 | 98.7% |
-| chord members | 48 | 31.2% |
-| notes touching beams | 32 | 20.8% |
-| beam begin/continue/end | 32 | 20.8% |
-| eighth notes | 26 | 16.9% |
-| 16th notes | 13 | 8.4% |
-| dotted notes | 71 | 46.1% |
-| slur starts | 5 | 3.2% |
-| slur stops | 5 | 3.2% |
+| stem attached | 152 | 100.0% |
+| stem direction | 152 | 100.0% |
+| chord members | 48 | 31.6% |
+| notes touching beams | 32 | 21.1% |
+| beam begin/continue/end | 32 | 21.1% |
+| eighth notes | 33 | 21.7% |
+| 16th notes | 6 | 3.9% |
+| dotted notes | 71 | 46.7% |
+| slur starts | 5 | 3.3% |
+| slur stops | 5 | 3.3% |
 | tie starts | 0 | 0.0% |
 | tie stops | 0 | 0.0% |
-| altered pitches | 25 | 16.2% |
+| altered pitches | 25 | 16.4% |
 
 ## Missing-stem triage
 
-Unattached noteheads: **2**
+Unattached noteheads: **0**
 Normalized stem candidates: **105**
 Broad raw vertical candidates: **108**
 Raw vertical candidates not normalized: **9**
@@ -45,14 +45,12 @@ Raw vertical candidates not normalized: **9**
 | normalization gap | 0 | stem-like raw path exists near the note, but no normalized line candidate does |
 | attachment geometry gap | 0 | normalized stem is nearby, but current note↔stem endpoint/intersection tolerance rejects it |
 | unexpected resolver gap | 0 | a normalized candidate satisfies the resolver's current attachment window but StemX is still empty |
-| no stem geometry candidate | 2 | neither normalized nor broad raw vertical geometry was found near the note |
+| no stem geometry candidate | 0 | neither normalized nor broad raw vertical geometry was found near the note |
 
 ### Sample unattached notes
 
 | category | symbol | staff | x | y | line dx sp | line y-gap sp | raw dx sp | raw y-gap sp | raw path |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---|
-| noStemGeometryCandidate | `P` | 0 | 162.26 | 140.19 |  |  |  |  | `` |
-| noStemGeometryCandidate | `R` | 0 | 176.09 | 140.19 |  |  |  |  | `` |
 
 ## Warning groups
 

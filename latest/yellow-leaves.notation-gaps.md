@@ -2,11 +2,9 @@
 
 ## Notehead sanity
 
-Recognized noteheads: **154**
-Unattached noteheads: **2**
+Recognized noteheads: **152**
+Unattached noteheads: **0**
 
-- `P` notehead-half staff=0 at (162.26, 140.19)
-- `R` notehead-half staff=0 at (176.09, 140.19)
 
 ## Beam geometry
 
