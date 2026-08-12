@@ -78,6 +78,9 @@ public sealed class ConversionPipeline
         // Standalone flags are compact SMuFL glyphs attached to a free stem end rather than
         // beams. Reuse the normal classifier and attach flag8th/flag16th/... geometrically.
         new StandaloneFlagRhythmResolver().Resolve(analysis, config);
+        // Dynamics and hairpins are page directions, not timed note glyphs. Recover them only
+        // after staff geometry is stable and keep their source X coordinates for MusicXML layout.
+        new DynamicsGeometryResolver().Resolve(analysis);
 
         performance.RecognizeSemanticsMs = watch.Elapsed.TotalMilliseconds;
         performance.TotalMs = total.Elapsed.TotalMilliseconds;
@@ -109,6 +112,9 @@ public sealed class ConversionPipeline
         new MusicXmlSystemBreakPostProcessor().Apply(musicXmlPath);
         new MusicXmlSecondaryBeamPostProcessor().Apply(musicXmlPath);
         new MusicXmlAccidentalStatePostProcessor().Apply(musicXmlPath);
+        // Write expressions last: voice postprocessors reorder note elements, while these direction
+        // marks carry explicit offsets and should remain anchored to the original SVG position.
+        new MusicXmlDynamicsPostProcessor().Apply(musicXmlPath, result.Analysis);
         result.Performance.WriteMusicXmlMs = watch.Elapsed.TotalMilliseconds;
         result.Performance.TotalMs += result.Performance.WriteMusicXmlMs;
 
