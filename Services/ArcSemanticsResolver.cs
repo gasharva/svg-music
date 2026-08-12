@@ -80,7 +80,12 @@ public sealed class ArcSemanticsResolver
 
             if (best is null || best.GeometryScore > 10.0) continue;
 
+            if (!best.TieCompatible)
+                best = RefineSlurAnchors(best, staffNotes, arc, staff);
+
+            if (usedPairs.Contains((best.Start, best.End))) continue;
             usedPairs.Add((best.Start, best.End));
+
             if (best.TieCompatible)
             {
                 best.Start.TieStart = true;
@@ -95,6 +100,72 @@ public sealed class ArcSemanticsResolver
                 slurNumber++;
             }
         }
+    }
+
+    private static PairCandidate RefineSlurAnchors(
+        PairCandidate candidate,
+        IReadOnlyList<RecognizedEvent> staffNotes,
+        Arc arc,
+        Staff staff)
+    {
+        var start = candidate.Start;
+        var end = candidate.End;
+        var ordered = staffNotes
+            .Where(x => x.X >= arc.Left - staff.Space * 2.0 && x.X <= arc.Right + staff.Space * 2.0)
+            .OrderBy(x => x.X)
+            .ToList();
+
+        // A PDF renderer can let the painted slur tip overshoot the semantic endpoint. This is
+        // particularly visible when a beamed short note is immediately followed by a longer note
+        // of the same written pitch: pure endpoint distance then attaches the slur to the later
+        // duplicate. The later note may omit its accidental because it is carried by notation
+        // state, so absence of an attached accidental is treated the same way as tie recognition.
+        if (end.BeamCount == 0)
+        {
+            var precedingSamePitch = ordered
+                .Where(x => x.BeamCount > 0 && x.X < end.X - staff.Space * .20)
+                .Where(x => SameWrittenPitch(x, end))
+                .Where(x => end.X - x.X <= staff.Space * 4.0)
+                .OrderByDescending(x => x.X)
+                .FirstOrDefault();
+
+            if (precedingSamePitch is not null)
+                end = precedingSamePitch;
+        }
+
+        var beamed = ordered
+            .Where(x => x.BeamCount > 0)
+            .OrderBy(x => x.X)
+            .ToList();
+
+        if (end.BeamCount > 0)
+        {
+            var sameRun = beamed
+                .Where(x => x.X <= end.X + staff.Space * .25)
+                .Where(x => end.X - x.X <= staff.Space * 10)
+                .ToList();
+            if (sameRun.Count >= 2)
+                start = sameRun.First();
+        }
+        else if (arc.CenterY < staff.Center && beamed.Count >= 2 && start.BeamCount > 0)
+        {
+            var beforeEnd = beamed
+                .Where(x => x.X < end.X)
+                .Where(x => end.X - x.X <= staff.Space * 12)
+                .ToList();
+            if (beforeEnd.Count >= 2)
+                start = beforeEnd.Last();
+        }
+
+        return new PairCandidate(start, end, candidate.GeometryScore, false);
+    }
+
+    private static bool SameWrittenPitch(RecognizedEvent a, RecognizedEvent b)
+    {
+        if (!string.Equals(a.Step, b.Step, StringComparison.Ordinal) || a.Octave != b.Octave)
+            return false;
+        if (a.Alter == b.Alter) return true;
+        return string.IsNullOrWhiteSpace(b.AttachedToSymbolId);
     }
 
     private static PairCandidate BuildCandidate(
@@ -129,11 +200,6 @@ public sealed class ArcSemanticsResolver
         return string.IsNullOrWhiteSpace(end.AttachedToSymbolId);
     }
 
-    /// <summary>
-    /// Identify beam contours, not whole SVG paths. A PDF exporter often stores the primary beam
-    /// and a short hook as sibling contours in one path. Conversely, another compound path can hold
-    /// several slurs. Whole-path exclusion therefore destroys real arcs.
-    /// </summary>
     private static HashSet<(string PathId, int ContourIndex)> FindBeamContours(AnalysisResult analysis)
     {
         var result = new HashSet<(string, int)>();
@@ -157,8 +223,6 @@ public sealed class ArcSemanticsResolver
             if (height < staff.Space * .06 || height > staff.Space * 2.0) continue;
             if (width / Math.Max(height, .001) < 1.4) continue;
 
-            // Beam strips are materially thicker than the tapered outline of a slur. This keeps
-            // compact 8-point polygonized slurs out of the beam exclusion set.
             var area = PolygonArea(contour);
             var longAxis = Math.Sqrt(width * width + height * height);
             var thickness = area / Math.Max(longAxis, .001);
@@ -194,12 +258,10 @@ public sealed class ArcSemanticsResolver
             var staff = ClosestStaff((left + right) / 2, (top + bottom) / 2, analysis.Staves, 5);
             if (staff is null) continue;
 
-            if (width < staff.Space * 2.0 || width > staff.Space * 18) continue;
+            if (width < staff.Space * 1.45 || width > staff.Space * 18) continue;
             if (height < staff.Space * .35 || height > staff.Space * 4.8) continue;
             if (width / Math.Max(height, .001) < 2.0) continue;
 
-            // Direct PDF outlines can be compact 8-point polygons; reusable glyph curves normally
-            // contain many more flattened points. Apply the threshold to each contour independently.
             var minPoints = path.SymbolId.StartsWith("path:", StringComparison.Ordinal) ? 8 : 16;
             if (points.Length < minPoints) continue;
 
