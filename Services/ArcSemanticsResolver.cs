@@ -42,8 +42,6 @@ public sealed class ArcSemanticsResolver
             .ToList();
         if (notes.Count == 0) return;
 
-        // MusicGeometryRelationResolver already provides a first-pass attachment. Rebuild only
-        // arc semantics here with endpoint-aware chord matching.
         foreach (var note in notes)
         {
             note.TieStart = false;
@@ -76,17 +74,11 @@ public sealed class ArcSemanticsResolver
                     .Where(end => !ReferenceEquals(start, end))
                     .Select(end => BuildCandidate(start, end, arc, staff.Space)))
                 .Where(x => !usedPairs.Contains((x.Start, x.End)))
-                // Same-pitch preference is allowed only after CanTie has established that this is
-                // a physically compact tie ending near both noteheads. A high slur whose endpoints
-                // sit at stem tops must never turn into a tie merely because its outer notes match.
                 .OrderBy(x => x.GeometryScore - (x.TieCompatible ? 1.65 : 0))
                 .ThenBy(x => x.GeometryScore)
                 .FirstOrDefault();
 
             if (best is null) continue;
-            // Legato slurs can arch several staff spaces away from their noteheads, unlike compact
-            // ties. Horizontal endpoint windows already keep candidates local, so allow the larger
-            // vertical score while still rejecting clearly unrelated pairs.
             if (best.GeometryScore > 10.0) continue;
 
             usedPairs.Add((best.Start, best.End));
@@ -129,22 +121,12 @@ public sealed class ArcSemanticsResolver
         if (!string.Equals(start.Step, end.Step, StringComparison.Ordinal) || start.Octave != end.Octave)
             return false;
 
-        // Musical identity is necessary but not sufficient. A tie physically starts/ends at the
-        // noteheads it prolongs. In measure 5 the long legato arc runs from stem top to stem top,
-        // about 3-4 staff spaces above the equal F4 noteheads; treating that as F4->F4 created a
-        // false tie. Genuine chord ties in measure 6 terminate within about one staff space of
-        // their A3/Bb3 heads. Keep a small exporter/layout allowance, but reject stem-top arches.
         var maxEndpointYOffset = staffSpace * 1.25;
         if (Math.Abs(start.Y - arc.LeftY) > maxEndpointYOffset ||
             Math.Abs(end.Y - arc.RightY) > maxEndpointYOffset)
             return false;
 
         if (start.Alter == end.Alter) return true;
-
-        // Accidentals persist through the measure. At this geometry stage the following note can
-        // still have Alter=0 even though it inherits the explicit accidental from the first note;
-        // MusicXmlAccidentalStatePostProcessor applies that state later. An explicit conflicting
-        // accidental on the destination, however, means these are genuinely different pitches.
         return string.IsNullOrWhiteSpace(end.AttachedToSymbolId);
     }
 
@@ -159,7 +141,10 @@ public sealed class ArcSemanticsResolver
 
             var points = path.Geometry.Contours.Sum(x => x.Count);
             if (bounds.Width < staff.Space * 1.4) continue;
-            if (bounds.Height < staff.Space * .08 || bounds.Height > staff.Space * .95) continue;
+            // Real PDF-derived beams are about one staff-space thick in axis-aligned bbox terms,
+            // and compound/slightly sloped strips can reach ~1.3 spaces. Keep them out of arc
+            // recognition by using the same broader visual envelope here.
+            if (bounds.Height < staff.Space * .08 || bounds.Height > staff.Space * 1.35) continue;
             if (bounds.Width / Math.Max(bounds.Height, .001) < 2.2) continue;
             if (points > 14) continue;
             result.Add(path);
@@ -187,10 +172,15 @@ public sealed class ArcSemanticsResolver
             if (staff is null) continue;
 
             if (width < staff.Space * 2.0 || width > staff.Space * 18) continue;
-            // Ties are compact, but legato slurs can arch several staff-spaces above the notes.
             if (height < staff.Space * .35 || height > staff.Space * 4.8) continue;
             if (width / Math.Max(height, .001) < 2.0) continue;
-            if (points.Length < 16) continue;
+
+            // MuseScore-like SVGs expose smooth arcs with many flattened points. The real
+            // PDF-derived source frequently polygonizes the same filled slur/tie outline to just
+            // eight vertices. Accept that compact standalone-path representation while retaining
+            // the stricter threshold for reusable glyph outlines.
+            var minPoints = path.SymbolId.StartsWith("path:", StringComparison.Ordinal) ? 8 : 16;
+            if (points.Length < minPoints) continue;
 
             var leftY = EndpointY(points, left, staff.Space);
             var rightY = EndpointY(points, right, staff.Space);
