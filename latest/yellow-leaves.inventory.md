@@ -5,7 +5,7 @@
 - staves: **10**
 - reusable/direct uses: **594**
 - direct paths: **577**
-- normalized line segments: **138**
+- normalized line segments: **144**
 
 ## Semantic events
 
@@ -36,7 +36,7 @@
 ## Missing-stem triage
 
 Unattached noteheads: **10**
-Normalized stem candidates: **99**
+Normalized stem candidates: **105**
 Broad raw vertical candidates: **108**
 Raw vertical candidates not normalized: **9**
 

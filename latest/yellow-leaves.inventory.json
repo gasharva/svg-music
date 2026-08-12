@@ -3,7 +3,7 @@
     "staves": 10,
     "uses": 594,
     "directPaths": 577,
-    "lineSegments": 138
+    "lineSegments": 144
   },
   "eventKinds": {
     "notehead-black": 152,
@@ -45,7 +45,7 @@
   },
   "stemGapTriage": {
     "unattachedNotes": 10,
-    "normalizedStemCandidates": 99,
+    "normalizedStemCandidates": 105,
     "broadRawVerticalCandidates": 108,
     "rawVerticalCandidatesNotNormalized": 9,
     "categories": {
