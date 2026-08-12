@@ -9,6 +9,31 @@ def pct(value, total):
     return round(value * 100.0 / total, 1) if total else 0.0
 
 
+def point_value(point, name):
+    return float(point.get(name, 0) or 0)
+
+
+def contour_box(contour):
+    if not contour:
+        return None
+    xs = [point_value(p, "X") for p in contour]
+    ys = [point_value(p, "Y") for p in contour]
+    return {
+        "left": min(xs),
+        "right": max(xs),
+        "top": min(ys),
+        "bottom": max(ys),
+    }
+
+
+def vertical_gap(y, top, bottom):
+    if y < top:
+        return top - y
+    if y > bottom:
+        return y - bottom
+    return 0.0
+
+
 def main():
     parser = argparse.ArgumentParser(description="Summarize recognition-layer health from conversion artifacts")
     parser.add_argument("analysis")
@@ -104,6 +129,130 @@ def main():
         else:
             warning_groups[text.split(":", 1)[0]] += 1
 
+    # Missing-stem triage. This deliberately mirrors the production resolver closely enough to
+    # tell us which layer starved it, but remains diagnostic-only: it never changes conversion.
+    staff_by_index = {int(x.get("Index", -1)): x for x in staves}
+    average_space = (sum(float(x.get("Space") or 0) for x in staves) / len(staves)) if staves else 1.0
+
+    normalized_stems = []
+    for line in line_segments:
+        x1 = float(line.get("X1") or 0)
+        x2 = float(line.get("X2") or 0)
+        y1 = float(line.get("Y1") or 0)
+        y2 = float(line.get("Y2") or 0)
+        width = abs(x2 - x1)
+        height = abs(y2 - y1)
+        if width > average_space * .16:
+            continue
+        if height < average_space * 1.35 or height > average_space * 7.0:
+            continue
+        normalized_stems.append({
+            "x": (x1 + x2) / 2,
+            "top": min(y1, y2),
+            "bottom": max(y1, y2),
+            "sourceKind": line.get("SourceKind"),
+        })
+
+    raw_verticals = []
+    for path in direct_paths:
+        geometry = path.get("Geometry") or {}
+        for contour_index, contour in enumerate(geometry.get("Contours") or []):
+            box = contour_box(contour)
+            if box is None:
+                continue
+            width = box["right"] - box["left"]
+            height = box["bottom"] - box["top"]
+            # Broader than SvgParser.ReadLineSegments on purpose. These are shapes worth inspecting
+            # when normalization missed a stem, not shapes that are safe enough to use in conversion.
+            if height < average_space * 1.05 or height > average_space * 7.5:
+                continue
+            if width > max(average_space * .38, height * .20):
+                continue
+            raw_verticals.append({
+                "x": (box["left"] + box["right"]) / 2,
+                "top": box["top"],
+                "bottom": box["bottom"],
+                "width": width,
+                "height": height,
+                "pathId": path.get("SymbolId"),
+                "contour": contour_index,
+            })
+
+    def same_as_normalized(raw):
+        return any(
+            abs(line["x"] - raw["x"]) <= average_space * .12 and
+            abs(line["top"] - raw["top"]) <= average_space * .20 and
+            abs(line["bottom"] - raw["bottom"]) <= average_space * .20
+            for line in normalized_stems)
+
+    raw_only_verticals = [x for x in raw_verticals if not same_as_normalized(x)]
+    missing_stem_notes = [x for x in notes if x.get("StemX") is None]
+    stem_gap_samples = []
+    stem_gap_counts = collections.Counter()
+
+    for note in missing_stem_notes:
+        staff = staff_by_index.get(int(note.get("StaffIndex", -1)))
+        space = float((staff or {}).get("Space") or average_space or 1.0)
+        x = float(note.get("X") or 0)
+        y = float(note.get("Y") or 0)
+
+        nearby_lines = [
+            line for line in normalized_stems
+            if abs(line["x"] - x) <= space * 1.12 and
+               vertical_gap(y, line["top"], line["bottom"]) <= space * 1.20
+        ]
+        exact_lines = [
+            line for line in nearby_lines
+            if line["top"] <= y + space * .65 and line["bottom"] >= y - space * .65
+        ]
+        nearby_raw_only = [
+            raw for raw in raw_only_verticals
+            if abs(raw["x"] - x) <= space * 1.25 and
+               vertical_gap(y, raw["top"], raw["bottom"]) <= space * 1.30
+        ]
+
+        if exact_lines:
+            category = "resolverUnexpectedGap"
+        elif nearby_lines:
+            category = "attachmentGeometryGap"
+        elif nearby_raw_only:
+            category = "normalizationGap"
+        else:
+            category = "noStemGeometryCandidate"
+        stem_gap_counts[category] += 1
+
+        if len(stem_gap_samples) < 30:
+            nearest_line = min(
+                nearby_lines,
+                key=lambda line: (abs(line["x"] - x), vertical_gap(y, line["top"], line["bottom"])),
+                default=None)
+            nearest_raw = min(
+                nearby_raw_only,
+                key=lambda raw: (abs(raw["x"] - x), vertical_gap(y, raw["top"], raw["bottom"])),
+                default=None)
+            stem_gap_samples.append({
+                "category": category,
+                "symbolId": note.get("SourceSymbolId"),
+                "staff": note.get("StaffIndex"),
+                "x": x,
+                "y": y,
+                "nearestNormalizedDxSpaces": None if nearest_line is None else round(abs(nearest_line["x"] - x) / space, 3),
+                "nearestNormalizedYGapSpaces": None if nearest_line is None else round(vertical_gap(y, nearest_line["top"], nearest_line["bottom"]) / space, 3),
+                "nearestRawOnlyDxSpaces": None if nearest_raw is None else round(abs(nearest_raw["x"] - x) / space, 3),
+                "nearestRawOnlyYGapSpaces": None if nearest_raw is None else round(vertical_gap(y, nearest_raw["top"], nearest_raw["bottom"]) / space, 3),
+                "rawPathId": None if nearest_raw is None else nearest_raw.get("pathId"),
+                "rawContour": None if nearest_raw is None else nearest_raw.get("contour"),
+            })
+
+    stem_gap_inventory = {
+        "unattachedNotes": len(missing_stem_notes),
+        "normalizedStemCandidates": len(normalized_stems),
+        "broadRawVerticalCandidates": len(raw_verticals),
+        "rawVerticalCandidatesNotNormalized": len(raw_only_verticals),
+        "categories": dict(stem_gap_counts),
+        "samples": stem_gap_samples,
+    }
+
     inventory = {
         "structuralInputs": {
             "staves": len(staves),
@@ -118,6 +267,7 @@ def main():
             for key, value in relation_counts.items()
             if key != "notes"
         },
+        "stemGapTriage": stem_gap_inventory,
         "warnings": {
             "total": len(warnings),
             "groups": dict(warning_groups.most_common()),
@@ -164,6 +314,37 @@ def main():
     for key, label in relation_labels:
         value = relation_counts[key]
         lines.append(f"| {label} | {value} | {pct(value, len(notes)):.1f}% |")
+
+    lines += [
+        "",
+        "## Missing-stem triage",
+        "",
+        f"Unattached noteheads: **{len(missing_stem_notes)}**",
+        f"Normalized stem candidates: **{len(normalized_stems)}**",
+        f"Broad raw vertical candidates: **{len(raw_verticals)}**",
+        f"Raw vertical candidates not normalized: **{len(raw_only_verticals)}**",
+        "",
+        "| Category | Count | Meaning |",
+        "|---|---:|---|",
+        f"| normalization gap | {stem_gap_counts['normalizationGap']} | stem-like raw path exists near the note, but no normalized line candidate does |",
+        f"| attachment geometry gap | {stem_gap_counts['attachmentGeometryGap']} | normalized stem is nearby, but current note↔stem endpoint/intersection tolerance rejects it |",
+        f"| unexpected resolver gap | {stem_gap_counts['resolverUnexpectedGap']} | a normalized candidate satisfies the resolver's current attachment window but StemX is still empty |",
+        f"| no stem geometry candidate | {stem_gap_counts['noStemGeometryCandidate']} | neither normalized nor broad raw vertical geometry was found near the note |",
+        "",
+        "### Sample unattached notes",
+        "",
+        "| category | symbol | staff | x | y | line dx sp | line y-gap sp | raw dx sp | raw y-gap sp | raw path |",
+        "|---|---|---:|---:|---:|---:|---:|---:|---:|---|",
+    ]
+    for item in stem_gap_samples:
+        def fmt(value):
+            return "" if value is None else f"{value:.3f}"
+        raw_path = "" if item["rawPathId"] is None else f'{item["rawPathId"]}#{item["rawContour"]}'
+        lines.append(
+            f'| {item["category"]} | `{item["symbolId"] or ""}` | {item["staff"]} | '
+            f'{item["x"]:.2f} | {item["y"]:.2f} | {fmt(item["nearestNormalizedDxSpaces"])} | '
+            f'{fmt(item["nearestNormalizedYGapSpaces"])} | {fmt(item["nearestRawOnlyDxSpaces"])} | '
+            f'{fmt(item["nearestRawOnlyYGapSpaces"])} | `{raw_path}` |')
 
     lines += [
         "",
