@@ -329,20 +329,7 @@
       </note>
     </measure>
     <measure number="4">
-      <note default-x="72.711">
-        <pitch>
-          <step>E</step>
-          <octave>4</octave>
-        </pitch>
-        <duration>72</duration>
-        <voice>1</voice>
-        <type>half</type>
-        <dot />
-        <stem>down</stem>
-        <staff>1</staff>
-      </note>
       <note default-x="61.461">
-        <chord />
         <pitch>
           <step>F</step>
           <octave>4</octave>
@@ -351,6 +338,21 @@
         <voice>1</voice>
         <type>half</type>
         <stem>up</stem>
+        <staff>1</staff>
+      </note>
+      <backup>
+        <duration>32</duration>
+      </backup>
+      <note default-x="72.711">
+        <pitch>
+          <step>E</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>72</duration>
+        <voice>2</voice>
+        <type>half</type>
+        <dot />
+        <stem>down</stem>
         <staff>1</staff>
       </note>
       <backup>
@@ -1264,20 +1266,7 @@
       </note>
     </measure>
     <measure number="12">
-      <note default-x="72.709">
-        <pitch>
-          <step>E</step>
-          <octave>4</octave>
-        </pitch>
-        <duration>72</duration>
-        <voice>1</voice>
-        <type>half</type>
-        <dot />
-        <stem>down</stem>
-        <staff>1</staff>
-      </note>
       <note default-x="61.461">
-        <chord />
         <pitch>
           <step>F</step>
           <octave>4</octave>
@@ -1286,6 +1275,21 @@
         <voice>1</voice>
         <type>half</type>
         <stem>up</stem>
+        <staff>1</staff>
+      </note>
+      <backup>
+        <duration>32</duration>
+      </backup>
+      <note default-x="72.709">
+        <pitch>
+          <step>E</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>72</duration>
+        <voice>2</voice>
+        <type>half</type>
+        <dot />
+        <stem>down</stem>
         <staff>1</staff>
       </note>
       <backup>
@@ -2019,9 +2023,22 @@
       </note>
     </measure>
     <measure number="19">
-      <forward>
-        <duration>72</duration>
-      </forward>
+      <note default-x="60">
+        <pitch>
+          <step>E</step>
+          <alter>-1</alter>
+          <octave>5</octave>
+        </pitch>
+        <duration>16</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <accidental>flat</accidental>
+        <stem>up</stem>
+        <notations>
+          <slur type="start" number="11" />
+        </notations>
+        <staff>1</staff>
+      </note>
       <note default-x="128.334">
         <pitch>
           <step>D</step>
@@ -2048,7 +2065,7 @@
         <staff>1</staff>
       </note>
       <backup>
-        <duration>104</duration>
+        <duration>48</duration>
       </backup>
       <note default-x="72.712">
         <pitch>
@@ -2088,23 +2105,6 @@
         <type>half</type>
         <dot />
         <stem>down</stem>
-        <staff>1</staff>
-      </note>
-      <note default-x="60">
-        <chord />
-        <pitch>
-          <step>E</step>
-          <alter>-1</alter>
-          <octave>5</octave>
-        </pitch>
-        <duration>16</duration>
-        <voice>2</voice>
-        <type>quarter</type>
-        <accidental>flat</accidental>
-        <stem>up</stem>
-        <notations>
-          <slur type="start" number="11" />
-        </notations>
         <staff>1</staff>
       </note>
       <backup>
