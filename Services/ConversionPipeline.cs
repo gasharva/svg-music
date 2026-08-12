@@ -60,6 +60,9 @@ public sealed class ConversionPipeline
         new PaintedGlyphPositionNormalizer().Normalize(analysis);
         new LongStemRelationResolver().Resolve(analysis);
         new MusicGeometryRelationResolver().Resolve(analysis, config);
+        // Two voices may engrave opposite stems on practically the same X. Resolve ownership from
+        // the disjoint painted stem segments before chords, rhythm, accidentals and arcs are final.
+        new PolyphonicSharedStemResolver().Resolve(analysis);
 
         // Text close to the first system can contain hollow glyphs that resemble noteheads.
         // Once stem/ledger relations are known, reject only hollow "half-note" candidates that
