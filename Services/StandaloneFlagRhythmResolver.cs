@@ -58,8 +58,6 @@ public sealed class StandaloneFlagRhythmResolver
 
         var notes = analysis.Events
             .Where(x => x.Kind.Equals("notehead-black", StringComparison.OrdinalIgnoreCase))
-            // A beamed note already has stronger rhythmic evidence; standalone flags only repair
-            // notes for which beam reconstruction found no beam at all.
             .Where(x => x.BeamCount == 0 && x.StemX.HasValue && x.StaffIndex >= 0)
             .ToList();
 
@@ -105,8 +103,6 @@ public sealed class StandaloneFlagRhythmResolver
                     var dx = (flag.X - note.StemX!.Value) / Math.Max(staff.Space, .001);
                     var dy = (flag.Y - freeEndY) / Math.Max(staff.Space, .001);
 
-                    // Up-stem flags hang down/right from the free end; down-stem flags are the
-                    // mirrored case. A small exporter offset is allowed around the stem axis.
                     var sideOk = note.StemDirection == "up"
                         ? dx is >= -.30 and <= 1.85 && dy is >= .10 and <= 2.55
                         : dx is >= -1.85 and <= .30 && dy is >= -2.55 and <= -.10;
@@ -130,8 +126,6 @@ public sealed class StandaloneFlagRhythmResolver
 
     private static int? DecodeGeometricFlagLevel(FlagInstance flag, double staffSpace)
     {
-        // Never reinterpret already-known musical glyphs as flags. The fallback is intentionally
-        // reserved for unknown font outlines near a verified free stem end.
         if (!string.IsNullOrWhiteSpace(flag.Kind) &&
             !flag.Kind.Equals("smufl-unknown", StringComparison.OrdinalIgnoreCase))
             return null;
@@ -139,15 +133,15 @@ public sealed class StandaloneFlagRhythmResolver
         var width = flag.Width / Math.Max(staffSpace, .001);
         var height = flag.Height / Math.Max(staffSpace, .001);
 
-        // One-hook/eighth flags in the real outlined font form a compact single-contour shape;
-        // two-hook/sixteenth flags are visibly wider/taller and substantially more complex.
-        // Windows are deliberately broad enough for another font, while the stem-end relation
-        // above is the strong semantic guard.
         if (width is >= .72 and <= 1.48 && height is >= 2.05 and <= 3.20 &&
             flag.Points is >= 60 and <= 360 && flag.Contours <= 2)
             return 1;
 
-        if (width is >= 1.55 and <= 2.75 && height is >= 2.90 and <= 4.35 &&
+        // Some outlined fonts draw the two hooks packed vertically: the real page-2 glyph is
+        // about 2.09 x 2.81 staff-spaces with two contours and ~585 points. The old 2.90sp lower
+        // height bound missed it by less than a tenth of a staff-space. Complexity + two contours
+        // and the verified stem-end relation remain strong guards against ordinary text glyphs.
+        if (width is >= 1.45 and <= 2.75 && height is >= 2.55 and <= 4.35 &&
             flag.Points >= 220 && flag.Contours >= 2)
             return 2;
 
