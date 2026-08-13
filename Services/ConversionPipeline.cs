@@ -9,33 +9,25 @@ public sealed class ConversionPipeline
 {
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 
-    public AnalysisPipelineResult Analyze(
-        string svgPath,
-        string catalogPath,
-        RecognitionConfig? config = null)
+    public AnalysisPipelineResult Analyze(string svgPath, string catalogPath, RecognitionConfig? config = null)
     {
         ValidateInput(svgPath, catalogPath);
         config ??= new RecognitionConfig();
-
         var performance = new ConversionPerformance();
         var total = Stopwatch.StartNew();
         var watch = Stopwatch.StartNew();
-
         var parser = new SvgParser();
         var document = parser.Load(svgPath);
         performance.ParseSvgMs = watch.Elapsed.TotalMilliseconds;
-
         watch.Restart();
         var staves = parser.DetectStaves(document, config.StaffTolerance);
         performance.DetectStavesMs = watch.Elapsed.TotalMilliseconds;
-
         watch.Restart();
         var uses = parser.ReadUses(document);
         var pageGeometry = parser.ReadPageGeometry(document);
         var lineSegments = parser.ReadLineSegments(document);
         lineSegments.AddRange(new CompoundVerticalStrokeExtractor().Extract(pageGeometry, staves, lineSegments));
         performance.ReadInstancesMs = watch.Elapsed.TotalMilliseconds;
-
         var classifier = new SymbolClassifier();
         var classification = classifier.Classify(svgPath, staves, catalogPath);
         new SourceFontSemanticNormalizer().Normalize(svgPath, staves, classification, lineSegments);
@@ -48,15 +40,11 @@ public sealed class ConversionPipeline
         performance.MaskComparisons = cp.MaskComparisons;
         performance.VectorComparisons = cp.VectorComparisons;
         performance.CatalogCacheHit = cp.CatalogCacheHit;
-
         watch.Restart();
         var analysis = new MusicSemanticRecognizer().Recognize(uses, staves, classification, config);
         analysis.PageGeometry.AddRange(pageGeometry);
-
-        analysis.DirectPaths.AddRange(pageGeometry.Select(x =>
-            new SvgDirectPath(x.InstanceId, x.Geometry, x.X, x.Y)));
+        analysis.DirectPaths.AddRange(pageGeometry.Select(x => new SvgDirectPath(x.InstanceId, x.Geometry, x.X, x.Y)));
         analysis.LineSegments.AddRange(lineSegments);
-
         new StaffClefRecoveryResolver().Resolve(analysis);
         new PaintedGlyphPositionNormalizer().Normalize(analysis);
         new QuarterRestGeometryResolver().Resolve(analysis);
@@ -79,26 +67,17 @@ public sealed class ConversionPipeline
         new CrossSystemTieResolver().Resolve(analysis);
         new DynamicsGeometryResolver().Resolve(analysis);
         new TerminalDynamicGeometryResolver().Resolve(analysis);
-
         performance.RecognizeSemanticsMs = watch.Elapsed.TotalMilliseconds;
         performance.TotalMs = total.Elapsed.TotalMilliseconds;
-
         return new AnalysisPipelineResult(analysis, classification, performance);
     }
 
-    public ConversionResult Convert(
-        string svgPath,
-        string catalogPath,
-        string musicXmlPath,
-        RecognitionConfig? config = null,
-        bool writeDiagnostics = true)
+    public ConversionResult Convert(string svgPath, string catalogPath, string musicXmlPath, RecognitionConfig? config = null, bool writeDiagnostics = true)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(musicXmlPath);
         config ??= new RecognitionConfig();
-
         var result = Analyze(svgPath, catalogPath, config);
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(musicXmlPath))!);
-
         var watch = Stopwatch.StartNew();
         new MusicXmlWriter().Write(musicXmlPath, result.Analysis, config);
         new MusicXmlStemPostProcessor().Apply(musicXmlPath, result.Analysis);
@@ -110,15 +89,16 @@ public sealed class ConversionPipeline
         new MusicXmlVoiceLayoutPostProcessor().Apply(musicXmlPath, result.Analysis);
         new MusicXmlRestVoiceConflictPostProcessor().Apply(musicXmlPath);
         new MusicXmlGeneralMultiVoicePostProcessor().Apply(musicXmlPath);
+        new MusicXmlFullMeasureRestLanePostProcessor().Apply(musicXmlPath);
         new MusicXmlGraceVoiceTimingPostProcessor().Apply(musicXmlPath);
         new MusicXmlSystemBreakPostProcessor().Apply(musicXmlPath);
         new MusicXmlSecondaryBeamPostProcessor().Apply(musicXmlPath);
         new MusicXmlAccidentalStatePostProcessor().Apply(musicXmlPath);
         new MusicXmlDynamicsPostProcessor().Apply(musicXmlPath, result.Analysis);
         new MusicXmlFinalBarlinePostProcessor().Apply(musicXmlPath, result.Analysis);
+        new MusicXmlTrailingFinalBarlinePostProcessor().Apply(musicXmlPath);
         result.Performance.WriteMusicXmlMs = watch.Elapsed.TotalMilliseconds;
         result.Performance.TotalMs += result.Performance.WriteMusicXmlMs;
-
         string? analysisPath = null;
         string? classificationPath = null;
         if (writeDiagnostics)
@@ -129,14 +109,7 @@ public sealed class ConversionPipeline
             WriteJson(classificationPath, result.Classification);
             WriteJson(Path.ChangeExtension(musicXmlPath, ".performance.json"), result.Performance);
         }
-
-        return new ConversionResult(
-            musicXmlPath,
-            analysisPath,
-            classificationPath,
-            result.Analysis,
-            result.Classification,
-            result.Performance);
+        return new ConversionResult(musicXmlPath, analysisPath, classificationPath, result.Analysis, result.Classification, result.Performance);
     }
 
     private static void ValidateInput(string svgPath, string catalogPath)
@@ -147,19 +120,8 @@ public sealed class ConversionPipeline
         if (!File.Exists(catalogPath)) throw new FileNotFoundException("Reference catalog not found.", catalogPath);
     }
 
-    private static void WriteJson<T>(string path, T value) =>
-        File.WriteAllText(path, JsonSerializer.Serialize(value, JsonOptions));
+    private static void WriteJson<T>(string path, T value) => File.WriteAllText(path, JsonSerializer.Serialize(value, JsonOptions));
 }
 
-public sealed record AnalysisPipelineResult(
-    AnalysisResult Analysis,
-    ClassificationResult Classification,
-    ConversionPerformance Performance);
-
-public sealed record ConversionResult(
-    string MusicXmlPath,
-    string? AnalysisPath,
-    string? ClassificationPath,
-    AnalysisResult Analysis,
-    ClassificationResult Classification,
-    ConversionPerformance Performance);
+public sealed record AnalysisPipelineResult(AnalysisResult Analysis, ClassificationResult Classification, ConversionPerformance Performance);
+public sealed record ConversionResult(string MusicXmlPath, string? AnalysisPath, string? ClassificationPath, AnalysisResult Analysis, ClassificationResult Classification, ConversionPerformance Performance);
