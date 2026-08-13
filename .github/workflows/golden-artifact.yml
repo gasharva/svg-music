@@ -32,11 +32,11 @@ jobs:
       - name: Convert Yellow Leaves golden SVG
         id: convert
         continue-on-error: true
-        run: |
+        run: | 
           mkdir -p artifacts
           dotnet run --project SvgToMusicXmlPoc.csproj --configuration Release --no-build --no-launch-profile -- \
             convert \
-            Samples/score_16.svg \
+            Samples/kancheli-yellow-leaves/score_16.svg \
             References/catalog.json \
             artifacts/yellow-leaves.musicxml
 
