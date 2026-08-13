@@ -1,0 +1,1 @@
+using SvgToMusicXmlPoc.Models; namespace SvgToMusicXmlPoc.Services; internal static class SustainGeometry { }
