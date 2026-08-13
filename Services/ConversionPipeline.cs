@@ -59,6 +59,7 @@ public sealed class ConversionPipeline
 
         new StaffClefRecoveryResolver().Resolve(analysis);
         new PaintedGlyphPositionNormalizer().Normalize(analysis);
+        new QuarterRestGeometryResolver().Resolve(analysis, config);
         new LongStemRelationResolver().Resolve(analysis);
         new MusicGeometryRelationResolver().Resolve(analysis, config);
         new PolyphonicSharedStemResolver().Resolve(analysis);
@@ -70,6 +71,7 @@ public sealed class ConversionPipeline
         new AugmentationDotGeometryResolver().Resolve(analysis, config);
         new ArcSemanticsResolver().Resolve(analysis);
         new HighArcSemanticsResolver().Resolve(analysis);
+        new LongArcSemanticsResolver().Resolve(analysis);
         new ChordRhythmNormalizer().Normalize(analysis);
         new BeamHookRhythmResolver().Resolve(analysis, config);
         new StandaloneFlagRhythmResolver().Resolve(analysis, config);
@@ -113,6 +115,7 @@ public sealed class ConversionPipeline
         new MusicXmlSecondaryBeamPostProcessor().Apply(musicXmlPath);
         new MusicXmlAccidentalStatePostProcessor().Apply(musicXmlPath);
         new MusicXmlDynamicsPostProcessor().Apply(musicXmlPath, result.Analysis);
+        new MusicXmlFinalBarlinePostProcessor().Apply(musicXmlPath, result.Analysis);
         result.Performance.WriteMusicXmlMs = watch.Elapsed.TotalMilliseconds;
         result.Performance.TotalMs += result.Performance.WriteMusicXmlMs;
 
