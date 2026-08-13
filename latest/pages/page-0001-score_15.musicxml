@@ -331,6 +331,20 @@
     <measure number="4">
       <direction placement="below">
         <direction-type>
+          <pedal type="stop" line="yes" sign="no" />
+        </direction-type>
+        <offset>45</offset>
+        <staff>2</staff>
+      </direction>
+      <direction placement="below">
+        <direction-type>
+          <pedal type="start" line="yes" sign="yes" />
+        </direction-type>
+        <offset>8</offset>
+        <staff>2</staff>
+      </direction>
+      <direction placement="below">
+        <direction-type>
           <wedge type="crescendo" number="1" default-x="112.602" />
         </direction-type>
         <offset>10</offset>
@@ -588,6 +602,20 @@
       </note>
     </measure>
     <measure number="6">
+      <direction placement="below">
+        <direction-type>
+          <pedal type="stop" line="yes" sign="no" />
+        </direction-type>
+        <offset>44</offset>
+        <staff>2</staff>
+      </direction>
+      <direction placement="below">
+        <direction-type>
+          <pedal type="start" line="yes" sign="yes" />
+        </direction-type>
+        <offset>8</offset>
+        <staff>2</staff>
+      </direction>
       <note default-x="65.33">
         <pitch>
           <step>C</step>
@@ -652,7 +680,7 @@
       <backup>
         <duration>48</duration>
       </backup>
-      <note default-x="60">
+      <note default-x="60" default-y="9.968">
         <rest />
         <duration>8</duration>
         <voice>3</voice>
@@ -670,7 +698,7 @@
         <type>eighth</type>
         <stem>up</stem>
         <notations>
-          <tied type="start" />
+          <tied type="start" placement="above" />
         </notations>
         <staff>2</staff>
       </note>
@@ -688,7 +716,7 @@
         <accidental>flat</accidental>
         <stem>up</stem>
         <notations>
-          <tied type="start" />
+          <tied type="start" placement="above" />
         </notations>
         <staff>2</staff>
       </note>
@@ -754,7 +782,7 @@
       </note>
     </measure>
     <measure number="7">
-      <note default-x="64.877">
+      <note default-x="64.877" default-y="-0.006">
         <rest />
         <duration>16</duration>
         <voice>1</voice>
@@ -849,6 +877,20 @@
       </note>
     </measure>
     <measure number="8">
+      <direction placement="below">
+        <direction-type>
+          <pedal type="stop" line="yes" sign="no" />
+        </direction-type>
+        <offset>45</offset>
+        <staff>2</staff>
+      </direction>
+      <direction placement="below">
+        <direction-type>
+          <pedal type="start" line="yes" sign="yes" />
+        </direction-type>
+        <offset>8</offset>
+        <staff>2</staff>
+      </direction>
       <note default-x="61.457">
         <pitch>
           <step>C</step>
@@ -1002,7 +1044,7 @@
           <line>4</line>
         </clef>
       </attributes>
-      <note default-x="64.884">
+      <note default-x="64.884" default-y="-0.035">
         <rest />
         <duration>12</duration>
         <voice>1</voice>
@@ -1021,7 +1063,7 @@
         <type>16th</type>
         <stem>up</stem>
         <notations>
-          <tied type="start" />
+          <tied type="start" placement="above" />
         </notations>
         <staff>1</staff>
       </note>
@@ -1299,6 +1341,20 @@
       </note>
     </measure>
     <measure number="12">
+      <direction placement="below">
+        <direction-type>
+          <pedal type="stop" line="yes" sign="no" />
+        </direction-type>
+        <offset>44</offset>
+        <staff>2</staff>
+      </direction>
+      <direction placement="below">
+        <direction-type>
+          <pedal type="start" line="yes" sign="yes" />
+        </direction-type>
+        <offset>8</offset>
+        <staff>2</staff>
+      </direction>
       <direction placement="below">
         <direction-type>
           <wedge type="crescendo" number="1" default-x="112.185" />
@@ -1786,6 +1842,20 @@
       </note>
     </measure>
     <measure number="16">
+      <direction placement="below">
+        <direction-type>
+          <pedal type="stop" line="yes" sign="no" />
+        </direction-type>
+        <offset>40</offset>
+        <staff>2</staff>
+      </direction>
+      <direction placement="below">
+        <direction-type>
+          <pedal type="start" line="yes" sign="yes" />
+        </direction-type>
+        <offset>7</offset>
+        <staff>2</staff>
+      </direction>
       <note default-x="61.461">
         <pitch>
           <step>F</step>
@@ -1879,7 +1949,7 @@
           <line>4</line>
         </clef>
       </attributes>
-      <note default-x="64.882">
+      <note default-x="64.882" default-y="-0.003">
         <rest />
         <duration>12</duration>
         <voice>1</voice>
@@ -1971,7 +2041,7 @@
       </note>
     </measure>
     <measure number="18">
-      <note default-x="64.88">
+      <note default-x="64.88" default-y="0.01">
         <rest />
         <duration>12</duration>
         <voice>1</voice>
@@ -2263,7 +2333,7 @@
       <backup>
         <duration>48</duration>
       </backup>
-      <note default-x="60">
+      <note default-x="60" default-y="24.99">
         <rest />
         <duration>16</duration>
         <voice>3</voice>

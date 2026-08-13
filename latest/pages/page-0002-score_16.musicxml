@@ -389,7 +389,21 @@
       </note>
     </measure>
     <measure number="4">
-      <note default-x="60">
+      <direction placement="below">
+        <direction-type>
+          <pedal type="stop" line="yes" sign="no" />
+        </direction-type>
+        <offset>45</offset>
+        <staff>2</staff>
+      </direction>
+      <direction placement="below">
+        <direction-type>
+          <pedal type="start" line="yes" sign="yes" />
+        </direction-type>
+        <offset>8</offset>
+        <staff>2</staff>
+      </direction>
+      <note default-x="60" default-y="-20.021">
         <rest />
         <duration>8</duration>
         <voice>1</voice>
@@ -540,7 +554,7 @@
           <line>4</line>
         </clef>
       </attributes>
-      <note default-x="60">
+      <note default-x="60" default-y="-20.004">
         <rest />
         <duration>12</duration>
         <voice>1</voice>
@@ -836,6 +850,20 @@
       </note>
     </measure>
     <measure number="8">
+      <direction placement="below">
+        <direction-type>
+          <pedal type="stop" line="yes" sign="no" />
+        </direction-type>
+        <offset>46</offset>
+        <staff>2</staff>
+      </direction>
+      <direction placement="below">
+        <direction-type>
+          <pedal type="start" line="yes" sign="yes" />
+        </direction-type>
+        <offset>7</offset>
+        <staff>2</staff>
+      </direction>
       <direction placement="below">
         <direction-type>
           <wedge type="crescendo" number="1" default-x="95.864" />
@@ -1254,6 +1282,9 @@
       <backup>
         <duration>48</duration>
       </backup>
+      <forward>
+        <duration>16</duration>
+      </forward>
       <note default-x="135.279">
         <pitch>
           <step>C</step>
@@ -1309,7 +1340,7 @@
         <dot />
         <stem>up</stem>
         <notations>
-          <tied type="start" />
+          <tied type="start" placement="below" />
         </notations>
         <staff>1</staff>
       </note>
@@ -1319,7 +1350,7 @@
       <forward>
         <duration>16</duration>
       </forward>
-      <note default-x="161.24">
+      <note default-x="161.24" default-y="-0.008">
         <rest />
         <duration>8</duration>
         <voice>2</voice>
@@ -1358,7 +1389,7 @@
       <backup>
         <duration>48</duration>
       </backup>
-      <note default-x="60">
+      <note default-x="60" default-y="9.985">
         <rest />
         <duration>8</duration>
         <voice>3</voice>
@@ -1376,7 +1407,7 @@
         <type>eighth</type>
         <stem>up</stem>
         <notations>
-          <tied type="start" />
+          <tied type="start" placement="above" />
         </notations>
         <staff>2</staff>
       </note>
@@ -1445,7 +1476,7 @@
       <forward>
         <duration>16</duration>
       </forward>
-      <note default-x="207.07">
+      <note default-x="207.07" default-y="-0.006">
         <rest />
         <duration>8</duration>
         <voice>2</voice>
@@ -1511,7 +1542,7 @@
       <backup>
         <duration>48</duration>
       </backup>
-      <note default-x="60">
+      <note default-x="60" default-y="9.98">
         <rest />
         <duration>8</duration>
         <voice>3</voice>
@@ -1531,7 +1562,7 @@
         <accidental>flat</accidental>
         <stem>up</stem>
         <notations>
-          <tied type="start" />
+          <tied type="start" placement="above" />
         </notations>
         <staff>2</staff>
       </note>
@@ -1568,14 +1599,14 @@
       </note>
     </measure>
     <measure number="14">
-      <note default-x="60">
+      <note default-x="60" default-y="9.994">
         <rest />
         <duration>16</duration>
         <voice>1</voice>
         <type>quarter</type>
         <staff>1</staff>
       </note>
-      <note default-x="151.68">
+      <note default-x="151.68" default-y="9.994">
         <rest />
         <duration>16</duration>
         <voice>1</voice>
@@ -1623,7 +1654,7 @@
         <dot />
         <stem>down</stem>
         <notations>
-          <tied type="start" />
+          <tied type="start" placement="below" />
         </notations>
         <staff>1</staff>
       </note>
@@ -1640,7 +1671,7 @@
         <dot />
         <stem>down</stem>
         <notations>
-          <tied type="start" />
+          <tied type="start" placement="below" />
         </notations>
         <staff>1</staff>
       </note>
@@ -1659,7 +1690,7 @@
         <dot />
         <stem>up</stem>
         <notations>
-          <tied type="start" />
+          <tied type="start" placement="below" />
         </notations>
         <staff>2</staff>
       </note>
@@ -1676,7 +1707,7 @@
         <dot />
         <stem>up</stem>
         <notations>
-          <tied type="start" />
+          <tied type="start" placement="above" />
         </notations>
         <staff>2</staff>
       </note>
