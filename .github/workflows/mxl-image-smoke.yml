@@ -1,0 +1,60 @@
+name: MXL credit-image smoke test
+
+on:
+  pull_request:
+
+jobs:
+  mxl-image-smoke:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore and build
+        run: |
+          dotnet restore SvgToMusicXmlPoc.csproj
+          dotnet build SvgToMusicXmlPoc.csproj --configuration Release --no-restore
+
+      - name: Convert Yellow Leaves
+        run: |
+          mkdir -p artifacts/image-test
+          dotnet run --project SvgToMusicXmlPoc.csproj --configuration Release --no-build --no-launch-profile -- \
+            convert \
+            Samples/score_15.svg \
+            References/catalog.json \
+            artifacts/yellow-leaves.musicxml
+
+      - name: Build self-contained MXL with header PNG
+        run: |
+          python3 Scripts/build_mxl_image_test.py \
+            artifacts/yellow-leaves.musicxml \
+            artifacts/yellow-leaves-image-test.mxl \
+            --debug-dir artifacts/image-test
+          unzip -l artifacts/yellow-leaves-image-test.mxl
+
+      - name: Upload MXL image smoke artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: yellow-leaves-mxl-image-test-${{ github.event.pull_request.number }}
+          path: |
+            artifacts/yellow-leaves-image-test.mxl
+            artifacts/image-test/hello-world.png
+            artifacts/image-test/image-test.musicxml
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Summary
+        run: |
+          {
+            echo '## MXL credit-image smoke test'
+            echo
+            echo 'Download **yellow-leaves-mxl-image-test-${{ github.event.pull_request.number }}** and open `yellow-leaves-image-test.mxl` in MuseScore.'
+            echo
+            echo 'Expected: a transparent PNG saying **HELLO WORLD** appears centered in the first-page header above the first system.'
+          } >> "$GITHUB_STEP_SUMMARY"
