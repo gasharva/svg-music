@@ -13,7 +13,7 @@
           <fifths>0</fifths>
         </key>
         <time>
-          <beats>4</beats>
+          <beats>3</beats>
           <beat-type>4</beat-type>
         </time>
         <staves>2</staves>
@@ -840,14 +840,14 @@
         <direction-type>
           <wedge type="crescendo" number="1" default-x="95.864" />
         </direction-type>
-        <offset>9</offset>
+        <offset>7</offset>
         <staff>1</staff>
       </direction>
       <direction placement="below">
         <direction-type>
           <wedge type="stop" number="1" default-x="256.285" />
         </direction-type>
-        <offset>47</offset>
+        <offset>36</offset>
         <staff>1</staff>
       </direction>
       <direction placement="below">
@@ -856,7 +856,7 @@
             <mp />
           </dynamics>
         </direction-type>
-        <offset>50</offset>
+        <offset>37</offset>
         <staff>1</staff>
       </direction>
       <note default-x="64.021">
@@ -980,7 +980,7 @@
             <pp />
           </dynamics>
         </direction-type>
-        <offset>13</offset>
+        <offset>9</offset>
         <staff>1</staff>
       </direction>
       <note default-x="60">
