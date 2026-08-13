@@ -105,6 +105,7 @@ switch (command)
                 Console.WriteLine($"SVG-страниц: {result.SvgFiles.Count}");
                 foreach (var svg in result.SvgFiles)
                     Console.WriteLine($"  {Path.GetFileName(svg)}");
+                Console.WriteLine($"Диагностика страниц: {result.PageDiagnosticsDirectory}");
                 Console.WriteLine($"Создано: {result.MusicXmlPath}");
                 return 0;
             }
@@ -182,6 +183,8 @@ SVG → MusicXML PoC
 Если convert получает папку, все *.svg верхнего уровня обрабатываются в естественном
 порядке имён (page2.svg перед page10.svg) и объединяются в один MusicXML.
 Если выходной файл не указан, создаётся <folder>/<folder-name>.musicxml.
+Для каждой SVG-страницы рядом с итоговым MusicXML создаётся папка <score>.pages
+с промежуточным MusicXML, analysis/classification/performance JSON.
 
 analyze и convert одного файла используют один и тот же ConversionPipeline.
 convert одного файла дополнительно пишет *.analysis.json, *.classification.json
