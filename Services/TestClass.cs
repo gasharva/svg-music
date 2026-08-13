@@ -1,1 +1,1 @@
-namespace SvgToMusicXmlPoc.Services; public sealed class TestClass { }
+using System.Xml.Linq; namespace SvgToMusicXmlPoc.Services; public sealed class TestClass { public void Apply(string path) { var d=XDocument.Load(path); foreach(var m in d.Descendants("measure")) { var x=m.Elements("note").FirstOrDefault(); if(x is not null) x.SetAttributeValue("test","1"); } d.Save(path); } }
