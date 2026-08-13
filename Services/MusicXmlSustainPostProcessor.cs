@@ -105,15 +105,15 @@ public sealed class MusicXmlSustainPostProcessor
         var attributes = measure.Element("attributes");
         if (attributes is null) return;
 
-        if ((int?)attributes.Element("divisions") is > 0 and var newDivisions)
-            divisions = newDivisions.Value;
+        var newDivisions = (int?)attributes.Element("divisions");
+        if (newDivisions is > 0) divisions = newDivisions.Value;
 
         var time = attributes.Element("time");
         if (time is null) return;
 
-        if ((int?)time.Element("beats") is > 0 and var newBeats)
-            beats = newBeats.Value;
-        if ((int?)time.Element("beat-type") is > 0 and var newBeatType)
-            beatType = newBeatType.Value;
+        var newBeats = (int?)time.Element("beats");
+        var newBeatType = (int?)time.Element("beat-type");
+        if (newBeats is > 0) beats = newBeats.Value;
+        if (newBeatType is > 0) beatType = newBeatType.Value;
     }
 }
