@@ -9,6 +9,11 @@ public sealed partial class DynamicsGeometryResolver
 
     public void Resolve(AnalysisResult analysis)
     {
+        // These two geometry recoveries intentionally run at the end of semantic analysis: they do
+        // not need stem/chord reconstruction, but they must be present before MusicXML is written.
+        new QuarterRestGeometryResolver().Resolve(analysis);
+        new LongArcSemanticsResolver().Resolve(analysis);
+
         analysis.Directions.Clear();
         if (analysis.Staves.Count < 2) return;
 
@@ -89,10 +94,6 @@ public sealed partial class DynamicsGeometryResolver
         var width = cls.WidthInSpaces;
         var height = cls.HeightInSpaces;
 
-        // Outlined italic dynamics preserve a useful topological clue even when their source-font
-        // glyph IDs change between SVG pages: mp has two painted contours, pp three and ppp four.
-        // Use topology before envelope size; page 2 contains a compact pp whose bounding box falls
-        // into the old mp range, which is why measure 29 was previously emitted as mp.
         if (contourCount >= 4 && width is >= 4.4 and <= 6.2 && height is >= 2.6 and <= 3.6)
             return "ppp";
         if (contourCount == 3 && width is >= 3.0 and <= 3.8 && height is >= 1.55 and <= 2.9)
@@ -100,8 +101,6 @@ public sealed partial class DynamicsGeometryResolver
         if (contourCount == 2 && width is >= 3.0 and <= 3.85 && height is >= 1.25 and <= 2.3)
             return "mp";
 
-        // Keep the original narrow envelope fallbacks for exporters where contour decomposition is
-        // unavailable. They are intentionally weaker than the topology-aware rules above.
         if (width is >= 3.12 and <= 3.58 && height is >= 1.72 and <= 2.16) return "mp";
         if (width is >= 3.22 and <= 3.68 && height is >= 2.32 and <= 2.80) return "pp";
         return null;
