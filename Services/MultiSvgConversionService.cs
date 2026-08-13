@@ -40,6 +40,8 @@ public sealed class MultiSvgConversionService
         Directory.CreateDirectory(Path.GetDirectoryName(musicXmlPath)!);
 
         config ??= new RecognitionConfig();
+        var inheritedBeats = config.Beats;
+        var inheritedBeatType = config.BeatType;
         var pipeline = new ConversionPipeline();
 
         var outputStem = Path.Combine(
@@ -60,7 +62,8 @@ public sealed class MultiSvgConversionService
             var source = svgFiles[pageIndex];
             var pageBaseName = $"page-{pageIndex + 1:D4}-{Path.GetFileNameWithoutExtension(source.Name)}";
             var pageOutput = Path.Combine(pageDiagnosticsDirectory, pageBaseName + ".musicxml");
-            var conversion = pipeline.Convert(source.FullName, catalogPath, pageOutput, config, writeDiagnostics: true);
+            var pageConfig = WithMeter(config, inheritedBeats, inheritedBeatType);
+            var conversion = pipeline.Convert(source.FullName, catalogPath, pageOutput, pageConfig, writeDiagnostics: true);
 
             pageArtifacts.Add(new MultiSvgPageArtifact(
                 source.FullName,
@@ -72,6 +75,19 @@ public sealed class MultiSvgConversionService
             var pageDocument = XDocument.Load(pageOutput, LoadOptions.PreserveWhitespace);
             var pagePart = pageDocument.Root?.Element("part")
                 ?? throw new InvalidOperationException($"В сгенерированном MusicXML нет <part>: {source.Name}");
+
+            var hasExplicitMeter = HasExplicitTimeSignatureGlyphs(conversion.Analysis);
+            if (hasExplicitMeter)
+            {
+                var time = pagePart.Descendants("time").FirstOrDefault();
+                var beats = (int?)time?.Element("beats");
+                var beatType = (int?)time?.Element("beat-type");
+                if (beats is > 0 && beatType is > 0)
+                {
+                    inheritedBeats = beats.Value;
+                    inheritedBeatType = beatType.Value;
+                }
+            }
 
             if (combined is null)
             {
@@ -99,11 +115,10 @@ public sealed class MultiSvgConversionService
             print.SetAttributeValue("new-system", "yes");
             print.Attribute("new-page")?.Remove();
 
-            // A continuation SVG often repeats clefs but omits the time signature. Its standalone
-            // page MusicXML necessarily starts with the configured fallback meter; when joining
-            // pages that synthetic <time> must not override the last explicitly printed meter from
-            // the preceding page. In MusicXML, omitting <time> naturally carries the prior meter.
-            if (!HasExplicitTimeSignatureGlyphs(conversion.Analysis))
+            // A continuation SVG often repeats clefs but omits the time signature. Process it with
+            // the last explicitly printed meter before any rhythm/voice postprocessing runs, then
+            // remove the synthetic repeated <time> while joining the pages.
+            if (!hasExplicitMeter)
             {
                 var firstAttributes = pageMeasures[0].Element("attributes");
                 firstAttributes?.Element("time")?.Remove();
@@ -123,6 +138,19 @@ public sealed class MultiSvgConversionService
             pageDiagnosticsDirectory,
             pageArtifacts);
     }
+
+    private static RecognitionConfig WithMeter(RecognitionConfig source, int beats, int beatType) => new()
+    {
+        DefaultClef = source.DefaultClef,
+        DefaultClefLine = source.DefaultClefLine,
+        Divisions = source.Divisions,
+        Beats = beats,
+        BeatType = beatType,
+        StaffTolerance = source.StaffTolerance,
+        MaxSymbolDistanceInSpaces = source.MaxSymbolDistanceInSpaces,
+        MaxAttachmentDistanceInSpaces = source.MaxAttachmentDistanceInSpaces,
+        MinClassificationScore = source.MinClassificationScore
+    };
 
     private static bool HasExplicitTimeSignatureGlyphs(AnalysisResult analysis) =>
         analysis.Classifications.Any(x =>
