@@ -652,6 +652,13 @@
       <backup>
         <duration>48</duration>
       </backup>
+      <note default-x="60">
+        <rest />
+        <duration>8</duration>
+        <voice>3</voice>
+        <type>eighth</type>
+        <staff>2</staff>
+      </note>
       <note default-x="115.338">
         <pitch>
           <step>A</step>
@@ -718,15 +725,8 @@
         <staff>2</staff>
       </note>
       <backup>
-        <duration>40</duration>
+        <duration>48</duration>
       </backup>
-      <note default-x="60">
-        <rest />
-        <duration>8</duration>
-        <voice>4</voice>
-        <type>eighth</type>
-        <staff>2</staff>
-      </note>
       <note default-x="66.795">
         <pitch>
           <step>G</step>
@@ -1002,6 +1002,14 @@
           <line>4</line>
         </clef>
       </attributes>
+      <note default-x="64.884">
+        <rest />
+        <duration>12</duration>
+        <voice>1</voice>
+        <type>eighth</type>
+        <dot />
+        <staff>1</staff>
+      </note>
       <note default-x="136.877">
         <pitch>
           <step>F</step>
@@ -1045,16 +1053,8 @@
         <staff>1</staff>
       </note>
       <backup>
-        <duration>36</duration>
+        <duration>48</duration>
       </backup>
-      <note default-x="64.884">
-        <rest />
-        <duration>12</duration>
-        <voice>2</voice>
-        <type>eighth</type>
-        <dot />
-        <staff>1</staff>
-      </note>
       <note default-x="71.681">
         <pitch>
           <step>C</step>
@@ -1068,7 +1068,7 @@
         <staff>1</staff>
       </note>
       <backup>
-        <duration>60</duration>
+        <duration>48</duration>
       </backup>
       <note default-x="71.681">
         <pitch>
@@ -1971,6 +1971,14 @@
       </note>
     </measure>
     <measure number="18">
+      <note default-x="64.88">
+        <rest />
+        <duration>12</duration>
+        <voice>1</voice>
+        <type>eighth</type>
+        <dot />
+        <staff>1</staff>
+      </note>
       <note default-x="136.469">
         <pitch>
           <step>D</step>
@@ -1994,16 +2002,8 @@
         <staff>1</staff>
       </note>
       <backup>
-        <duration>36</duration>
+        <duration>48</duration>
       </backup>
-      <note default-x="64.88">
-        <rest />
-        <duration>12</duration>
-        <voice>2</voice>
-        <type>eighth</type>
-        <dot />
-        <staff>1</staff>
-      </note>
       <note default-x="71.68">
         <pitch>
           <step>G</step>
@@ -2058,7 +2058,7 @@
         <staff>1</staff>
       </note>
       <backup>
-        <duration>120</duration>
+        <duration>108</duration>
       </backup>
       <note default-x="71.68">
         <pitch>
@@ -2263,6 +2263,13 @@
       <backup>
         <duration>48</duration>
       </backup>
+      <note default-x="60">
+        <rest />
+        <duration>16</duration>
+        <voice>3</voice>
+        <type>quarter</type>
+        <staff>2</staff>
+      </note>
       <note default-x="129.534">
         <pitch>
           <step>F</step>
@@ -2288,15 +2295,8 @@
         <staff>2</staff>
       </note>
       <backup>
-        <duration>32</duration>
+        <duration>48</duration>
       </backup>
-      <note default-x="60">
-        <rest />
-        <duration>16</duration>
-        <voice>4</voice>
-        <type>quarter</type>
-        <staff>2</staff>
-      </note>
       <note default-x="63.077">
         <pitch>
           <step>G</step>

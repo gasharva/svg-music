@@ -540,6 +540,14 @@
           <line>4</line>
         </clef>
       </attributes>
+      <note default-x="60">
+        <rest />
+        <duration>12</duration>
+        <voice>1</voice>
+        <type>eighth</type>
+        <dot />
+        <staff>1</staff>
+      </note>
       <note default-x="126.404">
         <pitch>
           <step>F</step>
@@ -569,16 +577,8 @@
         <staff>1</staff>
       </note>
       <backup>
-        <duration>36</duration>
+        <duration>48</duration>
       </backup>
-      <note default-x="60">
-        <rest />
-        <duration>12</duration>
-        <voice>2</voice>
-        <type>eighth</type>
-        <dot />
-        <staff>1</staff>
-      </note>
       <note default-x="66.673">
         <pitch>
           <step>A</step>
@@ -605,7 +605,7 @@
         <staff>1</staff>
       </note>
       <backup>
-        <duration>84</duration>
+        <duration>72</duration>
       </backup>
       <note default-x="66.673">
         <pitch>
