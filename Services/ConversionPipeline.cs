@@ -107,6 +107,7 @@ public sealed class ConversionPipeline
         new MusicXmlShortTrillPostProcessor().Apply(musicXmlPath);
         new MusicXmlVoiceLayoutPostProcessor().Apply(musicXmlPath, result.Analysis);
         new MusicXmlRestVoiceConflictPostProcessor().Apply(musicXmlPath);
+        new MusicXmlGeneralMultiVoicePostProcessor().Apply(musicXmlPath);
         new MusicXmlGraceVoiceTimingPostProcessor().Apply(musicXmlPath);
         new MusicXmlSystemBreakPostProcessor().Apply(musicXmlPath);
         new MusicXmlSecondaryBeamPostProcessor().Apply(musicXmlPath);
