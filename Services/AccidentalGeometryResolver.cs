@@ -40,11 +40,11 @@ public sealed class AccidentalGeometryResolver
 
             var accidentalPosition = StaffPosition(use.Y, staff);
 
-            // Close seconds can displace one notehead horizontally by more than the generic
-            // 2.5-space attachment window. In the real SVG the correct B is ~2.83sp from its flat,
-            // while the displaced A is only ~1.70sp away; one sharp needs ~3.14sp. A wider X window
-            // is safe here because matching staff line/space is the primary discriminator.
-            var maxXSpaces = Math.Max(config.MaxAttachmentDistanceInSpaces, 3.35);
+            // Dense chords can place a stack of accidentals well to the left of horizontally
+            // displaced noteheads. Page 2 of the real Yellow Leaves source has two sharps around
+            // 4.4-4.6 staff spaces from their heads. The exact staff row remains the primary
+            // discriminator, so widening only the X search is safer than loosening Y matching.
+            var maxXSpaces = Math.Max(config.MaxAttachmentDistanceInSpaces, 5.25);
             var target = notes
                 .Where(x => x.StaffIndex == staff.Index)
                 .Where(x => x.X > use.X)

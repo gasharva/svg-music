@@ -96,7 +96,6 @@ public sealed class ConversionPipeline
 
         var watch = Stopwatch.StartNew();
         new MusicXmlWriter().Write(musicXmlPath, result.Analysis, config);
-        new MusicXmlMeterRecoveryPostProcessor().Apply(musicXmlPath, result.Analysis, config);
         new MusicXmlStemPostProcessor().Apply(musicXmlPath, result.Analysis);
         new MusicXmlGraceNotePostProcessor().Apply(musicXmlPath, result.Analysis);
         new MusicXmlSvgLayoutPostProcessor().Apply(musicXmlPath, result.Analysis);

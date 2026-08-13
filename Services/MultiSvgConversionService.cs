@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using SvgToMusicXmlPoc.Configuration;
+using SvgToMusicXmlPoc.Models;
 
 namespace SvgToMusicXmlPoc.Services;
 
@@ -40,8 +41,6 @@ public sealed class MultiSvgConversionService
 
         config ??= new RecognitionConfig();
         var pipeline = new ConversionPipeline();
-        var tempDirectory = Path.Combine(Path.GetTempPath(), "svg-music-" + Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(tempDirectory);
 
         var outputStem = Path.Combine(
             Path.GetDirectoryName(musicXmlPath)!,
@@ -52,71 +51,74 @@ public sealed class MultiSvgConversionService
         Directory.CreateDirectory(pageDiagnosticsDirectory);
 
         var pageArtifacts = new List<MultiSvgPageArtifact>();
+        XDocument? combined = null;
+        XElement? combinedPart = null;
+        var nextMeasureNumber = 1;
 
-        try
+        for (var pageIndex = 0; pageIndex < svgFiles.Count; pageIndex++)
         {
-            XDocument? combined = null;
-            XElement? combinedPart = null;
-            var nextMeasureNumber = 1;
+            var source = svgFiles[pageIndex];
+            var pageBaseName = $"page-{pageIndex + 1:D4}-{Path.GetFileNameWithoutExtension(source.Name)}";
+            var pageOutput = Path.Combine(pageDiagnosticsDirectory, pageBaseName + ".musicxml");
+            var conversion = pipeline.Convert(source.FullName, catalogPath, pageOutput, config, writeDiagnostics: true);
 
-            for (var pageIndex = 0; pageIndex < svgFiles.Count; pageIndex++)
+            pageArtifacts.Add(new MultiSvgPageArtifact(
+                source.FullName,
+                conversion.MusicXmlPath,
+                conversion.AnalysisPath!,
+                conversion.ClassificationPath!,
+                Path.ChangeExtension(conversion.MusicXmlPath, ".performance.json")));
+
+            var pageDocument = XDocument.Load(pageOutput, LoadOptions.PreserveWhitespace);
+            var pagePart = pageDocument.Root?.Element("part")
+                ?? throw new InvalidOperationException($"В сгенерированном MusicXML нет <part>: {source.Name}");
+
+            if (combined is null)
             {
-                var source = svgFiles[pageIndex];
-                var pageBaseName = $"page-{pageIndex + 1:D4}-{Path.GetFileNameWithoutExtension(source.Name)}";
-                var pageOutput = Path.Combine(pageDiagnosticsDirectory, pageBaseName + ".musicxml");
-                var conversion = pipeline.Convert(source.FullName, catalogPath, pageOutput, config, writeDiagnostics: true);
-
-                pageArtifacts.Add(new MultiSvgPageArtifact(
-                    source.FullName,
-                    conversion.MusicXmlPath,
-                    conversion.AnalysisPath!,
-                    conversion.ClassificationPath!,
-                    Path.ChangeExtension(conversion.MusicXmlPath, ".performance.json")));
-
-                var pageDocument = XDocument.Load(pageOutput, LoadOptions.PreserveWhitespace);
-                var pagePart = pageDocument.Root?.Element("part")
-                    ?? throw new InvalidOperationException($"В сгенерированном MusicXML нет <part>: {source.Name}");
-
-                if (combined is null)
-                {
-                    combined = pageDocument;
-                    combinedPart = combined.Root!.Element("part")!;
-                    foreach (var measure in combinedPart.Elements("measure"))
-                        measure.SetAttributeValue("number", nextMeasureNumber++);
-                    continue;
-                }
-
-                var pageMeasures = pagePart.Elements("measure").Select(x => new XElement(x)).ToList();
-                if (pageMeasures.Count == 0) continue;
-
-                // Preserve the fact that each input SVG is a separate source page.
-                var firstMeasure = pageMeasures[0];
-                var print = firstMeasure.Element("print");
-                if (print is null)
-                    firstMeasure.AddFirst(new XElement("print", new XAttribute("new-page", "yes")));
-                else
-                    print.SetAttributeValue("new-page", "yes");
-
-                foreach (var measure in pageMeasures)
-                {
+                combined = pageDocument;
+                combinedPart = combined.Root!.Element("part")!;
+                foreach (var measure in combinedPart.Elements("measure"))
                     measure.SetAttributeValue("number", nextMeasureNumber++);
-                    combinedPart!.Add(measure);
-                }
+                continue;
             }
 
-            combined!.Save(musicXmlPath);
-            return new MultiSvgConversionResult(
-                musicXmlPath,
-                svgFiles.Select(x => x.FullName).ToArray(),
-                pageDiagnosticsDirectory,
-                pageArtifacts);
+            var pageMeasures = pagePart.Elements("measure").Select(x => new XElement(x)).ToList();
+            if (pageMeasures.Count == 0) continue;
+
+            // SVG files are source pages, not formatting commands. Do not force a MusicXML
+            // page break: let the notation editor reflow systems/pages freely.
+
+            // A continuation SVG often repeats clefs but omits the time signature. Its standalone
+            // page MusicXML necessarily starts with the configured fallback meter; when joining
+            // pages that synthetic <time> must not override the last explicitly printed meter from
+            // the preceding page. In MusicXML, omitting <time> naturally carries the prior meter.
+            if (!HasExplicitTimeSignatureGlyphs(conversion.Analysis))
+            {
+                var firstAttributes = pageMeasures[0].Element("attributes");
+                firstAttributes?.Element("time")?.Remove();
+            }
+
+            foreach (var measure in pageMeasures)
+            {
+                measure.SetAttributeValue("number", nextMeasureNumber++);
+                combinedPart!.Add(measure);
+            }
         }
-        finally
-        {
-            try { Directory.Delete(tempDirectory, recursive: true); }
-            catch { /* Temp cleanup must not hide a successful conversion. */ }
-        }
+
+        combined!.Save(musicXmlPath);
+        return new MultiSvgConversionResult(
+            musicXmlPath,
+            svgFiles.Select(x => x.FullName).ToArray(),
+            pageDiagnosticsDirectory,
+            pageArtifacts);
     }
+
+    private static bool HasExplicitTimeSignatureGlyphs(AnalysisResult analysis) =>
+        analysis.Classifications.Any(x =>
+            x.Kind.Contains("time-signature", StringComparison.OrdinalIgnoreCase) ||
+            x.Kind.Contains("timesig", StringComparison.OrdinalIgnoreCase) ||
+            x.ReferenceId.Contains("timeSig", StringComparison.OrdinalIgnoreCase) ||
+            x.ReferenceId.Contains("timeSignature", StringComparison.OrdinalIgnoreCase));
 
     private sealed class NaturalFileNameComparer : IComparer<string>
     {
