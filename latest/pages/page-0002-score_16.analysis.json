@@ -398537,7 +398537,7 @@
       "SlurStart": false,
       "SlurStop": false,
       "SlurNumber": null,
-      "TieStart": false,
+      "TieStart": true,
       "TieStop": false
     },
     {
@@ -398565,7 +398565,7 @@
       "SlurStart": false,
       "SlurStop": false,
       "SlurNumber": null,
-      "TieStart": false,
+      "TieStart": true,
       "TieStop": false
     },
     {
@@ -398650,7 +398650,7 @@
       "SlurStop": false,
       "SlurNumber": null,
       "TieStart": false,
-      "TieStop": false
+      "TieStop": true
     },
     {
       "SourceSymbolId": "i",
@@ -398678,7 +398678,7 @@
       "SlurStop": false,
       "SlurNumber": null,
       "TieStart": false,
-      "TieStop": false
+      "TieStop": true
     },
     {
       "SourceSymbolId": "i",
@@ -398873,7 +398873,7 @@
       "SlurStart": false,
       "SlurStop": false,
       "SlurNumber": null,
-      "TieStart": false,
+      "TieStart": true,
       "TieStop": false
     },
     {
@@ -398901,7 +398901,7 @@
       "SlurStart": false,
       "SlurStop": false,
       "SlurNumber": null,
-      "TieStart": false,
+      "TieStart": true,
       "TieStop": false
     },
     {
@@ -398930,7 +398930,7 @@
       "SlurStop": false,
       "SlurNumber": null,
       "TieStart": false,
-      "TieStop": false
+      "TieStop": true
     },
     {
       "SourceSymbolId": "i",
@@ -398958,7 +398958,7 @@
       "SlurStop": false,
       "SlurNumber": null,
       "TieStart": false,
-      "TieStop": false
+      "TieStop": true
     },
     {
       "SourceSymbolId": "c",
@@ -399071,6 +399071,62 @@
       "SlurNumber": null,
       "TieStart": false,
       "TieStop": false
+    },
+    {
+      "SourceSymbolId": "t",
+      "Kind": "rest-quarter",
+      "ReferenceId": "uniE5E2",
+      "Confidence": 0.6801496675406933,
+      "X": 306.158,
+      "Y": 479.089,
+      "StaffIndex": 6,
+      "Step": null,
+      "Octave": null,
+      "Alter": 0,
+      "Type": "quarter",
+      "Duration": 16,
+      "Dotted": false,
+      "Chord": false,
+      "ClefSign": null,
+      "ClefLine": null,
+      "AttachedToSymbolId": null,
+      "StemX": null,
+      "StemDirection": null,
+      "BeamValue": null,
+      "BeamCount": 0,
+      "SlurStart": false,
+      "SlurStop": false,
+      "SlurNumber": null,
+      "TieStart": false,
+      "TieStop": false
+    },
+    {
+      "SourceSymbolId": "t",
+      "Kind": "rest-quarter",
+      "ReferenceId": "uniE5E2",
+      "Confidence": 0.6801496675406933,
+      "X": 347.795,
+      "Y": 479.089,
+      "StaffIndex": 6,
+      "Step": null,
+      "Octave": null,
+      "Alter": 0,
+      "Type": "quarter",
+      "Duration": 16,
+      "Dotted": false,
+      "Chord": false,
+      "ClefSign": null,
+      "ClefLine": null,
+      "AttachedToSymbolId": null,
+      "StemX": null,
+      "StemDirection": null,
+      "BeamValue": null,
+      "BeamCount": 0,
+      "SlurStart": false,
+      "SlurStop": false,
+      "SlurNumber": null,
+      "TieStart": false,
+      "TieStop": false
     }
   ],
   "Directions": [
@@ -399086,6 +399142,15 @@
     {
       "Kind": "dynamic",
       "Value": "mp",
+      "X": 512.981,
+      "EndX": null,
+      "Y": 247.851,
+      "StaffIndex": 2,
+      "SourceSymbolId": "q"
+    },
+    {
+      "Kind": "dynamic",
+      "Value": "pp",
       "X": 100.642,
       "EndX": null,
       "Y": 388.829,
@@ -399094,12 +399159,12 @@
     },
     {
       "Kind": "dynamic",
-      "Value": "mp",
-      "X": 512.981,
+      "Value": "ppp",
+      "X": 443.155,
       "EndX": null,
-      "Y": 247.851,
-      "StaffIndex": 2,
-      "SourceSymbolId": "q"
+      "Y": 525.65,
+      "StaffIndex": 6,
+      "SourceSymbolId": "B"
     }
   ],
   "Warnings": [

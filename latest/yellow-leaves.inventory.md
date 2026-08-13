@@ -4,14 +4,14 @@ Pages: **2**
 
 | Page | Source | Staves | Notes | Rests | Directions | Warnings | ms |
 |---:|---|---:|---:|---:|---:|---:|---:|
-| 1 | `page-0001-score_15` | 10 | 152 | 6 | 6 | 139 | 12189.7 |
-| 2 | `page-0002-score_16` | 8 | 110 | 6 | 3 | 109 | 1366.7 |
+| 1 | `page-0001-score_15` | 10 | 152 | 6 | 6 | 139 | 9581.3 |
+| 2 | `page-0002-score_16` | 8 | 110 | 8 | 4 | 109 | 1056.6 |
 
 ## Totals
 
 - staves: **18**
-- events: **292**
+- events: **294**
 - notes: **262**
-- rests: **12**
-- directions: **9**
+- rests: **14**
+- directions: **10**
 - warnings: **248**

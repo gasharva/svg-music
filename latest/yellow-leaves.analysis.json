@@ -14,7 +14,7 @@
       "directions": 6,
       "warnings": 139,
       "classificationSymbols": 267,
-      "totalMs": 12189.7223
+      "totalMs": 9581.3044
     },
     {
       "page": 2,
@@ -23,21 +23,21 @@
       "classification": "page-0002-score_16.classification.json",
       "performance": "page-0002-score_16.performance.json",
       "staves": 8,
-      "events": 124,
+      "events": 126,
       "notes": 110,
-      "rests": 6,
-      "directions": 3,
+      "rests": 8,
+      "directions": 4,
       "warnings": 109,
       "classificationSymbols": 143,
-      "totalMs": 1366.7453
+      "totalMs": 1056.5809
     }
   ],
   "Totals": {
     "staves": 18,
-    "events": 292,
+    "events": 294,
     "notes": 262,
-    "rests": 12,
-    "directions": 9,
+    "rests": 14,
+    "directions": 10,
     "warnings": 248
   },
   "Events": [
@@ -7955,7 +7955,7 @@
       "SlurStart": false,
       "SlurStop": false,
       "SlurNumber": null,
-      "TieStart": false,
+      "TieStart": true,
       "TieStop": false
     },
     {
@@ -7984,7 +7984,7 @@
       "SlurStart": false,
       "SlurStop": false,
       "SlurNumber": null,
-      "TieStart": false,
+      "TieStart": true,
       "TieStop": false
     },
     {
@@ -8072,7 +8072,7 @@
       "SlurStop": false,
       "SlurNumber": null,
       "TieStart": false,
-      "TieStop": false
+      "TieStop": true
     },
     {
       "Page": 2,
@@ -8101,7 +8101,7 @@
       "SlurStop": false,
       "SlurNumber": null,
       "TieStart": false,
-      "TieStop": false
+      "TieStop": true
     },
     {
       "Page": 2,
@@ -8303,7 +8303,7 @@
       "SlurStart": false,
       "SlurStop": false,
       "SlurNumber": null,
-      "TieStart": false,
+      "TieStart": true,
       "TieStop": false
     },
     {
@@ -8332,7 +8332,7 @@
       "SlurStart": false,
       "SlurStop": false,
       "SlurNumber": null,
-      "TieStart": false,
+      "TieStart": true,
       "TieStop": false
     },
     {
@@ -8362,7 +8362,7 @@
       "SlurStop": false,
       "SlurNumber": null,
       "TieStart": false,
-      "TieStop": false
+      "TieStop": true
     },
     {
       "Page": 2,
@@ -8391,7 +8391,7 @@
       "SlurStop": false,
       "SlurNumber": null,
       "TieStart": false,
-      "TieStop": false
+      "TieStop": true
     },
     {
       "Page": 2,
@@ -8508,6 +8508,64 @@
       "SlurNumber": null,
       "TieStart": false,
       "TieStop": false
+    },
+    {
+      "Page": 2,
+      "SourceSymbolId": "t",
+      "Kind": "rest-quarter",
+      "ReferenceId": "uniE5E2",
+      "Confidence": 0.6801496675406933,
+      "X": 306.158,
+      "Y": 479.089,
+      "StaffIndex": 6,
+      "Step": null,
+      "Octave": null,
+      "Alter": 0,
+      "Type": "quarter",
+      "Duration": 16,
+      "Dotted": false,
+      "Chord": false,
+      "ClefSign": null,
+      "ClefLine": null,
+      "AttachedToSymbolId": null,
+      "StemX": null,
+      "StemDirection": null,
+      "BeamValue": null,
+      "BeamCount": 0,
+      "SlurStart": false,
+      "SlurStop": false,
+      "SlurNumber": null,
+      "TieStart": false,
+      "TieStop": false
+    },
+    {
+      "Page": 2,
+      "SourceSymbolId": "t",
+      "Kind": "rest-quarter",
+      "ReferenceId": "uniE5E2",
+      "Confidence": 0.6801496675406933,
+      "X": 347.795,
+      "Y": 479.089,
+      "StaffIndex": 6,
+      "Step": null,
+      "Octave": null,
+      "Alter": 0,
+      "Type": "quarter",
+      "Duration": 16,
+      "Dotted": false,
+      "Chord": false,
+      "ClefSign": null,
+      "ClefLine": null,
+      "AttachedToSymbolId": null,
+      "StemX": null,
+      "StemDirection": null,
+      "BeamValue": null,
+      "BeamCount": 0,
+      "SlurStart": false,
+      "SlurStop": false,
+      "SlurNumber": null,
+      "TieStart": false,
+      "TieStop": false
     }
   ],
   "Directions": [
@@ -8585,6 +8643,16 @@
       "Page": 2,
       "Kind": "dynamic",
       "Value": "mp",
+      "X": 512.981,
+      "EndX": null,
+      "Y": 247.851,
+      "StaffIndex": 2,
+      "SourceSymbolId": "q"
+    },
+    {
+      "Page": 2,
+      "Kind": "dynamic",
+      "Value": "pp",
       "X": 100.642,
       "EndX": null,
       "Y": 388.829,
@@ -8594,12 +8662,12 @@
     {
       "Page": 2,
       "Kind": "dynamic",
-      "Value": "mp",
-      "X": 512.981,
+      "Value": "ppp",
+      "X": 443.155,
       "EndX": null,
-      "Y": 247.851,
-      "StaffIndex": 2,
-      "SourceSymbolId": "q"
+      "Y": 525.65,
+      "StaffIndex": 6,
+      "SourceSymbolId": "B"
     }
   ],
   "Warnings": [

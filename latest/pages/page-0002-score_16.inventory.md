@@ -14,6 +14,7 @@
 - rest-eighth: **6**
 - clef-bass: **4**
 - clef-treble: **4**
+- rest-quarter: **2**
 
 ## Relation coverage
 
@@ -29,8 +30,8 @@
 | dotted notes | 52 | 47.3% |
 | slur starts | 10 | 9.1% |
 | slur stops | 10 | 9.1% |
-| tie starts | 3 | 2.7% |
-| tie stops | 3 | 2.7% |
+| tie starts | 7 | 6.4% |
+| tie stops | 7 | 6.4% |
 | altered pitches | 17 | 15.5% |
 
 ## Missing-stem triage
