@@ -14,7 +14,7 @@
       "directions": 6,
       "warnings": 139,
       "classificationSymbols": 267,
-      "totalMs": 11642.7207
+      "totalMs": 11027.464399999999
     },
     {
       "page": 2,
@@ -29,7 +29,7 @@
       "directions": 2,
       "warnings": 109,
       "classificationSymbols": 143,
-      "totalMs": 1304.5806
+      "totalMs": 1252.4966
     }
   ],
   "Totals": {
@@ -1224,9 +1224,9 @@
       "StemDirection": "up",
       "BeamValue": "end",
       "BeamCount": 2,
-      "SlurStart": true,
+      "SlurStart": false,
       "SlurStop": true,
-      "SlurNumber": 13,
+      "SlurNumber": 4,
       "TieStart": false,
       "TieStop": false
     },
@@ -1254,8 +1254,8 @@
       "BeamValue": null,
       "BeamCount": 0,
       "SlurStart": false,
-      "SlurStop": true,
-      "SlurNumber": 13,
+      "SlurStop": false,
+      "SlurNumber": null,
       "TieStart": false,
       "TieStop": false
     },
@@ -6085,8 +6085,8 @@
       "Step": "F",
       "Octave": 4,
       "Alter": 0,
-      "Type": "quarter",
-      "Duration": 16,
+      "Type": "16th",
+      "Duration": 4,
       "Dotted": false,
       "Chord": false,
       "ClefSign": null,
@@ -6096,9 +6096,9 @@
       "StemDirection": "up",
       "BeamValue": null,
       "BeamCount": 0,
-      "SlurStart": false,
+      "SlurStart": true,
       "SlurStop": false,
-      "SlurNumber": null,
+      "SlurNumber": 10,
       "TieStart": false,
       "TieStop": false
     },
@@ -6126,8 +6126,8 @@
       "BeamValue": null,
       "BeamCount": 0,
       "SlurStart": false,
-      "SlurStop": false,
-      "SlurNumber": null,
+      "SlurStop": true,
+      "SlurNumber": 10,
       "TieStart": false,
       "TieStop": false
     },

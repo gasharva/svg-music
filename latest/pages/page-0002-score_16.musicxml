@@ -450,7 +450,7 @@
         <staff>1</staff>
         <notations>
           <ornaments>
-            <trill-mark placement="above" />
+            <turn placement="above" />
           </ornaments>
         </notations>
       </note>
@@ -553,10 +553,13 @@
           <step>F</step>
           <octave>4</octave>
         </pitch>
-        <duration>16</duration>
+        <duration>4</duration>
         <voice>1</voice>
-        <type>quarter</type>
+        <type>16th</type>
         <stem>up</stem>
+        <notations>
+          <slur type="start" number="10" />
+        </notations>
         <staff>1</staff>
       </note>
       <note default-x="159.59">
@@ -568,10 +571,13 @@
         <voice>1</voice>
         <type>half</type>
         <stem>up</stem>
+        <notations>
+          <slur type="stop" number="10" />
+        </notations>
         <staff>1</staff>
       </note>
       <backup>
-        <duration>60</duration>
+        <duration>48</duration>
       </backup>
       <note default-x="66.673">
         <pitch>

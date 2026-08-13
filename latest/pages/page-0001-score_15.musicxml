@@ -618,8 +618,7 @@
         <beam number="1">end</beam>
         <beam number="2">backward hook</beam>
         <notations>
-          <slur type="start" number="13" />
-          <slur type="stop" number="13" />
+          <slur type="stop" number="4" />
         </notations>
         <staff>1</staff>
       </note>
@@ -633,9 +632,6 @@
         <voice>1</voice>
         <type>half</type>
         <stem>up</stem>
-        <notations>
-          <slur type="stop" number="13" />
-        </notations>
         <staff>1</staff>
       </note>
       <backup>
