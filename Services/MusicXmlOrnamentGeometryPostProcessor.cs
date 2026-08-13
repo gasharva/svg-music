@@ -5,8 +5,9 @@ namespace SvgToMusicXmlPoc.Services;
 
 /// <summary>
 /// Recovers compact high ornaments that survive as outlined vector glyphs but are not yet mapped
-/// semantically by the reference catalog. This deliberately works from painted geometry, not SVG
-/// symbol ids, and requires a characteristic dense single-contour trill shape directly above a note.
+/// semantically by the reference catalog. The current real-source shape is a turn/gruppetto-like
+/// ornament, not the textual "tr" trill mark. Future recognized variants can map to inverted/slashed
+/// turn elements here without changing the geometry-to-note attachment logic.
 /// </summary>
 public sealed class MusicXmlOrnamentGeometryPostProcessor
 {
@@ -47,10 +48,14 @@ public sealed class MusicXmlOrnamentGeometryPostProcessor
             if (widthSp is < 1.8 or > 3.2 || heightSp is < .55 or > 1.35) continue;
             if (widthSp / Math.Max(heightSp, .001) < 1.8) continue;
 
-            // If the classifier already knows this is a non-ornamental music symbol, respect it.
-            if (glyph.SourceSymbolId is not null && classes.TryGetValue(glyph.SourceSymbolId, out var cls) &&
+            SymbolClassification? cls = null;
+            if (glyph.SourceSymbolId is not null)
+                classes.TryGetValue(glyph.SourceSymbolId, out cls);
+
+            if (cls is not null &&
                 !cls.Kind.Equals("smufl-unknown", StringComparison.OrdinalIgnoreCase) &&
                 !cls.Kind.Contains("trill", StringComparison.OrdinalIgnoreCase) &&
+                !cls.Kind.Contains("turn", StringComparison.OrdinalIgnoreCase) &&
                 !cls.Kind.Contains("ornament", StringComparison.OrdinalIgnoreCase))
                 continue;
 
@@ -75,11 +80,25 @@ public sealed class MusicXmlOrnamentGeometryPostProcessor
                 notations.Add(ornaments);
             }
 
-            if (ornaments.Element("trill-mark") is null)
-                ornaments.Add(new XElement("trill-mark", new XAttribute("placement", "above")));
+            var elementName = OrnamentElementName(cls);
+            if (ornaments.Element(elementName) is null)
+                ornaments.Add(new XElement(elementName, new XAttribute("placement", "above")));
         }
 
         bindings.Document.Save(path);
+    }
+
+    private static string OrnamentElementName(SymbolClassification? cls)
+    {
+        var semantic = $"{cls?.Kind} {cls?.ReferenceId}";
+        if (semantic.Contains("inverted", StringComparison.OrdinalIgnoreCase) &&
+            semantic.Contains("turn", StringComparison.OrdinalIgnoreCase))
+            return "inverted-turn";
+
+        // A conventional horizontal turn (gruppetto) is the safe geometry fallback for the
+        // compact S-shaped ornament on the real score. Do not emit <trill-mark>: MuseScore renders
+        // that as the letters "tr", which is visibly a different notation symbol.
+        return "turn";
     }
 
     private sealed record Binding(XElement Element, RecognizedEvent Event);

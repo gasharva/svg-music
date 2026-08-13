@@ -75,6 +75,7 @@ public sealed class ConversionPipeline
         new ChordRhythmNormalizer().Normalize(analysis);
         new BeamHookRhythmResolver().Resolve(analysis, config);
         new StandaloneFlagRhythmResolver().Resolve(analysis, config);
+        new CompactStandaloneArcResolver().Resolve(analysis);
         new DynamicsGeometryResolver().Resolve(analysis);
 
         performance.RecognizeSemanticsMs = watch.Elapsed.TotalMilliseconds;
