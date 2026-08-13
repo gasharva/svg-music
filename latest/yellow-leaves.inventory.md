@@ -4,8 +4,8 @@ Pages: **2**
 
 | Page | Source | Staves | Notes | Rests | Directions | Warnings | ms |
 |---:|---|---:|---:|---:|---:|---:|---:|
-| 1 | `page-0001-score_15` | 10 | 152 | 6 | 6 | 139 | 11027.5 |
-| 2 | `page-0002-score_16` | 8 | 110 | 6 | 2 | 109 | 1252.5 |
+| 1 | `page-0001-score_15` | 10 | 152 | 6 | 6 | 139 | 11055.8 |
+| 2 | `page-0002-score_16` | 8 | 110 | 6 | 3 | 109 | 1254.0 |
 
 ## Totals
 
@@ -13,5 +13,5 @@ Pages: **2**
 - events: **292**
 - notes: **262**
 - rests: **12**
-- directions: **8**
+- directions: **9**
 - warnings: **248**

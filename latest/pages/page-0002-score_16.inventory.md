@@ -29,8 +29,8 @@
 | dotted notes | 52 | 47.3% |
 | slur starts | 10 | 9.1% |
 | slur stops | 10 | 9.1% |
-| tie starts | 2 | 1.8% |
-| tie stops | 2 | 1.8% |
+| tie starts | 3 | 2.7% |
+| tie stops | 3 | 2.7% |
 | altered pitches | 17 | 15.5% |
 
 ## Missing-stem triage

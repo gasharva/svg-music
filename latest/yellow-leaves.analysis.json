@@ -14,7 +14,7 @@
       "directions": 6,
       "warnings": 139,
       "classificationSymbols": 267,
-      "totalMs": 11027.464399999999
+      "totalMs": 11055.7853
     },
     {
       "page": 2,
@@ -26,10 +26,10 @@
       "events": 124,
       "notes": 110,
       "rests": 6,
-      "directions": 2,
+      "directions": 3,
       "warnings": 109,
       "classificationSymbols": 143,
-      "totalMs": 1252.4966
+      "totalMs": 1253.9596
     }
   ],
   "Totals": {
@@ -37,7 +37,7 @@
     "events": 292,
     "notes": 262,
     "rests": 12,
-    "directions": 8,
+    "directions": 9,
     "warnings": 248
   },
   "Events": [
@@ -7346,7 +7346,7 @@
       "SlurStart": false,
       "SlurStop": false,
       "SlurNumber": null,
-      "TieStart": false,
+      "TieStart": true,
       "TieStop": false
     },
     {
@@ -7782,7 +7782,7 @@
       "SlurStop": false,
       "SlurNumber": null,
       "TieStart": false,
-      "TieStop": false
+      "TieStop": true
     },
     {
       "Page": 2,
@@ -8590,6 +8590,16 @@
       "Y": 388.829,
       "StaffIndex": 4,
       "SourceSymbolId": "r"
+    },
+    {
+      "Page": 2,
+      "Kind": "dynamic",
+      "Value": "mp",
+      "X": 512.981,
+      "EndX": null,
+      "Y": 247.851,
+      "StaffIndex": 2,
+      "SourceSymbolId": "q"
     }
   ],
   "Warnings": [

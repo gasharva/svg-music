@@ -24,8 +24,8 @@
     "dotted": 52,
     "slurStarts": 10,
     "slurStops": 10,
-    "tieStarts": 2,
-    "tieStops": 2,
+    "tieStarts": 3,
+    "tieStops": 3,
     "altered": 17
   },
   "relationCoveragePercent": {
@@ -39,8 +39,8 @@
     "dotted": 47.3,
     "slurStarts": 9.1,
     "slurStops": 9.1,
-    "tieStarts": 1.8,
-    "tieStops": 1.8,
+    "tieStarts": 2.7,
+    "tieStops": 2.7,
     "altered": 15.5
   },
   "stemGapTriage": {

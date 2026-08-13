@@ -397949,7 +397949,7 @@
       "SlurStart": false,
       "SlurStop": false,
       "SlurNumber": null,
-      "TieStart": false,
+      "TieStart": true,
       "TieStop": false
     },
     {
@@ -398370,7 +398370,7 @@
       "SlurStop": false,
       "SlurNumber": null,
       "TieStart": false,
-      "TieStop": false
+      "TieStop": true
     },
     {
       "SourceSymbolId": "m",
@@ -399091,6 +399091,15 @@
       "Y": 388.829,
       "StaffIndex": 4,
       "SourceSymbolId": "r"
+    },
+    {
+      "Kind": "dynamic",
+      "Value": "mp",
+      "X": 512.981,
+      "EndX": null,
+      "Y": 247.851,
+      "StaffIndex": 2,
+      "SourceSymbolId": "q"
     }
   ],
   "Warnings": [
