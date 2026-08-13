@@ -7,39 +7,40 @@
   },
   "eventKinds": {
     "notehead-half": 57,
+    "notehead-black": 53,
     "rest-eighth": 6,
     "clef-bass": 4
   },
   "relations": {
-    "notes": 57,
-    "withStem": 57,
-    "withStemDirection": 57,
-    "chordMembers": 19,
-    "withBeam": 0,
-    "withBeamValue": 0,
-    "eighth": 0,
-    "sixteenth": 0,
-    "dotted": 44,
-    "slurStarts": 1,
-    "slurStops": 1,
-    "tieStarts": 0,
-    "tieStops": 0,
-    "altered": 4
+    "notes": 110,
+    "withStem": 110,
+    "withStemDirection": 110,
+    "chordMembers": 29,
+    "withBeam": 22,
+    "withBeamValue": 22,
+    "eighth": 20,
+    "sixteenth": 5,
+    "dotted": 51,
+    "slurStarts": 8,
+    "slurStops": 8,
+    "tieStarts": 2,
+    "tieStops": 2,
+    "altered": 15
   },
   "relationCoveragePercent": {
     "withStem": 100.0,
     "withStemDirection": 100.0,
-    "chordMembers": 33.3,
-    "withBeam": 0.0,
-    "withBeamValue": 0.0,
-    "eighth": 0.0,
-    "sixteenth": 0.0,
-    "dotted": 77.2,
-    "slurStarts": 1.8,
-    "slurStops": 1.8,
-    "tieStarts": 0.0,
-    "tieStops": 0.0,
-    "altered": 7.0
+    "chordMembers": 26.4,
+    "withBeam": 20.0,
+    "withBeamValue": 20.0,
+    "eighth": 18.2,
+    "sixteenth": 4.5,
+    "dotted": 46.4,
+    "slurStarts": 7.3,
+    "slurStops": 7.3,
+    "tieStarts": 1.8,
+    "tieStops": 1.8,
+    "altered": 13.6
   },
   "stemGapTriage": {
     "unattachedNotes": 0,
@@ -50,43 +51,14 @@
     "samples": []
   },
   "warnings": {
-    "total": 124,
+    "total": 105,
     "groups": {
       "low confidence": 103,
-      "Не удалось привязать accidental-natural в x=181.3": 1,
       "Не удалось привязать accidental-sharp в x=105.6": 1,
-      "Не удалось привязать accidental-sharp в x=99.7": 1,
-      "Не удалось привязать accidental-flat в x=249.9": 1,
-      "Не удалось привязать accidental-natural в x=223.8": 1,
-      "Не удалось привязать accidental-flat в x=223.6": 1,
-      "Не удалось привязать accidental-flat в x=476.5": 1,
-      "Не удалось привязать accidental-flat в x=204.7": 1,
-      "Не удалось привязать accidental-flat в x=317.5": 1,
-      "Не удалось привязать accidental-sharp в x=98.8": 1,
-      "Не удалось привязать accidental-sharp в x=163.8": 1,
-      "Не удалось привязать accidental-flat в x=231.6": 1,
-      "Не удалось привязать accidental-flat в x=312.8": 1,
-      "Не удалось привязать accidental-flat в x=229.1": 1,
-      "Не удалось привязать accidental-flat в x=129.0": 1,
-      "Не удалось привязать точку в x=236.3": 1,
-      "Не удалось привязать точку в x=222.5": 1,
-      "Не удалось привязать точку в x=215.3": 1,
-      "Не удалось привязать точку в x=497.1": 1,
-      "Не удалось привязать точку в x=241.8": 1,
-      "Не удалось привязать точку в x=396.8": 1
+      "Не удалось привязать accidental-sharp в x=99.7": 1
     }
   },
   "suspiciousNearStaffSymbols": [
-    {
-      "symbolId": "f",
-      "usesNearStaff": 53,
-      "kind": "smufl-unknown",
-      "referenceId": "uniE0FB",
-      "score": 0.8319708144154417,
-      "widthInSpaces": 0.674591357326162,
-      "heightInSpaces": 0.7948997674152172,
-      "reason": "unknown semantic kind"
-    },
     {
       "symbolId": "c",
       "usesNearStaff": 4,
@@ -375,6 +347,16 @@
       "score": 0.6279545756606434,
       "widthInSpaces": 5.937526933061312,
       "heightInSpaces": 1.7505410390445926,
+      "reason": "unknown semantic kind"
+    },
+    {
+      "symbolId": "path:000013",
+      "usesNearStaff": 1,
+      "kind": "smufl-unknown",
+      "referenceId": "uniE07C",
+      "score": 0.09982776392426837,
+      "widthInSpaces": 2.2019384138925685e-10,
+      "heightInSpaces": 2.333585106916728,
       "reason": "unknown semantic kind"
     }
   ]

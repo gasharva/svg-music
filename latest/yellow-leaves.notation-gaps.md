@@ -2,7 +2,7 @@
 
 ## Notehead sanity
 
-Recognized noteheads: **57**
+Recognized noteheads: **110**
 Unattached noteheads: **0**
 
 
@@ -53,3 +53,7 @@ Compact reusable glyphs repeatedly found near free ends of currently unbeamed st
 
 | symbol | hits | current kind | reference | samples (dx,dy,w,h sp) |
 |---|---:|---|---|---|
+| `s` | 3 | smufl-unknown | uniE241 | `[(0.47, 1.43, 0.98, 3.15), (0.47, 1.42, 0.98, 3.15), (0.47, 1.42, 0.98, 3.14)]` |
+| `f` | 1 | notehead-black | uniE0FB | `[(0.19, 2.3, 0.67, 0.79)]` |
+| `g` | 1 | accidental-natural | accidentalNatural | `[(0.87, 2.51, 0.66, 3.02)]` |
+| `o` | 1 | smufl-unknown | uniE06C | `[(0.97, 1.99, 2.09, 2.81)]` |

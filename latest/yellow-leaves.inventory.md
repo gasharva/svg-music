@@ -10,6 +10,7 @@
 ## Semantic events
 
 - notehead-half: **57**
+- notehead-black: **53**
 - rest-eighth: **6**
 - clef-bass: **4**
 
@@ -17,19 +18,19 @@
 
 | Relation | Count | % of notes |
 |---|---:|---:|
-| stem attached | 57 | 100.0% |
-| stem direction | 57 | 100.0% |
-| chord members | 19 | 33.3% |
-| notes touching beams | 0 | 0.0% |
-| beam begin/continue/end | 0 | 0.0% |
-| eighth notes | 0 | 0.0% |
-| 16th notes | 0 | 0.0% |
-| dotted notes | 44 | 77.2% |
-| slur starts | 1 | 1.8% |
-| slur stops | 1 | 1.8% |
-| tie starts | 0 | 0.0% |
-| tie stops | 0 | 0.0% |
-| altered pitches | 4 | 7.0% |
+| stem attached | 110 | 100.0% |
+| stem direction | 110 | 100.0% |
+| chord members | 29 | 26.4% |
+| notes touching beams | 22 | 20.0% |
+| beam begin/continue/end | 22 | 20.0% |
+| eighth notes | 20 | 18.2% |
+| 16th notes | 5 | 4.5% |
+| dotted notes | 51 | 46.4% |
+| slur starts | 8 | 7.3% |
+| slur stops | 8 | 7.3% |
+| tie starts | 2 | 1.8% |
+| tie stops | 2 | 1.8% |
+| altered pitches | 15 | 13.6% |
 
 ## Missing-stem triage
 
@@ -52,30 +53,11 @@ Raw vertical candidates not normalized: **4**
 
 ## Warning groups
 
-Total warnings: **124**
+Total warnings: **105**
 
 - low confidence: **103**
-- Не удалось привязать accidental-natural в x=181.3: **1**
 - Не удалось привязать accidental-sharp в x=105.6: **1**
 - Не удалось привязать accidental-sharp в x=99.7: **1**
-- Не удалось привязать accidental-flat в x=249.9: **1**
-- Не удалось привязать accidental-natural в x=223.8: **1**
-- Не удалось привязать accidental-flat в x=223.6: **1**
-- Не удалось привязать accidental-flat в x=476.5: **1**
-- Не удалось привязать accidental-flat в x=204.7: **1**
-- Не удалось привязать accidental-flat в x=317.5: **1**
-- Не удалось привязать accidental-sharp в x=98.8: **1**
-- Не удалось привязать accidental-sharp в x=163.8: **1**
-- Не удалось привязать accidental-flat в x=231.6: **1**
-- Не удалось привязать accidental-flat в x=312.8: **1**
-- Не удалось привязать accidental-flat в x=229.1: **1**
-- Не удалось привязать accidental-flat в x=129.0: **1**
-- Не удалось привязать точку в x=236.3: **1**
-- Не удалось привязать точку в x=222.5: **1**
-- Не удалось привязать точку в x=215.3: **1**
-- Не удалось привязать точку в x=497.1: **1**
-- Не удалось привязать точку в x=241.8: **1**
-- Не удалось привязать точку в x=396.8: **1**
 
 ## High-value suspicious symbols near staves
 
@@ -83,7 +65,6 @@ These are frequent staff-local glyphs that are still semantically unknown or hav
 
 | id | uses | kind | reference | score | width sp | height sp | reason |
 |---|---:|---|---|---:|---:|---:|---|
-| `f` | 53 | smufl-unknown | uniE0FB | 0.832 | 0.675 | 0.795 | unknown semantic kind |
 | `c` | 4 | clef-treble | uniE053 | 0.409 | 3.281 | 6.519 | low confidence |
 | `d` | 4 | clef-bass | uniE500 | 0.483 | 2.674 | 2.714 | low confidence |
 | `s` | 3 | smufl-unknown | uniE241 | 0.583 | 0.978 | 3.145 | unknown semantic kind |
@@ -113,3 +94,4 @@ These are frequent staff-local glyphs that are still semantically unknown or hav
 | `path:000010` | 1 | smufl-unknown | uniE07C | 0.100 | 0.000 | 2.334 | unknown semantic kind |
 | `path:000011` | 1 | smufl-unknown | uniE07C | 0.100 | 0.000 | 2.334 | unknown semantic kind |
 | `path:000012` | 1 | smufl-unknown | uniE003 | 0.628 | 5.938 | 1.751 | unknown semantic kind |
+| `path:000013` | 1 | smufl-unknown | uniE07C | 0.100 | 0.000 | 2.334 | unknown semantic kind |
