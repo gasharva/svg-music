@@ -13,6 +13,7 @@
 - notehead-black: **53**
 - rest-eighth: **6**
 - clef-bass: **4**
+- clef-treble: **4**
 
 ## Relation coverage
 
@@ -53,11 +54,15 @@ Raw vertical candidates not normalized: **4**
 
 ## Warning groups
 
-Total warnings: **105**
+Total warnings: **109**
 
 - low confidence: **103**
 - Не удалось привязать accidental-sharp в x=105.6: **1**
 - Не удалось привязать accidental-sharp в x=99.7: **1**
+- Recovered clef-treble at staff 0 from staff-left geometry (score 0.409).: **1**
+- Recovered clef-treble at staff 2 from staff-left geometry (score 0.409).: **1**
+- Recovered clef-treble at staff 4 from staff-left geometry (score 0.409).: **1**
+- Recovered clef-treble at staff 6 from staff-left geometry (score 0.409).: **1**
 
 ## High-value suspicious symbols near staves
 
