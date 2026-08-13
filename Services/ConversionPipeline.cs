@@ -38,7 +38,7 @@ public sealed class ConversionPipeline
 
         var classifier = new SymbolClassifier();
         var classification = classifier.Classify(svgPath, staves, catalogPath);
-        new SourceFontSemanticNormalizer().Normalize(svgPath, staves, classification);
+        new SourceFontSemanticNormalizer().Normalize(svgPath, staves, classification, lineSegments);
         var cp = classifier.LastPerformance;
         performance.LoadCatalogMs = cp.LoadCatalogMs;
         performance.ClassifyMs = cp.ClassifyMs;
