@@ -16,7 +16,15 @@ public sealed partial class DynamicsGeometryResolver
         if (gaps.Count == 0) return;
 
         var classes = analysis.Classifications.ToDictionary(x => x.SymbolId, StringComparer.Ordinal);
-        ResolveDynamics(analysis, gaps, classes);
+        var contourCounts = analysis.PageGeometry
+            .Where(x => !string.IsNullOrWhiteSpace(x.SourceSymbolId))
+            .GroupBy(x => x.SourceSymbolId!, StringComparer.Ordinal)
+            .ToDictionary(
+                x => x.Key,
+                x => x.Select(g => g.Geometry.Contours.Count).OrderByDescending(v => v).First(),
+                StringComparer.Ordinal);
+
+        ResolveDynamics(analysis, gaps, classes, contourCounts);
         ResolveHairpins(analysis, gaps);
 
         var deduped = analysis.Directions
@@ -38,15 +46,21 @@ public sealed partial class DynamicsGeometryResolver
         analysis.Directions.AddRange(deduped);
     }
 
-    private static void ResolveDynamics(AnalysisResult analysis, IReadOnlyList<StaffGap> gaps,
-        IReadOnlyDictionary<string, SymbolClassification> classes)
+    private static void ResolveDynamics(
+        AnalysisResult analysis,
+        IReadOnlyList<StaffGap> gaps,
+        IReadOnlyDictionary<string, SymbolClassification> classes,
+        IReadOnlyDictionary<string, int> contourCounts)
     {
         foreach (var use in analysis.Uses.Where(x => x.SourceKind == "use"))
         {
             var gap = GapForPoint(use.X, use.Y, gaps);
             if (gap is null || !classes.TryGetValue(use.SymbolId, out var cls)) continue;
-            var value = ReadClassifiedDynamic(cls) ?? ReadProductionFontDynamic(cls);
+
+            contourCounts.TryGetValue(use.SymbolId, out var contourCount);
+            var value = ReadClassifiedDynamic(cls) ?? ReadProductionFontDynamic(cls, contourCount);
             if (value is null) continue;
+
             analysis.Directions.Add(new DirectionMark
             {
                 Kind = "dynamic", Value = value, X = use.X, Y = use.Y,
@@ -70,10 +84,24 @@ public sealed partial class DynamicsGeometryResolver
         return null;
     }
 
-    private static string? ReadProductionFontDynamic(SymbolClassification cls)
+    private static string? ReadProductionFontDynamic(SymbolClassification cls, int contourCount)
     {
         var width = cls.WidthInSpaces;
         var height = cls.HeightInSpaces;
+
+        // Outlined italic dynamics preserve a useful topological clue even when their source-font
+        // glyph IDs change between SVG pages: mp has two painted contours, pp three and ppp four.
+        // Use topology before envelope size; page 2 contains a compact pp whose bounding box falls
+        // into the old mp range, which is why measure 29 was previously emitted as mp.
+        if (contourCount >= 4 && width is >= 4.4 and <= 6.2 && height is >= 2.6 and <= 3.6)
+            return "ppp";
+        if (contourCount == 3 && width is >= 3.0 and <= 3.8 && height is >= 1.55 and <= 2.9)
+            return "pp";
+        if (contourCount == 2 && width is >= 3.0 and <= 3.85 && height is >= 1.25 and <= 2.3)
+            return "mp";
+
+        // Keep the original narrow envelope fallbacks for exporters where contour decomposition is
+        // unavailable. They are intentionally weaker than the topology-aware rules above.
         if (width is >= 3.12 and <= 3.58 && height is >= 1.72 and <= 2.16) return "mp";
         if (width is >= 3.22 and <= 3.68 && height is >= 2.32 and <= 2.80) return "pp";
         return null;
