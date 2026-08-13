@@ -69,7 +69,9 @@ public sealed class ConversionPipeline
         new SlopedBeamCoverageResolver().Resolve(analysis, config);
         new UnifiedBeamGeometryResolver().Resolve(analysis, config);
         new AccidentalGeometryResolver().Resolve(analysis, config);
+        new AugmentationDotGeometryResolver().Resolve(analysis, config);
         new ArcSemanticsResolver().Resolve(analysis);
+        new HighArcSemanticsResolver().Resolve(analysis);
         new ChordRhythmNormalizer().Normalize(analysis);
         new BeamHookRhythmResolver().Resolve(analysis, config);
         new StandaloneFlagRhythmResolver().Resolve(analysis, config);
@@ -99,6 +101,8 @@ public sealed class ConversionPipeline
         new MusicXmlStemPostProcessor().Apply(musicXmlPath, result.Analysis);
         new MusicXmlGraceNotePostProcessor().Apply(musicXmlPath, result.Analysis);
         new MusicXmlSvgLayoutPostProcessor().Apply(musicXmlPath, result.Analysis);
+        new MusicXmlNaturalAccidentalPostProcessor().Apply(musicXmlPath, result.Analysis);
+        new MusicXmlOrnamentGeometryPostProcessor().Apply(musicXmlPath, result.Analysis);
         new MusicXmlVoiceLayoutPostProcessor().Apply(musicXmlPath, result.Analysis);
         new MusicXmlRestVoiceConflictPostProcessor().Apply(musicXmlPath);
         new MusicXmlGraceVoiceTimingPostProcessor().Apply(musicXmlPath);
