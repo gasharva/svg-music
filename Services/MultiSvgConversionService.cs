@@ -85,8 +85,19 @@ public sealed class MultiSvgConversionService
             var pageMeasures = pagePart.Elements("measure").Select(x => new XElement(x)).ToList();
             if (pageMeasures.Count == 0) continue;
 
-            // SVG files are source pages, not formatting commands. Do not force a MusicXML
-            // page break: let the notation editor reflow systems/pages freely.
+            // A source-page boundary must remain a SYSTEM boundary, otherwise the last system of
+            // one SVG and first system of the next page can be merged into one line. It is not a
+            // page-formatting command though: no new-page is emitted, so the editor may freely
+            // reflow those systems onto physical pages later.
+            var firstMeasure = pageMeasures[0];
+            var print = firstMeasure.Element("print");
+            if (print is null)
+            {
+                print = new XElement("print");
+                firstMeasure.AddFirst(print);
+            }
+            print.SetAttributeValue("new-system", "yes");
+            print.Attribute("new-page")?.Remove();
 
             // A continuation SVG often repeats clefs but omits the time signature. Its standalone
             // page MusicXML necessarily starts with the configured fallback meter; when joining
