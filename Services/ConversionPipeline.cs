@@ -59,7 +59,7 @@ public sealed class ConversionPipeline
 
         new StaffClefRecoveryResolver().Resolve(analysis);
         new PaintedGlyphPositionNormalizer().Normalize(analysis);
-        new QuarterRestGeometryResolver().Resolve(analysis, config);
+        new QuarterRestGeometryResolver().Resolve(analysis);
         new LongStemRelationResolver().Resolve(analysis);
         new MusicGeometryRelationResolver().Resolve(analysis, config);
         new PolyphonicSharedStemResolver().Resolve(analysis);
