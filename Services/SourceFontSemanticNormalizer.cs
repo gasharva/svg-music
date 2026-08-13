@@ -10,7 +10,11 @@ public sealed class SourceFontSemanticNormalizer
 {
     private readonly SvgPathGeometry _geometry = new();
 
-    public void Normalize(string svgPath, IReadOnlyList<Staff> staves, ClassificationResult classification)
+    public void Normalize(
+        string svgPath,
+        IReadOnlyList<Staff> staves,
+        ClassificationResult classification,
+        IReadOnlyList<SvgLineSegment>? lineSegments = null)
     {
         if (staves.Count == 0 || classification.Symbols.Count == 0) return;
 
@@ -22,10 +26,14 @@ public sealed class SourceFontSemanticNormalizer
             .Select((value, index) => new { value.SymbolId, Index = index })
             .ToDictionary(x => x.SymbolId, x => x.Index, StringComparer.Ordinal);
 
-        var staffLocal = uses.Where(use => staves.Any(staff =>
+        var staffLocalUses = uses.Where(use => staves.Any(staff =>
                 use.X >= staff.Left - staff.Space * 2 && use.X <= staff.Right + staff.Space * 2 &&
                 use.Y >= staff.Top - staff.Space * 5 && use.Y <= staff.Bottom + staff.Space * 5))
-            .Select(x => x.SymbolId).ToHashSet(StringComparer.Ordinal);
+            .ToList();
+        var staffLocal = staffLocalUses.Select(x => x.SymbolId).ToHashSet(StringComparer.Ordinal);
+        var usesBySymbol = staffLocalUses
+            .GroupBy(x => x.SymbolId, StringComparer.Ordinal)
+            .ToDictionary(x => x.Key, x => (IReadOnlyList<SvgUse>)x.ToList(), StringComparer.Ordinal);
         var timeSlot = FindInitialTimeSignatureSymbols(uses, staves);
 
         foreach (var symbolId in staffLocal)
@@ -45,6 +53,22 @@ public sealed class SourceFontSemanticNormalizer
             }
 
             if (LooksLikeScaledGraceHead(cls.WidthInSpaces, cls.HeightInSpaces))
+            {
+                classification.Symbols[index] = cls with { Kind = "notehead-black" };
+                continue;
+            }
+
+            // A different source-font subset can assign a completely different outline to the same
+            // musical glyph. Page 2 of the same score is a real example: its ordinary filled heads
+            // are compact one-contour ovals which the generic Bravura matcher calls unknown. Do not
+            // key this fallback on a source symbol id. Instead require both notehead-like topology
+            // and musical layout evidence: instances of the shape must actually touch plausible
+            // stems around a staff. This also keeps compact punctuation/text out of the note stream.
+            if (cls.Kind.Equals("smufl-unknown", StringComparison.OrdinalIgnoreCase) &&
+                lineSegments is not null &&
+                LooksLikeFilledNotehead(geometry, cls.WidthInSpaces, cls.HeightInSpaces) &&
+                usesBySymbol.TryGetValue(symbolId, out var symbolUses) &&
+                HasStemEvidence(symbolUses, staves, lineSegments))
             {
                 classification.Symbols[index] = cls with { Kind = "notehead-black" };
                 continue;
@@ -112,6 +136,69 @@ public sealed class SourceFontSemanticNormalizer
         }
 
         return false;
+    }
+
+    private static bool LooksLikeFilledNotehead(SymbolGeometry geometry, double widthSpaces, double heightSpaces)
+    {
+        // Source fonts vary noticeably in side bearings and apparent width, so keep this wider than
+        // the hollow-head window. The stem-contact test below supplies the stronger semantic guard.
+        if (widthSpaces is < .50 or > 1.35 || heightSpaces is < .58 or > 1.08) return false;
+        var aspect = widthSpaces / Math.Max(heightSpaces, 1e-6);
+        if (aspect is < .58 or > 1.65) return false;
+
+        var contours = geometry.Contours.Where(x => x.Count >= 3).ToArray();
+        if (contours.Length == 0) return false;
+
+        // A normal filled head has no substantial contained hole. Reuse the same topology signal
+        // that distinguishes hollow heads instead of trusting raster/mask fill semantics.
+        if (LooksLikeHollowNotehead(geometry, widthSpaces, heightSpaces)) return false;
+
+        // Reject visibly compound tiny marks. Multiple contours can occur after path flattening, but
+        // ordinary black heads should still be dominated by one contour.
+        if (contours.Length > 2) return false;
+        return true;
+    }
+
+    private static bool HasStemEvidence(
+        IReadOnlyList<SvgUse> uses,
+        IReadOnlyList<Staff> staves,
+        IReadOnlyList<SvgLineSegment> lineSegments)
+    {
+        var eligible = 0;
+        var supported = 0;
+
+        foreach (var use in uses)
+        {
+            var staff = staves
+                .Where(x => use.X >= x.Left - x.Space * 2 && use.X <= x.Right + x.Space * 2)
+                .OrderBy(x => Math.Abs(use.Y - x.Center))
+                .FirstOrDefault();
+            if (staff is null || staff.Space <= 0) continue;
+            eligible++;
+
+            var hasStem = lineSegments.Any(line =>
+            {
+                // Exclude staff/system barlines while accepting the unusually long note stems that
+                // already occur in the real-SVG corpus.
+                if (line.Height < staff.Space * 1.05 || line.Height > staff.Space * 11.5) return false;
+                if (line.Width > staff.Space * .30) return false;
+                if (Math.Abs(line.CenterX - use.X) > staff.Space * 1.35) return false;
+
+                var verticalGap = use.Y < line.Top
+                    ? line.Top - use.Y
+                    : use.Y > line.Bottom
+                        ? use.Y - line.Bottom
+                        : 0;
+                return verticalGap <= staff.Space * .90;
+            });
+
+            if (hasStem) supported++;
+        }
+
+        if (eligible == 0 || supported == 0) return false;
+        // A singleton is valid; repetition is an optimization, never a requirement. For a repeated
+        // source glyph demand enough stem contacts to rule out an accidental nearby text shape.
+        return supported >= Math.Max(1, (int)Math.Ceiling(eligible * .30));
     }
 
     private static bool LooksLikeScaledGraceHead(double widthSpaces, double heightSpaces)
