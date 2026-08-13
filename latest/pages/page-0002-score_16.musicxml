@@ -391,16 +391,16 @@
     <measure number="4">
       <direction placement="below">
         <direction-type>
-          <pedal type="stop" line="yes" sign="no" />
+          <pedal type="start" line="yes" sign="yes" />
         </direction-type>
-        <offset>45</offset>
+        <offset>8</offset>
         <staff>2</staff>
       </direction>
       <direction placement="below">
         <direction-type>
-          <pedal type="start" line="yes" sign="yes" />
+          <pedal type="stop" line="yes" sign="no" />
         </direction-type>
-        <offset>8</offset>
+        <offset>45</offset>
         <staff>2</staff>
       </direction>
       <note default-x="60" default-y="-20.021">
@@ -852,20 +852,6 @@
     <measure number="8">
       <direction placement="below">
         <direction-type>
-          <pedal type="stop" line="yes" sign="no" />
-        </direction-type>
-        <offset>46</offset>
-        <staff>2</staff>
-      </direction>
-      <direction placement="below">
-        <direction-type>
-          <pedal type="start" line="yes" sign="yes" />
-        </direction-type>
-        <offset>7</offset>
-        <staff>2</staff>
-      </direction>
-      <direction placement="below">
-        <direction-type>
           <wedge type="crescendo" number="1" default-x="95.864" />
         </direction-type>
         <offset>7</offset>
@@ -886,6 +872,20 @@
         </direction-type>
         <offset>37</offset>
         <staff>1</staff>
+      </direction>
+      <direction placement="below">
+        <direction-type>
+          <pedal type="start" line="yes" sign="yes" />
+        </direction-type>
+        <offset>7</offset>
+        <staff>2</staff>
+      </direction>
+      <direction placement="below">
+        <direction-type>
+          <pedal type="stop" line="yes" sign="no" />
+        </direction-type>
+        <offset>46</offset>
+        <staff>2</staff>
       </direction>
       <note default-x="64.021">
         <pitch>
