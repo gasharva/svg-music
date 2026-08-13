@@ -35,7 +35,7 @@ jobs:
         run: | 
           mkdir -p artifacts
           dotnet run --project SvgToMusicXmlPoc.csproj --configuration Release --no-build --no-launch-profile -- \
-            convert \
+            convert \ 
             Samples/kancheli-yellow-leaves \
             References/catalog.json \
             artifacts/yellow-leaves.musicxml
