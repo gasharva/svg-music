@@ -57,8 +57,6 @@ public sealed class ConversionPipeline
             new SvgDirectPath(x.InstanceId, x.Geometry, x.X, x.Y)));
         analysis.LineSegments.AddRange(lineSegments);
 
-        // Low-confidence clefs can still be structurally decisive: losing the upper G clef on a
-        // continuation page makes every grand staff collapse into two unrelated systems.
         new StaffClefRecoveryResolver().Resolve(analysis);
         new PaintedGlyphPositionNormalizer().Normalize(analysis);
         new LongStemRelationResolver().Resolve(analysis);
@@ -76,7 +74,9 @@ public sealed class ConversionPipeline
         new BeamHookRhythmResolver().Resolve(analysis, config);
         new StandaloneFlagRhythmResolver().Resolve(analysis, config);
         new CompactStandaloneArcResolver().Resolve(analysis);
+        new CrossSystemTieResolver().Resolve(analysis);
         new DynamicsGeometryResolver().Resolve(analysis);
+        new TerminalDynamicGeometryResolver().Resolve(analysis);
 
         performance.RecognizeSemanticsMs = watch.Elapsed.TotalMilliseconds;
         performance.TotalMs = total.Elapsed.TotalMilliseconds;
@@ -104,8 +104,10 @@ public sealed class ConversionPipeline
         new MusicXmlSvgLayoutPostProcessor().Apply(musicXmlPath, result.Analysis);
         new MusicXmlNaturalAccidentalPostProcessor().Apply(musicXmlPath, result.Analysis);
         new MusicXmlOrnamentGeometryPostProcessor().Apply(musicXmlPath, result.Analysis);
+        new MusicXmlShortTrillPostProcessor().Apply(musicXmlPath);
         new MusicXmlVoiceLayoutPostProcessor().Apply(musicXmlPath, result.Analysis);
         new MusicXmlRestVoiceConflictPostProcessor().Apply(musicXmlPath);
+        new MusicXmlRestLaneGeometryPostProcessor().Apply(musicXmlPath);
         new MusicXmlGraceVoiceTimingPostProcessor().Apply(musicXmlPath);
         new MusicXmlSystemBreakPostProcessor().Apply(musicXmlPath);
         new MusicXmlSecondaryBeamPostProcessor().Apply(musicXmlPath);
