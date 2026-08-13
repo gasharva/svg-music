@@ -1,0 +1,1 @@
+namespace SvgToMusicXmlPoc.Services; public sealed class TestClass { }
