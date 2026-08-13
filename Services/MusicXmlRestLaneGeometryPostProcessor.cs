@@ -28,9 +28,14 @@ public sealed class MusicXmlRestLaneGeometryPostProcessor
     {
         var document = XDocument.Load(path);
         var changedAny = false;
+        var divisions = 1;
+        var beats = 4;
+        var beatType = 4;
 
         foreach (var measure in document.Descendants("measure"))
         {
+            UpdateTiming(measure, ref divisions, ref beats, ref beatType);
+            var measureDuration = Math.Max(1, beats * divisions * 4 / Math.Max(1, beatType));
             var notes = measure.Elements("note").ToList();
             if (notes.Count == 0) continue;
 
@@ -54,7 +59,14 @@ public sealed class MusicXmlRestLaneGeometryPostProcessor
                         .FirstOrDefault();
                     if (target is null) continue;
 
-                    // Do not steal a rest when its current lane has equally strong nearby evidence.
+                    // A full-measure voice cannot also own this rest. This prevents a rest at the
+                    // same engraved onset as a dotted-half accompaniment chord from being stolen
+                    // merely because their glyph centers are close.
+                    var targetLaneDuration = staffUnits
+                        .Where(x => x.Voice == target.Voice)
+                        .Sum(x => x.Duration);
+                    if (targetLaneDuration + rest.Duration > measureDuration) continue;
+
                     var currentDistance = staffUnits
                         .Where(x => !x.IsRest && x.Voice == rest.Voice && !double.IsNaN(x.X))
                         .Select(x => Math.Abs(x.X - rest.X))
@@ -155,5 +167,19 @@ public sealed class MusicXmlRestLaneGeometryPostProcessor
     {
         var text = (string?)note.Attribute("default-x");
         return double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var value) ? value : null;
+    }
+
+    private static void UpdateTiming(XElement measure, ref int divisions, ref int beats, ref int beatType)
+    {
+        var attributes = measure.Element("attributes");
+        if (attributes is null) return;
+        var value = (int?)attributes.Element("divisions");
+        if (value is > 0) divisions = value.Value;
+        var time = attributes.Element("time");
+        if (time is null) return;
+        value = (int?)time.Element("beats");
+        if (value is > 0) beats = value.Value;
+        value = (int?)time.Element("beat-type");
+        if (value is > 0) beatType = value.Value;
     }
 }
