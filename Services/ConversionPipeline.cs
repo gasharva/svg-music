@@ -83,6 +83,11 @@ public sealed class ConversionPipeline
         new MusicXmlStemPostProcessor().Apply(musicXmlPath, result.Analysis);
         new MusicXmlGraceNotePostProcessor().Apply(musicXmlPath, result.Analysis);
         new MusicXmlSvgLayoutPostProcessor().Apply(musicXmlPath, result.Analysis);
+
+        // These two passes must run while notes are still in the writer's original geometry order.
+        new MusicXmlRestYPostProcessor().Apply(musicXmlPath, result.Analysis);
+        new MusicXmlTieSidePostProcessor().Apply(musicXmlPath, result.Analysis);
+
         new MusicXmlNaturalAccidentalPostProcessor().Apply(musicXmlPath, result.Analysis);
         new MusicXmlOrnamentGeometryPostProcessor().Apply(musicXmlPath, result.Analysis);
         new MusicXmlShortTrillPostProcessor().Apply(musicXmlPath);
@@ -90,11 +95,13 @@ public sealed class ConversionPipeline
         new MusicXmlRestVoiceConflictPostProcessor().Apply(musicXmlPath);
         new MusicXmlGeneralMultiVoicePostProcessor().Apply(musicXmlPath);
         new MusicXmlFullMeasureRestLanePostProcessor().Apply(musicXmlPath);
+        new MusicXmlDelayedVoiceOnsetPostProcessor().Apply(musicXmlPath);
         new MusicXmlGraceVoiceTimingPostProcessor().Apply(musicXmlPath);
         new MusicXmlSystemBreakPostProcessor().Apply(musicXmlPath);
         new MusicXmlSecondaryBeamPostProcessor().Apply(musicXmlPath);
         new MusicXmlAccidentalStatePostProcessor().Apply(musicXmlPath);
         new MusicXmlDynamicsPostProcessor().Apply(musicXmlPath, result.Analysis);
+        new MusicXmlSustainPostProcessor().Apply(musicXmlPath, result.Analysis);
         new MusicXmlFinalBarlinePostProcessor().Apply(musicXmlPath, result.Analysis);
         new MusicXmlTrailingFinalBarlinePostProcessor().Apply(musicXmlPath);
         result.Performance.WriteMusicXmlMs = watch.Elapsed.TotalMilliseconds;
