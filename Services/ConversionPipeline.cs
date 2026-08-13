@@ -57,6 +57,9 @@ public sealed class ConversionPipeline
             new SvgDirectPath(x.InstanceId, x.Geometry, x.X, x.Y)));
         analysis.LineSegments.AddRange(lineSegments);
 
+        // Low-confidence clefs can still be structurally decisive: losing the upper G clef on a
+        // continuation page makes every grand staff collapse into two unrelated systems.
+        new StaffClefRecoveryResolver().Resolve(analysis);
         new PaintedGlyphPositionNormalizer().Normalize(analysis);
         new LongStemRelationResolver().Resolve(analysis);
         new MusicGeometryRelationResolver().Resolve(analysis, config);
@@ -93,6 +96,7 @@ public sealed class ConversionPipeline
 
         var watch = Stopwatch.StartNew();
         new MusicXmlWriter().Write(musicXmlPath, result.Analysis, config);
+        new MusicXmlMeterRecoveryPostProcessor().Apply(musicXmlPath, result.Analysis, config);
         new MusicXmlStemPostProcessor().Apply(musicXmlPath, result.Analysis);
         new MusicXmlGraceNotePostProcessor().Apply(musicXmlPath, result.Analysis);
         new MusicXmlSvgLayoutPostProcessor().Apply(musicXmlPath, result.Analysis);
