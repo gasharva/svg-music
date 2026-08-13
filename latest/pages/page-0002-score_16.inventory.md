@@ -31,7 +31,7 @@
 | slur stops | 8 | 7.3% |
 | tie starts | 2 | 1.8% |
 | tie stops | 2 | 1.8% |
-| altered pitches | 15 | 13.6% |
+| altered pitches | 17 | 15.5% |
 
 ## Missing-stem triage
 

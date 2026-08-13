@@ -13,7 +13,7 @@
           <fifths>0</fifths>
         </key>
         <time>
-          <beats>7</beats>
+          <beats>4</beats>
           <beat-type>4</beat-type>
         </time>
         <staves>2</staves>
@@ -72,12 +72,14 @@
       <note default-x="71.681">
         <pitch>
           <step>G</step>
+          <alter>1</alter>
           <octave>4</octave>
         </pitch>
         <duration>72</duration>
         <voice>2</voice>
         <type>half</type>
         <dot />
+        <accidental>sharp</accidental>
         <stem>down</stem>
         <staff>1</staff>
       </note>
@@ -85,12 +87,14 @@
         <chord />
         <pitch>
           <step>C</step>
+          <alter>1</alter>
           <octave>5</octave>
         </pitch>
         <duration>72</duration>
         <voice>2</voice>
         <type>half</type>
         <dot />
+        <accidental>sharp</accidental>
         <stem>down</stem>
         <staff>1</staff>
       </note>
@@ -816,14 +820,14 @@
         <direction-type>
           <wedge type="crescendo" number="1" default-x="95.864" />
         </direction-type>
-        <offset>15</offset>
+        <offset>9</offset>
         <staff>1</staff>
       </direction>
       <direction placement="below">
         <direction-type>
           <wedge type="stop" number="1" default-x="256.285" />
         </direction-type>
-        <offset>83</offset>
+        <offset>47</offset>
         <staff>1</staff>
       </direction>
       <note default-x="64.021">
@@ -946,7 +950,7 @@
             <mp />
           </dynamics>
         </direction-type>
-        <offset>22</offset>
+        <offset>13</offset>
         <staff>1</staff>
       </direction>
       <note default-x="60">

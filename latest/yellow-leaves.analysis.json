@@ -14,7 +14,7 @@
       "directions": 6,
       "warnings": 139,
       "classificationSymbols": 267,
-      "totalMs": 10931.194
+      "totalMs": 9564.2171
     },
     {
       "page": 2,
@@ -29,7 +29,7 @@
       "directions": 2,
       "warnings": 109,
       "classificationSymbols": 143,
-      "totalMs": 1236.8944000000001
+      "totalMs": 1049.8229
     }
   ],
   "Totals": {
@@ -4924,14 +4924,14 @@
       "StaffIndex": 0,
       "Step": "C",
       "Octave": 5,
-      "Alter": 0,
+      "Alter": 1,
       "Type": "half",
       "Duration": 72,
       "Dotted": true,
       "Chord": true,
       "ClefSign": null,
       "ClefLine": null,
-      "AttachedToSymbolId": null,
+      "AttachedToSymbolId": "j",
       "StemX": 122.93150495999998,
       "StemDirection": "down",
       "BeamValue": null,
@@ -4953,14 +4953,14 @@
       "StaffIndex": 0,
       "Step": "G",
       "Octave": 4,
-      "Alter": 0,
+      "Alter": 1,
       "Type": "half",
       "Duration": 72,
       "Dotted": true,
       "Chord": false,
       "ClefSign": null,
       "ClefLine": null,
-      "AttachedToSymbolId": "h",
+      "AttachedToSymbolId": "j",
       "StemX": 122.93150495999998,
       "StemDirection": "down",
       "BeamValue": null,
