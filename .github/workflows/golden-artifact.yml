@@ -29,10 +29,10 @@ jobs:
       - name: Build main project
         run: dotnet build SvgToMusicXmlPoc.csproj --configuration Release --no-restore
 
-      - name: Convert Yellow Leaves golden SVG
+      - name: Convert full Yellow Leaves score
         id: convert
         continue-on-error: true
-        run: | 
+        run: |
           mkdir -p artifacts
           dotnet run --project SvgToMusicXmlPoc.csproj --configuration Release --no-build --no-launch-profile -- \
             convert \
@@ -40,36 +40,49 @@ jobs:
             References/catalog.json \
             artifacts/yellow-leaves.musicxml
 
-      - name: Build recognition inventory
+      - name: Build per-page recognition inventories
+        if: steps.convert.outcome == 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          pages_dir="artifacts/yellow-leaves.pages"
+          for analysis in "$pages_dir"/*.analysis.json; do
+            stem="${analysis%.analysis.json}"
+            python3 Scripts/artifact_inventory.py \
+              "$analysis" \
+              "$stem.classification.json" \
+              "$stem"
+            python3 Scripts/missing_stem_beam_probe.py \
+              "$analysis" \
+              "$stem.beam-probe.md"
+            python3 Scripts/notation_gap_inventory.py \
+              "$analysis" \
+              "$stem.classification.json" \
+              "$stem.notation-gaps.md"
+            python3 Scripts/standalone_flag_probe.py \
+              "$analysis" \
+              "$stem.classification.json" \
+              "$stem.flag-probe.md"
+            python3 Scripts/text_glyph_inventory.py \
+              "$analysis" \
+              "$stem.classification.json" \
+              "$stem.text-glyphs.html" \
+              --json "$stem.text-glyphs.json"
+          done
+
+      - name: Build whole-score diagnostic summary
         if: steps.convert.outcome == 'success'
         run: |
-          python3 Scripts/artifact_inventory.py \
-            artifacts/yellow-leaves.analysis.json \
-            artifacts/yellow-leaves.classification.json \
+          python3 Scripts/build_multi_page_artifacts.py \
+            artifacts/yellow-leaves.pages \
             artifacts/yellow-leaves
-          python3 Scripts/missing_stem_beam_probe.py \
-            artifacts/yellow-leaves.analysis.json \
-            artifacts/yellow-leaves.beam-probe.md
-          python3 Scripts/notation_gap_inventory.py \
-            artifacts/yellow-leaves.analysis.json \
-            artifacts/yellow-leaves.classification.json \
-            artifacts/yellow-leaves.notation-gaps.md
-          python3 Scripts/standalone_flag_probe.py \
-            artifacts/yellow-leaves.analysis.json \
-            artifacts/yellow-leaves.classification.json \
-            artifacts/yellow-leaves.flag-probe.md
-          python3 Scripts/text_glyph_inventory.py \
-            artifacts/yellow-leaves.analysis.json \
-            artifacts/yellow-leaves.classification.json \
-            artifacts/yellow-leaves.text-glyphs.html \
-            --json artifacts/yellow-leaves.text-glyphs.json
 
       - name: Show generated files
         if: always()
         shell: bash
         run: |
           echo "Generated artifact contents:"
-          find artifacts -maxdepth 1 -type f -printf '%f\n' | sort || true
+          find artifacts -maxdepth 2 -type f -printf '%P\n' | sort || true
 
       - name: Upload golden conversion artifact
         if: always()
@@ -79,15 +92,8 @@ jobs:
           path: |
             artifacts/yellow-leaves.musicxml
             artifacts/yellow-leaves.analysis.json
-            artifacts/yellow-leaves.classification.json
-            artifacts/yellow-leaves.performance.json
-            artifacts/yellow-leaves.inventory.json
             artifacts/yellow-leaves.inventory.md
-            artifacts/yellow-leaves.beam-probe.md
-            artifacts/yellow-leaves.notation-gaps.md
-            artifacts/yellow-leaves.flag-probe.md
-            artifacts/yellow-leaves.text-glyphs.html
-            artifacts/yellow-leaves.text-glyphs.json
+            artifacts/yellow-leaves.pages/**
           if-no-files-found: error
           retention-days: 14
 
@@ -100,15 +106,8 @@ jobs:
           mkdir -p /tmp/golden-latest
           cp artifacts/yellow-leaves.musicxml /tmp/golden-latest/
           cp artifacts/yellow-leaves.analysis.json /tmp/golden-latest/
-          cp artifacts/yellow-leaves.classification.json /tmp/golden-latest/
-          cp artifacts/yellow-leaves.performance.json /tmp/golden-latest/
-          cp artifacts/yellow-leaves.inventory.json /tmp/golden-latest/
           cp artifacts/yellow-leaves.inventory.md /tmp/golden-latest/
-          cp artifacts/yellow-leaves.beam-probe.md /tmp/golden-latest/
-          cp artifacts/yellow-leaves.notation-gaps.md /tmp/golden-latest/
-          cp artifacts/yellow-leaves.flag-probe.md /tmp/golden-latest/
-          cp artifacts/yellow-leaves.text-glyphs.html /tmp/golden-latest/
-          cp artifacts/yellow-leaves.text-glyphs.json /tmp/golden-latest/
+          cp -R artifacts/yellow-leaves.pages /tmp/golden-latest/pages
 
           cat > /tmp/golden-latest/source.txt <<EOF
           PR: #${{ github.event.pull_request.number }}
@@ -128,7 +127,7 @@ jobs:
 
           rm -rf latest
           mkdir -p latest
-          cp /tmp/golden-latest/* latest/
+          cp -R /tmp/golden-latest/. latest/
 
           git add -A latest
           if git diff --cached --quiet; then
@@ -147,13 +146,7 @@ jobs:
             echo 'Download **yellow-leaves-pr-${{ github.event.pull_request.number }}** from the Artifacts section at the bottom of this workflow run.'
             echo
             echo '- [Latest MusicXML](https://raw.githubusercontent.com/${{ github.repository }}/ci-output/latest/yellow-leaves.musicxml)'
-            echo '- [Analysis](https://raw.githubusercontent.com/${{ github.repository }}/ci-output/latest/yellow-leaves.analysis.json)'
-            echo '- [Classification](https://raw.githubusercontent.com/${{ github.repository }}/ci-output/latest/yellow-leaves.classification.json)'
-            echo '- [Performance](https://raw.githubusercontent.com/${{ github.repository }}/ci-output/latest/yellow-leaves.performance.json)'
-            echo '- [Recognition inventory](https://raw.githubusercontent.com/${{ github.repository }}/ci-output/latest/yellow-leaves.inventory.md)'
-            echo '- [Missing-stem beam probe](https://raw.githubusercontent.com/${{ github.repository }}/ci-output/latest/yellow-leaves.beam-probe.md)'
-            echo '- [Notation gap inventory](https://raw.githubusercontent.com/${{ github.repository }}/ci-output/latest/yellow-leaves.notation-gaps.md)'
-            echo '- [Standalone flag probe](https://raw.githubusercontent.com/${{ github.repository }}/ci-output/latest/yellow-leaves.flag-probe.md)'
-            echo '- [Vector text-glyph inventory HTML](https://raw.githubusercontent.com/${{ github.repository }}/ci-output/latest/yellow-leaves.text-glyphs.html)'
-            echo '- [Vector text-glyph inventory JSON](https://raw.githubusercontent.com/${{ github.repository }}/ci-output/latest/yellow-leaves.text-glyphs.json)'
+            echo '- [Whole-score analysis](https://raw.githubusercontent.com/${{ github.repository }}/ci-output/latest/yellow-leaves.analysis.json)'
+            echo '- [Whole-score inventory](https://raw.githubusercontent.com/${{ github.repository }}/ci-output/latest/yellow-leaves.inventory.md)'
+            echo '- Per-page diagnostics are under `ci-output/latest/pages/` and are also included in the workflow artifact.'
           } >> "$GITHUB_STEP_SUMMARY"

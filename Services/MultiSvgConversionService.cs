@@ -43,6 +43,16 @@ public sealed class MultiSvgConversionService
         var tempDirectory = Path.Combine(Path.GetTempPath(), "svg-music-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(tempDirectory);
 
+        var outputStem = Path.Combine(
+            Path.GetDirectoryName(musicXmlPath)!,
+            Path.GetFileNameWithoutExtension(musicXmlPath));
+        var pageDiagnosticsDirectory = outputStem + ".pages";
+        if (Directory.Exists(pageDiagnosticsDirectory))
+            Directory.Delete(pageDiagnosticsDirectory, recursive: true);
+        Directory.CreateDirectory(pageDiagnosticsDirectory);
+
+        var pageArtifacts = new List<MultiSvgPageArtifact>();
+
         try
         {
             XDocument? combined = null;
@@ -51,12 +61,21 @@ public sealed class MultiSvgConversionService
 
             for (var pageIndex = 0; pageIndex < svgFiles.Count; pageIndex++)
             {
-                var pageOutput = Path.Combine(tempDirectory, $"page-{pageIndex + 1:D4}.musicxml");
-                pipeline.Convert(svgFiles[pageIndex].FullName, catalogPath, pageOutput, config, writeDiagnostics: false);
+                var source = svgFiles[pageIndex];
+                var pageBaseName = $"page-{pageIndex + 1:D4}-{Path.GetFileNameWithoutExtension(source.Name)}";
+                var pageOutput = Path.Combine(pageDiagnosticsDirectory, pageBaseName + ".musicxml");
+                var conversion = pipeline.Convert(source.FullName, catalogPath, pageOutput, config, writeDiagnostics: true);
+
+                pageArtifacts.Add(new MultiSvgPageArtifact(
+                    source.FullName,
+                    conversion.MusicXmlPath,
+                    conversion.AnalysisPath!,
+                    conversion.ClassificationPath!,
+                    Path.ChangeExtension(conversion.MusicXmlPath, ".performance.json")));
 
                 var pageDocument = XDocument.Load(pageOutput, LoadOptions.PreserveWhitespace);
                 var pagePart = pageDocument.Root?.Element("part")
-                    ?? throw new InvalidOperationException($"В сгенерированном MusicXML нет <part>: {svgFiles[pageIndex].Name}");
+                    ?? throw new InvalidOperationException($"В сгенерированном MusicXML нет <part>: {source.Name}");
 
                 if (combined is null)
                 {
@@ -86,7 +105,11 @@ public sealed class MultiSvgConversionService
             }
 
             combined!.Save(musicXmlPath);
-            return new MultiSvgConversionResult(musicXmlPath, svgFiles.Select(x => x.FullName).ToArray());
+            return new MultiSvgConversionResult(
+                musicXmlPath,
+                svgFiles.Select(x => x.FullName).ToArray(),
+                pageDiagnosticsDirectory,
+                pageArtifacts);
         }
         finally
         {
@@ -130,4 +153,15 @@ public sealed class MultiSvgConversionService
     }
 }
 
-public sealed record MultiSvgConversionResult(string MusicXmlPath, IReadOnlyList<string> SvgFiles);
+public sealed record MultiSvgPageArtifact(
+    string SvgPath,
+    string MusicXmlPath,
+    string AnalysisPath,
+    string ClassificationPath,
+    string PerformancePath);
+
+public sealed record MultiSvgConversionResult(
+    string MusicXmlPath,
+    IReadOnlyList<string> SvgFiles,
+    string PageDiagnosticsDirectory,
+    IReadOnlyList<MultiSvgPageArtifact> Pages);
