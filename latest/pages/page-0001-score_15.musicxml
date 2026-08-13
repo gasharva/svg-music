@@ -357,14 +357,15 @@
           <step>F</step>
           <octave>4</octave>
         </pitch>
-        <duration>32</duration>
+        <duration>48</duration>
         <voice>1</voice>
         <type>half</type>
+        <dot />
         <stem>up</stem>
         <staff>1</staff>
       </note>
       <backup>
-        <duration>32</duration>
+        <duration>48</duration>
       </backup>
       <note default-x="72.711">
         <pitch>
@@ -617,7 +618,8 @@
         <beam number="1">end</beam>
         <beam number="2">backward hook</beam>
         <notations>
-          <slur type="stop" number="4" />
+          <slur type="start" number="13" />
+          <slur type="stop" number="13" />
         </notations>
         <staff>1</staff>
       </note>
@@ -631,6 +633,9 @@
         <voice>1</voice>
         <type>half</type>
         <stem>up</stem>
+        <notations>
+          <slur type="stop" number="13" />
+        </notations>
         <staff>1</staff>
       </note>
       <backup>
@@ -1326,14 +1331,15 @@
           <step>F</step>
           <octave>4</octave>
         </pitch>
-        <duration>32</duration>
+        <duration>48</duration>
         <voice>1</voice>
         <type>half</type>
+        <dot />
         <stem>up</stem>
         <staff>1</staff>
       </note>
       <backup>
-        <duration>32</duration>
+        <duration>48</duration>
       </backup>
       <note default-x="72.709">
         <pitch>

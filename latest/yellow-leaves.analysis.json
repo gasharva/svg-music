@@ -14,7 +14,7 @@
       "directions": 6,
       "warnings": 139,
       "classificationSymbols": 267,
-      "totalMs": 9564.2171
+      "totalMs": 11642.7207
     },
     {
       "page": 2,
@@ -29,7 +29,7 @@
       "directions": 2,
       "warnings": 109,
       "classificationSymbols": 143,
-      "totalMs": 1049.8229
+      "totalMs": 1304.5806
     }
   ],
   "Totals": {
@@ -518,8 +518,8 @@
       "Octave": 4,
       "Alter": 0,
       "Type": "half",
-      "Duration": 32,
-      "Dotted": false,
+      "Duration": 48,
+      "Dotted": true,
       "Chord": false,
       "ClefSign": null,
       "ClefLine": null,
@@ -1224,9 +1224,9 @@
       "StemDirection": "up",
       "BeamValue": "end",
       "BeamCount": 2,
-      "SlurStart": false,
+      "SlurStart": true,
       "SlurStop": true,
-      "SlurNumber": 4,
+      "SlurNumber": 13,
       "TieStart": false,
       "TieStop": false
     },
@@ -1254,8 +1254,8 @@
       "BeamValue": null,
       "BeamCount": 0,
       "SlurStart": false,
-      "SlurStop": false,
-      "SlurNumber": null,
+      "SlurStop": true,
+      "SlurNumber": 13,
       "TieStart": false,
       "TieStop": false
     },
@@ -2519,8 +2519,8 @@
       "Octave": 4,
       "Alter": 0,
       "Type": "half",
-      "Duration": 32,
-      "Dotted": false,
+      "Duration": 48,
+      "Dotted": true,
       "Chord": false,
       "ClefSign": null,
       "ClefLine": null,
@@ -5545,9 +5545,9 @@
       "StemDirection": "up",
       "BeamValue": "begin",
       "BeamCount": 1,
-      "SlurStart": false,
+      "SlurStart": true,
       "SlurStop": false,
-      "SlurNumber": null,
+      "SlurNumber": 9,
       "TieStart": false,
       "TieStop": false
     },
@@ -5662,8 +5662,8 @@
       "BeamValue": "end",
       "BeamCount": 1,
       "SlurStart": false,
-      "SlurStop": false,
-      "SlurNumber": null,
+      "SlurStop": true,
+      "SlurNumber": 9,
       "TieStart": false,
       "TieStop": false
     },
@@ -6405,8 +6405,8 @@
       "Octave": 4,
       "Alter": 0,
       "Type": "half",
-      "Duration": 32,
-      "Dotted": false,
+      "Duration": 48,
+      "Dotted": true,
       "Chord": false,
       "ClefSign": null,
       "ClefLine": null,

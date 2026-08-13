@@ -27,9 +27,9 @@
 | beam begin/continue/end | 32 | 21.1% |
 | eighth notes | 29 | 19.1% |
 | 16th notes | 10 | 6.6% |
-| dotted notes | 68 | 44.7% |
-| slur starts | 12 | 7.9% |
-| slur stops | 12 | 7.9% |
+| dotted notes | 70 | 46.1% |
+| slur starts | 13 | 8.6% |
+| slur stops | 13 | 8.6% |
 | tie starts | 3 | 2.0% |
 | tie stops | 3 | 2.0% |
 | altered pitches | 26 | 17.1% |
