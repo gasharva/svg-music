@@ -1575,6 +1575,13 @@
         <type>quarter</type>
         <staff>1</staff>
       </note>
+      <note default-x="151.68">
+        <rest />
+        <duration>16</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <staff>1</staff>
+      </note>
       <note default-x="246.004">
         <pitch>
           <step>C</step>
@@ -1602,7 +1609,7 @@
         <staff>1</staff>
       </note>
       <backup>
-        <duration>32</duration>
+        <duration>48</duration>
       </backup>
       <note default-x="66.654">
         <pitch>
@@ -1637,15 +1644,8 @@
         </notations>
         <staff>1</staff>
       </note>
-      <note default-x="151.68">
-        <rest />
-        <duration>16</duration>
-        <voice>2</voice>
-        <type>quarter</type>
-        <staff>1</staff>
-      </note>
       <backup>
-        <duration>64</duration>
+        <duration>48</duration>
       </backup>
       <note default-x="66.654">
         <pitch>
@@ -1775,8 +1775,6 @@
         </notations>
         <staff>2</staff>
       </note>
-    </measure>
-    <measure number="16">
       <barline location="right">
         <bar-style>light-heavy</bar-style>
       </barline>
