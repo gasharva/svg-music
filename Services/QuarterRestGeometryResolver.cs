@@ -1,19 +1,21 @@
-using SvgToMusicXmlPoc.Configuration;
 using SvgToMusicXmlPoc.Models;
 
 namespace SvgToMusicXmlPoc.Services;
 
-/// <summary>
-/// Recovers outlined quarter rests that the reference-font matcher leaves unknown. The fallback is
-/// deliberately geometric: a single dense contour with quarter-rest proportions must be placed on
-/// or immediately above a detected staff. This catches exporter-specific rest outlines without
-/// depending on their obfuscated symbol IDs.
-/// </summary>
 public sealed class QuarterRestGeometryResolver
 {
-    public void Resolve(AnalysisResult analysis, RecognitionConfig config)
+    public void Resolve(AnalysisResult analysis)
     {
         if (analysis.Staves.Count == 0) return;
+
+        var quarterDuration = analysis.Events
+            .Where(x => x.Type == "quarter" && x.Duration > 0)
+            .Select(x => x.Duration)
+            .DefaultIfEmpty(16)
+            .GroupBy(x => x)
+            .OrderByDescending(x => x.Count())
+            .Select(x => x.Key)
+            .First();
 
         var classes = analysis.Classifications.ToDictionary(x => x.SymbolId, StringComparer.Ordinal);
         var geometry = analysis.PageGeometry
@@ -26,8 +28,8 @@ public sealed class QuarterRestGeometryResolver
             if (!classes.TryGetValue(use.SymbolId, out var cls)) continue;
             if (!cls.Kind.Equals("smufl-unknown", StringComparison.OrdinalIgnoreCase)) continue;
             if (!geometry.TryGetValue(use.SymbolId, out var painted)) continue;
-
             if (painted.Geometry.Contours.Count != 1) continue;
+
             var contour = painted.Geometry.Contours[0];
             if (contour.Count is < 250 or > 430) continue;
             if (cls.WidthInSpaces is < .80 or > 1.55) continue;
@@ -42,10 +44,9 @@ public sealed class QuarterRestGeometryResolver
                 .FirstOrDefault();
             if (staff is null) continue;
 
-            if (analysis.Events.Any(x =>
-                    x.StaffIndex == staff.Index &&
-                    x.Kind.StartsWith("rest-", StringComparison.OrdinalIgnoreCase) &&
-                    Math.Abs(x.X - use.X) <= staff.Space * .4))
+            if (analysis.Events.Any(x => x.StaffIndex == staff.Index &&
+                                         x.Kind.StartsWith("rest-", StringComparison.OrdinalIgnoreCase) &&
+                                         Math.Abs(x.X - use.X) <= staff.Space * .4))
                 continue;
 
             analysis.Events.Add(new RecognizedEvent
@@ -58,7 +59,7 @@ public sealed class QuarterRestGeometryResolver
                 Y = use.Y,
                 StaffIndex = staff.Index,
                 Type = "quarter",
-                Duration = config.Divisions
+                Duration = quarterDuration
             });
         }
     }
