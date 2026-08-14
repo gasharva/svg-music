@@ -12,12 +12,15 @@
   </credit>
   <credit page="1">
     <credit-type>subtitle</credit-type>
-    <credit-words default-x="551.95" default-y="1324.44" justify="center" valign="top">Theme from "Mimino"
-Film by Georgi Danelia and Rezo Gabriadze (1977)</credit-words>
+    <credit-words default-x="551.95" default-y="1325.44" justify="center" valign="top" font-style="italic">Theme from "Mimino"</credit-words>
+  </credit>
+  <credit page="1">
+    <credit-type>subtitle</credit-type>
+    <credit-words default-x="551.95" default-y="1303.44" justify="center" valign="top" font-style="italic">Film by Georgi Danelia and Rezo Gabriadze (1977)</credit-words>
   </credit>
   <credit page="1">
     <credit-type>composer</credit-type>
-    <credit-words default-x="1052.77" default-y="1275.44" justify="right" valign="bottom">Giya Kancheli (1935-2019)</credit-words>
+    <credit-words default-x="1052.77" default-y="1232.44" justify="right" valign="bottom">Giya Kancheli (1935-2019)</credit-words>
   </credit>
   <part-list>
     <score-part id="P1">
@@ -52,20 +55,10 @@ Film by Georgi Danelia and Rezo Gabriadze (1977)</credit-words>
       </attributes>
       <direction placement="above">
         <direction-type>
-          <metronome>
-            <beat-unit>eighth</beat-unit>
-            <per-minute>62</per-minute>
-          </metronome>
+          <words font-size="12" font-weight="bold">Cantabile  (♪ = 62)</words>
         </direction-type>
         <staff>1</staff>
         <sound tempo="31" />
-      </direction>
-      <direction placement="above">
-        <direction-type>
-          <words font-size="12">Cantabile</words>
-        </direction-type>
-        <offset>0</offset>
-        <staff>1</staff>
       </direction>
       <note default-x="70.207">
         <pitch>
