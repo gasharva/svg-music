@@ -2,232 +2,108 @@
 
 ## Notehead sanity
 
-Recognized noteheads: **214**
-Unattached noteheads: **208**
+Recognized noteheads: **253**
+Unattached noteheads: **82**
 
-- `h` notehead-black staff=9 at (125.39, 934.57)
-- `h` notehead-black staff=9 at (125.39, 846.58)
-- `h` notehead-black staff=3 at (131.84, 349.58)
-- `h` notehead-black staff=9 at (147.46, 922.68)
-- `h` notehead-black staff=9 at (170.51, 910.78)
-- `h` notehead-black staff=9 at (170.51, 843.60)
-- `h` notehead-black staff=3 at (171.25, 346.60)
-- `h` notehead-black staff=3 at (189.84, 346.60)
-- `h` notehead-black staff=9 at (195.30, 907.80)
-- `h` notehead-black staff=3 at (208.19, 343.63)
-- `h` notehead-black staff=9 at (225.79, 843.60)
-- `h` notehead-black staff=8 at (238.92, 685.70)
-- `h` notehead-black staff=9 at (245.37, 846.58)
-- `h` notehead-black staff=3 at (249.09, 343.63)
-- `h` notehead-black staff=9 at (264.95, 846.58)
-- `h` notehead-black staff=9 at (264.96, 755.85)
-- `h` notehead-black staff=9 at (271.64, 752.88)
-- `h` notehead-black staff=9 at (284.29, 849.55)
-- `h` notehead-black staff=3 at (287.01, 346.60)
-- `h` notehead-black staff=3 at (304.62, 346.60)
-- `h` notehead-black staff=9 at (311.31, 849.55)
-- `h` notehead-black staff=9 at (311.31, 940.52)
-- `h` notehead-black staff=3 at (322.46, 349.58)
-- `h` notehead-black staff=9 at (332.87, 928.63)
-- `h` notehead-black staff=9 at (354.68, 916.73)
-- `h` notehead-black staff=9 at (354.68, 852.53)
-- `h` notehead-black staff=8 at (356.92, 685.70)
-- `h` notehead-black staff=9 at (377.49, 913.75)
-- `h` notehead-black staff=4 at (379.22, 367.42)
-- `h` notehead-black staff=4 at (379.22, 361.48)
-- `h` notehead-black staff=9 at (396.33, 770.73)
-- `h` notehead-black staff=4 at (403.02, 367.42)
-- `h` notehead-black staff=4 at (403.02, 361.48)
-- `h` notehead-black staff=9 at (406.00, 852.53)
-- `h` notehead-black staff=9 at (425.33, 855.50)
-- `h` notehead-black staff=9 at (425.83, 758.83)
-- `h` notehead-black staff=4 at (431.78, 364.45)
-- `h` notehead-black staff=3 at (431.78, 358.50)
-- `h` notehead-black staff=9 at (444.66, 855.50)
-- `h` notehead-black staff=9 at (455.32, 746.93)
-- `h` notehead-black staff=4 at (457.31, 364.45)
-- `h` notehead-black staff=3 at (457.31, 358.50)
-- `h` notehead-black staff=9 at (463.75, 858.47)
-- `h` notehead-black staff=4 at (484.57, 361.48)
-- `h` notehead-black staff=3 at (484.57, 355.52)
-- `h` notehead-black staff=9 at (484.82, 743.95)
-- `h` notehead-black staff=9 at (490.52, 937.55)
-- `h` notehead-black staff=9 at (507.38, 919.70)
-- `h` notehead-black staff=9 at (507.63, 746.93)
-- `h` notehead-black staff=9 at (514.32, 770.72)
-- `h` notehead-black staff=9 at (514.32, 758.83)
-- `h` notehead-black staff=9 at (514.32, 743.95)
-- `h` notehead-black staff=9 at (523.99, 910.78)
-- `h` notehead-black staff=4 at (531.67, 361.48)
-- `h` notehead-black staff=3 at (531.67, 355.53)
-- `h` notehead-black staff=9 at (540.84, 907.80)
-- `h` notehead-black staff=8 at (543.82, 688.68)
-- `h` notehead-black staff=9 at (557.70, 904.83)
-- `h` notehead-black staff=1 at (558.19, 179.78)
-- `h` notehead-black staff=4 at (559.93, 407.83)
-- `h` notehead-black staff=4 at (559.93, 401.88)
-- `h` notehead-black staff=4 at (559.93, 361.48)
-- `h` notehead-black staff=3 at (559.94, 355.53)
-- `h` notehead-black staff=4 at (566.62, 404.86)
-- `h` notehead-black staff=4 at (566.62, 398.91)
-- `h` notehead-black staff=3 at (566.62, 358.50)
-- `h` notehead-black staff=3 at (566.62, 352.55)
-- `h` notehead-black staff=6 at (572.32, 512.93)
-- `h` notehead-black staff=9 at (574.31, 898.88)
-- `h` notehead-black staff=9 at (586.95, 782.62)
-- `h` notehead-black staff=4 at (588.19, 407.83)
-- `h` notehead-black staff=4 at (588.19, 401.88)
-- `h` notehead-black staff=4 at (588.19, 361.48)
-- `h` notehead-black staff=3 at (588.19, 355.53)
-- `h` notehead-black staff=4 at (594.87, 404.86)
-- `h` notehead-black staff=4 at (594.87, 398.91)
-- `h` notehead-black staff=3 at (594.88, 358.50)
-- `h` notehead-black staff=3 at (594.88, 352.55)
-- `h` notehead-black staff=1 at (604.80, 179.78)
-- `j` notehead-half staff=1 at (605.06, 191.75)
-- `j` notehead-half staff=1 at (605.06, 185.80)
-- `h` notehead-black staff=9 at (606.03, 770.73)
-- `h` notehead-black staff=6 at (610.50, 512.93)
-- `h` notehead-black staff=4 at (616.45, 407.83)
-- `h` notehead-black staff=4 at (616.45, 401.88)
-- `h` notehead-black staff=4 at (616.45, 361.48)
-- `h` notehead-black staff=3 at (616.45, 355.53)
-- `h` notehead-black staff=3 at (616.45, 349.58)
-- `h` notehead-black staff=4 at (623.13, 404.86)
-- `h` notehead-black staff=4 at (623.13, 398.91)
-- `h` notehead-black staff=3 at (623.13, 358.50)
-- `h` notehead-black staff=3 at (623.13, 352.55)
-- `h` notehead-black staff=9 at (624.87, 758.83)
-- `h` notehead-black staff=1 at (625.62, 176.80)
-- `h` notehead-black staff=6 at (628.58, 506.98)
-- `h` notehead-black staff=9 at (643.96, 755.85)
-- `h` notehead-black staff=4 at (644.46, 407.83)
-- `h` notehead-black staff=4 at (644.46, 401.88)
-- `h` notehead-black staff=4 at (644.46, 361.48)
-- `h` notehead-black staff=3 at (644.46, 355.53)
-- `h` notehead-black staff=3 at (644.46, 349.58)
-- `j` notehead-half staff=1 at (646.71, 176.88)
-- `h` notehead-black staff=6 at (646.94, 509.96)
-- `h` notehead-black staff=4 at (651.14, 404.86)
-- `h` notehead-black staff=4 at (651.14, 398.91)
-- `h` notehead-black staff=3 at (651.14, 358.50)
-- `h` notehead-black staff=3 at (651.14, 352.55)
-- `h` notehead-black staff=9 at (656.36, 694.63)
-- `h` notehead-black staff=9 at (663.05, 752.88)
-- `h` notehead-black staff=9 at (663.05, 735.03)
-- `h` notehead-black staff=9 at (663.05, 691.65)
-- `h` notehead-black staff=6 at (665.28, 509.96)
-- `h` notehead-black staff=3 at (672.47, 358.50)
-- `h` notehead-black staff=3 at (672.47, 352.55)
-- `h` notehead-black staff=3 at (672.47, 346.60)
-- `h` notehead-black staff=4 at (672.71, 407.83)
-- `h` notehead-black staff=4 at (672.71, 401.88)
-- `h` notehead-black staff=4 at (672.71, 395.93)
-- `h` notehead-black staff=9 at (674.20, 861.45)
-- `h` notehead-black staff=4 at (679.40, 404.85)
-- `h` notehead-black staff=4 at (679.40, 398.90)
-- `h` notehead-black staff=3 at (680.15, 355.53)
-- `h` notehead-black staff=3 at (680.15, 349.58)
-- `h` notehead-black staff=8 at (681.89, 688.68)
-- `h` notehead-black staff=6 at (683.12, 512.93)
-- `r` notehead-half staff=0 at (220.23, 138.27)
-- `f` notehead-black staff=1 at (173.73, 176.80)
-- `j` notehead-half staff=1 at (174.00, 182.83)
-- `f` notehead-black staff=1 at (195.30, 173.83)
-- `h` notehead-black staff=1 at (217.11, 173.83)
-- `h` notehead-black staff=1 at (252.06, 176.80)
-- `j` notehead-half staff=1 at (294.21, 188.78)
-- `h` notehead-black staff=1 at (300.88, 176.82)
-- `j` notehead-half staff=1 at (301.16, 185.80)
-- `h` notehead-black staff=1 at (331.14, 173.83)
-- `h` notehead-black staff=1 at (360.14, 173.83)
-- `h` notehead-black staff=1 at (422.60, 179.78)
-- `h` notehead-black staff=1 at (433.26, 176.80)
-- `h` notehead-black staff=1 at (443.92, 179.78)
-- `h` notehead-black staff=1 at (454.58, 182.75)
-- `h` notehead-black staff=1 at (484.82, 179.78)
-- `j` notehead-half staff=1 at (485.09, 191.75)
-- `j` notehead-half staff=1 at (485.09, 185.80)
-- `h` notehead-black staff=1 at (505.15, 176.80)
-- `h` notehead-black staff=1 at (525.47, 176.80)
-- `j` notehead-half staff=2 at (485.08, 258.93)
-- `H` notehead-half staff=3 at (382.51, 317.46)
-- `H` notehead-half staff=3 at (418.19, 317.46)
-- `j` notehead-half staff=4 at (132.11, 410.88)
-- `j` notehead-half staff=4 at (132.11, 398.98)
-- `j` notehead-half staff=4 at (249.35, 404.93)
-- `h` notehead-black staff=4 at (379.22, 407.83)
-- `h` notehead-black staff=4 at (403.02, 407.83)
-- `h` notehead-black staff=4 at (431.78, 407.83)
-- `h` notehead-black staff=4 at (431.78, 401.88)
-- `h` notehead-black staff=4 at (438.46, 404.86)
-- `h` notehead-black staff=4 at (457.31, 407.83)
-- `h` notehead-black staff=4 at (457.31, 401.88)
-- `h` notehead-black staff=4 at (463.99, 404.86)
-- `h` notehead-black staff=4 at (484.57, 407.83)
-- `h` notehead-black staff=4 at (484.57, 401.88)
-- `h` notehead-black staff=4 at (491.26, 404.86)
-- `h` notehead-black staff=4 at (491.26, 398.91)
-- `h` notehead-black staff=4 at (531.67, 407.83)
-- `h` notehead-black staff=4 at (531.67, 401.88)
-- `h` notehead-black staff=4 at (538.36, 404.86)
-- `h` notehead-black staff=4 at (538.36, 398.91)
-- `h` notehead-black staff=6 at (138.53, 521.86)
-- `h` notehead-black staff=6 at (138.53, 515.91)
-- `j` notehead-half staff=6 at (138.80, 530.85)
-- `h` notehead-black staff=6 at (219.34, 521.85)
-- `h` notehead-black staff=6 at (219.34, 515.90)
-- `h` notehead-black staff=6 at (269.41, 515.90)
-- `j` notehead-half staff=6 at (269.68, 533.82)
-- `j` notehead-half staff=6 at (269.68, 521.93)
-- `h` notehead-black staff=6 at (291.23, 518.88)
-- `h` notehead-black staff=6 at (291.23, 512.93)
-- `h` notehead-black staff=6 at (390.61, 515.90)
-- `j` notehead-half staff=6 at (390.89, 536.80)
-- `j` notehead-half staff=6 at (390.89, 530.85)
-- `j` notehead-half staff=6 at (390.89, 524.90)
-- `h` notehead-black staff=6 at (412.94, 512.93)
-- `h` notehead-black staff=6 at (435.24, 512.93)
-- `h` notehead-black staff=6 at (471.44, 515.90)
-- `h` notehead-black staff=6 at (515.06, 515.91)
-- `j` notehead-half staff=6 at (515.33, 536.80)
-- `j` notehead-half staff=6 at (515.33, 530.85)
-- `j` notehead-half staff=6 at (515.33, 524.90)
-- `h` notehead-black staff=6 at (543.57, 512.93)
-- `j` notehead-half staff=7 at (138.80, 586.13)
-- `j` notehead-half staff=7 at (183.41, 580.18)
-- `j` notehead-half staff=7 at (190.36, 577.20)
-- `j` notehead-half staff=7 at (269.68, 595.05)
-- `j` notehead-half staff=7 at (269.68, 577.20)
-- `j` notehead-half staff=7 at (390.89, 598.02)
-- `j` notehead-half staff=7 at (390.89, 586.13)
-- `j` notehead-half staff=7 at (390.89, 580.18)
-- `j` notehead-half staff=7 at (515.33, 598.02)
-- `j` notehead-half staff=7 at (515.33, 586.13)
-- `j` notehead-half staff=7 at (515.33, 580.18)
-- `h` notehead-black staff=8 at (167.29, 682.73)
-- `h` notehead-black staff=8 at (186.37, 682.73)
-- `h` notehead-black staff=8 at (205.21, 679.75)
-- `h` notehead-black staff=8 at (238.92, 679.75)
-- `h` notehead-black staff=8 at (245.61, 682.73)
-- `h` notehead-black staff=8 at (307.34, 682.73)
-- `h` notehead-black staff=8 at (332.37, 682.73)
-- `h` notehead-black staff=9 at (514.31, 697.60)
+- `j` notehead-half staff=1 at (373.16, 189.90)
+- `j` notehead-half staff=1 at (373.16, 180.75)
+- `j` notehead-half staff=1 at (378.50, 178.46)
+- `j` notehead-half staff=2 at (273.06, 271.13)
+- `h` notehead-black staff=2 at (291.80, 282.57)
+- `h` notehead-black staff=2 at (291.80, 278.00)
+- `h` notehead-black staff=2 at (310.11, 282.57)
+- `h` notehead-black staff=2 at (310.11, 278.00)
+- `h` notehead-black staff=2 at (332.23, 280.29)
+- `h` notehead-black staff=2 at (332.23, 275.71)
+- `h` notehead-black staff=2 at (351.87, 280.29)
+- `h` notehead-black staff=2 at (351.87, 275.71)
+- `h` notehead-black staff=2 at (372.84, 278.00)
+- `h` notehead-black staff=2 at (372.84, 273.42)
+- `h` notehead-black staff=2 at (409.07, 278.00)
+- `h` notehead-black staff=2 at (409.07, 273.42)
+- `h` notehead-black staff=2 at (430.81, 278.00)
+- `h` notehead-black staff=2 at (430.81, 273.42)
+- `h` notehead-black staff=2 at (435.95, 275.71)
+- `h` notehead-black staff=2 at (435.95, 271.13)
+- `h` notehead-black staff=2 at (452.54, 278.00)
+- `h` notehead-black staff=2 at (452.55, 273.42)
+- `h` notehead-black staff=2 at (457.69, 275.71)
+- `h` notehead-black staff=2 at (457.69, 271.13)
+- `h` notehead-black staff=2 at (474.28, 278.00)
+- `h` notehead-black staff=2 at (474.28, 273.42)
+- `h` notehead-black staff=2 at (474.28, 268.84)
+- `h` notehead-black staff=2 at (479.42, 275.71)
+- `h` notehead-black staff=2 at (479.42, 271.13)
+- `h` notehead-black staff=2 at (495.83, 278.00)
+- `h` notehead-black staff=2 at (495.83, 273.42)
+- `h` notehead-black staff=2 at (495.83, 268.84)
+- `h` notehead-black staff=2 at (500.97, 275.71)
+- `h` notehead-black staff=2 at (500.97, 271.13)
+- `h` notehead-black staff=2 at (517.37, 275.71)
+- `h` notehead-black staff=2 at (517.37, 271.13)
+- `h` notehead-black staff=2 at (517.37, 266.56)
+- `h` notehead-black staff=2 at (523.29, 273.42)
+- `h` notehead-black staff=2 at (523.29, 268.84)
+- `h` notehead-black staff=3 at (291.80, 313.65)
+- `h` notehead-black staff=3 at (310.11, 313.65)
+- `h` notehead-black staff=3 at (332.23, 313.65)
+- `h` notehead-black staff=3 at (332.23, 309.08)
+- `h` notehead-black staff=3 at (337.37, 311.37)
+- `h` notehead-black staff=3 at (351.87, 313.65)
+- `h` notehead-black staff=3 at (351.87, 309.08)
+- `h` notehead-black staff=3 at (357.01, 311.37)
+- `h` notehead-black staff=3 at (372.84, 313.65)
+- `h` notehead-black staff=3 at (372.84, 309.08)
+- `h` notehead-black staff=3 at (377.98, 311.37)
+- `h` notehead-black staff=3 at (377.98, 306.79)
+- `h` notehead-black staff=3 at (409.07, 313.65)
+- `h` notehead-black staff=3 at (409.07, 309.08)
+- `h` notehead-black staff=3 at (414.21, 311.37)
+- `h` notehead-black staff=3 at (414.21, 306.79)
+- `h` notehead-black staff=3 at (430.81, 313.65)
+- `h` notehead-black staff=3 at (430.81, 309.08)
+- `h` notehead-black staff=3 at (435.95, 311.37)
+- `h` notehead-black staff=3 at (435.95, 306.79)
+- `h` notehead-black staff=3 at (452.54, 313.65)
+- `h` notehead-black staff=3 at (452.54, 309.08)
+- `h` notehead-black staff=3 at (457.69, 311.37)
+- `h` notehead-black staff=3 at (457.69, 306.79)
+- `h` notehead-black staff=3 at (474.28, 313.65)
+- `h` notehead-black staff=3 at (474.28, 309.08)
+- `h` notehead-black staff=3 at (479.42, 311.37)
+- `h` notehead-black staff=3 at (479.42, 306.79)
+- `h` notehead-black staff=3 at (495.83, 313.65)
+- `h` notehead-black staff=3 at (495.83, 309.08)
+- `h` notehead-black staff=3 at (500.97, 311.37)
+- `h` notehead-black staff=3 at (500.97, 306.79)
+- `h` notehead-black staff=3 at (517.56, 313.65)
+- `h` notehead-black staff=3 at (517.56, 309.08)
+- `h` notehead-black staff=3 at (517.56, 304.50)
+- `h` notehead-black staff=3 at (522.71, 311.37)
+- `h` notehead-black staff=3 at (522.71, 306.79)
+- `h` notehead-black staff=7 at (395.72, 592.80)
+- `h` notehead-black staff=7 at (395.72, 583.65)
+- `j` notehead-half staff=9 at (173.91, 718.84)
+- `j` notehead-half staff=9 at (173.91, 709.69)
+- `j` notehead-half staff=9 at (312.53, 723.42)
+- `j` notehead-half staff=9 at (312.53, 714.27)
 
 ## Beam geometry
 
 Strict current beam shapes: **9**
-Relaxed beam-like shapes: **27**
+Relaxed beam-like shapes: **29**
 
 | path | width sp | height sp | points |
 |---|---:|---:|---:|
-| `use:000026` | 1.48 | 0.87 | 10 |
+| `use:000026` | 1.29 | 0.75 | 10 |
 | `path:000006` | 3.77 | 1.00 | 4 |
 | `path:000013` | 5.23 | 1.00 | 4 |
 | `path:000025` | 3.56 | 1.00 | 4 |
 | `path:000033` | 3.65 | 1.00 | 4 |
 | `path:000048` | 3.23 | 1.00 | 4 |
 | `path:000055` | 3.15 | 0.75 | 4 |
+| `path:000060` | 1.79 | 1.00 | 4 |
+| `path:000062` | 1.79 | 1.00 | 4 |
 | `path:000070` | 17.86 | 0.75 | 4 |
 | `path:000085` | 23.86 | 1.00 | 4 |
 | `path:000090` | 16.41 | 0.92 | 4 |
@@ -252,22 +128,23 @@ Relaxed beam-like shapes: **27**
 ## Arc geometry
 
 Strict current arc shapes: **0**
-Relaxed arc-like shapes: **24**
+Relaxed arc-like shapes: **25**
 
 | path | width sp | height sp | points |
 |---|---:|---:|---:|
-| `use:000029` | 3.85 | 2.03 | 502 |
-| `use:000081` | 3.59 | 2.28 | 1020 |
-| `use:000146` | 3.85 | 2.03 | 502 |
-| `use:000221` | 3.59 | 2.28 | 1020 |
-| `use:000222` | 3.59 | 2.28 | 1020 |
-| `use:000245` | 3.85 | 2.03 | 502 |
-| `use:000249` | 1.76 | 1.17 | 343 |
-| `use:000327` | 3.59 | 2.28 | 1020 |
-| `use:000397` | 3.59 | 2.28 | 1020 |
-| `use:000398` | 3.59 | 2.28 | 1020 |
-| `use:000399` | 3.59 | 2.28 | 1020 |
-| `use:000427` | 1.76 | 1.17 | 343 |
+| `use:000029` | 3.35 | 1.77 | 502 |
+| `use:000081` | 3.12 | 1.98 | 1020 |
+| `use:000146` | 3.35 | 1.77 | 502 |
+| `use:000221` | 3.12 | 1.98 | 1020 |
+| `use:000222` | 3.12 | 1.98 | 1020 |
+| `use:000245` | 3.35 | 1.77 | 502 |
+| `use:000249` | 1.53 | 1.02 | 343 |
+| `use:000327` | 3.12 | 1.98 | 1020 |
+| `use:000328` | 3.12 | 1.98 | 1020 |
+| `use:000397` | 3.12 | 1.98 | 1020 |
+| `use:000398` | 3.12 | 1.98 | 1020 |
+| `use:000399` | 3.12 | 1.98 | 1020 |
+| `use:000427` | 1.53 | 1.02 | 343 |
 | `use:000518` | 1.81 | 1.21 | 287 |
 | `use:000523` | 1.81 | 1.21 | 287 |
 | `use:000531` | 1.81 | 1.21 | 287 |
@@ -287,19 +164,25 @@ Compact multi-contour reusable glyphs near staves; this is topology evidence, no
 
 | symbol | uses | current kind | score | samples (x,y,w,h,contours) |
 |---|---:|---|---:|---|
-| `j` | 65 | notehead-half | 0.908 | `[(174.0, 182.82, 1.47, 1.19, 2), (174.0, 223.22, 1.47, 1.19, 2), (174.0, 235.12, 1.47, 1.19, 2)]` |
-| `E` | 9 | smufl-unknown | 0.805 | `[(361.18, 315.14, 0.86, 1.11, 2), (372.42, 315.14, 0.86, 1.11, 2), (436.2, 315.14, 0.86, 1.11, 2)]` |
-| `H` | 6 | notehead-half | 0.799 | `[(382.51, 315.73, 1.4, 0.78, 2), (418.19, 315.73, 1.4, 0.78, 2), (139.58, 479.08, 1.4, 0.78, 2)]` |
-| `I` | 3 | smufl-unknown | 0.787 | `[(397.56, 315.05, 0.88, 1.07, 2), (406.16, 315.05, 0.88, 1.07, 2), (151.01, 478.4, 0.88, 1.07, 2)]` |
-| `o` | 2 | smufl-unknown | 0.894 | `[(177.87, 135.62, 1.14, 1.29, 2), (190.21, 135.62, 1.14, 1.29, 2)]` |
-| `ab` | 2 | smufl-unknown | 0.783 | `[(342.73, 1049.41, 0.77, 1.24, 2), (378.32, 1049.41, 0.77, 1.24, 2)]` |
-| `af` | 2 | smufl-unknown | 0.786 | `[(367.42, 1049.4, 0.78, 1.24, 2), (372.93, 1049.4, 0.78, 1.24, 2)]` |
-| `l` | 1 | smufl-unknown | 0.801 | `[(161.58, 135.46, 1.41, 1.26, 2)]` |
-| `r` | 1 | notehead-half | 0.761 | `[(220.23, 134.26, 1.48, 0.87, 2)]` |
-| `Y` | 1 | smufl-unknown | 0.717 | `[(328.87, 1049.19, 1.15, 1.16, 3)]` |
-| `al` | 1 | smufl-unknown | 0.778 | `[(411.66, 1050.43, 1.15, 0.88, 2)]` |
-| `aN` | 1 | smufl-unknown | 0.647 | `[(342.93, 75.61, 0.96, 0.7, 2)]` |
-| `aV` | 1 | smufl-unknown | 0.641 | `[(510.57, 75.68, 0.96, 0.69, 2)]` |
+| `j` | 76 | notehead-half | 0.908 | `[(133.86, 140.51, 1.27, 1.03, 2), (133.86, 171.59, 1.27, 1.03, 2), (133.86, 180.74, 1.27, 1.03, 2)]` |
+| `E` | 9 | smufl-unknown | 0.805 | `[(278.0, 242.34, 0.74, 0.97, 2), (286.64, 242.34, 0.74, 0.97, 2), (335.71, 242.34, 0.74, 0.97, 2)]` |
+| `H` | 6 | notehead-half | 0.799 | `[(294.4, 242.94, 1.22, 0.68, 2), (321.85, 242.94, 1.22, 0.68, 2), (107.54, 368.59, 1.22, 0.68, 2)]` |
+| `aH` | 6 | smufl-unknown | 0.690 | `[(216.23, 62.72, 0.91, 1.21, 2), (230.38, 62.72, 0.91, 1.21, 2), (285.01, 62.72, 0.91, 1.21, 2)]` |
+| `aM` | 6 | smufl-unknown | 0.808 | `[(245.72, 62.72, 1.03, 1.21, 2), (319.12, 62.72, 1.03, 1.21, 2), (353.61, 62.72, 1.03, 1.21, 2)]` |
+| `D` | 4 | smufl-unknown | 0.694 | `[(272.49, 243.19, 0.86, 1.33, 2), (127.82, 368.84, 0.86, 1.32, 2), (95.92, 627.97, 0.86, 1.33, 2)]` |
+| `I` | 3 | smufl-unknown | 0.787 | `[(305.77, 242.27, 0.76, 0.93, 2), (312.38, 242.27, 0.76, 0.93, 2), (116.11, 367.93, 0.76, 0.93, 2)]` |
+| `o` | 2 | smufl-unknown | 0.894 | `[(136.82, 104.32, 0.99, 1.12, 2), (146.31, 104.32, 0.99, 1.12, 2)]` |
+| `W` | 2 | smufl-unknown | 0.615 | `[(479.57, 628.11, 0.7, 0.85, 2), (488.21, 628.11, 0.7, 0.85, 2)]` |
+| `bb` | 2 | smufl-unknown | 0.620 | `[(266.14, 77.14, 1.12, 1.19, 2), (278.12, 77.14, 1.12, 1.19, 2)]` |
+| `bo` | 2 | smufl-unknown | 0.795 | `[(427.75, 101.79, 1.14, 1.24, 2), (444.25, 101.79, 1.14, 1.24, 2)]` |
+| `l` | 1 | smufl-unknown | 0.801 | `[(124.41, 104.31, 1.22, 1.1, 2)]` |
+| `r` | 1 | notehead-half | 0.761 | `[(169.41, 103.28, 1.29, 0.75, 2)]` |
+| `M` | 1 | smufl-unknown | 0.738 | `[(330.63, 241.46, 0.96, 1.35, 2)]` |
+| `Y` | 1 | smufl-unknown | 0.717 | `[(252.91, 807.15, 1.0, 1.01, 3)]` |
+| `al` | 1 | smufl-unknown | 0.778 | `[(316.52, 808.07, 1.0, 0.77, 2)]` |
+| `aN` | 1 | smufl-unknown | 0.647 | `[(263.79, 58.17, 0.84, 0.61, 2)]` |
+| `aV` | 1 | smufl-unknown | 0.641 | `[(392.74, 58.21, 0.83, 0.6, 2)]` |
+| `bu` | 1 | smufl-unknown | 0.790 | `[(467.92, 101.83, 1.02, 1.22, 2)]` |
 
 ## Standalone-flag candidates
 
@@ -307,4 +190,6 @@ Compact reusable glyphs repeatedly found near free ends of currently unbeamed st
 
 | symbol | hits | current kind | reference | samples (dx,dy,w,h sp) |
 |---|---:|---|---|---|
-| `h` | 6 | notehead-black | uniE0FB | `[(0.07, 0.76, 1.43, 1.16), (0.07, 2.06, 1.43, 1.16), (0.07, 1.99, 1.43, 1.16)]` |
+| `A` | 8 | smufl-unknown | uniE241 | `[(0.44, 1.41, 1.01, 3.13), (0.44, 1.41, 1.01, 3.13), (0.44, 1.41, 1.01, 3.13)]` |
+| `v` | 2 | time-signature-digit | timeSig1 | `[(1.25, 1.28, 0.78, 1.06), (0.54, 1.28, 0.78, 1.06)]` |
+| `S` | 1 | smufl-unknown | uniE243 | `[(0.55, 1.78, 1.21, 3.57)]` |

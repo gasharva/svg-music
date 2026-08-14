@@ -13,7 +13,7 @@
           <fifths>0</fifths>
         </key>
         <time>
-          <beats>4</beats>
+          <beats>3</beats>
           <beat-type>4</beat-type>
         </time>
         <staves>2</staves>
@@ -469,14 +469,14 @@
         <direction-type>
           <pedal type="start" line="yes" sign="yes" />
         </direction-type>
-        <offset>14</offset>
+        <offset>11</offset>
         <staff>2</staff>
       </direction>
       <direction placement="below">
         <direction-type>
           <pedal type="stop" line="yes" sign="no" />
         </direction-type>
-        <offset>60</offset>
+        <offset>45</offset>
         <staff>2</staff>
       </direction>
       <note default-x="60.329">
@@ -591,7 +591,7 @@
             <mp />
           </dynamics>
         </direction-type>
-        <offset>41</offset>
+        <offset>31</offset>
         <staff>1</staff>
       </direction>
       <note default-x="64.868" default-y="-15.027">
@@ -608,9 +608,6 @@
         <type>quarter</type>
         <staff>1</staff>
       </note>
-      <forward>
-        <duration>16</duration>
-      </forward>
       <note default-x="123.767">
         <pitch>
           <step>F</step>
@@ -619,6 +616,17 @@
         <duration>32</duration>
         <voice>1</voice>
         <type>half</type>
+        <stem>up</stem>
+        <staff>1</staff>
+      </note>
+      <note default-x="175.938">
+        <pitch>
+          <step>G</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>16</duration>
+        <voice>1</voice>
+        <type>quarter</type>
         <stem>up</stem>
         <staff>1</staff>
       </note>
@@ -657,19 +665,8 @@
         <type>quarter</type>
         <staff>1</staff>
       </note>
-      <note default-x="175.938">
-        <pitch>
-          <step>G</step>
-          <octave>4</octave>
-        </pitch>
-        <duration>16</duration>
-        <voice>2</voice>
-        <type>quarter</type>
-        <stem>up</stem>
-        <staff>1</staff>
-      </note>
       <backup>
-        <duration>80</duration>
+        <duration>64</duration>
       </backup>
       <note default-x="71.681">
         <pitch>
@@ -1430,14 +1427,14 @@
         <direction-type>
           <pedal type="start" line="yes" sign="yes" />
         </direction-type>
-        <offset>12</offset>
+        <offset>9</offset>
         <staff>2</staff>
       </direction>
       <direction placement="below">
         <direction-type>
           <pedal type="stop" line="yes" sign="no" />
         </direction-type>
-        <offset>61</offset>
+        <offset>46</offset>
         <staff>2</staff>
       </direction>
       <note default-x="66.485">
@@ -1693,14 +1690,14 @@
         <direction-type>
           <pedal type="start" line="yes" sign="yes" />
         </direction-type>
-        <offset>10</offset>
+        <offset>7</offset>
         <staff>2</staff>
       </direction>
       <direction placement="below">
         <direction-type>
           <pedal type="stop" line="yes" sign="no" />
         </direction-type>
-        <offset>56</offset>
+        <offset>42</offset>
         <staff>2</staff>
       </direction>
       <note default-x="66.475">
