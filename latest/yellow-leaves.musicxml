@@ -189,12 +189,21 @@
           <step>G</step>
           <octave>4</octave>
         </pitch>
-        <duration>20</duration>
+        <duration>8</duration>
         <voice>1</voice>
-        <type>16th</type>
+        <time-modification>
+          <actual-notes>5</actual-notes>
+          <normal-notes>4</normal-notes>
+        </time-modification>
+        <type>32nd</type>
         <stem>up</stem>
         <beam number="1">begin</beam>
         <beam number="2">begin</beam>
+        <beam number="3">begin</beam>
+        <notations>
+          <slur type="start" number="28" />
+          <tuplet type="start" number="1" />
+        </notations>
         <staff>1</staff>
       </note>
       <note default-x="293.893">
@@ -202,55 +211,82 @@
           <step>A</step>
           <octave>4</octave>
         </pitch>
-        <duration>20</duration>
+        <duration>8</duration>
         <voice>1</voice>
-        <type>16th</type>
+        <time-modification>
+          <actual-notes>5</actual-notes>
+          <normal-notes>4</normal-notes>
+        </time-modification>
+        <type>32nd</type>
         <stem>up</stem>
         <beam number="1">continue</beam>
         <beam number="2">continue</beam>
+        <beam number="3">continue</beam>
         <staff>1</staff>
+        <notations />
       </note>
       <note default-x="311.809">
         <pitch>
           <step>G</step>
           <octave>4</octave>
         </pitch>
-        <duration>20</duration>
+        <duration>8</duration>
         <voice>1</voice>
-        <type>16th</type>
+        <time-modification>
+          <actual-notes>5</actual-notes>
+          <normal-notes>4</normal-notes>
+        </time-modification>
+        <type>32nd</type>
         <stem>up</stem>
         <beam number="1">continue</beam>
         <beam number="2">continue</beam>
+        <beam number="3">continue</beam>
         <staff>1</staff>
+        <notations />
       </note>
       <note default-x="329.726">
         <pitch>
           <step>F</step>
           <octave>4</octave>
         </pitch>
-        <duration>20</duration>
+        <duration>8</duration>
         <voice>1</voice>
-        <type>16th</type>
+        <time-modification>
+          <actual-notes>5</actual-notes>
+          <normal-notes>4</normal-notes>
+        </time-modification>
+        <type>32nd</type>
         <stem>up</stem>
         <beam number="1">continue</beam>
         <beam number="2">continue</beam>
+        <beam number="3">continue</beam>
         <staff>1</staff>
+        <notations />
       </note>
       <note default-x="347.642">
         <pitch>
           <step>G</step>
           <octave>4</octave>
         </pitch>
-        <duration>20</duration>
+        <duration>8</duration>
         <voice>1</voice>
-        <type>16th</type>
+        <time-modification>
+          <actual-notes>5</actual-notes>
+          <normal-notes>4</normal-notes>
+        </time-modification>
+        <type>32nd</type>
         <stem>up</stem>
         <beam number="1">end</beam>
         <beam number="2">end</beam>
+        <beam number="3">end</beam>
+        <notations>
+          <slur type="stop" number="28" />
+          <tuplet type="stop" number="1" />
+        </notations>
         <staff>1</staff>
       </note>
       <backup>
-        <duration>300</duration>
+        <duration>240</duration>
       </backup>
       <note default-x="60">
         <pitch>
@@ -1645,6 +1681,9 @@
         <accidental>flat</accidental>
         <stem>up</stem>
         <beam number="1">begin</beam>
+        <notations>
+          <slur type="start" number="29" />
+        </notations>
         <staff>1</staff>
       </note>
       <note default-x="60.286">
@@ -1670,6 +1709,9 @@
         <type>eighth</type>
         <stem>up</stem>
         <beam number="1">end</beam>
+        <notations>
+          <slur type="stop" number="29" />
+        </notations>
         <staff>1</staff>
       </note>
       <note default-x="188.362">
@@ -1830,6 +1872,9 @@
         <type>eighth</type>
         <stem>up</stem>
         <beam number="1">begin</beam>
+        <notations>
+          <slur type="start" number="30" />
+        </notations>
         <staff>1</staff>
       </note>
       <note default-x="144.454">
@@ -1841,6 +1886,9 @@
         <voice>1</voice>
         <type>eighth</type>
         <beam number="1">end</beam>
+        <notations>
+          <slur type="stop" number="30" />
+        </notations>
         <staff>1</staff>
       </note>
       <note default-x="185.427">
@@ -1958,6 +2006,9 @@
         <voice>1</voice>
         <type>eighth</type>
         <beam number="1">begin</beam>
+        <notations>
+          <slur type="start" number="31" />
+        </notations>
         <staff>1</staff>
       </note>
       <note default-x="151.271">
@@ -1969,6 +2020,9 @@
         <voice>1</voice>
         <type>eighth</type>
         <beam number="1">end</beam>
+        <notations>
+          <slur type="stop" number="31" />
+        </notations>
         <staff>1</staff>
       </note>
       <note default-x="151.271">
@@ -2113,6 +2167,9 @@
         <voice>1</voice>
         <type>eighth</type>
         <beam number="1">begin</beam>
+        <notations>
+          <slur type="start" number="32" />
+        </notations>
         <staff>1</staff>
       </note>
       <note default-x="186.706">
@@ -2124,6 +2181,9 @@
         <voice>1</voice>
         <type>eighth</type>
         <beam number="1">end</beam>
+        <notations>
+          <slur type="stop" number="32" />
+        </notations>
         <staff>1</staff>
       </note>
       <note default-x="197.946">
@@ -2451,6 +2511,9 @@
         <voice>1</voice>
         <type>eighth</type>
         <beam number="1">begin</beam>
+        <notations>
+          <slur type="start" number="33" />
+        </notations>
         <staff>1</staff>
       </note>
       <note default-x="148.747">
@@ -2462,6 +2525,9 @@
         <voice>1</voice>
         <type>eighth</type>
         <beam number="1">end</beam>
+        <notations>
+          <slur type="stop" number="33" />
+        </notations>
         <staff>1</staff>
       </note>
       <backup>
