@@ -50,17 +50,10 @@ public sealed class PrimitiveClassificationRenderer
 
         var primitiveCommands = new Dictionary<int, Shim.DrawPathCanvasCommand>();
         var primitives = new List<RawPrimitive>();
-        CollectPrimitives(
-            classifiedModel,
-            Shim.SKMatrix.Identity,
-            primitiveCommands,
-            primitives);
+        CollectPrimitives(classifiedModel, Shim.SKMatrix.Identity, primitiveCommands, primitives);
 
         var regions = BuildStaffMeasureRegions(systems);
 
-        // Real staff lines span several measures. They are structural geometry, not owned by
-        // any single Pn-Mn cell. Remove them from classification and replace them inside the
-        // detector with five temporary fragments clipped to each staff-measure.
         var staffLineIds = _staffLineDetector.Detect(primitives, regions);
         var musicalPrimitives = primitives
             .Where(x => !staffLineIds.Contains(x.Id))
@@ -109,30 +102,44 @@ public sealed class PrimitiveClassificationRenderer
         IReadOnlyList<RawPrimitive> primitives,
         RectD pageBounds)
     {
+        // First establish hard anchors: a primitive that physically intersects exactly one
+        // staff-measure belongs there before any propagation starts. Other staff detectors
+        // are not allowed to use such a primitive as a bridge into their own cluster.
+        var directClaims = primitives.ToDictionary(
+            p => p.Id,
+            p => regions
+                .Where(r => p.Bounds.Intersects(r.Bounds))
+                .Select(r => r.Key)
+                .Distinct()
+                .ToHashSet());
+
         var propagatedClaims = new Dictionary<int, HashSet<StaffMeasureKey>>();
 
         foreach (var region in regions)
         {
+            var blocked = directClaims
+                .Where(x => x.Value.Count == 1 && !x.Value.Contains(region.Key))
+                .Select(x => x.Key)
+                .ToHashSet();
+
             var (topLimit, bottomLimit) = GetVerticalLimits(region, regions, pageBounds);
-            var detected = _detector.Detect(region, primitives, topLimit, bottomLimit);
+            var detected = _detector.Detect(
+                region,
+                primitives,
+                topLimit,
+                bottomLimit,
+                blocked);
 
             foreach (var primitiveId in detected)
                 AddClaim(propagatedClaims, primitiveId, region.Key);
         }
 
-        // A real intersection with a staff-measure is stronger evidence than a claim that
-        // reached the primitive only through vertical propagation. This prevents a symbol
-        // visibly inside P1-M2 from becoming gray merely because P1-M1 also grew close to it.
-        foreach (var primitive in primitives)
+        // Hard anchors win over propagated claims. Ambiguous direct intersections remain
+        // ambiguous and therefore render gray, which is useful diagnostic information.
+        foreach (var (primitiveId, direct) in directClaims)
         {
-            var direct = regions
-                .Where(x => primitive.Bounds.Intersects(x.Bounds))
-                .Select(x => x.Key)
-                .Distinct()
-                .ToHashSet();
-
             if (direct.Count > 0)
-                propagatedClaims[primitive.Id] = direct;
+                propagatedClaims[primitiveId] = direct;
         }
 
         return propagatedClaims;
@@ -189,7 +196,6 @@ public sealed class PrimitiveClassificationRenderer
             if (command.Paint is null)
                 continue;
 
-            // Structural staff lines and garbage stay exactly as they were in the source SVG.
             if (keepOriginalIds.Contains(primitiveId))
                 continue;
 
