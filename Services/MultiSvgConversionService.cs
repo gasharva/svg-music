@@ -132,6 +132,11 @@ public sealed class MultiSvgConversionService
         }
 
         combined!.Save(musicXmlPath);
+
+        var scoreText = ScoreTextMetadata.TryLoad(directory.FullName);
+        if (scoreText is not null)
+            new MusicXmlScoreTextPostProcessor().Apply(musicXmlPath, scoreText);
+
         return new MultiSvgConversionResult(
             musicXmlPath,
             svgFiles.Select(x => x.FullName).ToArray(),
