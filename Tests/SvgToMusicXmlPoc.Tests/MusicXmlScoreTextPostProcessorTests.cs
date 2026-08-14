@@ -6,7 +6,7 @@ namespace SvgToMusicXmlPoc.Tests;
 public sealed class MusicXmlScoreTextPostProcessorTests
 {
     [Fact]
-    public void Apply_WritesHeaderWithoutCreatingPageLayout()
+    public void Apply_WritesCompactHeaderAndMergesOpeningTextWithTempo()
     {
         var path = Path.Combine(Path.GetTempPath(), $"score-{Guid.NewGuid():N}.musicxml");
         try
@@ -44,37 +44,42 @@ public sealed class MusicXmlScoreTextPostProcessorTests
                 (string?)root.Element("identification")?.Elements("creator")
                     .Single(x => (string?)x.Attribute("type") == "composer"));
 
-            // Critical regression check: score text must never establish global page/scaling geometry.
+            var title = root.Elements("credit")
+                .Single(x => (string?)x.Element("credit-type") == "title")
+                .Element("credit-words")!;
+            Assert.Equal("Miniature for Piano #8", title.Value);
+            Assert.Equal("center", (string?)title.Attribute("justify"));
+            Assert.Equal("551.95", (string?)title.Attribute("default-x"));
+
+            var subtitles = root.Elements("credit")
+                .Where(x => (string?)x.Element("credit-type") == "subtitle")
+                .Select(x => x.Element("credit-words")!)
+                .ToList();
+            Assert.Equal(2, subtitles.Count);
+            Assert.Equal("Theme from \"Mimino\"", subtitles[0].Value);
+            Assert.Equal("Film by Georgi Danelia and Rezo Gabriadze (1977)", subtitles[1].Value);
+            Assert.All(subtitles, x => Assert.Equal("center", (string?)x.Attribute("justify")));
+            Assert.All(subtitles, x => Assert.Equal("italic", (string?)x.Attribute("font-style")));
+
+            var composer = root.Elements("credit")
+                .Single(x => (string?)x.Element("credit-type") == "composer")
+                .Element("credit-words")!;
+            Assert.Equal("right", (string?)composer.Attribute("justify"));
+
+            // Header positioning must never introduce global page/scaling defaults.
             Assert.Null(root.Element("defaults"));
-
-            var credits = root.Elements("credit").ToDictionary(
-                x => (string)x.Element("credit-type")!,
-                x => x.Element("credit-words")!);
-
-            Assert.Equal("Miniature for Piano #8", credits["title"].Value);
-            Assert.Equal("center", (string?)credits["title"].Attribute("justify"));
-            Assert.Equal("22", (string?)credits["title"].Attribute("font-size"));
-            Assert.Equal("551.95", (string?)credits["title"].Attribute("default-x"));
-            Assert.Equal("1377.44", (string?)credits["title"].Attribute("default-y"));
-
-            Assert.Contains("Theme from \"Mimino\"", credits["subtitle"].Value);
-            Assert.Contains("Film by Georgi Danelia", credits["subtitle"].Value);
-            Assert.Equal("right", (string?)credits["composer"].Attribute("justify"));
 
             var firstMeasure = root.Element("part")!.Element("measure")!;
             Assert.Equal(
                 "170",
                 firstMeasure.Element("print")?.Element("system-layout")?.Element("top-system-distance")?.Value);
 
-            var metronome = firstMeasure.Descendants("metronome").Single();
-            Assert.Equal("eighth", metronome.Element("beat-unit")?.Value);
-            Assert.Equal("62", metronome.Element("per-minute")?.Value);
-            Assert.Equal("31", (string?)metronome.Parent?.Parent?.Element("sound")?.Attribute("tempo"));
-
-            var cantabile = firstMeasure.Elements("direction")
-                .SelectMany(x => x.Descendants("words"))
-                .Single();
-            Assert.Equal("Cantabile", cantabile.Value);
+            var directions = firstMeasure.Elements("direction").ToList();
+            Assert.Single(directions);
+            var openingWords = directions[0].Descendants("words").Single();
+            Assert.Equal("Cantabile  (♪ = 62)", openingWords.Value);
+            Assert.Equal("31", (string?)directions[0].Element("sound")?.Attribute("tempo"));
+            Assert.Empty(firstMeasure.Descendants("metronome"));
         }
         finally
         {
@@ -83,7 +88,7 @@ public sealed class MusicXmlScoreTextPostProcessorTests
     }
 
     [Fact]
-    public void Apply_ReadsButDoesNotChangeExistingPageLayout()
+    public void Apply_ReadsExistingPageLayoutWithoutChangingIt()
     {
         var path = Path.Combine(Path.GetTempPath(), $"score-{Guid.NewGuid():N}.musicxml");
         try
@@ -111,19 +116,22 @@ public sealed class MusicXmlScoreTextPostProcessorTests
             new MusicXmlScoreTextPostProcessor().Apply(path, metadata);
 
             var root = XDocument.Load(path).Root!;
+            var title = root.Elements("credit")
+                .Single(x => (string?)x.Element("credit-type") == "title")
+                .Element("credit-words")!;
+            var composer = root.Elements("credit")
+                .Single(x => (string?)x.Element("credit-type") == "composer")
+                .Element("credit-words")!;
+
+            Assert.Equal("400", (string?)title.Attribute("default-x"));
+            Assert.Equal("940", (string?)title.Attribute("default-y"));
+            Assert.Equal("750", (string?)composer.Attribute("default-x"));
+            Assert.Equal("795", (string?)composer.Attribute("default-y"));
+
             var pageLayout = root.Element("defaults")!.Element("page-layout")!;
-            Assert.Equal("1000", pageLayout.Element("page-height")?.Value);
-            Assert.Equal("800", pageLayout.Element("page-width")?.Value);
-            Assert.Equal("50", pageLayout.Element("page-margins")?.Element("right-margin")?.Value);
-
-            var credits = root.Elements("credit").ToDictionary(
-                x => (string)x.Element("credit-type")!,
-                x => x.Element("credit-words")!);
-
-            Assert.Equal("400", (string?)credits["title"].Attribute("default-x"));
-            Assert.Equal("940", (string?)credits["title"].Attribute("default-y"));
-            Assert.Equal("750", (string?)credits["composer"].Attribute("default-x"));
-            Assert.Equal("838", (string?)credits["composer"].Attribute("default-y"));
+            Assert.Equal("800", pageLayout.Element("page-width")!.Value);
+            Assert.Equal("1000", pageLayout.Element("page-height")!.Value);
+            Assert.Equal("60", pageLayout.Element("page-margins")!.Element("top-margin")!.Value);
         }
         finally
         {
