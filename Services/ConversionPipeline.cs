@@ -29,7 +29,7 @@ public sealed class ConversionPipeline
         lineSegments.AddRange(new CompoundVerticalStrokeExtractor().Extract(pageGeometry, staves, lineSegments));
         performance.ReadInstancesMs = watch.Elapsed.TotalMilliseconds;
         var classifier = new SymbolClassifier();
-        var classification = classifier.Classify(svgPath, staves, catalogPath);
+        var classification = classifier.Classify(svgPath, staves, catalogPath, config.ClassificationParallelism);
         new SourceFontSemanticNormalizer().Normalize(svgPath, staves, classification, lineSegments);
         var cp = classifier.LastPerformance;
         performance.LoadCatalogMs = cp.LoadCatalogMs;
