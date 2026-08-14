@@ -1,9 +1,6 @@
 using SvgSymbols.Services;
 
-var root = AppContext.BaseDirectory;
-for (var i = 0; i < 4 && !File.Exists(Path.Combine(root, "SvgToMusicXmlPoc.sln")); i++)
-    root = Directory.GetParent(root)?.FullName ?? root;
-
+var root = FindRepositoryRoot(AppContext.BaseDirectory);
 var outputRoot = Path.Combine(root, "Experiments", "SvgSymbols");
 var samplesRoot = Path.Combine(outputRoot, "Samples");
 var depth = GetIntArgument(args, "--depth", 1);
@@ -41,6 +38,20 @@ Console.WriteLine();
 Console.WriteLine($"Treble downloaded: {treble.Count}");
 Console.WriteLine($"Bass downloaded:   {bass.Count}");
 Console.WriteLine($"Gallery: {galleryPath}");
+
+static string FindRepositoryRoot(string start)
+{
+    var current = new DirectoryInfo(start);
+    while (current is not null)
+    {
+        if (File.Exists(Path.Combine(current.FullName, "SvgToMusicXmlPoc.sln")))
+            return current.FullName;
+
+        current = current.Parent;
+    }
+
+    throw new DirectoryNotFoundException("Could not find SvgToMusicXmlPoc.sln above the application directory.");
+}
 
 static int GetIntArgument(string[] args, string name, int defaultValue)
 {
