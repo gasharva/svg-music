@@ -10,6 +10,7 @@ public sealed class GalleryBuilder
         string rootDirectory,
         IReadOnlyList<SymbolSource> treble,
         IReadOnlyList<SymbolSource> bass,
+        IReadOnlyList<SymbolSource> other,
         CancellationToken cancellationToken = default)
     {
         var path = Path.Combine(rootDirectory, "gallery.html");
@@ -27,11 +28,12 @@ public sealed class GalleryBuilder
         html.AppendLine("img{max-width:100%;max-height:170px}.name{font-weight:600;word-break:break-word}.meta{font-size:12px;color:#666;margin-top:5px;word-break:break-word}");
         html.AppendLine("label{margin-top:auto;font-size:13px}.bad{accent-color:#c00}");
         html.AppendLine("</style></head><body>");
-        html.AppendLine($"<h1>SvgSymbols corpus — {treble.Count + bass.Count} SVG</h1>");
-        html.AppendLine("<p>Отметь глазами мусор/не-ключи. Состояние чекбоксов сохраняется в браузере.</p>");
+        html.AppendLine($"<h1>SvgSymbols corpus — {treble.Count + bass.Count + other.Count} SVG</h1>");
+        html.AppendLine("<p>Clefs plus a control corpus of other musical symbols.</p>");
 
-        AppendSection(html, "Treble / G clef", "Treble", treble);
-        AppendSection(html, "Bass / F clef", "Bass", bass);
+        AppendSection(html, "Treble / G clef", "Treble", treble, "Wikimedia source", true);
+        AppendSection(html, "Bass / F clef", "Bass", bass, "Wikimedia source", true);
+        AppendSection(html, "Other musical symbols (negative/control corpus)", "Other", other, "Reference glyph", false);
 
         html.AppendLine("<script>");
         html.AppendLine("document.querySelectorAll('input[type=checkbox]').forEach(x=>{const k='svgsymbols:'+x.dataset.id;x.checked=localStorage.getItem(k)==='1';x.onchange=()=>localStorage.setItem(k,x.checked?'1':'0');});");
@@ -45,7 +47,9 @@ public sealed class GalleryBuilder
         StringBuilder html,
         string title,
         string folder,
-        IReadOnlyList<SymbolSource> sources)
+        IReadOnlyList<SymbolSource> sources,
+        string sourceLabel,
+        bool showReviewCheckbox)
     {
         html.AppendLine($"<h2>{WebUtility.HtmlEncode(title)} ({sources.Count})</h2><div class=\"grid\">");
 
@@ -58,8 +62,11 @@ public sealed class GalleryBuilder
             html.AppendLine($"<div class=\"name\">{WebUtility.HtmlEncode(source.FileName)}</div>");
             html.AppendLine($"<div class=\"meta\">Category: {WebUtility.HtmlEncode(source.Category)}</div>");
             html.AppendLine($"<div class=\"meta\">License: {WebUtility.HtmlEncode(source.License ?? "unknown")}</div>");
-            html.AppendLine($"<div class=\"meta\"><a href=\"{WebUtility.HtmlEncode(source.DescriptionUrl)}\">Wikimedia source</a></div>");
-            html.AppendLine($"<label><input class=\"bad\" type=\"checkbox\" data-id=\"{WebUtility.HtmlEncode(id)}\"> мусор / не подходит</label>");
+            html.AppendLine($"<div class=\"meta\"><a href=\"{WebUtility.HtmlEncode(source.DescriptionUrl)}\">{WebUtility.HtmlEncode(sourceLabel)}</a></div>");
+
+            if (showReviewCheckbox)
+                html.AppendLine($"<label><input class=\"bad\" type=\"checkbox\" data-id=\"{WebUtility.HtmlEncode(id)}\"> мусор / не подходит</label>");
+
             html.AppendLine("</div>");
         }
 
