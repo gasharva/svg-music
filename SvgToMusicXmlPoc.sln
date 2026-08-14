@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SvgSymbolScaler", "Tools\Sv
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SvgStructure", "Experiments\SvgStructure\SvgStructure.csproj", "{5A66C806-471F-4D90-83DA-6E6B270AA451}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SvgSymbols", "Experiments\SvgSymbols\SvgSymbols.csproj", "{B8E89E83-4E55-4CB5-9800-8FB1F21D2A29}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{5A66C806-471F-4D90-83DA-6E6B270AA451}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5A66C806-471F-4D90-83DA-6E6B270AA451}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5A66C806-471F-4D90-83DA-6E6B270AA451}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B8E89E83-4E55-4CB5-9800-8FB1F21D2A29}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8E89E83-4E55-4CB5-9800-8FB1F21D2A29}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8E89E83-4E55-4CB5-9800-8FB1F21D2A29}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8E89E83-4E55-4CB5-9800-8FB1F21D2A29}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
