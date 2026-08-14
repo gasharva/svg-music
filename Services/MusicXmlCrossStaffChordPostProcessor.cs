@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 
 namespace SvgToMusicXmlPoc.Services;
@@ -25,8 +26,6 @@ public sealed class MusicXmlCrossStaffChordPostProcessor
                          .GroupBy(x => (string)x.Attribute(MusicXmlSvgLayoutPostProcessor.CrossStaffIdAttribute)!)
                          .ToList())
             {
-                // A later layout pass may accidentally duplicate an XML note. SourceSymbolId is a
-                // stable glyph identity, so keep only one XML element for each recovered notehead.
                 var members = semanticGroup
                     .GroupBy(x => (string?)x.Attribute(MusicXmlSvgLayoutPostProcessor.SourceSymbolAttribute)
                                   ?? $"xml:{RuntimeHelpers.GetHashCode(x)}")
@@ -42,16 +41,11 @@ public sealed class MusicXmlCrossStaffChordPostProcessor
                 if (members.Count < 2 || members.Select(ReadStaff).Distinct().Count() < 2)
                     continue;
 
-                // MusicXML cross-staff notation is just one ordinary chord: one voice, one anchor
-                // note without <chord/>, following chord tones with <chord/>, while each note keeps
-                // its own <staff>. There is no special cross-staff element.
                 var commonVoice = members.Select(ReadVoice).Where(x => x > 0).DefaultIfEmpty(1).Min();
                 var commonStem = members
                     .Select(x => (string?)x.Element("stem"))
                     .FirstOrDefault(x => !string.IsNullOrWhiteSpace(x));
 
-                // Prefer a lower-staff note as the anchor. This mirrors common MusicXML cross-staff
-                // encoding and leaves the stem visually spanning upward into staff 1.
                 var anchor = members
                     .OrderByDescending(ReadStaff)
                     .ThenBy(ReadPitchMidi)
@@ -71,14 +65,8 @@ public sealed class MusicXmlCrossStaffChordPostProcessor
                 }
                 foreach (var note in ordered.Skip(1)) InsertChord(note);
 
-                // Beam state advances once per rhythmic onset, not once per chord tone.
                 foreach (var note in ordered.Skip(1)) note.Elements("beam").Remove();
 
-                // Notes of seconds are intentionally horizontally displaced by engraving software.
-                // Preserve every note's own default-x; equality is not part of MusicXML chord semantics.
-
-                // <chord/> only refers to the immediately preceding note, so members must be adjacent
-                // in document order even if an earlier voice pass split them between staff lanes.
                 var placeholder = new XElement("cross-staff-placeholder");
                 members.OrderBy(x => x.ElementsBeforeSelf().Count()).First().AddBeforeSelf(placeholder);
                 foreach (var note in ordered) note.Remove();
@@ -89,7 +77,6 @@ public sealed class MusicXmlCrossStaffChordPostProcessor
             }
         }
 
-        // Private transport attributes must never leak into the delivered MusicXML.
         foreach (var note in document.Descendants("note"))
         {
             note.Attribute(MusicXmlSvgLayoutPostProcessor.CrossStaffIdAttribute)?.Remove();
