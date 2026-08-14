@@ -72,6 +72,11 @@ public sealed class MusicXmlVoiceLayoutPostProcessor
                 bindingsByStaff[staffIndex].Add(new NoteBinding(noteElement, queue.Dequeue()));
             }
 
+            // A cross-staff chord remains engraved on both staffs, but semantically it is one
+            // timed unit. Move all bindings for the same recovered cross-staff stem into the upper
+            // staff's lane before chord construction; the note elements keep their original <staff>.
+            MergeCrossStaffBindings(bindingsByStaff, group);
+
             measure.Elements("note").Remove();
             measure.Elements("backup").Remove();
             measure.Elements("forward").Remove();
@@ -127,6 +132,37 @@ public sealed class MusicXmlVoiceLayoutPostProcessor
         }
 
         document.Save(path);
+    }
+
+    private static void MergeCrossStaffBindings(
+        Dictionary<int, List<NoteBinding>> bindingsByStaff,
+        IReadOnlyList<Staff> group)
+    {
+        var crossStaffGroups = bindingsByStaff.Values
+            .SelectMany(x => x)
+            .Where(x => x.Event.CrossStaffChordId.HasValue)
+            .GroupBy(x => x.Event.CrossStaffChordId!.Value)
+            .ToList();
+
+        foreach (var chord in crossStaffGroups)
+        {
+            var members = chord.ToList();
+            var staffIndexes = members.Select(x => x.Event.StaffIndex).Distinct().ToHashSet();
+            if (staffIndexes.Count < 2) continue;
+
+            var anchor = group
+                .Where(x => staffIndexes.Contains(x.Index))
+                .OrderBy(x => x.Center)
+                .FirstOrDefault();
+            if (anchor is null) continue;
+
+            foreach (var binding in members.Where(x => x.Event.StaffIndex != anchor.Index).ToList())
+            {
+                if (!bindingsByStaff.TryGetValue(binding.Event.StaffIndex, out var source)) continue;
+                source.Remove(binding);
+                bindingsByStaff[anchor.Index].Add(binding);
+            }
+        }
     }
 
     private static void AssignRestsToLanes(
