@@ -9,6 +9,11 @@ public sealed class ScoreStructureBuilder
         if (systems.Count == 0)
             throw new InvalidOperationException("No staff systems were detected.");
 
+        var staffCounts = systems.Select(x => x.StaffCount).Distinct().ToList();
+        if (staffCounts.Count != 1)
+            throw new InvalidOperationException(
+                $"Systems have inconsistent staff counts: {string.Join(", ", staffCounts)}.");
+
         var measures = new List<MeasureStructure>();
         var number = 1;
 
@@ -22,12 +27,12 @@ public sealed class ScoreStructureBuilder
             }
         }
 
-        // For this experiment each system has two five-line staves, matching the two
-        // source parts. We keep that one tiny assumption isolated here.
-        return new ScoreStructure(new[]
-        {
-            new PartStructure("P1", measures),
-            new PartStructure("P2", measures.Select(x => x with { }).ToList())
-        });
+        var parts = Enumerable.Range(1, staffCounts[0])
+            .Select(partNumber => new PartStructure(
+                $"P{partNumber}",
+                measures.Select(x => x with { }).ToList()))
+            .ToList();
+
+        return new ScoreStructure(parts);
     }
 }
