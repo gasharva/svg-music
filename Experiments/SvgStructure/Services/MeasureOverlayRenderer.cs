@@ -5,8 +5,8 @@ using SvgStructure.Models;
 namespace SvgStructure.Services;
 
 /// <summary>
-/// Simple verification step: renders the original SVG and draws every detected measure
-/// as a red rectangle spanning the whole system.
+/// Simple verification step: renders the original SVG and draws every detected
+/// staff-measure (P1-M1, P2-M1, ...) as a separate red rectangle.
 /// </summary>
 public sealed class MeasureOverlayRenderer
 {
@@ -45,13 +45,16 @@ public sealed class MeasureOverlayRenderer
         {
             for (var i = 0; i < system.BarXs.Count - 1; i++)
             {
-                canvas.DrawRect(
-                    new SKRect(
-                        (float)system.BarXs[i],
-                        (float)system.Top,
-                        (float)system.BarXs[i + 1],
-                        (float)system.Bottom),
-                    paint);
+                foreach (var staff in system.Staffs)
+                {
+                    canvas.DrawRect(
+                        new SKRect(
+                            (float)system.BarXs[i],
+                            (float)staff.Top,
+                            (float)system.BarXs[i + 1],
+                            (float)staff.Bottom),
+                        paint);
+                }
             }
         }
 
