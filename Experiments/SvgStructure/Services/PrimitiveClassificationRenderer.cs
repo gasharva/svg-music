@@ -24,13 +24,13 @@ public sealed class PrimitiveClassificationRenderer
     private static readonly (byte R, byte G, byte B) UnclassifiedColor = (110, 110, 110);
 
     private readonly PathContourSplitter _contourSplitter = new();
-    private readonly RawPrimitiveDetector _detector;
+    private readonly CompetitivePrimitiveClassifier _classifier;
     private readonly GarbageCleaner _garbageCleaner = new();
     private readonly StaffLinePrimitiveDetector _staffLineDetector = new();
 
-    public PrimitiveClassificationRenderer(double proximityPercentOfMeasureHeight = 0.18)
+    public PrimitiveClassificationRenderer(double proximityPercentOfMeasureHeight = 0.25)
     {
-        _detector = new RawPrimitiveDetector
+        _classifier = new CompetitivePrimitiveClassifier
         {
             ProximityPercentOfMeasureHeight = proximityPercentOfMeasureHeight
         };
@@ -53,7 +53,6 @@ public sealed class PrimitiveClassificationRenderer
         CollectPrimitives(classifiedModel, Shim.SKMatrix.Identity, primitiveCommands, primitives);
 
         var regions = BuildStaffMeasureRegions(systems);
-
         var staffLineIds = _staffLineDetector.Detect(primitives, regions);
         var musicalPrimitives = primitives
             .Where(x => !staffLineIds.Contains(x.Id))
@@ -61,7 +60,7 @@ public sealed class PrimitiveClassificationRenderer
 
         var cleanup = _garbageCleaner.Clean(musicalPrimitives, regions);
         var pageBounds = ToRectD(model.CullRect);
-        var claims = BuildClaims(regions, cleanup.Primitives, pageBounds);
+        var claims = _classifier.Classify(cleanup.Primitives, regions, pageBounds);
 
         var keepOriginalIds = staffLineIds
             .Concat(cleanup.GarbageIds)
@@ -97,95 +96,6 @@ public sealed class PrimitiveClassificationRenderer
         return outputPath;
     }
 
-    private Dictionary<int, HashSet<StaffMeasureKey>> BuildClaims(
-        IReadOnlyList<StaffMeasureRegion> regions,
-        IReadOnlyList<RawPrimitive> primitives,
-        RectD pageBounds)
-    {
-        // First establish hard anchors: a primitive that physically intersects exactly one
-        // staff-measure belongs there before any propagation starts. Other staff detectors
-        // are not allowed to use such a primitive as a bridge into their own cluster.
-        var directClaims = primitives.ToDictionary(
-            p => p.Id,
-            p => regions
-                .Where(r => p.Bounds.Intersects(r.Bounds))
-                .Select(r => r.Key)
-                .Distinct()
-                .ToHashSet());
-
-        var propagatedClaims = new Dictionary<int, HashSet<StaffMeasureKey>>();
-
-        foreach (var region in regions)
-        {
-            var blocked = directClaims
-                .Where(x => x.Value.Count == 1 && !x.Value.Contains(region.Key))
-                .Select(x => x.Key)
-                .ToHashSet();
-
-            var (topLimit, bottomLimit) = GetVerticalLimits(region, regions, pageBounds);
-            var detected = _detector.Detect(
-                region,
-                primitives,
-                topLimit,
-                bottomLimit,
-                blocked);
-
-            foreach (var primitiveId in detected)
-                AddClaim(propagatedClaims, primitiveId, region.Key);
-        }
-
-        // Hard anchors win over propagated claims. Ambiguous direct intersections remain
-        // ambiguous and therefore render gray, which is useful diagnostic information.
-        foreach (var (primitiveId, direct) in directClaims)
-        {
-            if (direct.Count > 0)
-                propagatedClaims[primitiveId] = direct;
-        }
-
-        return propagatedClaims;
-    }
-
-    private static void AddClaim(
-        IDictionary<int, HashSet<StaffMeasureKey>> claims,
-        int primitiveId,
-        StaffMeasureKey key)
-    {
-        if (!claims.TryGetValue(primitiveId, out var regionKeys))
-        {
-            regionKeys = new HashSet<StaffMeasureKey>();
-            claims[primitiveId] = regionKeys;
-        }
-
-        regionKeys.Add(key);
-    }
-
-    private static (double Top, double Bottom) GetVerticalLimits(
-        StaffMeasureRegion region,
-        IReadOnlyList<StaffMeasureRegion> regions,
-        RectD pageBounds)
-    {
-        var above = regions
-            .Where(x => x.Key != region.Key || x.SystemIndex != region.SystemIndex)
-            .Where(x => HorizontallyOverlaps(x, region))
-            .Where(x => x.Bottom <= region.Top)
-            .OrderByDescending(x => x.Bottom)
-            .FirstOrDefault();
-
-        var below = regions
-            .Where(x => x.Key != region.Key || x.SystemIndex != region.SystemIndex)
-            .Where(x => HorizontallyOverlaps(x, region))
-            .Where(x => x.Top >= region.Bottom)
-            .OrderBy(x => x.Top)
-            .FirstOrDefault();
-
-        return (
-            above?.Bottom ?? pageBounds.Top,
-            below?.Top ?? pageBounds.Bottom);
-    }
-
-    private static bool HorizontallyOverlaps(StaffMeasureRegion a, StaffMeasureRegion b) =>
-        a.Right > b.Left && a.Left < b.Right;
-
     private static void ApplyClassification(
         IReadOnlyDictionary<int, Shim.DrawPathCanvasCommand> commands,
         IReadOnlyDictionary<int, HashSet<StaffMeasureKey>> claims,
@@ -193,10 +103,7 @@ public sealed class PrimitiveClassificationRenderer
     {
         foreach (var (primitiveId, command) in commands)
         {
-            if (command.Paint is null)
-                continue;
-
-            if (keepOriginalIds.Contains(primitiveId))
+            if (command.Paint is null || keepOriginalIds.Contains(primitiveId))
                 continue;
 
             var color = claims.TryGetValue(primitiveId, out var regionKeys) && regionKeys.Count == 1
