@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Xml.Linq;
 
 namespace SvgToMusicXmlPoc.Services;
@@ -32,23 +31,17 @@ public sealed class MusicXmlScoreTextPostProcessor
         var insertBefore = root.Element("part-list") ?? root.Elements().FirstOrDefault();
         var credits = new List<XElement>();
 
-        // MuseScore imports the standard credit roles into distinct page-text styles.
-        // Untyped credits tend to collapse into the same position, so use title/subtitle/composer.
+        // Deliberately provide only the semantic role. MuseScore has native styles and placement
+        // for title/subtitle/composer; explicit coordinates and font attributes fight those styles
+        // and can make all page text collapse into the same header frame.
         if (!string.IsNullOrWhiteSpace(metadata.Title))
-            credits.Add(Credit("title", metadata.Title!, "center", 551.95, 1379.06, 22, bold: true));
+            credits.Add(Credit("title", metadata.Title!));
 
         if (metadata.DescriptionLines.Count > 0)
-            credits.Add(Credit(
-                "subtitle",
-                string.Join(Environment.NewLine, metadata.DescriptionLines),
-                "center",
-                551.95,
-                1326.31,
-                13,
-                italic: true));
+            credits.Add(Credit("subtitle", string.Join(Environment.NewLine, metadata.DescriptionLines)));
 
         if (!string.IsNullOrWhiteSpace(metadata.Author))
-            credits.Add(Credit("composer", metadata.Author!, "right", 1052.77, 1277.44, 15, bold: true, valign: "bottom"));
+            credits.Add(Credit("composer", metadata.Author!));
 
         foreach (var credit in credits)
         {
@@ -57,28 +50,11 @@ public sealed class MusicXmlScoreTextPostProcessor
         }
     }
 
-    private static XElement Credit(
-        string type,
-        string text,
-        string justify,
-        double x,
-        double y,
-        double size,
-        bool bold = false,
-        bool italic = false,
-        string valign = "top") =>
+    private static XElement Credit(string type, string text) =>
         new("credit",
             new XAttribute("page", 1),
             new XElement("credit-type", type),
-            new XElement("credit-words",
-                new XAttribute("default-x", x.ToString("0.###", CultureInfo.InvariantCulture)),
-                new XAttribute("default-y", y.ToString("0.###", CultureInfo.InvariantCulture)),
-                new XAttribute("justify", justify),
-                new XAttribute("valign", valign),
-                new XAttribute("font-size", size.ToString("0.###", CultureInfo.InvariantCulture)),
-                bold ? new XAttribute("font-weight", "bold") : null,
-                italic ? new XAttribute("font-style", "italic") : null,
-                text));
+            new XElement("credit-words", text));
 
     private static void AddWords(XElement measure, ScoreTextPlacement placement, int measureDuration)
     {
