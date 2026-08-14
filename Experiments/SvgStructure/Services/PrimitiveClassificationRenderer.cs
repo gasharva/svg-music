@@ -26,6 +26,7 @@ public sealed class PrimitiveClassificationRenderer
     private readonly PathContourSplitter _contourSplitter = new();
     private readonly RawPrimitiveDetector _detector;
     private readonly GarbageCleaner _garbageCleaner = new();
+    private readonly StaffLinePrimitiveDetector _staffLineDetector = new();
 
     public PrimitiveClassificationRenderer(double proximityPercentOfMeasureHeight = 0.18)
     {
@@ -56,11 +57,24 @@ public sealed class PrimitiveClassificationRenderer
             primitives);
 
         var regions = BuildStaffMeasureRegions(systems);
-        var cleanup = _garbageCleaner.Clean(primitives, regions);
+
+        // Real staff lines span several measures. They are structural geometry, not owned by
+        // any single Pn-Mn cell. Remove them from classification and replace them inside the
+        // detector with five temporary fragments clipped to each staff-measure.
+        var staffLineIds = _staffLineDetector.Detect(primitives, regions);
+        var musicalPrimitives = primitives
+            .Where(x => !staffLineIds.Contains(x.Id))
+            .ToList();
+
+        var cleanup = _garbageCleaner.Clean(musicalPrimitives, regions);
         var pageBounds = ToRectD(model.CullRect);
         var claims = BuildClaims(regions, cleanup.Primitives, pageBounds);
 
-        ApplyClassification(primitiveCommands, claims, cleanup.GarbageIds);
+        var keepOriginalIds = staffLineIds
+            .Concat(cleanup.GarbageIds)
+            .ToHashSet();
+
+        ApplyClassification(primitiveCommands, claims, keepOriginalIds);
 
         using var picture = svg.SkiaModel.ToSKPicture(classifiedModel)
             ?? throw new InvalidOperationException("Svg.Skia could not render the classified scene model.");
@@ -95,7 +109,7 @@ public sealed class PrimitiveClassificationRenderer
         IReadOnlyList<RawPrimitive> primitives,
         RectD pageBounds)
     {
-        var claims = new Dictionary<int, HashSet<StaffMeasureKey>>();
+        var propagatedClaims = new Dictionary<int, HashSet<StaffMeasureKey>>();
 
         foreach (var region in regions)
         {
@@ -103,26 +117,41 @@ public sealed class PrimitiveClassificationRenderer
             var detected = _detector.Detect(region, primitives, topLimit, bottomLimit);
 
             foreach (var primitiveId in detected)
-            {
-                if (!claims.TryGetValue(primitiveId, out var regionKeys))
-                {
-                    regionKeys = new HashSet<StaffMeasureKey>();
-                    claims[primitiveId] = regionKeys;
-                }
-
-                regionKeys.Add(region.Key);
-            }
+                AddClaim(propagatedClaims, primitiveId, region.Key);
         }
 
-        return claims;
+        // A real intersection with a staff-measure is stronger evidence than a claim that
+        // reached the primitive only through vertical propagation. This prevents a symbol
+        // visibly inside P1-M2 from becoming gray merely because P1-M1 also grew close to it.
+        foreach (var primitive in primitives)
+        {
+            var direct = regions
+                .Where(x => primitive.Bounds.Intersects(x.Bounds))
+                .Select(x => x.Key)
+                .Distinct()
+                .ToHashSet();
+
+            if (direct.Count > 0)
+                propagatedClaims[primitive.Id] = direct;
+        }
+
+        return propagatedClaims;
     }
 
-    /// <summary>
-    /// Search vertically to the actual boundary of the nearest staff-measure region
-    /// above/below that overlaps this measure's X strip. For P1 this naturally stops
-    /// at P2 in the same measure; for the outer staffs it continues to the next system
-    /// or to the SVG/page edge when no region exists in that direction.
-    /// </summary>
+    private static void AddClaim(
+        IDictionary<int, HashSet<StaffMeasureKey>> claims,
+        int primitiveId,
+        StaffMeasureKey key)
+    {
+        if (!claims.TryGetValue(primitiveId, out var regionKeys))
+        {
+            regionKeys = new HashSet<StaffMeasureKey>();
+            claims[primitiveId] = regionKeys;
+        }
+
+        regionKeys.Add(key);
+    }
+
     private static (double Top, double Bottom) GetVerticalLimits(
         StaffMeasureRegion region,
         IReadOnlyList<StaffMeasureRegion> regions,
@@ -153,14 +182,15 @@ public sealed class PrimitiveClassificationRenderer
     private static void ApplyClassification(
         IReadOnlyDictionary<int, Shim.DrawPathCanvasCommand> commands,
         IReadOnlyDictionary<int, HashSet<StaffMeasureKey>> claims,
-        IReadOnlySet<int> garbageIds)
+        IReadOnlySet<int> keepOriginalIds)
     {
         foreach (var (primitiveId, command) in commands)
         {
             if (command.Paint is null)
                 continue;
 
-            if (garbageIds.Contains(primitiveId))
+            // Structural staff lines and garbage stay exactly as they were in the source SVG.
+            if (keepOriginalIds.Contains(primitiveId))
                 continue;
 
             var color = claims.TryGetValue(primitiveId, out var regionKeys) && regionKeys.Count == 1
