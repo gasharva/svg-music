@@ -13,18 +13,14 @@ public sealed class StaffSystemDetector
             .Where(x => x.IsHorizontal() && x.Width >= MinStaffLineWidth)
             .ToList();
 
-        var groups = staffLines
-            .GroupBy(x => new EndpointKey(
-                Bucket(x.Left),
-                Bucket(x.Right)))
-            .Where(g => g.Count() >= 10)
+        return staffLines
+            .GroupBy(x => new EndpointKey(Bucket(x.Left), Bucket(x.Right)))
+            .Where(g => g.Count() >= 5)
             .Select(g => BuildSystem(g.ToList(), lines))
             .Where(x => x is not null)
             .Cast<StaffSystem>()
             .OrderBy(x => x.Top)
             .ToList();
-
-        return groups;
     }
 
     private static StaffSystem? BuildSystem(
@@ -32,9 +28,10 @@ public sealed class StaffSystemDetector
         IReadOnlyList<LineSegment> allLines)
     {
         var ys = Distinct(staffLines.Select(x => (x.Start.Y + x.End.Y) / 2)).ToList();
-        if (ys.Count < 10)
+        if (ys.Count < 5 || ys.Count % 5 != 0)
             return null;
 
+        var staffCount = ys.Count / 5;
         var left = staffLines.Average(x => x.Left);
         var right = staffLines.Average(x => x.Right);
         var top = ys.Min();
@@ -51,7 +48,7 @@ public sealed class StaffSystemDetector
             .ToList();
 
         return barXs.Count >= 2
-            ? new StaffSystem(left, right, top, bottom, barXs)
+            ? new StaffSystem(left, right, top, bottom, staffCount, barXs)
             : null;
     }
 
