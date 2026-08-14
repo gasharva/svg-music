@@ -50,18 +50,12 @@ public sealed class BeamHookRhythmResolver
                             : shape.CenterY - beamEndY
                     })
                     .Where(x => x.HorizontalGap <= staff.Space * .68)
-                    // A sloped primary beam can cross slightly beyond the recovered stem endpoint.
-                    // Keep that primary band in the comparison; otherwise a real secondary hook is
-                    // left as the only band and the 16th is incorrectly downgraded to an eighth.
                     .Where(x => x.InwardOffset >= -staff.Space * .32 && x.InwardOffset <= staff.Space * 1.55)
                     .Where(x => IntervalDistance(stem.Top, stem.Bottom, x.Shape.Top, x.Shape.Bottom) <=
                                 Math.Max(staff.Space * .65, x.Shape.Thickness * 1.8))
                     .OrderBy(x => x.InwardOffset)
                     .ToList();
 
-                // The closest band is the primary beam. A 16th needs a second distinct band/hook
-                // touching the same stem. This avoids treating a thick/sloped primary beam itself
-                // as level 2, while still recognizing a short backward/forward hook at one end.
                 if (bands.Count > 1)
                 {
                     var primary = bands[0].InwardOffset;
@@ -69,15 +63,21 @@ public sealed class BeamHookRhythmResolver
                         x.InwardOffset - primary >= staff.Space * .22);
                     if (hasSecondary)
                     {
+                        // This resolver can add a missing secondary hook, but it must never
+                        // downgrade a stronger result produced by UnifiedBeamGeometryResolver.
+                        // In particular, a 32nd (3 beam levels) must stay a 32nd here.
                         note.BeamCount = Math.Max(2, note.BeamCount);
-                        note.Type = "16th";
                     }
                 }
             }
 
             if (note.BeamCount > 0)
             {
-                var baseDuration = DurationForType(note.Type ?? "eighth", config.Divisions);
+                var inferredType = TypeForBeamCount(note.BeamCount);
+                if (BeamDepth(note.Type) < note.BeamCount)
+                    note.Type = inferredType;
+
+                var baseDuration = DurationForType(note.Type ?? inferredType, config.Divisions);
                 note.Duration = note.Dotted ? baseDuration * 3 / 2 : baseDuration;
             }
         }
@@ -120,6 +120,23 @@ public sealed class BeamHookRhythmResolver
         return result;
     }
 
+    private static int BeamDepth(string? type) => type?.ToLowerInvariant() switch
+    {
+        "eighth" => 1,
+        "16th" => 2,
+        "32nd" => 3,
+        "64th" => 4,
+        _ => 0
+    };
+
+    private static string TypeForBeamCount(int beamCount) => beamCount switch
+    {
+        <= 1 => "eighth",
+        2 => "16th",
+        3 => "32nd",
+        _ => "64th"
+    };
+
     private static double PolygonArea(IReadOnlyList<PointD> contour)
     {
         if (contour.Count < 3) return 0;
@@ -154,6 +171,7 @@ public sealed class BeamHookRhythmResolver
         "eighth" => Math.Max(1, divisions / 2),
         "16th" => Math.Max(1, divisions / 4),
         "32nd" => Math.Max(1, divisions / 8),
+        "64th" => Math.Max(1, divisions / 16),
         _ => Math.Max(1, divisions)
     };
 }

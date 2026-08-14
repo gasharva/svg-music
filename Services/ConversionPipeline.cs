@@ -31,7 +31,8 @@ public sealed class ConversionPipeline
         new AccidentalGeometryResolver().Resolve(analysis, config); new AugmentationDotGeometryResolver().Resolve(analysis, config);
         new ArcSemanticsResolver().Resolve(analysis); new HighArcSemanticsResolver().Resolve(analysis); new LongArcSemanticsResolver().Resolve(analysis);
         new ChordRhythmNormalizer().Normalize(analysis); new BeamHookRhythmResolver().Resolve(analysis, config); new StandaloneFlagRhythmResolver().Resolve(analysis, config);
-        new CompactStandaloneArcResolver().Resolve(analysis); new CrossSystemTieResolver().Resolve(analysis); new DynamicsGeometryResolver().Resolve(analysis); new TerminalDynamicGeometryResolver().Resolve(analysis);
+        new CompactStandaloneArcResolver().Resolve(analysis); new StemAnchoredSlurResolver().Resolve(analysis); new CrossSystemTieResolver().Resolve(analysis);
+        new DynamicsGeometryResolver().Resolve(analysis); new TerminalDynamicGeometryResolver().Resolve(analysis);
         performance.RecognizeSemanticsMs = watch.Elapsed.TotalMilliseconds; performance.TotalMs = total.Elapsed.TotalMilliseconds;
         return new AnalysisPipelineResult(analysis, classification, performance);
     }
