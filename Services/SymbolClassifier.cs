@@ -13,7 +13,11 @@ public sealed class SymbolClassifier
 
     public ClassifierPerformance LastPerformance { get; private set; } = new();
 
-    public ClassificationResult Classify(string scorePath, IReadOnlyList<Staff> staves, string catalogPath)
+    public ClassificationResult Classify(
+        string scorePath,
+        IReadOnlyList<Staff> staves,
+        string catalogPath,
+        int maxDegreeOfParallelism = 8)
     {
         var scoreDoc = System.Xml.Linq.XDocument.Load(scorePath);
         var source = _geometry.ReadScoreGeometries(scoreDoc);
@@ -27,51 +31,71 @@ public sealed class SymbolClassifier
         var unique = source.GroupBy(x => FastGlyphMatcher.GeometryKey(x.Value), StringComparer.Ordinal)
             .Select(g => new { Geometry = g.First().Value, SymbolIds = g.Select(x => x.Key).ToArray() }).ToArray();
         long maskComparisons = 0, vectorComparisons = 0;
-        var result = new ClassificationResult();
+        var classifiedGroups = new SymbolClassification[unique.Length][];
         var classifyWatch = Stopwatch.StartNew();
 
-        foreach (var group in unique)
-        {
-            var geometry = group.Geometry;
-            var descriptor = SvgPathGeometry.Describe(geometry);
-            var widthSpaces = descriptor.Width / staffSpace;
-            var heightSpaces = descriptor.Height / staffSpace;
-            var mask = FastGlyphMatcher.CreateMask(geometry);
-            var finalists = references.Select(reference =>
-                {
-                    maskComparisons++;
-                    var maskIoU = FastGlyphMatcher.BestMaskIoU(mask, reference.Mask);
-                    var size = SizeScore(widthSpaces, heightSpaces, reference);
-                    var aspect = Math.Exp(-Math.Abs(Math.Log(Math.Max(descriptor.AspectRatio, 1e-6) / Math.Max(reference.AspectRatio, 1e-6))));
-                    return (Reference: reference, MaskIoU: maskIoU, Size: size, FastScore: 0.72 * maskIoU + 0.18 * size + 0.10 * aspect);
-                })
-                .OrderByDescending(x => x.FastScore).Take(FinalCandidateCount).ToArray();
+        Parallel.For(
+            0,
+            unique.Length,
+            new ParallelOptions { MaxDegreeOfParallelism = Math.Max(1, maxDegreeOfParallelism) },
+            index =>
+            {
+                var group = unique[index];
+                var geometry = group.Geometry;
+                var descriptor = SvgPathGeometry.Describe(geometry);
+                var widthSpaces = descriptor.Width / staffSpace;
+                var heightSpaces = descriptor.Height / staffSpace;
+                var mask = FastGlyphMatcher.CreateMask(geometry);
+                long localMaskComparisons = 0, localVectorComparisons = 0;
 
-            var best = finalists.Select(candidate =>
-                {
-                    vectorComparisons++;
-                    var vectorIoU = FastGlyphMatcher.BestVectorIoU(geometry, candidate.Reference.Geometry);
-                    return (candidate.Reference, Total: 0.52 * candidate.MaskIoU + 0.28 * vectorIoU + 0.20 * candidate.Size,
-                        Shape: 0.65 * candidate.MaskIoU + 0.35 * vectorIoU, candidate.Size);
-                })
-                .OrderByDescending(x => x.Total).FirstOrDefault();
-            if (best.Reference is null) continue;
+                var finalists = references.Select(reference =>
+                    {
+                        localMaskComparisons++;
+                        var maskIoU = FastGlyphMatcher.BestMaskIoU(mask, reference.Mask);
+                        var size = SizeScore(widthSpaces, heightSpaces, reference);
+                        var aspect = Math.Exp(-Math.Abs(Math.Log(Math.Max(descriptor.AspectRatio, 1e-6) / Math.Max(reference.AspectRatio, 1e-6))));
+                        return (Reference: reference, MaskIoU: maskIoU, Size: size, FastScore: 0.72 * maskIoU + 0.18 * size + 0.10 * aspect);
+                    })
+                    .OrderByDescending(x => x.FastScore).Take(FinalCandidateCount).ToArray();
 
-            var isUsedNearStaff = group.SymbolIds.Any(staffContextSymbols.Contains);
-            var isUsedAtStaffLeft = group.SymbolIds.Any(leftEdgeSymbols.Contains);
-            var semanticKind = RecognizeStaffLocalClef(widthSpaces, heightSpaces, isUsedAtStaffLeft)
-                               ?? RecognizeStaffLocalDot(widthSpaces, heightSpaces, isUsedNearStaff)
-                               ?? RecognizeStaffLocalQuarterRest(geometry, widthSpaces, heightSpaces, isUsedNearStaff)
-                               ?? RecognizeStaffLocalAccidental(widthSpaces, heightSpaces, isUsedNearStaff)
-                               ?? RecognizeStaffLocalNotehead(mask, widthSpaces, heightSpaces, isUsedNearStaff)
-                               ?? NormalizeKind(best.Reference.Id, best.Reference.Kind);
-            foreach (var symbolId in group.SymbolIds)
-                result.Symbols.Add(new SymbolClassification(symbolId, semanticKind, best.Reference.Id, best.Total,
-                    best.Shape, best.Size, widthSpaces, heightSpaces,
-                    best.Reference.MusicXmlElement, best.Reference.MusicXmlValue));
-        }
+                var best = finalists.Select(candidate =>
+                    {
+                        localVectorComparisons++;
+                        var vectorIoU = FastGlyphMatcher.BestVectorIoU(geometry, candidate.Reference.Geometry);
+                        return (candidate.Reference, Total: 0.52 * candidate.MaskIoU + 0.28 * vectorIoU + 0.20 * candidate.Size,
+                            Shape: 0.65 * candidate.MaskIoU + 0.35 * vectorIoU, candidate.Size);
+                    })
+                    .OrderByDescending(x => x.Total).FirstOrDefault();
+
+                Interlocked.Add(ref maskComparisons, localMaskComparisons);
+                Interlocked.Add(ref vectorComparisons, localVectorComparisons);
+
+                if (best.Reference is null)
+                {
+                    classifiedGroups[index] = [];
+                    return;
+                }
+
+                var isUsedNearStaff = group.SymbolIds.Any(staffContextSymbols.Contains);
+                var isUsedAtStaffLeft = group.SymbolIds.Any(leftEdgeSymbols.Contains);
+                var semanticKind = RecognizeStaffLocalClef(widthSpaces, heightSpaces, isUsedAtStaffLeft)
+                                   ?? RecognizeStaffLocalDot(widthSpaces, heightSpaces, isUsedNearStaff)
+                                   ?? RecognizeStaffLocalQuarterRest(geometry, widthSpaces, heightSpaces, isUsedNearStaff)
+                                   ?? RecognizeStaffLocalAccidental(widthSpaces, heightSpaces, isUsedNearStaff)
+                                   ?? RecognizeStaffLocalNotehead(mask, widthSpaces, heightSpaces, isUsedNearStaff)
+                                   ?? NormalizeKind(best.Reference.Id, best.Reference.Kind);
+
+                classifiedGroups[index] = group.SymbolIds
+                    .Select(symbolId => new SymbolClassification(symbolId, semanticKind, best.Reference.Id, best.Total,
+                        best.Shape, best.Size, widthSpaces, heightSpaces,
+                        best.Reference.MusicXmlElement, best.Reference.MusicXmlValue))
+                    .ToArray();
+            });
 
         classifyWatch.Stop();
+        var result = new ClassificationResult();
+        foreach (var group in classifiedGroups)
+            result.Symbols.AddRange(group);
         result.Symbols.Sort((a, b) => string.CompareOrdinal(a.SymbolId, b.SymbolId));
         LastPerformance = new ClassifierPerformance
         {
