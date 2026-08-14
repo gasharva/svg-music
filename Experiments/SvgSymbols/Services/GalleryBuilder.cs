@@ -55,7 +55,7 @@ public sealed class GalleryBuilder
 
         foreach (var source in sources)
         {
-            var relative = $"Samples/{folder}/{Uri.EscapeDataString(source.FileName)}";
+            var relative = $"Samples/{folder}/{EscapeRelativePath(source.FileName)}";
             var id = folder + ":" + source.FileName;
             html.AppendLine("<div class=\"card\">");
             html.AppendLine($"<div class=\"preview\"><img loading=\"lazy\" src=\"{relative}\"></div>");
@@ -72,4 +72,10 @@ public sealed class GalleryBuilder
 
         html.AppendLine("</div>");
     }
+
+    private static string EscapeRelativePath(string path) =>
+        string.Join('/', path
+            .Replace('\\', '/')
+            .Split('/', StringSplitOptions.RemoveEmptyEntries)
+            .Select(Uri.EscapeDataString));
 }
