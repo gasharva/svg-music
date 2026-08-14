@@ -20,12 +20,12 @@
 
 | Relation | Count | % of notes |
 |---|---:|---:|
-| stem attached | 178 | 70.4% |
-| stem direction | 178 | 70.4% |
+| stem attached | 250 | 98.8% |
+| stem direction | 250 | 98.8% |
 | chord members | 40 | 15.8% |
-| notes touching beams | 72 | 28.5% |
-| beam begin/continue/end | 72 | 28.5% |
-| eighth notes | 67 | 26.5% |
+| notes touching beams | 144 | 56.9% |
+| beam begin/continue/end | 144 | 56.9% |
+| eighth notes | 132 | 52.2% |
 | 16th notes | 16 | 6.3% |
 | dotted notes | 62 | 24.5% |
 | slur starts | 33 | 13.0% |
@@ -36,7 +36,7 @@
 
 ## Missing-stem triage
 
-Unattached noteheads: **75**
+Unattached noteheads: **3**
 Normalized stem candidates: **120**
 Broad raw vertical candidates: **131**
 Raw vertical candidates not normalized: **12**
@@ -46,42 +46,15 @@ Raw vertical candidates not normalized: **12**
 | normalization gap | 2 | stem-like raw path exists near the note, but no normalized line candidate does |
 | attachment geometry gap | 0 | normalized stem is nearby, but current note↔stem endpoint/intersection tolerance rejects it |
 | unexpected resolver gap | 0 | a normalized candidate satisfies the resolver's current attachment window but StemX is still empty |
-| no stem geometry candidate | 73 | neither normalized nor broad raw vertical geometry was found near the note |
+| no stem geometry candidate | 1 | neither normalized nor broad raw vertical geometry was found near the note |
 
 ### Sample unattached notes
 
 | category | symbol | staff | x | y | line dx sp | line y-gap sp | raw dx sp | raw y-gap sp | raw path |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---|
 | noStemGeometryCandidate | `j` | 2 | 273.06 | 271.13 |  |  |  |  | `` |
-| noStemGeometryCandidate | `h` | 2 | 291.80 | 282.57 |  |  |  |  | `` |
-| noStemGeometryCandidate | `h` | 2 | 291.80 | 278.00 |  |  |  |  | `` |
-| noStemGeometryCandidate | `h` | 2 | 310.11 | 282.57 |  |  |  |  | `` |
-| noStemGeometryCandidate | `h` | 2 | 310.11 | 278.00 |  |  |  |  | `` |
-| noStemGeometryCandidate | `h` | 2 | 332.23 | 280.29 |  |  |  |  | `` |
-| noStemGeometryCandidate | `h` | 2 | 332.23 | 275.71 |  |  |  |  | `` |
-| noStemGeometryCandidate | `h` | 2 | 351.87 | 280.29 |  |  |  |  | `` |
-| noStemGeometryCandidate | `h` | 2 | 351.87 | 275.71 |  |  |  |  | `` |
-| noStemGeometryCandidate | `h` | 2 | 372.84 | 278.00 |  |  |  |  | `` |
-| noStemGeometryCandidate | `h` | 2 | 372.84 | 273.42 |  |  |  |  | `` |
-| noStemGeometryCandidate | `h` | 2 | 409.07 | 278.00 |  |  |  |  | `` |
-| noStemGeometryCandidate | `h` | 2 | 409.07 | 273.42 |  |  |  |  | `` |
-| noStemGeometryCandidate | `h` | 2 | 430.81 | 278.00 |  |  |  |  | `` |
-| noStemGeometryCandidate | `h` | 2 | 430.81 | 273.42 |  |  |  |  | `` |
-| noStemGeometryCandidate | `h` | 2 | 435.95 | 275.71 |  |  |  |  | `` |
-| noStemGeometryCandidate | `h` | 2 | 435.95 | 271.13 |  |  |  |  | `` |
-| noStemGeometryCandidate | `h` | 2 | 452.54 | 278.00 |  |  |  |  | `` |
-| noStemGeometryCandidate | `h` | 2 | 452.55 | 273.42 |  |  |  |  | `` |
-| noStemGeometryCandidate | `h` | 2 | 457.69 | 275.71 |  |  |  |  | `` |
-| noStemGeometryCandidate | `h` | 2 | 457.69 | 271.13 |  |  |  |  | `` |
-| noStemGeometryCandidate | `h` | 2 | 474.28 | 278.00 |  |  |  |  | `` |
-| noStemGeometryCandidate | `h` | 2 | 474.28 | 273.42 |  |  |  |  | `` |
-| noStemGeometryCandidate | `h` | 2 | 474.28 | 268.84 |  |  |  |  | `` |
-| noStemGeometryCandidate | `h` | 2 | 479.42 | 275.71 |  |  |  |  | `` |
-| noStemGeometryCandidate | `h` | 2 | 479.42 | 271.13 |  |  |  |  | `` |
-| noStemGeometryCandidate | `h` | 2 | 495.83 | 278.00 |  |  |  |  | `` |
-| noStemGeometryCandidate | `h` | 2 | 495.83 | 273.42 |  |  |  |  | `` |
-| noStemGeometryCandidate | `h` | 2 | 495.83 | 268.84 |  |  |  |  | `` |
-| noStemGeometryCandidate | `h` | 2 | 500.97 | 275.71 |  |  |  |  | `` |
+| normalizationGap | `h` | 7 | 395.72 | 592.80 |  |  | 0.568 | 0.000 | `path:000159#0` |
+| normalizationGap | `h` | 7 | 395.72 | 583.65 |  |  | 0.568 | 0.000 | `path:000159#0` |
 
 ## Warning groups
 
