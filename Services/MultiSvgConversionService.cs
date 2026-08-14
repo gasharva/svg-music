@@ -131,6 +131,7 @@ public sealed class MultiSvgConversionService
             }
         }
 
+        new MusicXmlContinuationCleanupPostProcessor().Apply(combined!);
         combined!.Save(musicXmlPath);
 
         var scoreText = ScoreTextMetadata.TryLoad(directory.FullName);
