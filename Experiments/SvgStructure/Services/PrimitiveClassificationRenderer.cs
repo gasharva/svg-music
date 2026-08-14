@@ -25,6 +25,7 @@ public sealed class PrimitiveClassificationRenderer
 
     private readonly PathContourSplitter _contourSplitter = new();
     private readonly RawPrimitiveDetector _detector;
+    private readonly GarbageCleaner _garbageCleaner = new();
 
     public PrimitiveClassificationRenderer(double proximityPercentOfMeasureHeight = 0.18)
     {
@@ -55,10 +56,11 @@ public sealed class PrimitiveClassificationRenderer
             primitives);
 
         var measures = BuildMeasureRegions(systems);
+        var cleanup = _garbageCleaner.Clean(primitives, measures);
         var pageBounds = ToRectD(model.CullRect);
-        var claims = BuildClaims(measures, systems, primitives, pageBounds);
+        var claims = BuildClaims(measures, cleanup.Primitives, pageBounds);
 
-        ApplyClassification(primitiveCommands, claims);
+        ApplyClassification(primitiveCommands, claims, cleanup.GarbageIds);
 
         using var picture = svg.SkiaModel.ToSKPicture(classifiedModel)
             ?? throw new InvalidOperationException("Svg.Skia could not render the classified scene model.");
@@ -90,7 +92,6 @@ public sealed class PrimitiveClassificationRenderer
 
     private Dictionary<int, HashSet<int>> BuildClaims(
         IReadOnlyList<MeasureRegion> measures,
-        IReadOnlyList<StaffSystem> systems,
         IReadOnlyList<RawPrimitive> primitives,
         RectD pageBounds)
     {
@@ -98,7 +99,7 @@ public sealed class PrimitiveClassificationRenderer
 
         foreach (var measure in measures)
         {
-            var (topLimit, bottomLimit) = GetVerticalLimits(measure.SystemIndex, systems, pageBounds);
+            var (topLimit, bottomLimit) = GetVerticalLimits(measure, measures, pageBounds);
             var detected = _detector.Detect(measure, primitives, topLimit, bottomLimit);
 
             foreach (var primitiveId in detected)
@@ -116,31 +117,51 @@ public sealed class PrimitiveClassificationRenderer
         return claims;
     }
 
+    /// <summary>
+    /// Search vertically all the way to the actual next measure boundary on the same
+    /// vertical search strip. If there is no measure above/below that overlaps this
+    /// measure horizontally, the SVG/page boundary is the limit.
+    /// </summary>
     private static (double Top, double Bottom) GetVerticalLimits(
-        int systemIndex,
-        IReadOnlyList<StaffSystem> systems,
+        MeasureRegion measure,
+        IReadOnlyList<MeasureRegion> measures,
         RectD pageBounds)
     {
-        var system = systems[systemIndex];
+        var above = measures
+            .Where(x => x.Number != measure.Number)
+            .Where(x => HorizontallyOverlaps(x, measure))
+            .Where(x => x.Bottom <= measure.Top)
+            .OrderByDescending(x => x.Bottom)
+            .FirstOrDefault();
 
-        var top = systemIndex == 0
-            ? pageBounds.Top
-            : (systems[systemIndex - 1].Bottom + system.Top) / 2;
+        var below = measures
+            .Where(x => x.Number != measure.Number)
+            .Where(x => HorizontallyOverlaps(x, measure))
+            .Where(x => x.Top >= measure.Bottom)
+            .OrderBy(x => x.Top)
+            .FirstOrDefault();
 
-        var bottom = systemIndex == systems.Count - 1
-            ? pageBounds.Bottom
-            : (system.Bottom + systems[systemIndex + 1].Top) / 2;
-
-        return (top, bottom);
+        return (
+            above?.Bottom ?? pageBounds.Top,
+            below?.Top ?? pageBounds.Bottom);
     }
+
+    private static bool HorizontallyOverlaps(MeasureRegion a, MeasureRegion b) =>
+        a.Right > b.Left && a.Left < b.Right;
 
     private static void ApplyClassification(
         IReadOnlyDictionary<int, Shim.DrawPathCanvasCommand> commands,
-        IReadOnlyDictionary<int, HashSet<int>> claims)
+        IReadOnlyDictionary<int, HashSet<int>> claims,
+        IReadOnlySet<int> garbageIds)
     {
         foreach (var (primitiveId, command) in commands)
         {
             if (command.Paint is null)
+                continue;
+
+            // Garbage is excluded from the classifier entirely and keeps its original
+            // appearance. This is especially important for white page/background paths.
+            if (garbageIds.Contains(primitiveId))
                 continue;
 
             var color = claims.TryGetValue(primitiveId, out var measureNumbers) && measureNumbers.Count == 1
