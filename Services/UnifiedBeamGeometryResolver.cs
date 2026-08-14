@@ -93,7 +93,7 @@ public sealed class UnifiedBeamGeometryResolver
 
     private static SvgLineSegment? FindStem(AnalysisResult analysis, RecognizedEvent note, Staff staff) => analysis.LineSegments
         .Where(x => Math.Abs(x.CenterX - note.StemX!.Value) <= staff.Space * .18)
-        .Where(x => x.Height >= staff.Space * 1.10 && x.Height <= staff.Space * 11.0)
+        .Where(x => x.Height >= staff.Space * 1.10 && x.Height <= staff.Space * 16.0)
         .Where(x => x.Top <= note.Y + staff.Space * .90 && x.Bottom >= note.Y - staff.Space * .90)
         .OrderBy(x => Math.Abs(x.CenterX - note.StemX!.Value)).ThenBy(x => Math.Abs(x.CenterY - note.Y)).FirstOrDefault();
 
