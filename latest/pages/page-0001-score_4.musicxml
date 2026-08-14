@@ -952,7 +952,7 @@
         </notations>
         <staff>2</staff>
       </note>
-      <note default-x="196.038">
+      <note default-x="207.277">
         <chord />
         <pitch>
           <step>G</step>
@@ -964,6 +964,7 @@
         <type>eighth</type>
         <accidental>sharp</accidental>
         <stem>up</stem>
+        <beam number="1">continue</beam>
         <staff>2</staff>
       </note>
       <note default-x="196.038">
@@ -1021,7 +1022,7 @@
         </notations>
         <staff>2</staff>
       </note>
-      <note default-x="238.957">
+      <note default-x="250.197">
         <chord />
         <pitch>
           <step>G</step>
@@ -1032,6 +1033,7 @@
         <voice>1</voice>
         <type>eighth</type>
         <stem>up</stem>
+        <beam number="1">continue</beam>
         <staff>2</staff>
       </note>
       <note default-x="238.957">
@@ -1083,7 +1085,7 @@
         <beam number="1">continue</beam>
         <staff>2</staff>
       </note>
-      <note default-x="284.795">
+      <note default-x="296.036">
         <chord />
         <pitch>
           <step>G</step>
@@ -1094,6 +1096,7 @@
         <voice>1</voice>
         <type>eighth</type>
         <stem>up</stem>
+        <beam number="1">continue</beam>
         <staff>2</staff>
       </note>
       <note default-x="284.795">
@@ -1108,7 +1111,7 @@
         <stem>up</stem>
         <staff>2</staff>
       </note>
-      <note default-x="284.795">
+      <note default-x="296.036">
         <chord />
         <pitch>
           <step>B</step>
@@ -1118,6 +1121,7 @@
         <voice>1</voice>
         <type>eighth</type>
         <stem>up</stem>
+        <beam number="1">end</beam>
         <staff>2</staff>
       </note>
       <note default-x="284.795">
@@ -2984,7 +2988,8 @@
       <forward>
         <duration>640</duration>
       </forward>
-      <note default-x="258.332">
+      <note default-x="258.321">
+        <chord />
         <pitch>
           <step>A</step>
           <octave>2</octave>
@@ -2993,6 +2998,7 @@
         <duration>320</duration>
         <voice>1</voice>
         <type>quarter</type>
+        <stem>up</stem>
         <notations>
           <tied type="stop" />
         </notations>
