@@ -1,16 +1,22 @@
+using System.Globalization;
 using System.Xml.Linq;
 
 namespace SvgToMusicXmlPoc.Services;
 
 public sealed class MusicXmlScoreTextPostProcessor
 {
+    private const double DefaultPageWidth = 1200;
+    private const double DefaultPageHeight = 1697.14;
+    private const double DefaultPageMargin = 70;
+    private const double HeaderSystemDistance = 170;
+
     public void Apply(string musicXmlPath, ScoreTextMetadata metadata)
     {
         var document = XDocument.Load(musicXmlPath);
         var root = document.Root ?? throw new InvalidOperationException("MusicXML root not found.");
         var part = root.Element("part") ?? throw new InvalidOperationException("MusicXML part not found.");
 
-        AddCredits(root, metadata);
+        AddHeader(root, part, metadata);
 
         var divisions = 1;
         var beats = 4;
@@ -26,35 +32,195 @@ public sealed class MusicXmlScoreTextPostProcessor
         document.Save(musicXmlPath);
     }
 
-    private static void AddCredits(XElement root, ScoreTextMetadata metadata)
+    private static void AddHeader(XElement root, XElement part, ScoreTextMetadata metadata)
     {
-        var insertBefore = root.Element("part-list") ?? root.Elements().FirstOrDefault();
-        var credits = new List<XElement>();
+        if (!HasHeader(metadata)) return;
 
-        // Deliberately provide only the semantic role. MuseScore has native styles and placement
-        // for title/subtitle/composer; explicit coordinates and font attributes fight those styles
-        // and can make all page text collapse into the same header frame.
+        AddSemanticMetadata(root, metadata);
+        var layout = EnsurePageLayout(root);
+        AddCredits(root, metadata, layout);
+        EnsureHeaderClearance(part);
+    }
+
+    private static bool HasHeader(ScoreTextMetadata metadata) =>
+        !string.IsNullOrWhiteSpace(metadata.Title) ||
+        metadata.DescriptionLines.Count > 0 ||
+        !string.IsNullOrWhiteSpace(metadata.Author);
+
+    private static void AddSemanticMetadata(XElement root, ScoreTextMetadata metadata)
+    {
+        var partList = root.Element("part-list")
+            ?? throw new InvalidOperationException("MusicXML part-list not found.");
+
         if (!string.IsNullOrWhiteSpace(metadata.Title))
-            credits.Add(Credit("title", metadata.Title!));
+        {
+            var work = root.Element("work");
+            if (work is null)
+            {
+                work = new XElement("work");
+                root.AddFirst(work);
+            }
 
-        if (metadata.DescriptionLines.Count > 0)
-            credits.Add(Credit("subtitle", string.Join(Environment.NewLine, metadata.DescriptionLines)));
+            var workTitle = work.Element("work-title");
+            if (workTitle is null)
+                work.Add(new XElement("work-title", metadata.Title));
+            else
+                workTitle.Value = metadata.Title!;
+        }
 
         if (!string.IsNullOrWhiteSpace(metadata.Author))
-            credits.Add(Credit("composer", metadata.Author!));
-
-        foreach (var credit in credits)
         {
-            if (insertBefore is null) root.AddFirst(credit);
-            else insertBefore.AddBeforeSelf(credit);
+            var identification = root.Element("identification");
+            if (identification is null)
+            {
+                identification = new XElement("identification");
+                var defaults = root.Element("defaults");
+                var firstCredit = root.Element("credit");
+                var before = defaults ?? firstCredit ?? partList;
+                before.AddBeforeSelf(identification);
+            }
+
+            var composer = identification.Elements("creator")
+                .FirstOrDefault(x => string.Equals((string?)x.Attribute("type"), "composer", StringComparison.OrdinalIgnoreCase));
+            if (composer is null)
+                identification.AddFirst(new XElement("creator", new XAttribute("type", "composer"), metadata.Author));
+            else
+                composer.Value = metadata.Author!;
         }
     }
 
-    private static XElement Credit(string type, string text) =>
-        new("credit",
+    private static PageLayout EnsurePageLayout(XElement root)
+    {
+        var partList = root.Element("part-list")
+            ?? throw new InvalidOperationException("MusicXML part-list not found.");
+        var defaults = root.Element("defaults");
+        if (defaults is null)
+        {
+            defaults = new XElement("defaults");
+            var firstCredit = root.Element("credit");
+            (firstCredit ?? partList).AddBeforeSelf(defaults);
+        }
+
+        var pageLayout = defaults.Element("page-layout");
+        if (pageLayout is null)
+        {
+            pageLayout = new XElement("page-layout",
+                new XElement("page-height", F(DefaultPageHeight)),
+                new XElement("page-width", F(DefaultPageWidth)),
+                CreateMargins("both", DefaultPageMargin));
+            defaults.Add(pageLayout);
+        }
+
+        var pageWidth = ReadDouble(pageLayout.Element("page-width"), DefaultPageWidth);
+        var pageHeight = ReadDouble(pageLayout.Element("page-height"), DefaultPageHeight);
+        var margins = pageLayout.Elements("page-margins")
+            .FirstOrDefault(x => string.Equals((string?)x.Attribute("type"), "odd", StringComparison.OrdinalIgnoreCase))
+            ?? pageLayout.Elements("page-margins")
+                .FirstOrDefault(x => string.Equals((string?)x.Attribute("type"), "both", StringComparison.OrdinalIgnoreCase))
+            ?? pageLayout.Element("page-margins");
+
+        var left = ReadDouble(margins?.Element("left-margin"), DefaultPageMargin);
+        var right = ReadDouble(margins?.Element("right-margin"), DefaultPageMargin);
+        var top = ReadDouble(margins?.Element("top-margin"), DefaultPageMargin);
+        return new PageLayout(pageWidth, pageHeight, left, right, top);
+    }
+
+    private static XElement CreateMargins(string type, double margin) =>
+        new("page-margins",
+            new XAttribute("type", type),
+            new XElement("left-margin", F(margin)),
+            new XElement("right-margin", F(margin)),
+            new XElement("top-margin", F(margin)),
+            new XElement("bottom-margin", F(margin)));
+
+    private static void AddCredits(XElement root, ScoreTextMetadata metadata, PageLayout layout)
+    {
+        root.Elements("credit")
+            .Where(IsManagedHeaderCredit)
+            .Remove();
+
+        var insertBefore = root.Element("part-list")
+            ?? throw new InvalidOperationException("MusicXML part-list not found.");
+        var centerX = layout.PageWidth / 2;
+        var rightX = layout.PageWidth - layout.RightMargin;
+        var titleY = layout.PageHeight - layout.TopMargin;
+        var subtitleY = titleY - 54;
+        var composerY = titleY - 104;
+
+        if (!string.IsNullOrWhiteSpace(metadata.Title))
+            insertBefore.AddBeforeSelf(Credit(
+                "title", metadata.Title!, centerX, titleY,
+                justify: "center", valign: "top", fontSize: 22));
+
+        if (metadata.DescriptionLines.Count > 0)
+            insertBefore.AddBeforeSelf(Credit(
+                "subtitle", string.Join("\n", metadata.DescriptionLines), centerX, subtitleY,
+                justify: "center", valign: "top"));
+
+        if (!string.IsNullOrWhiteSpace(metadata.Author))
+            insertBefore.AddBeforeSelf(Credit(
+                "composer", metadata.Author!, rightX, composerY,
+                justify: "right", valign: "bottom"));
+    }
+
+    private static bool IsManagedHeaderCredit(XElement credit)
+    {
+        var type = (string?)credit.Element("credit-type");
+        return type is not null &&
+               (type.Equals("title", StringComparison.OrdinalIgnoreCase) ||
+                type.Equals("subtitle", StringComparison.OrdinalIgnoreCase) ||
+                type.Equals("composer", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static XElement Credit(
+        string type,
+        string text,
+        double x,
+        double y,
+        string justify,
+        string valign,
+        int? fontSize = null)
+    {
+        var words = new XElement("credit-words",
+            new XAttribute("default-x", F(x)),
+            new XAttribute("default-y", F(y)),
+            new XAttribute("justify", justify),
+            new XAttribute("valign", valign),
+            text);
+        if (fontSize.HasValue)
+            words.SetAttributeValue("font-size", fontSize.Value);
+
+        return new XElement("credit",
             new XAttribute("page", 1),
             new XElement("credit-type", type),
-            new XElement("credit-words", text));
+            words);
+    }
+
+    private static void EnsureHeaderClearance(XElement part)
+    {
+        var firstMeasure = part.Elements("measure").FirstOrDefault();
+        if (firstMeasure is null) return;
+
+        var print = firstMeasure.Element("print");
+        if (print is null)
+        {
+            print = new XElement("print");
+            firstMeasure.AddFirst(print);
+        }
+
+        var systemLayout = print.Element("system-layout");
+        if (systemLayout is null)
+        {
+            systemLayout = new XElement("system-layout");
+            print.Add(systemLayout);
+        }
+
+        var distance = systemLayout.Element("top-system-distance");
+        if (distance is null)
+            systemLayout.Add(new XElement("top-system-distance", F(HeaderSystemDistance)));
+        else if (ReadDouble(distance, 0) < HeaderSystemDistance)
+            distance.Value = F(HeaderSystemDistance);
+    }
 
     private static void AddWords(XElement measure, ScoreTextPlacement placement, int measureDuration)
     {
@@ -104,4 +270,18 @@ public sealed class MusicXmlScoreTextPostProcessor
         if (beatTypeValue is > 0)
             beatType = beatTypeValue.Value;
     }
+
+    private static double ReadDouble(XElement? element, double fallback) =>
+        element is not null && double.TryParse(element.Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var value)
+            ? value
+            : fallback;
+
+    private static string F(double value) => value.ToString("0.##", CultureInfo.InvariantCulture);
+
+    private sealed record PageLayout(
+        double PageWidth,
+        double PageHeight,
+        double LeftMargin,
+        double RightMargin,
+        double TopMargin);
 }
