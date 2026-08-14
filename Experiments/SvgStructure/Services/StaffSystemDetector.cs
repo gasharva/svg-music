@@ -11,23 +11,59 @@ public sealed class StaffSystemDetector
     {
         var staffLines = lines
             .Where(x => x.IsHorizontal() && x.Width >= MinStaffLineWidth)
+            .OrderBy(CenterY)
             .ToList();
 
-        return staffLines
-            .GroupBy(x => new EndpointKey(Bucket(x.Left), Bucket(x.Right)))
-            .Where(g => g.Count() >= 5)
-            .Select(g => BuildSystem(g.ToList(), lines))
+        if (staffLines.Count < 5)
+            return Array.Empty<StaffSystem>();
+
+        var staffYs = Distinct(staffLines.Select(CenterY)).ToList();
+        var staffSpacing = EstimateStaffSpacing(staffYs);
+        var maxGapInsideSystem = staffSpacing * 10;
+
+        return SplitIntoSystems(staffLines, maxGapInsideSystem)
+            .Select(group => BuildSystem(group, lines))
             .Where(x => x is not null)
             .Cast<StaffSystem>()
             .OrderBy(x => x.Top)
             .ToList();
     }
 
+    private static IReadOnlyList<IReadOnlyList<LineSegment>> SplitIntoSystems(
+        IReadOnlyList<LineSegment> staffLines,
+        double maxGapInsideSystem)
+    {
+        var result = new List<IReadOnlyList<LineSegment>>();
+        var current = new List<LineSegment>();
+        double? previousY = null;
+
+        foreach (var line in staffLines)
+        {
+            var y = CenterY(line);
+
+            if (previousY is not null && y - previousY.Value > maxGapInsideSystem)
+            {
+                if (current.Count > 0)
+                    result.Add(current);
+
+                current = new List<LineSegment>();
+            }
+
+            current.Add(line);
+            previousY = y;
+        }
+
+        if (current.Count > 0)
+            result.Add(current);
+
+        return result;
+    }
+
     private static StaffSystem? BuildSystem(
         IReadOnlyList<LineSegment> staffLines,
         IReadOnlyList<LineSegment> allLines)
     {
-        var ys = Distinct(staffLines.Select(x => (x.Start.Y + x.End.Y) / 2)).ToList();
+        var ys = Distinct(staffLines.Select(CenterY)).ToList();
         if (ys.Count < 5 || ys.Count % 5 != 0)
             return null;
 
@@ -52,6 +88,28 @@ public sealed class StaffSystemDetector
             : null;
     }
 
+    private static double EstimateStaffSpacing(IReadOnlyList<double> ys)
+    {
+        var gaps = ys
+            .Zip(ys.Skip(1), (a, b) => b - a)
+            .Where(x => x > CoordinateTolerance)
+            .OrderBy(x => x)
+            .ToList();
+
+        if (gaps.Count == 0)
+            throw new InvalidOperationException("Could not estimate staff-line spacing.");
+
+        // The smallest repeated gaps are the distances between adjacent staff lines.
+        // Taking the median of the lower third avoids larger gaps between the two staves
+        // and between systems without depending on absolute SVG scale.
+        var sampleSize = Math.Max(1, gaps.Count / 3);
+        var sample = gaps.Take(sampleSize).ToList();
+        return sample[sample.Count / 2];
+    }
+
+    private static double CenterY(LineSegment line) =>
+        (line.Start.Y + line.End.Y) / 2;
+
     private static IEnumerable<double> Distinct(IEnumerable<double> values)
     {
         double? previous = null;
@@ -64,9 +122,4 @@ public sealed class StaffSystemDetector
             }
         }
     }
-
-    private static long Bucket(double value) =>
-        (long)Math.Round(value / CoordinateTolerance);
-
-    private readonly record struct EndpointKey(long Left, long Right);
 }
