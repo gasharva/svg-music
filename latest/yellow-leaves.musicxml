@@ -1,16 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <score-partwise version="4.0">
   <credit page="1">
-    <credit-words default-x="595" default-y="1515" justify="center" halign="center" font-size="22" font-style="normal" font-weight="bold">Miniature for Piano #8</credit-words>
+    <credit-type>title</credit-type>
+    <credit-words default-x="551.95" default-y="1379.06" justify="center" valign="top" font-size="22" font-weight="bold">Miniature for Piano #8</credit-words>
   </credit>
   <credit page="1">
-    <credit-words default-x="595" default-y="1475" justify="center" halign="center" font-size="13" font-style="italic" font-weight="normal">Theme from "Mimino"</credit-words>
+    <credit-type>subtitle</credit-type>
+    <credit-words default-x="551.95" default-y="1326.31" justify="center" valign="top" font-size="13" font-style="italic">Theme from "Mimino"
+Film by Georgi Danelia and Rezo Gabriadze (1977)</credit-words>
   </credit>
   <credit page="1">
-    <credit-words default-x="595" default-y="1449" justify="center" halign="center" font-size="13" font-style="italic" font-weight="normal">Film by Georgi Danelia and Rezo Gabriadze (1977)</credit-words>
-  </credit>
-  <credit page="1">
-    <credit-words default-x="1060" default-y="1365" justify="right" halign="right" font-size="15" font-style="normal" font-weight="bold">Giya Kancheli (1935-2019)</credit-words>
+    <credit-type>composer</credit-type>
+    <credit-words default-x="1052.77" default-y="1277.44" justify="right" valign="bottom" font-size="15" font-weight="bold">Giya Kancheli (1935-2019)</credit-words>
   </credit>
   <part-list>
     <score-part id="P1">
