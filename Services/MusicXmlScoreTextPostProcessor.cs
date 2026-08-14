@@ -6,17 +6,8 @@ namespace SvgToMusicXmlPoc.Services;
 
 public sealed class MusicXmlScoreTextPostProcessor
 {
-    // MuseScore's default A4 coordinate space (40 tenths = 7.8232 mm).
-    // These values are used only to position credits when the source MusicXML has no page layout.
-    // We deliberately do NOT write <defaults>, <scaling> or <page-layout>, because doing so changes
-    // the physical scale of the whole imported score.
-    private const double DefaultPageWidth = 1103.9;
-    private const double DefaultPageHeight = 1428.57;
-    private const double DefaultPageMargin = 51.13;
     private const double HeaderSystemDistance = 170;
-    private const double SubtitleGap = 52;
-    private const double SubtitleLineStep = 22;
-    private const double ComposerGap = 145;
+    private const int MaxSubtitleLength = 25;
 
     private static readonly Regex TempoRegex = new(
         @"^1\s*/\s*(?<denominator>\d+)\s*=\s*(?<bpm>\d+(?:[.,]\d+)?)$",
@@ -58,8 +49,8 @@ public sealed class MusicXmlScoreTextPostProcessor
         if (!HasHeader(metadata)) return;
 
         AddSemanticMetadata(root, metadata);
-        var layout = ReadPageLayout(root);
-        AddCredits(root, metadata, layout);
+        ReplaceDefaults(root);
+        AddCredits(root, metadata);
         EnsureHeaderClearance(part);
     }
 
@@ -110,26 +101,71 @@ public sealed class MusicXmlScoreTextPostProcessor
         }
     }
 
-    private static PageLayout ReadPageLayout(XElement root)
+    private static void ReplaceDefaults(XElement root)
     {
-        var pageLayout = root.Element("defaults")?.Element("page-layout");
-        if (pageLayout is null)
-            return new PageLayout(DefaultPageWidth, DefaultPageHeight, DefaultPageMargin, DefaultPageMargin);
+        root.Element("defaults")?.Remove();
 
-        var pageWidth = ReadDouble(pageLayout.Element("page-width"), DefaultPageWidth);
-        var pageHeight = ReadDouble(pageLayout.Element("page-height"), DefaultPageHeight);
-        var margins = pageLayout.Elements("page-margins")
-            .FirstOrDefault(x => string.Equals((string?)x.Attribute("type"), "odd", StringComparison.OrdinalIgnoreCase))
-            ?? pageLayout.Elements("page-margins")
-                .FirstOrDefault(x => string.Equals((string?)x.Attribute("type"), "both", StringComparison.OrdinalIgnoreCase))
-            ?? pageLayout.Element("page-margins");
+        var defaults = new XElement("defaults",
+            new XElement("scaling",
+                new XElement("millimeters", "6.99911"),
+                new XElement("tenths", "40")),
+            new XElement("page-layout",
+                new XElement("page-height", "1696.94"),
+                new XElement("page-width", "1200.48"),
+                PageMargins("even"),
+                PageMargins("odd")),
+            new XElement("appearance",
+                LineWidth("light barline", "1.8"),
+                LineWidth("heavy barline", "5.5"),
+                LineWidth("beam", "5"),
+                LineWidth("bracket", "4.5"),
+                LineWidth("dashes", "1"),
+                LineWidth("enclosure", "1"),
+                LineWidth("ending", "1.1"),
+                LineWidth("extend", "1"),
+                LineWidth("leger", "1.6"),
+                LineWidth("pedal", "1.1"),
+                LineWidth("octave shift", "1.1"),
+                LineWidth("slur middle", "2.1"),
+                LineWidth("slur tip", "0.5"),
+                LineWidth("staff", "1.1"),
+                LineWidth("stem", "1"),
+                LineWidth("tie middle", "2.1"),
+                LineWidth("tie tip", "0.5"),
+                LineWidth("tuplet bracket", "1"),
+                LineWidth("wedge", "1.2"),
+                NoteSize("cue", "70"),
+                NoteSize("grace", "70"),
+                NoteSize("grace-cue", "49")),
+            new XElement("music-font", new XAttribute("font-family", "Leland")),
+            new XElement("word-font",
+                new XAttribute("font-family", "Edwin"),
+                new XAttribute("font-size", "10")),
+            new XElement("lyric-font",
+                new XAttribute("font-family", "Edwin"),
+                new XAttribute("font-size", "10")));
 
-        var right = ReadDouble(margins?.Element("right-margin"), DefaultPageMargin);
-        var top = ReadDouble(margins?.Element("top-margin"), DefaultPageMargin);
-        return new PageLayout(pageWidth, pageHeight, right, top);
+        var firstCredit = root.Element("credit");
+        var partList = root.Element("part-list")
+            ?? throw new InvalidOperationException("MusicXML part-list not found.");
+        (firstCredit ?? partList).AddBeforeSelf(defaults);
     }
 
-    private static void AddCredits(XElement root, ScoreTextMetadata metadata, PageLayout layout)
+    private static XElement PageMargins(string type) =>
+        new("page-margins",
+            new XAttribute("type", type),
+            new XElement("left-margin", "85.7252"),
+            new XElement("right-margin", "85.7252"),
+            new XElement("top-margin", "85.7252"),
+            new XElement("bottom-margin", "85.7252"));
+
+    private static XElement LineWidth(string type, string value) =>
+        new("line-width", new XAttribute("type", type), value);
+
+    private static XElement NoteSize(string type, string value) =>
+        new("note-size", new XAttribute("type", type), value);
+
+    private static void AddCredits(XElement root, ScoreTextMetadata metadata)
     {
         root.Elements("credit")
             .Where(IsManagedHeaderCredit)
@@ -137,27 +173,31 @@ public sealed class MusicXmlScoreTextPostProcessor
 
         var insertBefore = root.Element("part-list")
             ?? throw new InvalidOperationException("MusicXML part-list not found.");
-        var centerX = layout.PageWidth / 2;
-        var rightX = layout.PageWidth - layout.RightMargin;
-        var titleY = layout.PageHeight - layout.TopMargin;
 
         if (!string.IsNullOrWhiteSpace(metadata.Title))
             insertBefore.AddBeforeSelf(Credit(
-                "title", metadata.Title!, centerX, titleY,
-                justify: "center", valign: "top", fontSize: 22));
+                "title", metadata.Title!, 600, 1600,
+                justify: "center", valign: "top", fontSize: 17));
 
-        for (var i = 0; i < metadata.DescriptionLines.Count; i++)
-        {
+        var subtitle = GetSubtitle(metadata);
+        if (!string.IsNullOrWhiteSpace(subtitle))
             insertBefore.AddBeforeSelf(Credit(
-                "subtitle", metadata.DescriptionLines[i], centerX,
-                titleY - SubtitleGap - i * SubtitleLineStep,
-                justify: "center", valign: "top", fontStyle: "italic"));
-        }
+                "subtitle", subtitle, 600, 1500,
+                justify: "center", valign: "bottom", fontSize: 10, fontStyle: "italic"));
 
         if (!string.IsNullOrWhiteSpace(metadata.Author))
             insertBefore.AddBeforeSelf(Credit(
-                "composer", metadata.Author!, rightX, titleY - ComposerGap,
+                "composer", metadata.Author!, 1200, 1300,
                 justify: "right", valign: "bottom"));
+    }
+
+    private static string? GetSubtitle(ScoreTextMetadata metadata)
+    {
+        var subtitle = metadata.DescriptionLines.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x))?.Trim();
+        if (string.IsNullOrWhiteSpace(subtitle)) return null;
+        return subtitle.Length <= MaxSubtitleLength
+            ? subtitle
+            : subtitle[..MaxSubtitleLength];
     }
 
     private static bool IsManagedHeaderCredit(XElement credit)
@@ -228,8 +268,6 @@ public sealed class MusicXmlScoreTextPostProcessor
 
         var firstMeasure = part.Elements("measure").FirstOrDefault();
         if (firstMeasure is null) return;
-
-        // Avoid duplicating an already imported metronome mark.
         if (firstMeasure.Descendants("metronome").Any()) return;
 
         var visibleText = BuildOpeningText(openingText, tempoText, out var playbackTempo);
@@ -352,10 +390,4 @@ public sealed class MusicXmlScoreTextPostProcessor
             : fallback;
 
     private static string F(double value) => value.ToString("0.##", CultureInfo.InvariantCulture);
-
-    private sealed record PageLayout(
-        double PageWidth,
-        double PageHeight,
-        double RightMargin,
-        double TopMargin);
 }
