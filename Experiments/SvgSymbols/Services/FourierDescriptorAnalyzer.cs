@@ -4,23 +4,31 @@ using Svg.Skia;
 
 namespace SvgSymbols.Services;
 
-public sealed record FourierDescriptor(
-    int ContourCount,
+public sealed record ContourFourierDescriptor(
+    double Weight,
+    double CenterX,
+    double CenterY,
+    double Width,
+    double Height,
     IReadOnlyList<double> Magnitudes);
 
+public sealed record FourierDescriptor(
+    int ContourCount,
+    IReadOnlyList<ContourFourierDescriptor> Contours);
+
 /// <summary>
-/// Builds a small translation/scale/rotation/start-point invariant descriptor directly
+/// Builds a translation/scale/rotation/start-point invariant descriptor directly
 /// from SVG vector contours. No rasterization is involved.
 ///
-/// For this first experiment the DFT is calculated for the longest contour of the symbol.
-/// Separate dots/holes/components are intentionally not folded into the DFT yet; ContourCount
-/// is reported alongside the descriptor so we can see where that limitation matters.
+/// The largest contours are described independently. Each contour gets an energy-normalized
+/// Fourier magnitude vector plus its relative size/position inside the whole symbol.
 /// </summary>
 public sealed class FourierDescriptorAnalyzer
 {
     private const int CurveSteps = 16;
     private const int ResampleCount = 128;
-    private const int CoefficientCount = 6;
+    private const int CoefficientCount = 8;
+    private const int MaxContours = 3;
 
     public FourierDescriptor Analyze(string svgPath)
     {
@@ -33,36 +41,76 @@ public sealed class FourierDescriptorAnalyzer
 
         var usable = contours
             .Where(x => x.Count >= 3)
-            .Select(x => new { Points = x, Length = Length(x) })
+            .Select(x => new ContourData(x, Length(x)))
             .Where(x => x.Length > 0.0001)
             .OrderByDescending(x => x.Length)
             .ToList();
 
         if (usable.Count == 0)
-            return new FourierDescriptor(0, Array.Empty<double>());
+            return new FourierDescriptor(0, Array.Empty<ContourFourierDescriptor>());
 
-        var sampled = ResampleClosed(usable[0].Points, ResampleCount);
-        var coefficients = Dft(sampled, CoefficientCount + 1);
+        var allPoints = usable.SelectMany(x => x.Points).ToArray();
+        var minX = allPoints.Min(p => p.X);
+        var maxX = allPoints.Max(p => p.X);
+        var minY = allPoints.Min(p => p.Y);
+        var maxY = allPoints.Max(p => p.Y);
+        var symbolWidth = Math.Max(1e-9, maxX - minX);
+        var symbolHeight = Math.Max(1e-9, maxY - minY);
+        var totalLength = usable.Sum(x => x.Length);
 
-        // k=0 is the centroid/DC component. Ignore it for translation invariance.
-        // Divide by the first non-zero harmonic for scale invariance.
-        // Magnitudes are rotation- and start-point invariant as well.
-        var scale = coefficients
-            .Skip(1)
-            .Select(Complex.Abs)
-            .FirstOrDefault(x => x > 1e-12);
-
-        if (scale <= 1e-12)
-            return new FourierDescriptor(usable.Count, Enumerable.Repeat(0d, CoefficientCount).ToArray());
-
-        var magnitudes = coefficients
-            .Skip(1)
-            .Take(CoefficientCount)
-            .Select(x => Complex.Abs(x) / scale)
+        var result = usable
+            .Take(MaxContours)
+            .Select(contour => DescribeContour(
+                contour,
+                minX,
+                minY,
+                symbolWidth,
+                symbolHeight,
+                totalLength))
             .ToArray();
 
-        return new FourierDescriptor(usable.Count, magnitudes);
+        return new FourierDescriptor(usable.Count, result);
     }
+
+    private static ContourFourierDescriptor DescribeContour(
+        ContourData contour,
+        float symbolMinX,
+        float symbolMinY,
+        double symbolWidth,
+        double symbolHeight,
+        double totalLength)
+    {
+        var minX = contour.Points.Min(p => p.X);
+        var maxX = contour.Points.Max(p => p.X);
+        var minY = contour.Points.Min(p => p.Y);
+        var maxY = contour.Points.Max(p => p.Y);
+        var centerX = (minX + maxX) / 2d;
+        var centerY = (minY + maxY) / 2d;
+
+        var sampled = ResampleClosed(contour.Points, ResampleCount);
+        var coefficients = Dft(sampled, CoefficientCount + 1);
+        var rawMagnitudes = coefficients
+            .Skip(1) // k=0 is position/DC
+            .Take(CoefficientCount)
+            .Select(Complex.Abs)
+            .ToArray();
+
+        // Energy normalization is stable even when F1 happens to be almost zero.
+        var energy = Math.Sqrt(rawMagnitudes.Sum(x => x * x));
+        var magnitudes = energy <= 1e-12
+            ? Enumerable.Repeat(0d, CoefficientCount).ToArray()
+            : rawMagnitudes.Select(x => x / energy).ToArray();
+
+        return new ContourFourierDescriptor(
+            Weight: contour.Length / totalLength,
+            CenterX: (centerX - symbolMinX) / symbolWidth - 0.5,
+            CenterY: (centerY - symbolMinY) / symbolHeight - 0.5,
+            Width: (maxX - minX) / symbolWidth,
+            Height: (maxY - minY) / symbolHeight,
+            Magnitudes: magnitudes);
+    }
+
+    private sealed record ContourData(List<Vector2> Points, double Length);
 
     private static void ReadPicture(
         SKPicture picture,
@@ -185,8 +233,6 @@ public sealed class FourierDescriptorAnalyzer
                 }
 
                 case ArcToPathCommand arc when hasCurrent:
-                    // Proper elliptical-arc flattening can be added if it proves important.
-                    // For the current corpus clef outlines are overwhelmingly Bezier paths.
                     Add(Map(matrix, arc.X, arc.Y));
                     break;
 
@@ -216,7 +262,6 @@ public sealed class FourierDescriptorAnalyzer
 
                 case AddRoundRectPathCommand roundRect:
                     Flush();
-                    // Bounding rectangle is enough for the rare standalone round-rect glyph here.
                     contours.Add(RectPoints(roundRect.Rect, matrix));
                     break;
 
