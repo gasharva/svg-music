@@ -6,7 +6,7 @@ namespace SvgToMusicXmlPoc.Tests;
 public sealed class MusicXmlScoreTextPostProcessorTests
 {
     [Fact]
-    public void Apply_WritesSemanticAndPositionedHeaderFromMetadata()
+    public void Apply_WritesHeaderWithoutCreatingPageLayout()
     {
         var path = Path.Combine(Path.GetTempPath(), $"score-{Guid.NewGuid():N}.musicxml");
         try
@@ -44,6 +44,9 @@ public sealed class MusicXmlScoreTextPostProcessorTests
                 (string?)root.Element("identification")?.Elements("creator")
                     .Single(x => (string?)x.Attribute("type") == "composer"));
 
+            // Critical regression check: score text must never establish global page/scaling geometry.
+            Assert.Null(root.Element("defaults"));
+
             var credits = root.Elements("credit").ToDictionary(
                 x => (string)x.Element("credit-type")!,
                 x => x.Element("credit-words")!);
@@ -51,15 +54,12 @@ public sealed class MusicXmlScoreTextPostProcessorTests
             Assert.Equal("Miniature for Piano #8", credits["title"].Value);
             Assert.Equal("center", (string?)credits["title"].Attribute("justify"));
             Assert.Equal("22", (string?)credits["title"].Attribute("font-size"));
-            Assert.NotNull(credits["title"].Attribute("default-x"));
-            Assert.NotNull(credits["title"].Attribute("default-y"));
+            Assert.Equal("551.95", (string?)credits["title"].Attribute("default-x"));
+            Assert.Equal("1377.44", (string?)credits["title"].Attribute("default-y"));
 
             Assert.Contains("Theme from \"Mimino\"", credits["subtitle"].Value);
             Assert.Contains("Film by Georgi Danelia", credits["subtitle"].Value);
             Assert.Equal("right", (string?)credits["composer"].Attribute("justify"));
-
-            var defaults = root.Element("defaults")!;
-            Assert.Equal("1200", defaults.Element("page-layout")?.Element("page-width")?.Value);
 
             var firstMeasure = root.Element("part")!.Element("measure")!;
             Assert.Equal(
@@ -83,7 +83,7 @@ public sealed class MusicXmlScoreTextPostProcessorTests
     }
 
     [Fact]
-    public void Apply_UsesExistingPageLayoutForCreditCoordinates()
+    public void Apply_ReadsButDoesNotChangeExistingPageLayout()
     {
         var path = Path.Combine(Path.GetTempPath(), $"score-{Guid.NewGuid():N}.musicxml");
         try
@@ -111,6 +111,11 @@ public sealed class MusicXmlScoreTextPostProcessorTests
             new MusicXmlScoreTextPostProcessor().Apply(path, metadata);
 
             var root = XDocument.Load(path).Root!;
+            var pageLayout = root.Element("defaults")!.Element("page-layout")!;
+            Assert.Equal("1000", pageLayout.Element("page-height")?.Value);
+            Assert.Equal("800", pageLayout.Element("page-width")?.Value);
+            Assert.Equal("50", pageLayout.Element("page-margins")?.Element("right-margin")?.Value);
+
             var credits = root.Elements("credit").ToDictionary(
                 x => (string)x.Element("credit-type")!,
                 x => x.Element("credit-words")!);
@@ -118,7 +123,7 @@ public sealed class MusicXmlScoreTextPostProcessorTests
             Assert.Equal("400", (string?)credits["title"].Attribute("default-x"));
             Assert.Equal("940", (string?)credits["title"].Attribute("default-y"));
             Assert.Equal("750", (string?)credits["composer"].Attribute("default-x"));
-            Assert.Equal("836", (string?)credits["composer"].Attribute("default-y"));
+            Assert.Equal("838", (string?)credits["composer"].Attribute("default-y"));
         }
         finally
         {
