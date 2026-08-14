@@ -17,9 +17,14 @@ public readonly record struct RectD(double Left, double Top, double Right, doubl
 
 public sealed record RawPrimitive(int Id, RectD Bounds);
 
-public sealed record MeasureRegion(
-    int Number,
+/// <summary>
+/// One visual staff inside one measure: e.g. P2-M5.
+/// PartIndex is zero-based internally; Label exposes human-friendly P1/P2 notation.
+/// </summary>
+public sealed record StaffMeasureRegion(
+    int MeasureNumber,
     int SystemIndex,
+    int PartIndex,
     double Left,
     double Right,
     double Top,
@@ -27,4 +32,11 @@ public sealed record MeasureRegion(
 {
     public RectD Bounds => new(Left, Top, Right, Bottom);
     public double Height => Bottom - Top;
+    public string Label => $"P{PartIndex + 1}-M{MeasureNumber}";
+    public StaffMeasureKey Key => new(PartIndex, MeasureNumber);
+}
+
+public readonly record struct StaffMeasureKey(int PartIndex, int MeasureNumber)
+{
+    public override string ToString() => $"P{PartIndex + 1}-M{MeasureNumber}";
 }
