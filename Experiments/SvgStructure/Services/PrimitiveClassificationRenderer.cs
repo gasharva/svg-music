@@ -27,8 +27,9 @@ public sealed class PrimitiveClassificationRenderer
     private readonly RawPrimitiveDetector _detector;
     private readonly GarbageCleaner _garbageCleaner = new();
     private readonly StaffLinePrimitiveDetector _staffLineDetector = new();
+    private readonly DirectPrimitiveAssigner _directAssigner = new();
 
-    public PrimitiveClassificationRenderer(double proximityPercentOfMeasureHeight = 0.18)
+    public PrimitiveClassificationRenderer(double proximityPercentOfMeasureHeight = 0.25)
     {
         _detector = new RawPrimitiveDetector
         {
@@ -53,30 +54,24 @@ public sealed class PrimitiveClassificationRenderer
         CollectPrimitives(classifiedModel, Shim.SKMatrix.Identity, primitiveCommands, primitives);
 
         var regions = BuildStaffMeasureRegions(systems);
-
         var staffLineIds = _staffLineDetector.Detect(primitives, regions);
-        var musicalPrimitives = primitives
-            .Where(x => !staffLineIds.Contains(x.Id))
-            .ToList();
-
+        var musicalPrimitives = primitives.Where(x => !staffLineIds.Contains(x.Id)).ToList();
         var cleanup = _garbageCleaner.Clean(musicalPrimitives, regions);
         var pageBounds = ToRectD(model.CullRect);
         var claims = BuildClaims(regions, cleanup.Primitives, pageBounds);
 
-        var keepOriginalIds = staffLineIds
-            .Concat(cleanup.GarbageIds)
-            .ToHashSet();
-
+        var keepOriginalIds = staffLineIds.Concat(cleanup.GarbageIds).ToHashSet();
         ApplyClassification(primitiveCommands, claims, keepOriginalIds);
 
         using var picture = svg.SkiaModel.ToSKPicture(classifiedModel)
             ?? throw new InvalidOperationException("Svg.Skia could not render the classified scene model.");
 
         var bounds = picture.CullRect;
-        var width = (int)Math.Ceiling(bounds.Width * RenderScale);
-        var height = (int)Math.Ceiling(bounds.Height * RenderScale);
-
-        using var bitmap = new SKBitmap(width, height, SKColorType.Rgba8888, SKAlphaType.Premul);
+        using var bitmap = new SKBitmap(
+            (int)Math.Ceiling(bounds.Width * RenderScale),
+            (int)Math.Ceiling(bounds.Height * RenderScale),
+            SKColorType.Rgba8888,
+            SKAlphaType.Premul);
         using var canvas = new SKCanvas(bitmap);
 
         canvas.Clear(SKColors.White);
@@ -93,7 +88,6 @@ public sealed class PrimitiveClassificationRenderer
         using var data = image.Encode(SKEncodedImageFormat.Png, 100);
         using var stream = File.Create(outputPath);
         data.SaveTo(stream);
-
         return outputPath;
     }
 
@@ -102,24 +96,20 @@ public sealed class PrimitiveClassificationRenderer
         IReadOnlyList<RawPrimitive> primitives,
         RectD pageBounds)
     {
-        // First establish hard anchors: a primitive that physically intersects exactly one
-        // staff-measure belongs there before any propagation starts. Other staff detectors
-        // are not allowed to use such a primitive as a bridge into their own cluster.
-        var directClaims = primitives.ToDictionary(
+        var direct = primitives.ToDictionary(
             p => p.Id,
-            p => regions
-                .Where(r => p.Bounds.Intersects(r.Bounds))
-                .Select(r => r.Key)
-                .Distinct()
-                .ToHashSet());
+            p => _directAssigner.Assign(p, regions));
 
-        var propagatedClaims = new Dictionary<int, HashSet<StaffMeasureKey>>();
+        var claims = new Dictionary<int, HashSet<StaffMeasureKey>>();
 
         foreach (var region in regions)
         {
-            var blocked = directClaims
-                .Where(x => x.Value.Count == 1 && !x.Value.Contains(region.Key))
-                .Select(x => x.Key)
+            // A primitive with one clear direct owner is a hard anchor for that owner and may
+            // not be used as a bridge by another staff-measure. Ambiguous direct overlaps stay
+            // available only as ambiguous evidence and will remain gray at the end.
+            var blocked = direct.Values
+                .Where(x => x.IsHardAnchor && x.Keys[0] != region.Key)
+                .Select(x => x.PrimitiveId)
                 .ToHashSet();
 
             var (topLimit, bottomLimit) = GetVerticalLimits(region, regions, pageBounds);
@@ -131,18 +121,24 @@ public sealed class PrimitiveClassificationRenderer
                 blocked);
 
             foreach (var primitiveId in detected)
-                AddClaim(propagatedClaims, primitiveId, region.Key);
+                AddClaim(claims, primitiveId, region.Key);
         }
 
-        // Hard anchors win over propagated claims. Ambiguous direct intersections remain
-        // ambiguous and therefore render gray, which is useful diagnostic information.
-        foreach (var (primitiveId, direct) in directClaims)
+        foreach (var assignment in direct.Values)
         {
-            if (direct.Count > 0)
-                propagatedClaims[primitiveId] = direct;
+            if (assignment.IsHardAnchor)
+            {
+                claims[assignment.PrimitiveId] = new HashSet<StaffMeasureKey>(assignment.Keys);
+            }
+            else if (assignment.IsAmbiguous)
+            {
+                // Comparable substantial overlap with several staff-measures is genuinely
+                // ambiguous. Keep all direct candidates so the diagnostic rendering is gray.
+                claims[assignment.PrimitiveId] = new HashSet<StaffMeasureKey>(assignment.Keys);
+            }
         }
 
-        return propagatedClaims;
+        return claims;
     }
 
     private static void AddClaim(
@@ -150,13 +146,13 @@ public sealed class PrimitiveClassificationRenderer
         int primitiveId,
         StaffMeasureKey key)
     {
-        if (!claims.TryGetValue(primitiveId, out var regionKeys))
+        if (!claims.TryGetValue(primitiveId, out var keys))
         {
-            regionKeys = new HashSet<StaffMeasureKey>();
-            claims[primitiveId] = regionKeys;
+            keys = new HashSet<StaffMeasureKey>();
+            claims[primitiveId] = keys;
         }
 
-        regionKeys.Add(key);
+        keys.Add(key);
     }
 
     private static (double Top, double Bottom) GetVerticalLimits(
@@ -178,9 +174,7 @@ public sealed class PrimitiveClassificationRenderer
             .OrderBy(x => x.Top)
             .FirstOrDefault();
 
-        return (
-            above?.Bottom ?? pageBounds.Top,
-            below?.Top ?? pageBounds.Bottom);
+        return (above?.Bottom ?? pageBounds.Top, below?.Top ?? pageBounds.Bottom);
     }
 
     private static bool HorizontallyOverlaps(StaffMeasureRegion a, StaffMeasureRegion b) =>
@@ -193,14 +187,11 @@ public sealed class PrimitiveClassificationRenderer
     {
         foreach (var (primitiveId, command) in commands)
         {
-            if (command.Paint is null)
+            if (command.Paint is null || keepOriginalIds.Contains(primitiveId))
                 continue;
 
-            if (keepOriginalIds.Contains(primitiveId))
-                continue;
-
-            var color = claims.TryGetValue(primitiveId, out var regionKeys) && regionKeys.Count == 1
-                ? GetColor(regionKeys.Single())
+            var color = claims.TryGetValue(primitiveId, out var keys) && keys.Count == 1
+                ? GetColor(keys.Single())
                 : UnclassifiedColor;
 
             command.Paint.Color = new Shim.SKColor(color.R, color.G, color.B, 255);
@@ -214,7 +205,6 @@ public sealed class PrimitiveClassificationRenderer
             return;
 
         var rebuilt = new List<Shim.CanvasCommand>();
-
         foreach (var command in picture.Commands)
         {
             switch (command)
@@ -267,16 +257,13 @@ public sealed class PrimitiveClassificationRenderer
                 case Shim.SaveLayerCanvasCommand:
                     stack.Push(matrix);
                     break;
-
                 case Shim.RestoreCanvasCommand:
                     if (stack.Count > 0)
                         matrix = stack.Pop();
                     break;
-
                 case Shim.SetMatrixCanvasCommand setMatrix:
                     matrix = parentMatrix.PreConcat(setMatrix.TotalMatrix);
                     break;
-
                 case Shim.DrawPathCanvasCommand drawPath when drawPath.Path is not null:
                 {
                     var id = primitives.Count;
@@ -285,7 +272,6 @@ public sealed class PrimitiveClassificationRenderer
                     commands[id] = drawPath;
                     break;
                 }
-
                 case Shim.DrawPictureCanvasCommand drawPicture when drawPicture.Picture is not null:
                     CollectPrimitives(drawPicture.Picture, matrix, commands, primitives);
                     break;
@@ -302,7 +288,6 @@ public sealed class PrimitiveClassificationRenderer
         for (var systemIndex = 0; systemIndex < systems.Count; systemIndex++)
         {
             var system = systems[systemIndex];
-
             for (var measureIndex = 0; measureIndex < system.BarXs.Count - 1; measureIndex++, measureNumber++)
             {
                 foreach (var staff in system.Staffs)
@@ -338,11 +323,7 @@ public sealed class PrimitiveClassificationRenderer
             };
 
             canvas.DrawRect(
-                new SKRect(
-                    (float)region.Left,
-                    (float)region.Top,
-                    (float)region.Right,
-                    (float)region.Bottom),
+                new SKRect((float)region.Left, (float)region.Top, (float)region.Right, (float)region.Bottom),
                 paint);
         }
     }
