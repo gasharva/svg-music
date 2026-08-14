@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Xml.Linq;
 using SvgToMusicXmlPoc.Services;
 
@@ -66,6 +65,11 @@ public sealed class MusicXmlScoreTextPostProcessorTests
             Assert.Equal(
                 "170",
                 firstMeasure.Element("print")?.Element("system-layout")?.Element("top-system-distance")?.Value);
+
+            var metronome = firstMeasure.Descendants("metronome").Single();
+            Assert.Equal("eighth", metronome.Element("beat-unit")?.Value);
+            Assert.Equal("62", metronome.Element("per-minute")?.Value);
+            Assert.Equal("31", (string?)metronome.Parent?.Parent?.Element("sound")?.Attribute("tempo"));
 
             var cantabile = firstMeasure.Elements("direction")
                 .SelectMany(x => x.Descendants("words"))
