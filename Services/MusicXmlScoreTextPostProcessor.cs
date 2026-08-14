@@ -6,9 +6,13 @@ namespace SvgToMusicXmlPoc.Services;
 
 public sealed class MusicXmlScoreTextPostProcessor
 {
-    private const double DefaultPageWidth = 1200;
-    private const double DefaultPageHeight = 1697.14;
-    private const double DefaultPageMargin = 70;
+    // MuseScore's default A4 coordinate space. These values are used only to position credits
+    // when the source MusicXML has no explicit page-layout. We deliberately DO NOT emit
+    // <defaults>, <scaling> or <page-layout>: doing so changes the physical page geometry and can
+    // make MuseScore rescale the whole score.
+    private const double MuseScoreDefaultPageWidth = 1103.9;
+    private const double MuseScoreDefaultPageHeight = 1428.57;
+    private const double MuseScoreDefaultPageMargin = 51.13;
     private const double HeaderSystemDistance = 170;
 
     private static readonly Regex TempoRegex = new(
@@ -43,8 +47,7 @@ public sealed class MusicXmlScoreTextPostProcessor
         if (!HasHeader(metadata)) return;
 
         AddSemanticMetadata(root, metadata);
-        var layout = EnsurePageLayout(root);
-        AddCredits(root, metadata, layout);
+        AddCredits(root, metadata, ReadPageLayout(root));
         EnsureHeaderClearance(part);
     }
 
@@ -95,48 +98,28 @@ public sealed class MusicXmlScoreTextPostProcessor
         }
     }
 
-    private static PageLayout EnsurePageLayout(XElement root)
+    private static PageLayout ReadPageLayout(XElement root)
     {
-        var partList = root.Element("part-list")
-            ?? throw new InvalidOperationException("MusicXML part-list not found.");
-        var defaults = root.Element("defaults");
-        if (defaults is null)
-        {
-            defaults = new XElement("defaults");
-            var firstCredit = root.Element("credit");
-            (firstCredit ?? partList).AddBeforeSelf(defaults);
-        }
-
-        var pageLayout = defaults.Element("page-layout");
+        var pageLayout = root.Element("defaults")?.Element("page-layout");
         if (pageLayout is null)
-        {
-            pageLayout = new XElement("page-layout",
-                new XElement("page-height", F(DefaultPageHeight)),
-                new XElement("page-width", F(DefaultPageWidth)),
-                CreateMargins("both", DefaultPageMargin));
-            defaults.Add(pageLayout);
-        }
+            return new PageLayout(
+                MuseScoreDefaultPageWidth,
+                MuseScoreDefaultPageHeight,
+                MuseScoreDefaultPageMargin,
+                MuseScoreDefaultPageMargin);
 
-        var pageWidth = ReadDouble(pageLayout.Element("page-width"), DefaultPageWidth);
-        var pageHeight = ReadDouble(pageLayout.Element("page-height"), DefaultPageHeight);
+        var pageWidth = ReadDouble(pageLayout.Element("page-width"), MuseScoreDefaultPageWidth);
+        var pageHeight = ReadDouble(pageLayout.Element("page-height"), MuseScoreDefaultPageHeight);
         var margins = pageLayout.Elements("page-margins")
             .FirstOrDefault(x => string.Equals((string?)x.Attribute("type"), "odd", StringComparison.OrdinalIgnoreCase))
             ?? pageLayout.Elements("page-margins")
                 .FirstOrDefault(x => string.Equals((string?)x.Attribute("type"), "both", StringComparison.OrdinalIgnoreCase))
             ?? pageLayout.Element("page-margins");
 
-        var right = ReadDouble(margins?.Element("right-margin"), DefaultPageMargin);
-        var top = ReadDouble(margins?.Element("top-margin"), DefaultPageMargin);
+        var right = ReadDouble(margins?.Element("right-margin"), MuseScoreDefaultPageMargin);
+        var top = ReadDouble(margins?.Element("top-margin"), MuseScoreDefaultPageMargin);
         return new PageLayout(pageWidth, pageHeight, right, top);
     }
-
-    private static XElement CreateMargins(string type, double margin) =>
-        new("page-margins",
-            new XAttribute("type", type),
-            new XElement("left-margin", F(margin)),
-            new XElement("right-margin", F(margin)),
-            new XElement("top-margin", F(margin)),
-            new XElement("bottom-margin", F(margin)));
 
     private static void AddCredits(XElement root, ScoreTextMetadata metadata, PageLayout layout)
     {
@@ -149,8 +132,8 @@ public sealed class MusicXmlScoreTextPostProcessor
         var centerX = layout.PageWidth / 2;
         var rightX = layout.PageWidth - layout.RightMargin;
         var titleY = layout.PageHeight - layout.TopMargin;
-        var subtitleY = titleY - 54;
-        var composerY = titleY - 104;
+        var subtitleY = titleY - 53;
+        var composerY = titleY - 102;
 
         if (!string.IsNullOrWhiteSpace(metadata.Title))
             insertBefore.AddBeforeSelf(Credit(
