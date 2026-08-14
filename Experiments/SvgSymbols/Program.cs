@@ -1,9 +1,31 @@
+using SvgSymbols.Models;
 using SvgSymbols.Services;
 
 var root = FindRepositoryRoot(AppContext.BaseDirectory);
 var outputRoot = Path.Combine(root, "Experiments", "SvgSymbols");
 var samplesRoot = Path.Combine(outputRoot, "Samples");
 var depth = GetIntArgument(args, "--depth", 1);
+var localOnly = args.Any(x => string.Equals(x, "--local-only", StringComparison.OrdinalIgnoreCase));
+
+var localImporter = new LocalGlyphCorpusImporter();
+var other = localImporter.Import(
+    Path.Combine(root, "References", "glyphs"),
+    Path.Combine(samplesRoot, "Other"));
+
+Console.WriteLine($"Local non-clef reference glyphs: {other.Count}");
+
+if (localOnly)
+{
+    var gallery = new GalleryBuilder();
+    var trebleValid = ReadLocalSamples(Path.Combine(samplesRoot, "Treble", "valid"), "Treble");
+    var bassValid = ReadLocalSamples(Path.Combine(samplesRoot, "Bass", "valid"), "Bass");
+    var galleryPath = await gallery.BuildAsync(outputRoot, trebleValid, bassValid, other);
+
+    Console.WriteLine($"Treble valid: {trebleValid.Count}");
+    Console.WriteLine($"Bass valid:   {bassValid.Count}");
+    Console.WriteLine($"Gallery: {galleryPath}");
+    return;
+}
 
 using var http = new HttpClient
 {
@@ -12,8 +34,9 @@ using var http = new HttpClient
 
 var commons = new WikimediaCommonsClient(http);
 var downloader = new SymbolCorpusDownloader(http);
-var gallery = new GalleryBuilder();
+var galleryBuilder = new GalleryBuilder();
 
+Console.WriteLine();
 Console.WriteLine($"Wikimedia Commons subcategory depth: {depth}");
 Console.WriteLine();
 
@@ -32,12 +55,13 @@ var bass = await downloader.DownloadAsync(
     bassSources,
     Path.Combine(samplesRoot, "Bass"));
 
-var galleryPath = await gallery.BuildAsync(outputRoot, treble, bass);
+var fullGalleryPath = await galleryBuilder.BuildAsync(outputRoot, treble, bass, other);
 
 Console.WriteLine();
 Console.WriteLine($"Treble downloaded: {treble.Count}");
 Console.WriteLine($"Bass downloaded:   {bass.Count}");
-Console.WriteLine($"Gallery: {galleryPath}");
+Console.WriteLine($"Other local:       {other.Count}");
+Console.WriteLine($"Gallery: {fullGalleryPath}");
 
 static string FindRepositoryRoot(string start)
 {
@@ -60,4 +84,25 @@ static int GetIntArgument(string[] args, string name, int defaultValue)
         return defaultValue;
 
     return Math.Clamp(value, 0, 3);
+}
+
+static IReadOnlyList<SymbolSource> ReadLocalSamples(string directory, string kind)
+{
+    if (!Directory.Exists(directory))
+        return Array.Empty<SymbolSource>();
+
+    return Directory
+        .EnumerateFiles(directory, "*.svg", SearchOption.TopDirectoryOnly)
+        .OrderBy(Path.GetFileName, StringComparer.OrdinalIgnoreCase)
+        .Select(path => new SymbolSource(
+            Kind: kind,
+            Category: "Curated valid",
+            Title: Path.GetFileNameWithoutExtension(path),
+            FileName: "valid/" + Path.GetFileName(path),
+            DescriptionUrl: "#",
+            FileUrl: path,
+            License: null,
+            LicenseUrl: null,
+            Artist: null))
+        .ToList();
 }
