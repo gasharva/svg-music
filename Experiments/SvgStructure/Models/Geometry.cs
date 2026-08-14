@@ -15,10 +15,19 @@ public readonly record struct LineSegment(PointD Start, PointD End)
     public bool IsVertical(double tolerance = 0.05) => Width <= tolerance;
 }
 
+public sealed record StaffBand(
+    int PartIndex,
+    double Top,
+    double Bottom)
+{
+    public double CenterY => (Top + Bottom) / 2;
+}
+
 public sealed record StaffSystem(
     double Left,
     double Right,
     double Top,
     double Bottom,
     int StaffCount,
-    IReadOnlyList<double> BarXs);
+    IReadOnlyList<double> BarXs,
+    IReadOnlyList<StaffBand> Staffs);
