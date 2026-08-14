@@ -6,8 +6,10 @@ namespace SvgStructure.Services;
 /// Detects raw SVG primitives belonging to one visual staff inside one measure.
 ///
 /// The five staff-line fragments clipped to this staff-measure are injected as temporary
-/// virtual seeds. They participate only in neighbourhood growth and are never returned
-/// as real SVG primitives.
+/// virtual seeds. From those lines and from real primitives intersecting the region we grow
+/// incrementally up/down. A new primitive is accepted only when it is spatially close to an
+/// already assigned primitive; a distant primitive elsewhere in the same measure can no
+/// longer advance one global Y frontier.
 /// </summary>
 public sealed class RawPrimitiveDetector
 {
@@ -17,21 +19,30 @@ public sealed class RawPrimitiveDetector
         StaffMeasureRegion region,
         IReadOnlyList<RawPrimitive> primitives,
         double verticalTopLimit,
-        double verticalBottomLimit)
+        double verticalBottomLimit,
+        IReadOnlySet<int>? blockedPrimitiveIds = null)
     {
+        blockedPrimitiveIds ??= new HashSet<int>();
+
         var working = primitives.ToList();
-        var virtualStaffLines = CreateVirtualStaffLines(region);
-        working.AddRange(virtualStaffLines);
+        working.AddRange(CreateVirtualStaffLines(region));
 
         var assigned = working
+            .Where(x => x.Id < 0 || !blockedPrimitiveIds.Contains(x.Id))
             .Where(x => x.Bounds.Intersects(region.Bounds))
             .Select(x => x.Id)
             .ToHashSet();
 
         var maxGap = Math.Max(1, region.Height * ProximityPercentOfMeasureHeight);
 
-        GrowDown(region, working, assigned, verticalBottomLimit, maxGap);
-        GrowUp(region, working, assigned, verticalTopLimit, maxGap);
+        Grow(
+            region,
+            working,
+            assigned,
+            blockedPrimitiveIds,
+            verticalTopLimit,
+            verticalBottomLimit,
+            maxGap);
 
         // Negative ids belong to temporary staff-line fragments only.
         return assigned.Where(x => x >= 0).ToHashSet();
@@ -58,27 +69,29 @@ public sealed class RawPrimitiveDetector
         return result;
     }
 
-    private static void GrowDown(
+    private static void Grow(
         StaffMeasureRegion region,
         IReadOnlyList<RawPrimitive> primitives,
         HashSet<int> assigned,
+        IReadOnlySet<int> blockedPrimitiveIds,
+        double topLimit,
         double bottomLimit,
         double maxGap)
     {
         while (true)
         {
-            var assignedBottom = primitives
+            var assignedPrimitives = primitives
                 .Where(x => assigned.Contains(x.Id))
-                .Max(x => x.Bounds.Bottom);
+                .ToList();
 
             var next = primitives
-                .Where(x => !assigned.Contains(x.Id))
                 .Where(x => x.Id >= 0)
+                .Where(x => !assigned.Contains(x.Id))
+                .Where(x => !blockedPrimitiveIds.Contains(x.Id))
                 .Where(x => x.Bounds.IntersectsHorizontally(region.Left, region.Right))
-                .Where(x => x.Bounds.Top >= region.Bottom)
-                .Where(x => x.Bounds.Top <= bottomLimit)
-                .Where(x => x.Bounds.Top - assignedBottom <= maxGap)
-                .OrderBy(x => x.Bounds.Top)
+                .Where(x => x.Bounds.Bottom >= topLimit && x.Bounds.Top <= bottomLimit)
+                .Where(x => DistanceToCluster(x.Bounds, assignedPrimitives) <= maxGap)
+                .OrderBy(x => DistanceToCluster(x.Bounds, assignedPrimitives))
                 .ToList();
 
             if (next.Count == 0)
@@ -89,34 +102,30 @@ public sealed class RawPrimitiveDetector
         }
     }
 
-    private static void GrowUp(
-        StaffMeasureRegion region,
-        IReadOnlyList<RawPrimitive> primitives,
-        HashSet<int> assigned,
-        double topLimit,
-        double maxGap)
+    private static double DistanceToCluster(
+        RectD candidate,
+        IReadOnlyList<RawPrimitive> assigned)
     {
-        while (true)
-        {
-            var assignedTop = primitives
-                .Where(x => assigned.Contains(x.Id))
-                .Min(x => x.Bounds.Top);
+        if (assigned.Count == 0)
+            return double.PositiveInfinity;
 
-            var next = primitives
-                .Where(x => !assigned.Contains(x.Id))
-                .Where(x => x.Id >= 0)
-                .Where(x => x.Bounds.IntersectsHorizontally(region.Left, region.Right))
-                .Where(x => x.Bounds.Bottom <= region.Top)
-                .Where(x => x.Bounds.Bottom >= topLimit)
-                .Where(x => assignedTop - x.Bounds.Bottom <= maxGap)
-                .OrderByDescending(x => x.Bounds.Bottom)
-                .ToList();
+        return assigned.Min(x => RectangleDistance(candidate, x.Bounds));
+    }
 
-            if (next.Count == 0)
-                return;
+    private static double RectangleDistance(RectD a, RectD b)
+    {
+        var dx = a.Right < b.Left
+            ? b.Left - a.Right
+            : b.Right < a.Left
+                ? a.Left - b.Right
+                : 0;
 
-            foreach (var primitive in next)
-                assigned.Add(primitive.Id);
-        }
+        var dy = a.Bottom < b.Top
+            ? b.Top - a.Bottom
+            : b.Bottom < a.Top
+                ? a.Top - b.Bottom
+                : 0;
+
+        return Math.Sqrt(dx * dx + dy * dy);
     }
 }
