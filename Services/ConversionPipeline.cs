@@ -26,7 +26,7 @@ public sealed class ConversionPipeline
         analysis.PageGeometry.AddRange(pageGeometry); analysis.DirectPaths.AddRange(pageGeometry.Select(x => new SvgDirectPath(x.InstanceId, x.Geometry, x.X, x.Y))); analysis.LineSegments.AddRange(lineSegments);
         new StaffClefRecoveryResolver().Resolve(analysis); new PaintedGlyphPositionNormalizer().Normalize(analysis); new QuarterRestGeometryResolver().Resolve(analysis);
         new LongStemRelationResolver().Resolve(analysis); new MusicGeometryRelationResolver().Resolve(analysis, config); new PolyphonicSharedStemResolver().Resolve(analysis);
-        new StemlessHollowFalsePositiveResolver().Resolve(analysis); new HollowChordStemRecoveryResolver().Resolve(analysis);
+        new StemlessHollowFalsePositiveResolver().Resolve(analysis); new HollowChordStemRecoveryResolver().Resolve(analysis); new CrossStaffChordResolver().Resolve(analysis);
         new SlopedBeamRhythmResolver().Resolve(analysis, config); new SlopedBeamCoverageResolver().Resolve(analysis, config); new UnifiedBeamGeometryResolver().Resolve(analysis, config);
         new AccidentalGeometryResolver().Resolve(analysis, config); new AugmentationDotGeometryResolver().Resolve(analysis, config);
         new ArcSemanticsResolver().Resolve(analysis); new HighArcSemanticsResolver().Resolve(analysis); new LongArcSemanticsResolver().Resolve(analysis);
