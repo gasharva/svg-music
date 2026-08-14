@@ -5,23 +5,22 @@ namespace SvgStructure.Services;
 /// <summary>
 /// Removes obviously non-musical scene objects from the primitive classification pass.
 /// A primitive is considered garbage only when it is large in BOTH dimensions relative
-/// to the detected measure grid (for example a page/system background rectangle).
-/// Long thin staff lines and barlines therefore survive this filter.
+/// to the detected staff-measure grid. Long thin staff lines and barlines survive.
 /// </summary>
 public sealed class GarbageCleaner
 {
     public double MaxMeasureWidths { get; init; } = 1.8;
-    public double MaxMeasureHeights { get; init; } = 1.8;
+    public double MaxStaffHeights { get; init; } = 3.0;
 
     public GarbageCleanupResult Clean(
         IReadOnlyList<RawPrimitive> primitives,
-        IReadOnlyList<MeasureRegion> measures)
+        IReadOnlyList<StaffMeasureRegion> regions)
     {
-        if (measures.Count == 0)
+        if (regions.Count == 0)
             return new GarbageCleanupResult(primitives, new HashSet<int>());
 
-        var typicalWidth = Median(measures.Select(x => x.Right - x.Left));
-        var typicalHeight = Median(measures.Select(x => x.Height));
+        var typicalWidth = Median(regions.Select(x => x.Right - x.Left));
+        var typicalStaffHeight = Median(regions.Select(x => x.Height));
 
         var garbageIds = new HashSet<int>();
         var kept = new List<RawPrimitive>(primitives.Count);
@@ -29,7 +28,7 @@ public sealed class GarbageCleaner
         foreach (var primitive in primitives)
         {
             var oversizedHorizontally = primitive.Bounds.Width > typicalWidth * MaxMeasureWidths;
-            var oversizedVertically = primitive.Bounds.Height > typicalHeight * MaxMeasureHeights;
+            var oversizedVertically = primitive.Bounds.Height > typicalStaffHeight * MaxStaffHeights;
 
             if (oversizedHorizontally && oversizedVertically)
                 garbageIds.Add(primitive.Id);
