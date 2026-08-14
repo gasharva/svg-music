@@ -1,18 +1,15 @@
-using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 
 namespace SvgToMusicXmlPoc.Services;
 
 /// <summary>
-/// Normalizes MusicXML cross-staff chord encoding for importers such as MuseScore.
-/// The SVG layout pass gives simultaneous notes a common default-x. We use that stable
-/// engraving coordinate, together with voice and staff, to rebuild each cross-staff onset
-/// instead of trusting possibly stale chord markers left by earlier voice-layout passes.
+/// Restores cross-staff chords from the semantic identity recovered from SVG geometry.
+/// Do not infer a chord from default-x: seconds inside one chord may have intentionally shifted
+/// noteheads, and later voice passes may temporarily assign the two staffs different voices.
 /// </summary>
 public sealed class MusicXmlCrossStaffChordPostProcessor
 {
-    private sealed record PositionedNote(XElement Element, int Voice, int Staff, double X, int Order);
-
     public void Apply(string path)
     {
         var document = XDocument.Load(path);
@@ -20,65 +17,104 @@ public sealed class MusicXmlCrossStaffChordPostProcessor
 
         foreach (var measure in document.Descendants("measure"))
         {
-            var positioned = measure.Elements("note")
-                .Select((note, order) => TryRead(note, order))
-                .Where(x => x is not null)
-                .Cast<PositionedNote>()
+            var tagged = measure.Elements("note")
+                .Where(x => x.Attribute(MusicXmlSvgLayoutPostProcessor.CrossStaffIdAttribute) is not null)
                 .ToList();
+            if (tagged.Count == 0) continue;
 
-            if (positioned.Count < 2) continue;
-
-            // SVG -> MusicXML layout uses tenths. Rounding to a tenth is deliberately tighter
-            // than normal engraving offsets but absorbs harmless floating-point formatting noise.
-            foreach (var group in positioned
-                         .GroupBy(x => (x.Voice, X: Math.Round(x.X, 1)))
-                         .Select(x => x.OrderBy(n => n.Order).ToList())
-                         .Where(x => x.Count > 1 && x.Select(n => n.Staff).Distinct().Count() > 1))
+            foreach (var semanticGroup in tagged
+                         .GroupBy(x => (string)x.Attribute(MusicXmlSvgLayoutPostProcessor.CrossStaffIdAttribute)!)
+                         .ToList())
             {
-                var anchor = group[0].Element;
+                var members = semanticGroup
+                    .GroupBy(x => (string?)x.Attribute(MusicXmlSvgLayoutPostProcessor.SourceSymbolAttribute)
+                                  ?? $"xml:{RuntimeHelpers.GetHashCode(x)}")
+                    .Select(x => x.First())
+                    .ToList();
 
-                // Rebuild chord markup from the onset itself. This prevents an orphan <chord/>
-                // at a measure/voice boundary from swallowing later independent onsets.
-                foreach (var item in group)
-                    item.Element.Element("chord")?.Remove();
-                foreach (var item in group.Skip(1))
-                    InsertChord(item.Element);
-
-                var stemValue = group
-                    .Select(x => (string?)x.Element.Element("stem"))
-                    .FirstOrDefault(x => !string.IsNullOrWhiteSpace(x));
-                if (!string.IsNullOrWhiteSpace(stemValue))
+                foreach (var duplicate in semanticGroup.Except(members).ToList())
                 {
-                    foreach (var item in group)
-                        SetStem(item.Element, stemValue!);
+                    duplicate.Remove();
+                    changed = true;
                 }
 
-                // Beam state advances once per rhythmic onset, never once per chord tone.
-                foreach (var item in group.Skip(1))
-                    item.Element.Elements("beam").Remove();
+                if (members.Count < 2 || members.Select(ReadStaff).Distinct().Count() < 2)
+                    continue;
 
-                var anchorX = (string?)anchor.Attribute("default-x");
-                if (!string.IsNullOrWhiteSpace(anchorX))
-                    foreach (var item in group)
-                        item.Element.SetAttributeValue("default-x", anchorX);
+                var commonVoice = members.Select(ReadVoice).Where(x => x > 0).DefaultIfEmpty(1).Min();
+                var commonStem = members
+                    .Select(x => (string?)x.Element("stem"))
+                    .FirstOrDefault(x => !string.IsNullOrWhiteSpace(x));
+
+                var anchor = members
+                    .OrderByDescending(ReadStaff)
+                    .ThenBy(ReadPitchMidi)
+                    .First();
+
+                var ordered = new List<XElement> { anchor };
+                ordered.AddRange(members
+                    .Where(x => !ReferenceEquals(x, anchor))
+                    .OrderByDescending(ReadStaff)
+                    .ThenBy(ReadPitchMidi));
+
+                foreach (var note in ordered)
+                {
+                    note.Element("chord")?.Remove();
+                    SetVoice(note, commonVoice);
+                    if (!string.IsNullOrWhiteSpace(commonStem)) SetStem(note, commonStem!);
+                }
+                foreach (var note in ordered.Skip(1)) InsertChord(note);
+
+                foreach (var note in ordered.Skip(1)) note.Elements("beam").Remove();
+
+                var placeholder = new XElement("cross-staff-placeholder");
+                members.OrderBy(x => x.ElementsBeforeSelf().Count()).First().AddBeforeSelf(placeholder);
+                foreach (var note in ordered) note.Remove();
+                foreach (var note in ordered) placeholder.AddBeforeSelf(note);
+                placeholder.Remove();
 
                 changed = true;
             }
         }
 
+        foreach (var note in document.Descendants("note"))
+        {
+            note.Attribute(MusicXmlSvgLayoutPostProcessor.CrossStaffIdAttribute)?.Remove();
+            note.Attribute(MusicXmlSvgLayoutPostProcessor.SourceSymbolAttribute)?.Remove();
+        }
+
         if (changed) document.Save(path);
     }
 
-    private static PositionedNote? TryRead(XElement note, int order)
+    private static int ReadVoice(XElement note) => (int?)note.Element("voice") ?? 1;
+    private static int ReadStaff(XElement note) => (int?)note.Element("staff") ?? 1;
+
+    private static int ReadPitchMidi(XElement note)
     {
-        var text = (string?)note.Attribute("default-x");
-        if (!double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var x)) return null;
-        return new PositionedNote(
-            note,
-            (int?)note.Element("voice") ?? 1,
-            (int?)note.Element("staff") ?? 1,
-            x,
-            order);
+        var pitch = note.Element("pitch");
+        if (pitch is null) return int.MaxValue;
+        var step = (string?)pitch.Element("step") ?? "C";
+        var alter = (int?)pitch.Element("alter") ?? 0;
+        var octave = (int?)pitch.Element("octave") ?? 4;
+        var semitone = step switch
+        {
+            "C" => 0, "D" => 2, "E" => 4, "F" => 5,
+            "G" => 7, "A" => 9, "B" => 11, _ => 0
+        };
+        return (octave + 1) * 12 + semitone + alter;
+    }
+
+    private static void SetVoice(XElement note, int voice)
+    {
+        var element = note.Element("voice");
+        if (element is not null)
+        {
+            element.Value = voice.ToString();
+            return;
+        }
+        element = new XElement("voice", voice);
+        var type = note.Element("type");
+        if (type is not null) type.AddBeforeSelf(element); else note.Add(element);
     }
 
     private static void InsertChord(XElement note)
@@ -96,7 +132,6 @@ public sealed class MusicXmlCrossStaffChordPostProcessor
             stem.Value = value;
             return;
         }
-
         stem = new XElement("stem", value);
         var insertionPoint = note.Element("beam") ?? note.Element("notations") ?? note.Element("staff");
         if (insertionPoint is not null) insertionPoint.AddBeforeSelf(stem); else note.Add(stem);

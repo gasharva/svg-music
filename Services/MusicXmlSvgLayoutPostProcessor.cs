@@ -11,6 +11,9 @@ namespace SvgToMusicXmlPoc.Services;
 /// </summary>
 public sealed class MusicXmlSvgLayoutPostProcessor
 {
+    internal const string CrossStaffIdAttribute = "data-cross-staff-id";
+    internal const string SourceSymbolAttribute = "data-source-symbol-id";
+
     private sealed record NoteBinding(XElement Element, RecognizedEvent Event);
 
     public void Apply(string path, AnalysisResult analysis)
@@ -49,10 +52,6 @@ public sealed class MusicXmlSvgLayoutPostProcessor
 
             if (bindings.Count == 0) continue;
 
-            // MusicXML default-x is measured in tenths. One staff space is conventionally
-            // ten tenths, so this preserves SVG spacing without depending on SVG page units.
-            // A common origin/scale for the whole grand staff keeps simultaneous notes on
-            // different staves on exactly the same vertical engraving line.
             var originX = bindings.Min(x => x.Event.X);
             var staffSpace = group.Average(x => x.Space);
             var scale = 10.0 / Math.Max(staffSpace, .001);
@@ -64,6 +63,16 @@ public sealed class MusicXmlSvgLayoutPostProcessor
                 binding.Element.SetAttributeValue(
                     "default-x",
                     defaultX.ToString("0.###", CultureInfo.InvariantCulture));
+
+                // Cross-staff identity is semantic information recovered before MusicXML layout.
+                // Keep it as a temporary private attribute while later voice/timing passes reorder
+                // notes. The final cross-staff pass consumes and removes these attributes.
+                if (binding.Event.CrossStaffChordId.HasValue)
+                {
+                    binding.Element.SetAttributeValue(CrossStaffIdAttribute, binding.Event.CrossStaffChordId.Value);
+                    if (!string.IsNullOrWhiteSpace(binding.Event.SourceSymbolId))
+                        binding.Element.SetAttributeValue(SourceSymbolAttribute, binding.Event.SourceSymbolId);
+                }
             }
         }
 
