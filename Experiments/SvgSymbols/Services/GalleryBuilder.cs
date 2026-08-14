@@ -27,16 +27,16 @@ public sealed class GalleryBuilder
         html.AppendLine("<style>");
         html.AppendLine("body{font-family:Segoe UI,Arial,sans-serif;margin:24px;background:#f5f5f5;color:#222}");
         html.AppendLine("h1,h2{margin:0 0 16px} h2{margin-top:32px}");
-        html.AppendLine(".grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}");
-        html.AppendLine(".card{background:white;border:1px solid #ccc;border-radius:8px;padding:10px;min-height:390px;display:flex;flex-direction:column}");
+        html.AppendLine(".grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}");
+        html.AppendLine(".card{background:white;border:1px solid #ccc;border-radius:8px;padding:10px;min-height:480px;display:flex;flex-direction:column}");
         html.AppendLine(".preview{height:180px;display:flex;align-items:center;justify-content:center;background:#fafafa;border:1px solid #eee;margin-bottom:8px}");
         html.AppendLine("img{max-width:100%;max-height:170px}.name{font-weight:600;word-break:break-word}.meta{font-size:12px;color:#666;margin-top:5px;word-break:break-word}");
         html.AppendLine(".fourier,.nearest{margin-top:8px;padding:7px 8px;background:#f1f3f5;border-radius:5px;font-family:Consolas,monospace;font-size:12px;line-height:1.45}");
         html.AppendLine(".fourier .label,.nearest .label{font-family:Segoe UI,Arial,sans-serif;font-weight:600;color:#444;margin-bottom:2px}");
-        html.AppendLine(".neighbor{display:grid;grid-template-columns:52px 42px 1fr;gap:4px}.kind{font-weight:700}.error{color:#a00}.muted{color:#777}label{margin-top:auto;font-size:13px}.bad{accent-color:#c00}");
+        html.AppendLine(".nearest.complex{background:#eef7ee}.nearest.magnitude{background:#f5f1fa}.neighbor{display:grid;grid-template-columns:52px 42px 1fr;gap:4px}.kind{font-weight:700}.error{color:#a00}.muted{color:#777}label{margin-top:auto;font-size:13px}.bad{accent-color:#c00}");
         html.AppendLine("</style></head><body>");
         html.AppendLine($"<h1>SvgSymbols corpus — {all.Count} SVG</h1>");
-        html.AppendLine("<p>Vector-only experiment: up to 3 longest contours per symbol, 128 points per contour, F1..F8 normalized by total Fourier energy. Top-5 neighbours use Euclidean distance over contour shape + relative size/position; contour count has only a weak penalty.</p>");
+        html.AppendLine("<p>Vector-only experiment: duplicate contours removed, up to 3 largest contours retained. Each contour is canonicalized for traversal direction/start point, resampled to 128 points, and represented by complex F1..F8 normalized by total spectral energy. Rotation is intentionally preserved. Neighbours try all 3! contour matchings. The old magnitude-only ranking is shown beside the new phase-aware ranking.</p>");
 
         AppendSection(html, all, "Treble / G clef", "Treble", treble, "Wikimedia source", true);
         AppendSection(html, all, "Bass / F clef", "Bass", bass, "Wikimedia source", true);
@@ -107,7 +107,8 @@ public sealed class GalleryBuilder
             html.AppendLine($"<div class=\"meta\">License: {WebUtility.HtmlEncode(source.License ?? "unknown")}</div>");
             html.AppendLine($"<div class=\"meta\"><a href=\"{WebUtility.HtmlEncode(source.DescriptionUrl)}\">{WebUtility.HtmlEncode(sourceLabel)}</a></div>");
             AppendFourier(html, analyzed);
-            AppendNearest(html, analyzed, all);
+            AppendNearest(html, analyzed, all, complex: true);
+            AppendNearest(html, analyzed, all, complex: false);
 
             if (showReviewCheckbox)
                 html.AppendLine($"<label><input class=\"bad\" type=\"checkbox\" data-id=\"{WebUtility.HtmlEncode(id)}\"> мусор / не подходит</label>");
@@ -133,28 +134,30 @@ public sealed class GalleryBuilder
         }
 
         html.AppendLine("<div class=\"fourier\">");
-        html.AppendLine("<div class=\"label\">Vector Fourier</div>");
+        html.AppendLine("<div class=\"label\">Complex vector Fourier</div>");
 
         for (var i = 0; i < symbol.Descriptor.Contours.Count; i++)
         {
             var contour = symbol.Descriptor.Contours[i];
-            var values = contour.Magnitudes
-                .Select((value, index) => $"F{index + 1}={Format(value)}")
-                .ToArray();
+            html.AppendLine($"<div><b>C{i + 1}</b> w={Format(contour.Weight)} x={Format(contour.CenterX)} y={Format(contour.CenterY)} size={Format(contour.Width)}×{Format(contour.Height)}</div>");
 
-            html.AppendLine($"<div><b>C{i + 1}</b> w={Format(contour.Weight)} x={Format(contour.CenterX)} y={Format(contour.CenterY)}</div>");
-            html.AppendLine($"<div>{WebUtility.HtmlEncode(string.Join("  ", values.Take(4)))}</div>");
-            html.AppendLine($"<div>{WebUtility.HtmlEncode(string.Join("  ", values.Skip(4)))}</div>");
+            var values = contour.Coefficients
+                .Take(4)
+                .Select((value, index) => $"F{index + 1}={FormatSigned(value.Real)}{FormatSignedImag(value.Imag)}i")
+                .ToArray();
+            html.AppendLine($"<div>{WebUtility.HtmlEncode(string.Join("  ", values.Take(2)))}</div>");
+            html.AppendLine($"<div>{WebUtility.HtmlEncode(string.Join("  ", values.Skip(2)))}</div>");
         }
 
-        html.AppendLine($"<div class=\"muted\">contours total={symbol.Descriptor.ContourCount}, described={symbol.Descriptor.Contours.Count}</div>");
+        html.AppendLine($"<div class=\"muted\">contours raw={symbol.Descriptor.RawContourCount}, unique={symbol.Descriptor.ContourCount}, described={symbol.Descriptor.Contours.Count}</div>");
         html.AppendLine("</div>");
     }
 
     private void AppendNearest(
         StringBuilder html,
         AnalyzedSymbol current,
-        IReadOnlyList<AnalyzedSymbol> all)
+        IReadOnlyList<AnalyzedSymbol> all,
+        bool complex)
     {
         if (current.Descriptor is null || current.Descriptor.Contours.Count == 0)
             return;
@@ -164,14 +167,21 @@ public sealed class GalleryBuilder
             .Select(x => new
             {
                 Symbol = x,
-                Distance = _comparer.Distance(current.Descriptor, x.Descriptor!)
+                Distance = complex
+                    ? _comparer.ComplexDistance(current.Descriptor, x.Descriptor!)
+                    : _comparer.MagnitudeDistance(current.Descriptor, x.Descriptor!)
             })
             .OrderBy(x => x.Distance)
             .Take(5)
             .ToArray();
 
-        html.AppendLine("<div class=\"nearest\">");
-        html.AppendLine("<div class=\"label\">Top 5 nearest (leave-one-out)</div>");
+        var css = complex ? "complex" : "magnitude";
+        var title = complex
+            ? "Top 5 — complex/phase-aware"
+            : "Top 5 — magnitude-only baseline";
+
+        html.AppendLine($"<div class=\"nearest {css}\">");
+        html.AppendLine($"<div class=\"label\">{title}</div>");
         foreach (var item in nearest)
         {
             html.AppendLine("<div class=\"neighbor\">" +
@@ -197,8 +207,9 @@ public sealed class GalleryBuilder
             folder,
             fileName.Replace('/', Path.DirectorySeparatorChar).Replace('\\', Path.DirectorySeparatorChar));
 
-    private static string Format(double value) =>
-        value.ToString("0.000", CultureInfo.InvariantCulture);
+    private static string Format(double value) => value.ToString("0.000", CultureInfo.InvariantCulture);
+    private static string FormatSigned(double value) => value.ToString("+0.000;-0.000;0.000", CultureInfo.InvariantCulture);
+    private static string FormatSignedImag(double value) => value.ToString("+0.000;-0.000;+0.000", CultureInfo.InvariantCulture);
 
     private static string EscapeRelativePath(string path) =>
         string.Join('/', path
