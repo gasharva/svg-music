@@ -11,4 +11,9 @@ public sealed class RecognitionConfig
     public double MaxSymbolDistanceInSpaces { get; init; } = 5.0;
     public double MaxAttachmentDistanceInSpaces { get; init; } = 2.5;
     public double MinClassificationScore { get; init; } = 0.42;
+
+    /// <summary>
+    /// Maximum number of glyph geometries classified concurrently. Set to 1 to disable parallel classification.
+    /// </summary>
+    public int ClassificationParallelism { get; init; } = 8;
 }
