@@ -3,41 +3,41 @@ using SvgStructure.Models;
 namespace SvgStructure.Services;
 
 /// <summary>
-/// Detects raw SVG primitives belonging to one measure.
+/// Detects raw SVG primitives belonging to one visual staff inside one measure.
 ///
-/// 1. Seed with every primitive that intersects the measure rectangle.
-/// 2. Extend only vertically, never left/right outside the measure X range.
+/// 1. Seed with every primitive that intersects the staff-measure rectangle.
+/// 2. Extend only vertically, never left/right outside its measure X range.
 /// 3. Walk down and up incrementally: a primitive is added only when it is close
-///    to something already assigned to this measure.
+///    to something already assigned to this staff-measure.
 /// </summary>
 public sealed class RawPrimitiveDetector
 {
     public double ProximityPercentOfMeasureHeight { get; init; } = 0.18;
 
     public IReadOnlySet<int> Detect(
-        MeasureRegion measure,
+        StaffMeasureRegion region,
         IReadOnlyList<RawPrimitive> primitives,
         double verticalTopLimit,
         double verticalBottomLimit)
     {
         var assigned = primitives
-            .Where(x => x.Bounds.Intersects(measure.Bounds))
+            .Where(x => x.Bounds.Intersects(region.Bounds))
             .Select(x => x.Id)
             .ToHashSet();
 
         if (assigned.Count == 0)
             return assigned;
 
-        var maxGap = Math.Max(1, measure.Height * ProximityPercentOfMeasureHeight);
+        var maxGap = Math.Max(1, region.Height * ProximityPercentOfMeasureHeight);
 
-        GrowDown(measure, primitives, assigned, verticalBottomLimit, maxGap);
-        GrowUp(measure, primitives, assigned, verticalTopLimit, maxGap);
+        GrowDown(region, primitives, assigned, verticalBottomLimit, maxGap);
+        GrowUp(region, primitives, assigned, verticalTopLimit, maxGap);
 
         return assigned;
     }
 
     private static void GrowDown(
-        MeasureRegion measure,
+        StaffMeasureRegion region,
         IReadOnlyList<RawPrimitive> primitives,
         HashSet<int> assigned,
         double bottomLimit,
@@ -51,8 +51,8 @@ public sealed class RawPrimitiveDetector
 
             var next = primitives
                 .Where(x => !assigned.Contains(x.Id))
-                .Where(x => x.Bounds.IntersectsHorizontally(measure.Left, measure.Right))
-                .Where(x => x.Bounds.Top >= measure.Bottom)
+                .Where(x => x.Bounds.IntersectsHorizontally(region.Left, region.Right))
+                .Where(x => x.Bounds.Top >= region.Bottom)
                 .Where(x => x.Bounds.Top <= bottomLimit)
                 .Where(x => x.Bounds.Top - assignedBottom <= maxGap)
                 .OrderBy(x => x.Bounds.Top)
@@ -67,7 +67,7 @@ public sealed class RawPrimitiveDetector
     }
 
     private static void GrowUp(
-        MeasureRegion measure,
+        StaffMeasureRegion region,
         IReadOnlyList<RawPrimitive> primitives,
         HashSet<int> assigned,
         double topLimit,
@@ -81,8 +81,8 @@ public sealed class RawPrimitiveDetector
 
             var next = primitives
                 .Where(x => !assigned.Contains(x.Id))
-                .Where(x => x.Bounds.IntersectsHorizontally(measure.Left, measure.Right))
-                .Where(x => x.Bounds.Bottom <= measure.Top)
+                .Where(x => x.Bounds.IntersectsHorizontally(region.Left, region.Right))
+                .Where(x => x.Bounds.Bottom <= region.Top)
                 .Where(x => x.Bounds.Bottom >= topLimit)
                 .Where(x => assignedTop - x.Bounds.Bottom <= maxGap)
                 .OrderByDescending(x => x.Bounds.Bottom)
