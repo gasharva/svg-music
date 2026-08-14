@@ -67,6 +67,7 @@ public sealed class RecognizedEvent
     public string? StemDirection { get; set; }
     public string? BeamValue { get; set; }
     public int BeamCount { get; set; }
+    public int? CrossStaffChordId { get; set; }
     public bool SlurStart { get; set; }
     public bool SlurStop { get; set; }
     public int? SlurNumber { get; set; }
