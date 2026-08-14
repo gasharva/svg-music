@@ -55,10 +55,10 @@ public sealed class PrimitiveClassificationRenderer
             primitiveCommands,
             primitives);
 
-        var measures = BuildMeasureRegions(systems);
-        var cleanup = _garbageCleaner.Clean(primitives, measures);
+        var regions = BuildStaffMeasureRegions(systems);
+        var cleanup = _garbageCleaner.Clean(primitives, regions);
         var pageBounds = ToRectD(model.CullRect);
-        var claims = BuildClaims(measures, cleanup.Primitives, pageBounds);
+        var claims = BuildClaims(regions, cleanup.Primitives, pageBounds);
 
         ApplyClassification(primitiveCommands, claims, cleanup.GarbageIds);
 
@@ -76,7 +76,7 @@ public sealed class PrimitiveClassificationRenderer
         canvas.Scale(RenderScale);
         canvas.Translate(-bounds.Left, -bounds.Top);
         canvas.DrawPicture(picture);
-        DrawMeasureBorders(canvas, measures);
+        DrawStaffMeasureBorders(canvas, regions);
 
         outputPath ??= Path.Combine(
             Path.GetDirectoryName(svgPath) ?? ".",
@@ -90,27 +90,27 @@ public sealed class PrimitiveClassificationRenderer
         return outputPath;
     }
 
-    private Dictionary<int, HashSet<int>> BuildClaims(
-        IReadOnlyList<MeasureRegion> measures,
+    private Dictionary<int, HashSet<StaffMeasureKey>> BuildClaims(
+        IReadOnlyList<StaffMeasureRegion> regions,
         IReadOnlyList<RawPrimitive> primitives,
         RectD pageBounds)
     {
-        var claims = new Dictionary<int, HashSet<int>>();
+        var claims = new Dictionary<int, HashSet<StaffMeasureKey>>();
 
-        foreach (var measure in measures)
+        foreach (var region in regions)
         {
-            var (topLimit, bottomLimit) = GetVerticalLimits(measure, measures, pageBounds);
-            var detected = _detector.Detect(measure, primitives, topLimit, bottomLimit);
+            var (topLimit, bottomLimit) = GetVerticalLimits(region, regions, pageBounds);
+            var detected = _detector.Detect(region, primitives, topLimit, bottomLimit);
 
             foreach (var primitiveId in detected)
             {
-                if (!claims.TryGetValue(primitiveId, out var measureNumbers))
+                if (!claims.TryGetValue(primitiveId, out var regionKeys))
                 {
-                    measureNumbers = new HashSet<int>();
-                    claims[primitiveId] = measureNumbers;
+                    regionKeys = new HashSet<StaffMeasureKey>();
+                    claims[primitiveId] = regionKeys;
                 }
 
-                measureNumbers.Add(measure.Number);
+                regionKeys.Add(region.Key);
             }
         }
 
@@ -118,26 +118,27 @@ public sealed class PrimitiveClassificationRenderer
     }
 
     /// <summary>
-    /// Search vertically all the way to the actual next measure boundary on the same
-    /// vertical search strip. If there is no measure above/below that overlaps this
-    /// measure horizontally, the SVG/page boundary is the limit.
+    /// Search vertically to the actual boundary of the nearest staff-measure region
+    /// above/below that overlaps this measure's X strip. For P1 this naturally stops
+    /// at P2 in the same measure; for the outer staffs it continues to the next system
+    /// or to the SVG/page edge when no region exists in that direction.
     /// </summary>
     private static (double Top, double Bottom) GetVerticalLimits(
-        MeasureRegion measure,
-        IReadOnlyList<MeasureRegion> measures,
+        StaffMeasureRegion region,
+        IReadOnlyList<StaffMeasureRegion> regions,
         RectD pageBounds)
     {
-        var above = measures
-            .Where(x => x.Number != measure.Number)
-            .Where(x => HorizontallyOverlaps(x, measure))
-            .Where(x => x.Bottom <= measure.Top)
+        var above = regions
+            .Where(x => x.Key != region.Key || x.SystemIndex != region.SystemIndex)
+            .Where(x => HorizontallyOverlaps(x, region))
+            .Where(x => x.Bottom <= region.Top)
             .OrderByDescending(x => x.Bottom)
             .FirstOrDefault();
 
-        var below = measures
-            .Where(x => x.Number != measure.Number)
-            .Where(x => HorizontallyOverlaps(x, measure))
-            .Where(x => x.Top >= measure.Bottom)
+        var below = regions
+            .Where(x => x.Key != region.Key || x.SystemIndex != region.SystemIndex)
+            .Where(x => HorizontallyOverlaps(x, region))
+            .Where(x => x.Top >= region.Bottom)
             .OrderBy(x => x.Top)
             .FirstOrDefault();
 
@@ -146,12 +147,12 @@ public sealed class PrimitiveClassificationRenderer
             below?.Top ?? pageBounds.Bottom);
     }
 
-    private static bool HorizontallyOverlaps(MeasureRegion a, MeasureRegion b) =>
+    private static bool HorizontallyOverlaps(StaffMeasureRegion a, StaffMeasureRegion b) =>
         a.Right > b.Left && a.Left < b.Right;
 
     private static void ApplyClassification(
         IReadOnlyDictionary<int, Shim.DrawPathCanvasCommand> commands,
-        IReadOnlyDictionary<int, HashSet<int>> claims,
+        IReadOnlyDictionary<int, HashSet<StaffMeasureKey>> claims,
         IReadOnlySet<int> garbageIds)
     {
         foreach (var (primitiveId, command) in commands)
@@ -159,13 +160,11 @@ public sealed class PrimitiveClassificationRenderer
             if (command.Paint is null)
                 continue;
 
-            // Garbage is excluded from the classifier entirely and keeps its original
-            // appearance. This is especially important for white page/background paths.
             if (garbageIds.Contains(primitiveId))
                 continue;
 
-            var color = claims.TryGetValue(primitiveId, out var measureNumbers) && measureNumbers.Count == 1
-                ? GetColor(measureNumbers.Single())
+            var color = claims.TryGetValue(primitiveId, out var regionKeys) && regionKeys.Count == 1
+                ? GetColor(regionKeys.Single())
                 : UnclassifiedColor;
 
             command.Paint.Color = new Shim.SKColor(color.R, color.G, color.B, 255);
@@ -258,34 +257,42 @@ public sealed class PrimitiveClassificationRenderer
         }
     }
 
-    private static IReadOnlyList<MeasureRegion> BuildMeasureRegions(IReadOnlyList<StaffSystem> systems)
+    private static IReadOnlyList<StaffMeasureRegion> BuildStaffMeasureRegions(
+        IReadOnlyList<StaffSystem> systems)
     {
-        var result = new List<MeasureRegion>();
+        var result = new List<StaffMeasureRegion>();
         var measureNumber = 1;
 
         for (var systemIndex = 0; systemIndex < systems.Count; systemIndex++)
         {
             var system = systems[systemIndex];
-            for (var i = 0; i < system.BarXs.Count - 1; i++)
+
+            for (var measureIndex = 0; measureIndex < system.BarXs.Count - 1; measureIndex++, measureNumber++)
             {
-                result.Add(new MeasureRegion(
-                    measureNumber++,
-                    systemIndex,
-                    system.BarXs[i],
-                    system.BarXs[i + 1],
-                    system.Top,
-                    system.Bottom));
+                foreach (var staff in system.Staffs)
+                {
+                    result.Add(new StaffMeasureRegion(
+                        measureNumber,
+                        systemIndex,
+                        staff.PartIndex,
+                        system.BarXs[measureIndex],
+                        system.BarXs[measureIndex + 1],
+                        staff.Top,
+                        staff.Bottom));
+                }
             }
         }
 
         return result;
     }
 
-    private static void DrawMeasureBorders(SKCanvas canvas, IReadOnlyList<MeasureRegion> measures)
+    private static void DrawStaffMeasureBorders(
+        SKCanvas canvas,
+        IReadOnlyList<StaffMeasureRegion> regions)
     {
-        foreach (var measure in measures)
+        foreach (var region in regions)
         {
-            var color = GetColor(measure.Number);
+            var color = GetColor(region.Key);
             using var paint = new SKPaint
             {
                 Color = new SKColor(color.R, color.G, color.B, 235),
@@ -296,16 +303,19 @@ public sealed class PrimitiveClassificationRenderer
 
             canvas.DrawRect(
                 new SKRect(
-                    (float)measure.Left,
-                    (float)measure.Top,
-                    (float)measure.Right,
-                    (float)measure.Bottom),
+                    (float)region.Left,
+                    (float)region.Top,
+                    (float)region.Right,
+                    (float)region.Bottom),
                 paint);
         }
     }
 
-    private static (byte R, byte G, byte B) GetColor(int measureNumber) =>
-        Palette[(measureNumber - 1) % Palette.Length];
+    private static (byte R, byte G, byte B) GetColor(StaffMeasureKey key)
+    {
+        var index = (key.MeasureNumber - 1 + key.PartIndex * 3) % Palette.Length;
+        return Palette[index];
+    }
 
     private static RectD ToRectD(Shim.SKRect rect) =>
         new(rect.Left, rect.Top, rect.Right, rect.Bottom);
