@@ -1,5 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <score-partwise version="4.0">
+  <credit page="1">
+    <credit-words default-x="595" default-y="1515" justify="center" halign="center" font-size="22" font-style="normal" font-weight="bold">Miniature for Piano #8</credit-words>
+  </credit>
+  <credit page="1">
+    <credit-words default-x="595" default-y="1475" justify="center" halign="center" font-size="13" font-style="italic" font-weight="normal">Theme from "Mimino"</credit-words>
+  </credit>
+  <credit page="1">
+    <credit-words default-x="595" default-y="1449" justify="center" halign="center" font-size="13" font-style="italic" font-weight="normal">Film by Georgi Danelia and Rezo Gabriadze (1977)</credit-words>
+  </credit>
+  <credit page="1">
+    <credit-words default-x="1060" default-y="1365" justify="right" halign="right" font-size="15" font-style="normal" font-weight="bold">Giya Kancheli (1935-2019)</credit-words>
+  </credit>
   <part-list>
     <score-part id="P1">
       <part-name>Piano</part-name>
@@ -26,6 +38,13 @@
           <line>4</line>
         </clef>
       </attributes>
+      <direction placement="above">
+        <direction-type>
+          <words font-size="12">Cantabile</words>
+        </direction-type>
+        <offset>0</offset>
+        <staff>1</staff>
+      </direction>
       <note default-x="70.207">
         <pitch>
           <step>C</step>
@@ -2393,13 +2412,13 @@
         <staff>2</staff>
       </note>
     </measure>
-  <measure number="21"><print new-system="yes" />
+    <measure number="21">
+      <print new-system="yes" />
       <attributes>
         <divisions>16</divisions>
         <key>
           <fifths>0</fifths>
         </key>
-        
         <staves>2</staves>
         <clef number="1">
           <sign>G</sign>
@@ -2526,7 +2545,8 @@
         <stem>down</stem>
         <staff>2</staff>
       </note>
-    </measure><measure number="22">
+    </measure>
+    <measure number="22">
       <note default-x="60.033">
         <pitch>
           <step>C</step>
@@ -2649,7 +2669,8 @@
         <stem>down</stem>
         <staff>2</staff>
       </note>
-    </measure><measure number="23">
+    </measure>
+    <measure number="23">
       <note default-x="60">
         <pitch>
           <step>F</step>
@@ -2769,7 +2790,8 @@
         <stem>up</stem>
         <staff>2</staff>
       </note>
-    </measure><measure number="24">
+    </measure>
+    <measure number="24">
       <direction placement="below">
         <direction-type>
           <pedal type="start" line="yes" sign="yes" />
@@ -2922,7 +2944,8 @@
         <stem>down</stem>
         <staff>2</staff>
       </note>
-    </measure><measure number="25">
+    </measure>
+    <measure number="25">
       <print new-system="yes" />
       <attributes>
         <clef number="1">
@@ -3039,7 +3062,8 @@
         <stem>up</stem>
         <staff>2</staff>
       </note>
-    </measure><measure number="26">
+    </measure>
+    <measure number="26">
       <note default-x="60">
         <pitch>
           <step>A</step>
@@ -3127,7 +3151,8 @@
         <stem>down</stem>
         <staff>2</staff>
       </note>
-    </measure><measure number="27">
+    </measure>
+    <measure number="27">
       <note default-x="60">
         <pitch>
           <step>A</step>
@@ -3226,7 +3251,8 @@
         <stem>down</stem>
         <staff>2</staff>
       </note>
-    </measure><measure number="28">
+    </measure>
+    <measure number="28">
       <direction placement="below">
         <direction-type>
           <wedge type="crescendo" number="1" default-x="95.864" />
@@ -3366,7 +3392,8 @@
         <beam number="1">end</beam>
         <staff>2</staff>
       </note>
-    </measure><measure number="29">
+    </measure>
+    <measure number="29">
       <print new-system="yes" />
       <attributes>
         <clef number="1">
@@ -3497,7 +3524,8 @@
         <stem>down</stem>
         <staff>2</staff>
       </note>
-    </measure><measure number="30">
+    </measure>
+    <measure number="30">
       <note default-x="60">
         <pitch>
           <step>C</step>
@@ -3587,7 +3615,8 @@
         <stem>up</stem>
         <staff>2</staff>
       </note>
-    </measure><measure number="31">
+    </measure>
+    <measure number="31">
       <note default-x="60">
         <pitch>
           <step>D</step>
@@ -3700,7 +3729,8 @@
         <stem>down</stem>
         <staff>2</staff>
       </note>
-    </measure><measure number="32">
+    </measure>
+    <measure number="32">
       <note default-x="66.668">
         <pitch>
           <step>F</step>
@@ -3814,7 +3844,8 @@
         <stem>down</stem>
         <staff>2</staff>
       </note>
-    </measure><measure number="33">
+    </measure>
+    <measure number="33">
       <print new-system="yes" />
       <attributes>
         <clef number="1">
@@ -3969,7 +4000,8 @@
         <stem>down</stem>
         <staff>2</staff>
       </note>
-    </measure><measure number="34">
+    </measure>
+    <measure number="34">
       <note default-x="60" default-y="9.994">
         <rest />
         <duration>16</duration>
@@ -4082,7 +4114,8 @@
         </notations>
         <staff>2</staff>
       </note>
-    </measure><measure number="35">
+    </measure>
+    <measure number="35">
       <direction placement="below">
         <direction-type>
           <dynamics default-x="67.174">
@@ -4179,5 +4212,6 @@
       <barline location="right">
         <bar-style>light-heavy</bar-style>
       </barline>
-    </measure></part>
+    </measure>
+  </part>
 </score-partwise>
