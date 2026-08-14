@@ -100,10 +100,20 @@ public sealed class MusicXmlScoreTextPostProcessor
     {
         var attributes = measure.Element("attributes");
         if (attributes is null) return;
-        if ((int?)attributes.Element("divisions") is > 0 and var d) divisions = d.Value;
+
+        var divisionsValue = (int?)attributes.Element("divisions");
+        if (divisionsValue is > 0)
+            divisions = divisionsValue.Value;
+
         var time = attributes.Element("time");
         if (time is null) return;
-        if ((int?)time.Element("beats") is > 0 and var b) beats = b.Value;
-        if ((int?)time.Element("beat-type") is > 0 and var bt) beatType = bt.Value;
+
+        var beatsValue = (int?)time.Element("beats");
+        if (beatsValue is > 0)
+            beats = beatsValue.Value;
+
+        var beatTypeValue = (int?)time.Element("beat-type");
+        if (beatTypeValue is > 0)
+            beatType = beatTypeValue.Value;
     }
 }
