@@ -550,16 +550,6 @@
     </measure>
     <measure number="5">
       <print new-system="yes" />
-      <attributes>
-        <clef number="1">
-          <sign>G</sign>
-          <line>2</line>
-        </clef>
-        <clef number="2">
-          <sign>F</sign>
-          <line>4</line>
-        </clef>
-      </attributes>
       <direction placement="below">
         <direction-type>
           <dynamics default-x="109.166">
@@ -1113,16 +1103,6 @@
     </measure>
     <measure number="9">
       <print new-system="yes" />
-      <attributes>
-        <clef number="1">
-          <sign>G</sign>
-          <line>2</line>
-        </clef>
-        <clef number="2">
-          <sign>F</sign>
-          <line>4</line>
-        </clef>
-      </attributes>
       <note default-x="64.884" default-y="-0.035">
         <rest />
         <duration>12</duration>
@@ -1562,16 +1542,6 @@
     </measure>
     <measure number="13">
       <print new-system="yes" />
-      <attributes>
-        <clef number="1">
-          <sign>G</sign>
-          <line>2</line>
-        </clef>
-        <clef number="2">
-          <sign>F</sign>
-          <line>4</line>
-        </clef>
-      </attributes>
       <direction placement="below">
         <direction-type>
           <dynamics default-x="114.567">
@@ -2018,16 +1988,6 @@
     </measure>
     <measure number="17">
       <print new-system="yes" />
-      <attributes>
-        <clef number="1">
-          <sign>G</sign>
-          <line>2</line>
-        </clef>
-        <clef number="2">
-          <sign>F</sign>
-          <line>4</line>
-        </clef>
-      </attributes>
       <note default-x="64.882" default-y="-0.003">
         <rest />
         <duration>12</duration>
@@ -2480,14 +2440,6 @@
           <fifths>0</fifths>
         </key>
         <staves>2</staves>
-        <clef number="1">
-          <sign>G</sign>
-          <line>2</line>
-        </clef>
-        <clef number="2">
-          <sign>F</sign>
-          <line>4</line>
-        </clef>
       </attributes>
       <note default-x="67.66">
         <pitch>
@@ -3007,16 +2959,6 @@
     </measure>
     <measure number="25">
       <print new-system="yes" />
-      <attributes>
-        <clef number="1">
-          <sign>G</sign>
-          <line>2</line>
-        </clef>
-        <clef number="2">
-          <sign>F</sign>
-          <line>4</line>
-        </clef>
-      </attributes>
       <note default-x="60" default-y="-20.004">
         <rest />
         <duration>12</duration>
@@ -3455,16 +3397,6 @@
     </measure>
     <measure number="29">
       <print new-system="yes" />
-      <attributes>
-        <clef number="1">
-          <sign>G</sign>
-          <line>2</line>
-        </clef>
-        <clef number="2">
-          <sign>F</sign>
-          <line>4</line>
-        </clef>
-      </attributes>
       <direction placement="below">
         <direction-type>
           <dynamics default-x="114.581">
@@ -3760,7 +3692,7 @@
         <staff>1</staff>
       </note>
       <backup>
-        <duration>32</duration>
+        <duration>48</duration>
       </backup>
       <note default-x="64.021">
         <pitch>
@@ -3907,16 +3839,6 @@
     </measure>
     <measure number="33">
       <print new-system="yes" />
-      <attributes>
-        <clef number="1">
-          <sign>G</sign>
-          <line>2</line>
-        </clef>
-        <clef number="2">
-          <sign>F</sign>
-          <line>4</line>
-        </clef>
-      </attributes>
       <note default-x="66.667">
         <pitch>
           <step>F</step>

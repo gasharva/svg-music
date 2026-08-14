@@ -2,7 +2,9 @@
   "profiles": {
     "SvgToMusicXmlPoc": {
       "commandName": "Project",
-      "commandLineArgs": "convert d:\\Repos\\svg-music\\Samples\\kancheli-when-almonds-blossomed References\\catalog.json"
+      //"commandLineArgs": "convert d:\\Repos\\svg-music\\Samples\\kancheli-yellow-leaves References\\catalog.json"
+      //d:\musica\kancheli\33_mins\score_19.svg
+      "commandLineArgs": "convert d:\\musica\\kancheli\\33_mins\\score_26.svg References\\\\\\\\catalog.json d:\\\\score.musicxml"
     }
   }
 }

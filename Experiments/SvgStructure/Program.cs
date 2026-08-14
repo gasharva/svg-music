@@ -13,7 +13,7 @@ var geometryReader = new SvgSceneGeometryReader();
 var systemDetector = new StaffSystemDetector();
 var structureBuilder = new ScoreStructureBuilder();
 var measureOverlayRenderer = new MeasureOverlayRenderer();
-var classificationRenderer = new PrimitiveClassificationRenderer();
+var classificationRenderer = new PrimitiveClassificationRenderer(0.25);
 
 var lines = geometryReader.ReadLines(svgPath);
 var systems = systemDetector.Detect(lines);
