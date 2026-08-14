@@ -3,11 +3,8 @@
 ## Notehead sanity
 
 Recognized noteheads: **253**
-Unattached noteheads: **82**
+Unattached noteheads: **75**
 
-- `j` notehead-half staff=1 at (373.16, 189.90)
-- `j` notehead-half staff=1 at (373.16, 180.75)
-- `j` notehead-half staff=1 at (378.50, 178.46)
 - `j` notehead-half staff=2 at (273.06, 271.13)
 - `h` notehead-black staff=2 at (291.80, 282.57)
 - `h` notehead-black staff=2 at (291.80, 278.00)
@@ -83,10 +80,6 @@ Unattached noteheads: **82**
 - `h` notehead-black staff=3 at (522.71, 306.79)
 - `h` notehead-black staff=7 at (395.72, 592.80)
 - `h` notehead-black staff=7 at (395.72, 583.65)
-- `j` notehead-half staff=9 at (173.91, 718.84)
-- `j` notehead-half staff=9 at (173.91, 709.69)
-- `j` notehead-half staff=9 at (312.53, 723.42)
-- `j` notehead-half staff=9 at (312.53, 714.27)
 
 ## Beam geometry
 
@@ -191,5 +184,4 @@ Compact reusable glyphs repeatedly found near free ends of currently unbeamed st
 | symbol | hits | current kind | reference | samples (dx,dy,w,h sp) |
 |---|---:|---|---|---|
 | `A` | 8 | smufl-unknown | uniE241 | `[(0.44, 1.41, 1.01, 3.13), (0.44, 1.41, 1.01, 3.13), (0.44, 1.41, 1.01, 3.13)]` |
-| `v` | 2 | time-signature-digit | timeSig1 | `[(1.25, 1.28, 0.78, 1.06), (0.54, 1.28, 0.78, 1.06)]` |
 | `S` | 1 | smufl-unknown | uniE243 | `[(0.55, 1.78, 1.21, 3.57)]` |

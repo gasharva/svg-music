@@ -20,13 +20,13 @@
 
 | Relation | Count | % of notes |
 |---|---:|---:|
-| stem attached | 153 | 95.6% |
-| stem direction | 153 | 95.6% |
+| stem attached | 159 | 99.4% |
+| stem direction | 159 | 99.4% |
 | chord members | 42 | 26.2% |
-| notes touching beams | 67 | 41.9% |
-| beam begin/continue/end | 67 | 41.9% |
+| notes touching beams | 71 | 44.4% |
+| beam begin/continue/end | 71 | 44.4% |
 | eighth notes | 75 | 46.9% |
-| 16th notes | 0 | 0.0% |
+| 16th notes | 4 | 2.5% |
 | dotted notes | 56 | 35.0% |
 | slur starts | 21 | 13.1% |
 | slur stops | 21 | 13.1% |
@@ -36,14 +36,14 @@
 
 ## Missing-stem triage
 
-Unattached noteheads: **7**
+Unattached noteheads: **1**
 Normalized stem candidates: **107**
 Broad raw vertical candidates: **110**
 Raw vertical candidates not normalized: **6**
 
 | Category | Count | Meaning |
 |---|---:|---|
-| normalization gap | 7 | stem-like raw path exists near the note, but no normalized line candidate does |
+| normalization gap | 1 | stem-like raw path exists near the note, but no normalized line candidate does |
 | attachment geometry gap | 0 | normalized stem is nearby, but current note↔stem endpoint/intersection tolerance rejects it |
 | unexpected resolver gap | 0 | a normalized candidate satisfies the resolver's current attachment window but StemX is still empty |
 | no stem geometry candidate | 0 | neither normalized nor broad raw vertical geometry was found near the note |
@@ -52,13 +52,7 @@ Raw vertical candidates not normalized: **6**
 
 | category | symbol | staff | x | y | line dx sp | line y-gap sp | raw dx sp | raw y-gap sp | raw path |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---|
-| normalizationGap | `g` | 1 | 152.51 | 194.08 |  |  | 0.608 | 0.000 | `path:000021#0` |
-| normalizationGap | `g` | 1 | 152.51 | 184.56 |  |  | 0.608 | 0.000 | `path:000021#0` |
-| normalizationGap | `g` | 1 | 246.30 | 194.08 |  |  | 0.608 | 0.000 | `path:000030#0` |
-| normalizationGap | `g` | 1 | 246.30 | 184.56 |  |  | 0.608 | 0.000 | `path:000030#0` |
 | normalizationGap | `g` | 3 | 309.56 | 324.55 |  |  | 0.547 | 0.000 | `path:000069#0` |
-| normalizationGap | `g` | 5 | 83.51 | 476.44 |  |  | 0.610 | 0.000 | `path:000092#0` |
-| normalizationGap | `g` | 5 | 83.51 | 466.93 |  |  | 0.610 | 0.000 | `path:000092#0` |
 
 ## Warning groups
 

@@ -15,13 +15,13 @@
   },
   "relations": {
     "notes": 160,
-    "withStem": 153,
-    "withStemDirection": 153,
+    "withStem": 159,
+    "withStemDirection": 159,
     "chordMembers": 42,
-    "withBeam": 67,
-    "withBeamValue": 67,
+    "withBeam": 71,
+    "withBeamValue": 71,
     "eighth": 75,
-    "sixteenth": 0,
+    "sixteenth": 4,
     "dotted": 56,
     "slurStarts": 21,
     "slurStops": 21,
@@ -30,13 +30,13 @@
     "altered": 11
   },
   "relationCoveragePercent": {
-    "withStem": 95.6,
-    "withStemDirection": 95.6,
+    "withStem": 99.4,
+    "withStemDirection": 99.4,
     "chordMembers": 26.2,
-    "withBeam": 41.9,
-    "withBeamValue": 41.9,
+    "withBeam": 44.4,
+    "withBeamValue": 44.4,
     "eighth": 46.9,
-    "sixteenth": 0.0,
+    "sixteenth": 2.5,
     "dotted": 35.0,
     "slurStarts": 13.1,
     "slurStops": 13.1,
@@ -45,66 +45,14 @@
     "altered": 6.9
   },
   "stemGapTriage": {
-    "unattachedNotes": 7,
+    "unattachedNotes": 1,
     "normalizedStemCandidates": 107,
     "broadRawVerticalCandidates": 110,
     "rawVerticalCandidatesNotNormalized": 6,
     "categories": {
-      "normalizationGap": 7
+      "normalizationGap": 1
     },
     "samples": [
-      {
-        "category": "normalizationGap",
-        "symbolId": "g",
-        "staff": 1,
-        "x": 152.5115,
-        "y": 194.078,
-        "nearestNormalizedDxSpaces": null,
-        "nearestNormalizedYGapSpaces": null,
-        "nearestRawOnlyDxSpaces": 0.608,
-        "nearestRawOnlyYGapSpaces": 0.0,
-        "rawPathId": "path:000021",
-        "rawContour": 0
-      },
-      {
-        "category": "normalizationGap",
-        "symbolId": "g",
-        "staff": 1,
-        "x": 152.5115,
-        "y": 184.561,
-        "nearestNormalizedDxSpaces": null,
-        "nearestNormalizedYGapSpaces": null,
-        "nearestRawOnlyDxSpaces": 0.608,
-        "nearestRawOnlyYGapSpaces": 0.0,
-        "rawPathId": "path:000021",
-        "rawContour": 0
-      },
-      {
-        "category": "normalizationGap",
-        "symbolId": "g",
-        "staff": 1,
-        "x": 246.3025,
-        "y": 194.078,
-        "nearestNormalizedDxSpaces": null,
-        "nearestNormalizedYGapSpaces": null,
-        "nearestRawOnlyDxSpaces": 0.608,
-        "nearestRawOnlyYGapSpaces": 0.0,
-        "rawPathId": "path:000030",
-        "rawContour": 0
-      },
-      {
-        "category": "normalizationGap",
-        "symbolId": "g",
-        "staff": 1,
-        "x": 246.3025,
-        "y": 184.561,
-        "nearestNormalizedDxSpaces": null,
-        "nearestNormalizedYGapSpaces": null,
-        "nearestRawOnlyDxSpaces": 0.608,
-        "nearestRawOnlyYGapSpaces": 0.0,
-        "rawPathId": "path:000030",
-        "rawContour": 0
-      },
       {
         "category": "normalizationGap",
         "symbolId": "g",
@@ -116,32 +64,6 @@
         "nearestRawOnlyDxSpaces": 0.547,
         "nearestRawOnlyYGapSpaces": 0.0,
         "rawPathId": "path:000069",
-        "rawContour": 0
-      },
-      {
-        "category": "normalizationGap",
-        "symbolId": "g",
-        "staff": 5,
-        "x": 83.51249999999999,
-        "y": 476.445,
-        "nearestNormalizedDxSpaces": null,
-        "nearestNormalizedYGapSpaces": null,
-        "nearestRawOnlyDxSpaces": 0.61,
-        "nearestRawOnlyYGapSpaces": 0.0,
-        "rawPathId": "path:000092",
-        "rawContour": 0
-      },
-      {
-        "category": "normalizationGap",
-        "symbolId": "g",
-        "staff": 5,
-        "x": 83.51249999999999,
-        "y": 466.927,
-        "nearestNormalizedDxSpaces": null,
-        "nearestNormalizedYGapSpaces": null,
-        "nearestRawOnlyDxSpaces": 0.61,
-        "nearestRawOnlyYGapSpaces": 0.0,
-        "rawPathId": "path:000092",
         "rawContour": 0
       }
     ]

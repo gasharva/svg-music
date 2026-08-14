@@ -3,15 +3,9 @@
 ## Notehead sanity
 
 Recognized noteheads: **160**
-Unattached noteheads: **7**
+Unattached noteheads: **1**
 
-- `g` notehead-half staff=1 at (152.51, 194.08)
-- `g` notehead-half staff=1 at (152.51, 184.56)
-- `g` notehead-half staff=1 at (246.30, 194.08)
-- `g` notehead-half staff=1 at (246.30, 184.56)
 - `g` notehead-half staff=3 at (309.56, 324.55)
-- `g` notehead-half staff=5 at (83.51, 476.44)
-- `g` notehead-half staff=5 at (83.51, 466.93)
 
 ## Beam geometry
 
