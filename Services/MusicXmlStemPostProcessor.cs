@@ -13,7 +13,7 @@ public sealed class MusicXmlStemPostProcessor
     public void Apply(string path, AnalysisResult analysis)
     {
         var document = XDocument.Load(path);
-        var groups = BuildStaffGroups(analysis);
+        var groups = MusicXmlWriter.BuildStaffGroups(analysis);
         if (groups.Count == 0) return;
 
         var queues = analysis.Staves.ToDictionary(
@@ -66,30 +66,4 @@ public sealed class MusicXmlStemPostProcessor
         evt.Step is not null ||
         evt.Kind.StartsWith("notehead-", StringComparison.OrdinalIgnoreCase) ||
         evt.Kind.StartsWith("rest-", StringComparison.OrdinalIgnoreCase);
-
-    private static List<List<Staff>> BuildStaffGroups(AnalysisResult analysis)
-    {
-        var staves = analysis.Staves.OrderBy(x => x.Center).ToList();
-        if (staves.Count < 2) return staves.Select(x => new List<Staff> { x }).ToList();
-
-        var clefs = staves.ToDictionary(
-            x => x.Index,
-            x => analysis.Events
-                .Where(e => e.StaffIndex == x.Index && e.Kind.StartsWith("clef-", StringComparison.OrdinalIgnoreCase))
-                .OrderBy(e => e.X)
-                .FirstOrDefault()?.ClefSign);
-
-        var recognizablePairs = 0;
-        for (var i = 0; i + 1 < staves.Count; i += 2)
-            if (clefs[staves[i].Index] == "G" && clefs[staves[i + 1].Index] == "F") recognizablePairs++;
-
-        var expectedPairs = staves.Count / 2;
-        var usePianoPairs = expectedPairs > 0 && recognizablePairs >= Math.Max(1, expectedPairs / 2);
-        if (!usePianoPairs) return staves.Select(x => new List<Staff> { x }).ToList();
-
-        var result = new List<List<Staff>>();
-        for (var i = 0; i < staves.Count; i += 2)
-            result.Add(i + 1 < staves.Count ? [staves[i], staves[i + 1]] : [staves[i]]);
-        return result;
-    }
 }
