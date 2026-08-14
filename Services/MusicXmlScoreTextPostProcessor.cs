@@ -10,9 +10,6 @@ public sealed class MusicXmlScoreTextPostProcessor
         var document = XDocument.Load(musicXmlPath);
         var root = document.Root ?? throw new InvalidOperationException("MusicXML root not found.");
         var part = root.Element("part") ?? throw new InvalidOperationException("MusicXML part not found.");
-        var measures = part.Elements("measure").ToDictionary(
-            x => (int?)x.Attribute("number") ?? -1,
-            x => x);
 
         AddCredits(root, metadata);
 
@@ -35,18 +32,23 @@ public sealed class MusicXmlScoreTextPostProcessor
         var insertBefore = root.Element("part-list") ?? root.Elements().FirstOrDefault();
         var credits = new List<XElement>();
 
+        // MuseScore imports the standard credit roles into distinct page-text styles.
+        // Untyped credits tend to collapse into the same position, so use title/subtitle/composer.
         if (!string.IsNullOrWhiteSpace(metadata.Title))
-            credits.Add(Credit(metadata.Title!, "center", 595, 1515, 22, "bold"));
+            credits.Add(Credit("title", metadata.Title!, "center", 551.95, 1379.06, 22, bold: true));
 
-        var descriptionY = 1475d;
-        foreach (var line in metadata.DescriptionLines)
-        {
-            credits.Add(Credit(line, "center", 595, descriptionY, 13, "italic"));
-            descriptionY -= 26;
-        }
+        if (metadata.DescriptionLines.Count > 0)
+            credits.Add(Credit(
+                "subtitle",
+                string.Join(Environment.NewLine, metadata.DescriptionLines),
+                "center",
+                551.95,
+                1326.31,
+                13,
+                italic: true));
 
         if (!string.IsNullOrWhiteSpace(metadata.Author))
-            credits.Add(Credit(metadata.Author!, "right", 1060, 1365, 15, "bold"));
+            credits.Add(Credit("composer", metadata.Author!, "right", 1052.77, 1277.44, 15, bold: true, valign: "bottom"));
 
         foreach (var credit in credits)
         {
@@ -55,17 +57,27 @@ public sealed class MusicXmlScoreTextPostProcessor
         }
     }
 
-    private static XElement Credit(string text, string justify, double x, double y, double size, string style) =>
+    private static XElement Credit(
+        string type,
+        string text,
+        string justify,
+        double x,
+        double y,
+        double size,
+        bool bold = false,
+        bool italic = false,
+        string valign = "top") =>
         new("credit",
             new XAttribute("page", 1),
+            new XElement("credit-type", type),
             new XElement("credit-words",
                 new XAttribute("default-x", x.ToString("0.###", CultureInfo.InvariantCulture)),
                 new XAttribute("default-y", y.ToString("0.###", CultureInfo.InvariantCulture)),
                 new XAttribute("justify", justify),
-                new XAttribute("halign", justify),
+                new XAttribute("valign", valign),
                 new XAttribute("font-size", size.ToString("0.###", CultureInfo.InvariantCulture)),
-                new XAttribute("font-style", style == "italic" ? "italic" : "normal"),
-                new XAttribute("font-weight", style == "bold" ? "bold" : "normal"),
+                bold ? new XAttribute("font-weight", "bold") : null,
+                italic ? new XAttribute("font-style", "italic") : null,
                 text));
 
     private static void AddWords(XElement measure, ScoreTextPlacement placement, int measureDuration)
