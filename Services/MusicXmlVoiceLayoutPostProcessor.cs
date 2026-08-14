@@ -35,7 +35,7 @@ public sealed class MusicXmlVoiceLayoutPostProcessor
     public void Apply(string path, AnalysisResult analysis)
     {
         var document = XDocument.Load(path);
-        var groups = BuildStaffGroups(analysis);
+        var groups = MusicXmlWriter.BuildStaffGroups(analysis);
         if (groups.Count == 0) return;
 
         var queues = analysis.Staves.ToDictionary(

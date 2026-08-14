@@ -107,9 +107,6 @@ public sealed class MusicXmlWriter
         List<double> candidates;
         if (group.Count == 2)
         {
-            // Grand staff: accept a barline when vertical geometry forms one continuous
-            // Y-chain from the upper staff to the lower staff. The chain may consist of
-            // one long segment or several touching/overlapping segments at the same X.
             candidates = CollectGrandStaffBarlineChains(analysis, group[0], group[1], left, right, averageSpace);
         }
         else
@@ -383,7 +380,7 @@ public sealed class MusicXmlWriter
         return null;
     }
 
-    private static List<List<Staff>> BuildStaffGroups(AnalysisResult analysis)
+    internal static List<List<Staff>> BuildStaffGroups(AnalysisResult analysis)
     {
         var staves = analysis.Staves.OrderBy(x => x.Center).ToList();
         if (staves.Count < 2) return staves.Select(x => new List<Staff> { x }).ToList();
@@ -401,12 +398,55 @@ public sealed class MusicXmlWriter
 
         var expectedPairs = staves.Count / 2;
         var usePianoPairs = expectedPairs > 0 && recognizablePairs >= Math.Max(1, expectedPairs / 2);
+
+        // Some otherwise perfectly normal SVG exports draw clefs in a form our glyph matcher misses.
+        // Do not let a missed treble clef demote a whole piano page to independent staves: the
+        // repeated vertical spacing pattern is a stronger structural signal than glyph identity.
+        if (!usePianoPairs)
+            usePianoPairs = LooksLikeGrandStaffGeometry(staves);
+
         if (!usePianoPairs) return staves.Select(x => new List<Staff> { x }).ToList();
 
         var result = new List<List<Staff>>();
         for (var i = 0; i < staves.Count; i += 2)
             result.Add(i + 1 < staves.Count ? [staves[i], staves[i + 1]] : [staves[i]]);
         return result;
+    }
+
+    private static bool LooksLikeGrandStaffGeometry(IReadOnlyList<Staff> staves)
+    {
+        if (staves.Count < 4 || staves.Count % 2 != 0) return false;
+
+        var withinPairGaps = new List<double>();
+        var betweenPairGaps = new List<double>();
+        for (var i = 0; i + 1 < staves.Count; i += 2)
+        {
+            withinPairGaps.Add(staves[i + 1].Top - staves[i].Bottom);
+            if (i + 2 < staves.Count)
+                betweenPairGaps.Add(staves[i + 2].Top - staves[i + 1].Bottom);
+        }
+
+        if (betweenPairGaps.Count == 0) return false;
+
+        var withinMedian = Median(withinPairGaps);
+        var betweenMedian = Median(betweenPairGaps);
+        var medianSpace = Median(staves.Select(x => x.Space));
+        if (medianSpace <= 0) return false;
+
+        // Grand-staff gap must be stable and substantially smaller than the next-system gap.
+        var stablePairs = withinPairGaps.Count(x => Math.Abs(x - withinMedian) <= medianSpace * 1.25);
+        return stablePairs >= Math.Ceiling(withinPairGaps.Count * .75) &&
+               betweenMedian >= withinMedian + medianSpace * 2.0;
+    }
+
+    private static double Median(IEnumerable<double> values)
+    {
+        var ordered = values.OrderBy(x => x).ToArray();
+        if (ordered.Length == 0) return 0;
+        var middle = ordered.Length / 2;
+        return ordered.Length % 2 == 0
+            ? (ordered[middle - 1] + ordered[middle]) / 2
+            : ordered[middle];
     }
 
     private static (string Sign, int Line) ClefForStaff(AnalysisResult analysis, Staff staff, RecognitionConfig config)
