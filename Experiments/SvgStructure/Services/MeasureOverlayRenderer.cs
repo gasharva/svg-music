@@ -9,8 +9,6 @@ public sealed class MeasureOverlayRenderer
 {
     private const float RenderScale = 2f;
 
-    // Deliberately loud diagnostic colors. The index formula below makes both horizontal
-    // neighbours (measures) and vertical neighbours (parts) use different colors.
     private static readonly (byte R, byte G, byte B)[] Palette =
     {
         (220, 20, 60),    // crimson
@@ -23,7 +21,10 @@ public sealed class MeasureOverlayRenderer
         (105, 125, 0)     // olive
     };
 
+    private static readonly (byte R, byte G, byte B) UnclassifiedColor = (90, 90, 90);
+
     private readonly PrimitiveClassifier _classifier = new();
+    private readonly PathContourSplitter _contourSplitter = new();
 
     public string Render(
         string svgPath,
@@ -34,8 +35,6 @@ public sealed class MeasureOverlayRenderer
         var model = svg.Model
             ?? throw new InvalidOperationException("Svg.Skia did not produce a retained scene model.");
 
-        // Work on a clone: the original model remains untouched and can still be rendered
-        // normally. At this stage one DrawPath command is our definition of an SVG primitive.
         var classifiedModel = model.DeepClone();
         RecolorPicture(classifiedModel, Shim.SKMatrix.Identity, systems);
 
@@ -78,6 +77,7 @@ public sealed class MeasureOverlayRenderer
 
         var matrix = parentMatrix;
         var stack = new Stack<Shim.SKMatrix>();
+        var rebuilt = new List<Shim.CanvasCommand>();
 
         foreach (var command in picture.Commands)
         {
@@ -86,44 +86,76 @@ public sealed class MeasureOverlayRenderer
                 case Shim.SaveCanvasCommand:
                 case Shim.SaveLayerCanvasCommand:
                     stack.Push(matrix);
+                    rebuilt.Add(command);
                     break;
 
                 case Shim.RestoreCanvasCommand:
                     if (stack.Count > 0)
                         matrix = stack.Pop();
+                    rebuilt.Add(command);
                     break;
 
                 case Shim.SetMatrixCanvasCommand setMatrix:
                     matrix = parentMatrix.PreConcat(setMatrix.TotalMatrix);
+                    rebuilt.Add(command);
                     break;
 
                 case Shim.DrawPathCanvasCommand drawPath when drawPath.Path is not null:
-                {
-                    var bounds = matrix.MapRect(drawPath.Path.Bounds);
-                    var assignment = _classifier.Classify(
-                        (bounds.Left + bounds.Right) / 2,
-                        (bounds.Top + bounds.Bottom) / 2,
-                        systems);
-
-                    if (assignment is not null && drawPath.Paint is not null)
-                        ApplyColor(drawPath.Paint, GetColor(assignment.PartIndex, assignment.MeasureNumber));
-
+                    foreach (var contourCommand in SplitAndClassify(drawPath, matrix, systems))
+                        rebuilt.Add(contourCommand);
                     break;
-                }
 
                 case Shim.DrawPictureCanvasCommand drawPicture when drawPicture.Picture is not null:
                     RecolorPicture(drawPicture.Picture, matrix, systems);
+                    rebuilt.Add(command);
+                    break;
+
+                default:
+                    rebuilt.Add(command);
                     break;
             }
+        }
+
+        picture.Commands.Clear();
+        foreach (var command in rebuilt)
+            picture.Commands.Add(command);
+    }
+
+    private IEnumerable<Shim.DrawPathCanvasCommand> SplitAndClassify(
+        Shim.DrawPathCanvasCommand source,
+        Shim.SKMatrix matrix,
+        IReadOnlyList<StaffSystem> systems)
+    {
+        foreach (var contour in _contourSplitter.Split(source.Path!))
+        {
+            var bounds = matrix.MapRect(contour.Bounds);
+            var assignment = _classifier.Classify(
+                (bounds.Left + bounds.Right) / 2,
+                (bounds.Top + bounds.Bottom) / 2,
+                systems);
+
+            var paint = source.Paint?.DeepClone();
+            if (paint is not null)
+            {
+                var color = assignment is null
+                    ? UnclassifiedColor
+                    : GetColor(assignment.PartIndex, assignment.MeasureNumber);
+
+                ApplyColor(paint, color);
+            }
+
+            yield return new Shim.DrawPathCanvasCommand(contour, paint)
+            {
+                SourceElementId = source.SourceElementId,
+                SourceElementAddress = source.SourceElementAddress,
+                SourceElementTypeName = source.SourceElementTypeName
+            };
         }
     }
 
     private static void ApplyColor(Shim.SKPaint paint, (byte R, byte G, byte B) color)
     {
         paint.Color = new Shim.SKColor(color.R, color.G, color.B, 255);
-
-        // There are no gradients in the musical geometry of the current sample. Clearing a
-        // shader makes the diagnostic color authoritative if a future SVG happens to use one.
         paint.Shader = null;
     }
 
