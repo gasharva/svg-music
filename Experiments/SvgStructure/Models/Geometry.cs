@@ -20,4 +20,5 @@ public sealed record StaffSystem(
     double Right,
     double Top,
     double Bottom,
+    int StaffCount,
     IReadOnlyList<double> BarXs);
