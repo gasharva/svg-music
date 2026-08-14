@@ -1,8 +1,14 @@
+using System.Globalization;
 using System.Numerics;
 using ShimSkiaSharp;
 using Svg.Skia;
 
 namespace SvgSymbols.Services;
+
+public sealed record FourierCoefficient(double Real, double Imag)
+{
+    public double Magnitude => Math.Sqrt(Real * Real + Imag * Imag);
+}
 
 public sealed record ContourFourierDescriptor(
     double Weight,
@@ -10,18 +16,22 @@ public sealed record ContourFourierDescriptor(
     double CenterY,
     double Width,
     double Height,
-    IReadOnlyList<double> Magnitudes);
+    IReadOnlyList<FourierCoefficient> Coefficients)
+{
+    public IReadOnlyList<double> Magnitudes => Coefficients.Select(x => x.Magnitude).ToArray();
+}
 
 public sealed record FourierDescriptor(
+    int RawContourCount,
     int ContourCount,
     IReadOnlyList<ContourFourierDescriptor> Contours);
 
 /// <summary>
-/// Builds a translation/scale/rotation/start-point invariant descriptor directly
-/// from SVG vector contours. No rasterization is involved.
-///
-/// The largest contours are described independently. Each contour gets an energy-normalized
-/// Fourier magnitude vector plus its relative size/position inside the whole symbol.
+/// Builds vector-only Fourier descriptors from SVG contours.
+/// Translation is removed by discarding F0; scale is removed by normalizing total spectral energy.
+/// Rotation is intentionally NOT normalized: music glyphs are expected to preserve orientation, and
+/// retaining complex phase helps distinguish visually different shapes with similar Fourier magnitudes.
+/// Start point and contour direction are canonicalized before DFT.
 /// </summary>
 public sealed class FourierDescriptorAnalyzer
 {
@@ -36,81 +46,175 @@ public sealed class FourierDescriptorAnalyzer
         var picture = svg.Model
             ?? throw new InvalidOperationException($"Svg.Skia did not produce a retained scene model for '{svgPath}'.");
 
-        var contours = new List<List<Vector2>>();
-        ReadPicture(picture, SKMatrix.Identity, contours);
+        var rawContours = new List<List<Vector2>>();
+        ReadPicture(picture, SKMatrix.Identity, rawContours);
 
-        var usable = contours
+        var rawUsable = rawContours
             .Where(x => x.Count >= 3)
-            .Select(x => new ContourData(x, Length(x)))
+            .Select(x => new { Points = x, Length = Length(x) })
             .Where(x => x.Length > 0.0001)
-            .OrderByDescending(x => x.Length)
             .ToList();
 
-        if (usable.Count == 0)
-            return new FourierDescriptor(0, Array.Empty<ContourFourierDescriptor>());
+        if (rawUsable.Count == 0)
+            return new FourierDescriptor(0, 0, Array.Empty<ContourFourierDescriptor>());
 
-        var allPoints = usable.SelectMany(x => x.Points).ToArray();
-        var minX = allPoints.Min(p => p.X);
-        var maxX = allPoints.Max(p => p.X);
-        var minY = allPoints.Min(p => p.Y);
-        var maxY = allPoints.Max(p => p.Y);
-        var symbolWidth = Math.Max(1e-9, maxX - minX);
-        var symbolHeight = Math.Max(1e-9, maxY - minY);
-        var totalLength = usable.Sum(x => x.Length);
+        var prepared = rawUsable
+            .Select(x => PrepareContour(x.Points, x.Length))
+            .Where(x => x is not null)
+            .Select(x => x!)
+            .ToList();
 
-        var result = usable
+        // Svg.Skia can expose the same rendered contour more than once for some SVG structures.
+        // Deduplicate only near-identical normalized geometry; do not merge merely similar contours.
+        var unique = new List<PreparedContour>();
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var contour in prepared.OrderByDescending(x => x.Length))
+        {
+            if (seen.Add(BuildGeometryKey(contour.CanonicalPoints)))
+                unique.Add(contour);
+        }
+
+        if (unique.Count == 0)
+            return new FourierDescriptor(rawUsable.Count, 0, Array.Empty<ContourFourierDescriptor>());
+
+        var bounds = Bounds(unique.SelectMany(x => x.CanonicalPoints));
+        var symbolWidth = Math.Max(bounds.Right - bounds.Left, 1e-9);
+        var symbolHeight = Math.Max(bounds.Bottom - bounds.Top, 1e-9);
+        var symbolScale = Math.Max(symbolWidth, symbolHeight);
+        var totalLength = unique.Sum(x => x.Length);
+
+        var descriptors = unique
+            .OrderByDescending(x => x.Length)
             .Take(MaxContours)
-            .Select(contour => DescribeContour(
-                contour,
-                minX,
-                minY,
-                symbolWidth,
-                symbolHeight,
-                totalLength))
+            .Select(x => BuildDescriptor(x, bounds, symbolScale, totalLength))
             .ToArray();
 
-        return new FourierDescriptor(usable.Count, result);
+        return new FourierDescriptor(rawUsable.Count, unique.Count, descriptors);
     }
 
-    private static ContourFourierDescriptor DescribeContour(
-        ContourData contour,
-        float symbolMinX,
-        float symbolMinY,
-        double symbolWidth,
-        double symbolHeight,
+    private static PreparedContour? PrepareContour(IReadOnlyList<Vector2> source, double length)
+    {
+        var sampled = ResampleClosed(source, ResampleCount);
+        if (sampled.Length < 3)
+            return null;
+
+        var canonical = Canonicalize(sampled);
+        return new PreparedContour(canonical, length);
+    }
+
+    private static ContourFourierDescriptor BuildDescriptor(
+        PreparedContour contour,
+        BoundsD symbolBounds,
+        double symbolScale,
         double totalLength)
     {
-        var minX = contour.Points.Min(p => p.X);
-        var maxX = contour.Points.Max(p => p.X);
-        var minY = contour.Points.Min(p => p.Y);
-        var maxY = contour.Points.Max(p => p.Y);
-        var centerX = (minX + maxX) / 2d;
-        var centerY = (minY + maxY) / 2d;
-
-        var sampled = ResampleClosed(contour.Points, ResampleCount);
-        var coefficients = Dft(sampled, CoefficientCount + 1);
-        var rawMagnitudes = coefficients
-            .Skip(1) // k=0 is position/DC
+        var points = contour.CanonicalPoints;
+        var contourBounds = Bounds(points);
+        var center = Centroid(points);
+        var coefficients = Dft(points, CoefficientCount + 1)
+            .Skip(1)
             .Take(CoefficientCount)
-            .Select(Complex.Abs)
             .ToArray();
 
-        // Energy normalization is stable even when F1 happens to be almost zero.
-        var energy = Math.Sqrt(rawMagnitudes.Sum(x => x * x));
-        var magnitudes = energy <= 1e-12
-            ? Enumerable.Repeat(0d, CoefficientCount).ToArray()
-            : rawMagnitudes.Select(x => x / energy).ToArray();
+        var energy = Math.Sqrt(coefficients.Sum(x => x.Real * x.Real + x.Imaginary * x.Imaginary));
+        if (energy <= 1e-12)
+            energy = 1d;
+
+        var normalized = coefficients
+            .Select(x => new FourierCoefficient(x.Real / energy, x.Imaginary / energy))
+            .ToArray();
+
+        var symbolCenterX = (symbolBounds.Left + symbolBounds.Right) / 2d;
+        var symbolCenterY = (symbolBounds.Top + symbolBounds.Bottom) / 2d;
 
         return new ContourFourierDescriptor(
-            Weight: contour.Length / totalLength,
-            CenterX: (centerX - symbolMinX) / symbolWidth - 0.5,
-            CenterY: (centerY - symbolMinY) / symbolHeight - 0.5,
-            Width: (maxX - minX) / symbolWidth,
-            Height: (maxY - minY) / symbolHeight,
-            Magnitudes: magnitudes);
+            Weight: totalLength <= 1e-12 ? 0d : contour.Length / totalLength,
+            CenterX: (center.X - symbolCenterX) / symbolScale,
+            CenterY: (center.Y - symbolCenterY) / symbolScale,
+            Width: (contourBounds.Right - contourBounds.Left) / symbolScale,
+            Height: (contourBounds.Bottom - contourBounds.Top) / symbolScale,
+            Coefficients: normalized);
     }
 
-    private sealed record ContourData(List<Vector2> Points, double Length);
+    private static Vector2[] Canonicalize(Vector2[] points)
+    {
+        var result = points.ToArray();
+
+        // Force one traversal direction. This preserves orientation on the page while removing the
+        // arbitrary clockwise/counter-clockwise choice made by SVG authors.
+        if (SignedArea(result) < 0)
+            Array.Reverse(result);
+
+        // Choose a stable start point: top-most, then left-most. The tolerance avoids tiny Bezier
+        // approximation noise changing the chosen point between visually identical outlines.
+        var minY = result.Min(p => p.Y);
+        var yTolerance = Math.Max(1e-5f, (result.Max(p => p.Y) - minY) * 1e-4f);
+        var candidates = Enumerable.Range(0, result.Length)
+            .Where(i => Math.Abs(result[i].Y - minY) <= yTolerance)
+            .ToArray();
+        var start = candidates.OrderBy(i => result[i].X).First();
+
+        if (start == 0)
+            return result;
+
+        var rotated = new Vector2[result.Length];
+        for (var i = 0; i < result.Length; i++)
+            rotated[i] = result[(start + i) % result.Length];
+        return rotated;
+    }
+
+    private static string BuildGeometryKey(IReadOnlyList<Vector2> points)
+    {
+        var center = Centroid(points);
+        var bounds = Bounds(points);
+        var scale = Math.Max(bounds.Right - bounds.Left, bounds.Bottom - bounds.Top);
+        if (scale <= 1e-12)
+            scale = 1d;
+
+        // 32 evenly spaced canonical samples are plenty for detecting exact/near-exact duplicate paths.
+        var parts = new string[32];
+        for (var i = 0; i < parts.Length; i++)
+        {
+            var p = points[i * points.Count / parts.Length];
+            var x = (p.X - center.X) / scale;
+            var y = (p.Y - center.Y) / scale;
+            parts[i] = $"{x.ToString("0.0000", CultureInfo.InvariantCulture)},{y.ToString("0.0000", CultureInfo.InvariantCulture)}";
+        }
+        return string.Join(';', parts);
+    }
+
+    private static double SignedArea(IReadOnlyList<Vector2> points)
+    {
+        double sum = 0;
+        for (var i = 0; i < points.Count; i++)
+        {
+            var a = points[i];
+            var b = points[(i + 1) % points.Count];
+            sum += a.X * b.Y - b.X * a.Y;
+        }
+        return sum / 2d;
+    }
+
+    private static Vector2 Centroid(IReadOnlyList<Vector2> points)
+    {
+        double x = 0, y = 0;
+        foreach (var p in points)
+        {
+            x += p.X;
+            y += p.Y;
+        }
+        return new Vector2((float)(x / points.Count), (float)(y / points.Count));
+    }
+
+    private static BoundsD Bounds(IEnumerable<Vector2> source)
+    {
+        var points = source.ToArray();
+        return new BoundsD(
+            points.Min(p => p.X),
+            points.Min(p => p.Y),
+            points.Max(p => p.X),
+            points.Max(p => p.Y));
+    }
 
     private static void ReadPicture(
         SKPicture picture,
@@ -152,22 +256,26 @@ public sealed class FourierDescriptorAnalyzer
         }
     }
 
-    private static void ReadPath(
-        SKPath path,
-        SKMatrix matrix,
-        ICollection<List<Vector2>> contours)
+    private static void ReadPath(SKPath path, SKMatrix matrix, ICollection<List<Vector2>> contours)
     {
         List<Vector2>? currentContour = null;
         Vector2 current = default;
         Vector2 start = default;
         var hasCurrent = false;
 
+        void Flush()
+        {
+            if (currentContour is { Count: >= 2 })
+                contours.Add(currentContour);
+            currentContour = null;
+            hasCurrent = false;
+        }
+
         void StartContour(Vector2 point)
         {
             Flush();
             currentContour = new List<Vector2> { point };
-            current = point;
-            start = point;
+            current = start = point;
             hasCurrent = true;
         }
 
@@ -178,14 +286,6 @@ public sealed class FourierDescriptorAnalyzer
                 currentContour.Add(point);
             current = point;
             hasCurrent = true;
-        }
-
-        void Flush()
-        {
-            if (currentContour is { Count: >= 2 })
-                contours.Add(currentContour);
-            currentContour = null;
-            hasCurrent = false;
         }
 
         foreach (var command in path)
@@ -224,10 +324,7 @@ public sealed class FourierDescriptorAnalyzer
                     {
                         var t = i / (float)CurveSteps;
                         var mt = 1f - t;
-                        Add(mt * mt * mt * p0
-                            + 3f * mt * mt * t * p1
-                            + 3f * mt * t * t * p2
-                            + t * t * t * p3);
+                        Add(mt * mt * mt * p0 + 3f * mt * mt * t * p1 + 3f * mt * t * t * p2 + t * t * t * p3);
                     }
                     break;
                 }
@@ -289,31 +386,21 @@ public sealed class FourierDescriptorAnalyzer
     {
         var result = new List<Vector2>
         {
-            Map(matrix, rect.Left, rect.Top),
-            Map(matrix, rect.Right, rect.Top),
-            Map(matrix, rect.Right, rect.Bottom),
-            Map(matrix, rect.Left, rect.Bottom)
+            Map(matrix, rect.Left, rect.Top), Map(matrix, rect.Right, rect.Top),
+            Map(matrix, rect.Right, rect.Bottom), Map(matrix, rect.Left, rect.Bottom)
         };
         result.Add(result[0]);
         return result;
     }
 
-    private static List<Vector2> EllipsePoints(
-        float cx,
-        float cy,
-        float rx,
-        float ry,
-        SKMatrix matrix)
+    private static List<Vector2> EllipsePoints(float cx, float cy, float rx, float ry, SKMatrix matrix)
     {
         const int steps = 48;
         var result = new List<Vector2>(steps + 1);
         for (var i = 0; i <= steps; i++)
         {
             var a = 2d * Math.PI * i / steps;
-            result.Add(Map(
-                matrix,
-                cx + rx * (float)Math.Cos(a),
-                cy + ry * (float)Math.Sin(a)));
+            result.Add(Map(matrix, cx + rx * (float)Math.Cos(a), cy + ry * (float)Math.Sin(a)));
         }
         return result;
     }
@@ -343,9 +430,11 @@ public sealed class FourierDescriptorAnalyzer
             cumulative[i] = cumulative[i - 1] + Vector2.Distance(points[i - 1], points[i]);
 
         var total = cumulative[^1];
+        if (total <= 1e-12)
+            return Array.Empty<Vector2>();
+
         var result = new Vector2[count];
         var segment = 1;
-
         for (var i = 0; i < count; i++)
         {
             var target = total * i / count;
@@ -355,12 +444,9 @@ public sealed class FourierDescriptorAnalyzer
             var a = points[segment - 1];
             var b = points[segment];
             var segmentLength = cumulative[segment] - cumulative[segment - 1];
-            var t = segmentLength <= 1e-12
-                ? 0f
-                : (float)((target - cumulative[segment - 1]) / segmentLength);
+            var t = segmentLength <= 1e-12 ? 0f : (float)((target - cumulative[segment - 1]) / segmentLength);
             result[i] = Vector2.Lerp(a, b, t);
         }
-
         return result;
     }
 
@@ -368,7 +454,6 @@ public sealed class FourierDescriptorAnalyzer
     {
         var n = points.Count;
         var result = new Complex[coefficientCount];
-
         for (var k = 0; k < coefficientCount; k++)
         {
             Complex sum = Complex.Zero;
@@ -380,7 +465,9 @@ public sealed class FourierDescriptorAnalyzer
             }
             result[k] = sum / n;
         }
-
         return result;
     }
+
+    private sealed record PreparedContour(Vector2[] CanonicalPoints, double Length);
+    private sealed record BoundsD(double Left, double Top, double Right, double Bottom);
 }
