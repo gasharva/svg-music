@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
 namespace SvgToMusicXmlPoc.Services;
@@ -10,6 +11,10 @@ public sealed class MusicXmlScoreTextPostProcessor
     private const double DefaultPageMargin = 70;
     private const double HeaderSystemDistance = 170;
 
+    private static readonly Regex TempoRegex = new(
+        @"^1\s*/\s*(?<denominator>\d+)\s*=\s*(?<bpm>\d+(?:[.,]\d+)?)$",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
     public void Apply(string musicXmlPath, ScoreTextMetadata metadata)
     {
         var document = XDocument.Load(musicXmlPath);
@@ -17,6 +22,7 @@ public sealed class MusicXmlScoreTextPostProcessor
         var part = root.Element("part") ?? throw new InvalidOperationException("MusicXML part not found.");
 
         AddHeader(root, part, metadata);
+        AddTempo(part, metadata.Tempo);
 
         var divisions = 1;
         var beats = 4;
@@ -119,10 +125,9 @@ public sealed class MusicXmlScoreTextPostProcessor
                 .FirstOrDefault(x => string.Equals((string?)x.Attribute("type"), "both", StringComparison.OrdinalIgnoreCase))
             ?? pageLayout.Element("page-margins");
 
-        var left = ReadDouble(margins?.Element("left-margin"), DefaultPageMargin);
         var right = ReadDouble(margins?.Element("right-margin"), DefaultPageMargin);
         var top = ReadDouble(margins?.Element("top-margin"), DefaultPageMargin);
-        return new PageLayout(pageWidth, pageHeight, left, right, top);
+        return new PageLayout(pageWidth, pageHeight, right, top);
     }
 
     private static XElement CreateMargins(string type, double margin) =>
@@ -222,6 +227,59 @@ public sealed class MusicXmlScoreTextPostProcessor
             distance.Value = F(HeaderSystemDistance);
     }
 
+    private static void AddTempo(XElement part, string? tempoText)
+    {
+        if (string.IsNullOrWhiteSpace(tempoText)) return;
+        var firstMeasure = part.Elements("measure").FirstOrDefault();
+        if (firstMeasure is null || firstMeasure.Descendants("metronome").Any()) return;
+
+        var directionType = new XElement("direction-type");
+        XElement? sound = null;
+        var match = TempoRegex.Match(tempoText.Trim());
+        if (match.Success &&
+            int.TryParse(match.Groups["denominator"].Value, out var denominator) &&
+            TryBeatUnit(denominator, out var beatUnit) &&
+            double.TryParse(match.Groups["bpm"].Value.Replace(',', '.'), NumberStyles.Float,
+                CultureInfo.InvariantCulture, out var bpm))
+        {
+            directionType.Add(new XElement("metronome",
+                new XElement("beat-unit", beatUnit),
+                new XElement("per-minute", F(bpm))));
+            sound = new XElement("sound", new XAttribute("tempo", F(bpm * 4d / denominator)));
+        }
+        else
+        {
+            directionType.Add(new XElement("words", tempoText.Trim()));
+        }
+
+        var direction = new XElement("direction",
+            new XAttribute("placement", "above"),
+            directionType,
+            new XElement("staff", 1));
+        if (sound is not null) direction.Add(sound);
+
+        var insertionPoint = firstMeasure.Elements().FirstOrDefault(x =>
+            x.Name.LocalName is not "attributes" and not "print" and not "direction");
+        if (insertionPoint is null) firstMeasure.Add(direction);
+        else insertionPoint.AddBeforeSelf(direction);
+    }
+
+    private static bool TryBeatUnit(int denominator, out string beatUnit)
+    {
+        beatUnit = denominator switch
+        {
+            1 => "whole",
+            2 => "half",
+            4 => "quarter",
+            8 => "eighth",
+            16 => "16th",
+            32 => "32nd",
+            64 => "64th",
+            _ => string.Empty
+        };
+        return beatUnit.Length > 0;
+    }
+
     private static void AddWords(XElement measure, ScoreTextPlacement placement, int measureDuration)
     {
         var offset = placement.Align switch
@@ -281,7 +339,6 @@ public sealed class MusicXmlScoreTextPostProcessor
     private sealed record PageLayout(
         double PageWidth,
         double PageHeight,
-        double LeftMargin,
         double RightMargin,
         double TopMargin);
 }
