@@ -61,7 +61,7 @@
   </credit>
   <credit page="1">
     <credit-type>subtitle</credit-type>
-    <credit-words default-x="600" default-y="1500" justify="center" valign="bottom" font-size="10" font-style="italic">Theme from "Mimino"</credit-words>
+    <credit-words default-x="600" default-y="1500" justify="center" valign="bottom" font-size="10" font-style="italic">Theme from "Mimino", Film</credit-words>
   </credit>
   <credit page="1">
     <credit-type>composer</credit-type>
@@ -3984,6 +3984,13 @@
       </note>
     </measure>
     <measure number="34">
+      <direction placement="above">
+        <direction-type>
+          <words font-size="12">allargando</words>
+        </direction-type>
+        <offset>0</offset>
+        <staff>1</staff>
+      </direction>
       <note default-x="60" default-y="9.994">
         <rest />
         <duration>16</duration>
