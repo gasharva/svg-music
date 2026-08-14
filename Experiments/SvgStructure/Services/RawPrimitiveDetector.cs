@@ -5,10 +5,9 @@ namespace SvgStructure.Services;
 /// <summary>
 /// Detects raw SVG primitives belonging to one visual staff inside one measure.
 ///
-/// 1. Seed with every primitive that intersects the staff-measure rectangle.
-/// 2. Extend only vertically, never left/right outside its measure X range.
-/// 3. Walk down and up incrementally: a primitive is added only when it is close
-///    to something already assigned to this staff-measure.
+/// The five staff-line fragments clipped to this staff-measure are injected as temporary
+/// virtual seeds. They participate only in neighbourhood growth and are never returned
+/// as real SVG primitives.
 /// </summary>
 public sealed class RawPrimitiveDetector
 {
@@ -20,20 +19,43 @@ public sealed class RawPrimitiveDetector
         double verticalTopLimit,
         double verticalBottomLimit)
     {
-        var assigned = primitives
+        var working = primitives.ToList();
+        var virtualStaffLines = CreateVirtualStaffLines(region);
+        working.AddRange(virtualStaffLines);
+
+        var assigned = working
             .Where(x => x.Bounds.Intersects(region.Bounds))
             .Select(x => x.Id)
             .ToHashSet();
 
-        if (assigned.Count == 0)
-            return assigned;
-
         var maxGap = Math.Max(1, region.Height * ProximityPercentOfMeasureHeight);
 
-        GrowDown(region, primitives, assigned, verticalBottomLimit, maxGap);
-        GrowUp(region, primitives, assigned, verticalTopLimit, maxGap);
+        GrowDown(region, working, assigned, verticalBottomLimit, maxGap);
+        GrowUp(region, working, assigned, verticalTopLimit, maxGap);
 
-        return assigned;
+        // Negative ids belong to temporary staff-line fragments only.
+        return assigned.Where(x => x >= 0).ToHashSet();
+    }
+
+    private static IReadOnlyList<RawPrimitive> CreateVirtualStaffLines(StaffMeasureRegion region)
+    {
+        var result = new List<RawPrimitive>(5);
+        var spacing = region.Height <= 0 ? 0 : region.Height / 4.0;
+        var halfThickness = Math.Max(0.05, region.Height * 0.0025);
+
+        for (var i = 0; i < 5; i++)
+        {
+            var y = region.Top + spacing * i;
+            result.Add(new RawPrimitive(
+                -1 - i,
+                new RectD(
+                    region.Left,
+                    y - halfThickness,
+                    region.Right,
+                    y + halfThickness)));
+        }
+
+        return result;
     }
 
     private static void GrowDown(
@@ -51,6 +73,7 @@ public sealed class RawPrimitiveDetector
 
             var next = primitives
                 .Where(x => !assigned.Contains(x.Id))
+                .Where(x => x.Id >= 0)
                 .Where(x => x.Bounds.IntersectsHorizontally(region.Left, region.Right))
                 .Where(x => x.Bounds.Top >= region.Bottom)
                 .Where(x => x.Bounds.Top <= bottomLimit)
@@ -81,6 +104,7 @@ public sealed class RawPrimitiveDetector
 
             var next = primitives
                 .Where(x => !assigned.Contains(x.Id))
+                .Where(x => x.Id >= 0)
                 .Where(x => x.Bounds.IntersectsHorizontally(region.Left, region.Right))
                 .Where(x => x.Bounds.Bottom <= region.Top)
                 .Where(x => x.Bounds.Bottom >= topLimit)
