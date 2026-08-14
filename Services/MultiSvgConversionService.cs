@@ -155,7 +155,8 @@ public sealed class MultiSvgConversionService
         StaffTolerance = source.StaffTolerance,
         MaxSymbolDistanceInSpaces = source.MaxSymbolDistanceInSpaces,
         MaxAttachmentDistanceInSpaces = source.MaxAttachmentDistanceInSpaces,
-        MinClassificationScore = source.MinClassificationScore
+        MinClassificationScore = source.MinClassificationScore,
+        RecognitionParallelism = source.RecognitionParallelism
     };
 
     private static bool HasExplicitTimeSignatureGlyphs(AnalysisResult analysis) =>
