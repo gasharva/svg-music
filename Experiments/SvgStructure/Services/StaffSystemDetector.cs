@@ -68,6 +68,14 @@ public sealed class StaffSystemDetector
             return null;
 
         var staffCount = ys.Count / 5;
+        var staffs = Enumerable.Range(0, staffCount)
+            .Select(partIndex =>
+            {
+                var staffYs = ys.Skip(partIndex * 5).Take(5).ToArray();
+                return new StaffBand(partIndex, staffYs.First(), staffYs.Last());
+            })
+            .ToList();
+
         var left = staffLines.Average(x => x.Left);
         var right = staffLines.Average(x => x.Right);
         var top = ys.Min();
@@ -84,7 +92,7 @@ public sealed class StaffSystemDetector
             .ToList();
 
         return barXs.Count >= 2
-            ? new StaffSystem(left, right, top, bottom, staffCount, barXs)
+            ? new StaffSystem(left, right, top, bottom, staffCount, barXs, staffs)
             : null;
     }
 
@@ -99,9 +107,6 @@ public sealed class StaffSystemDetector
         if (gaps.Count == 0)
             throw new InvalidOperationException("Could not estimate staff-line spacing.");
 
-        // The smallest repeated gaps are the distances between adjacent staff lines.
-        // Taking the median of the lower third avoids larger gaps between the two staves
-        // and between systems without depending on absolute SVG scale.
         var sampleSize = Math.Max(1, gaps.Count / 3);
         var sample = gaps.Take(sampleSize).ToList();
         return sample[sample.Count / 2];
