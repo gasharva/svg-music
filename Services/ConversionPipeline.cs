@@ -50,6 +50,7 @@ public sealed class ConversionPipeline
         new MusicXmlFullMeasureRestLanePostProcessor().Apply(musicXmlPath); new MusicXmlDelayedVoiceOnsetPostProcessor().Apply(musicXmlPath);
         new MusicXmlGraceVoiceTimingPostProcessor().Apply(musicXmlPath); new MusicXmlSystemBreakPostProcessor().Apply(musicXmlPath);
         new MusicXmlSecondaryBeamPostProcessor().Apply(musicXmlPath); new MusicXmlTupletPostProcessor().Apply(musicXmlPath);
+        new MusicXmlCrossStaffChordPostProcessor().Apply(musicXmlPath);
         new MusicXmlAccidentalStatePostProcessor().Apply(musicXmlPath); new MusicXmlDynamicsPostProcessor().Apply(musicXmlPath, result.Analysis);
         new MusicXmlSustainPostProcessor().Apply(musicXmlPath, result.Analysis); new MusicXmlFinalBarlinePostProcessor().Apply(musicXmlPath, result.Analysis);
         new MusicXmlTrailingFinalBarlinePostProcessor().Apply(musicXmlPath); result.Performance.WriteMusicXmlMs = watch.Elapsed.TotalMilliseconds; result.Performance.TotalMs += result.Performance.WriteMusicXmlMs;
