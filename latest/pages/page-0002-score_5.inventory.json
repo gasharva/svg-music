@@ -1,0 +1,459 @@
+{
+  "structuralInputs": {
+    "staves": 8,
+    "uses": 453,
+    "directPaths": 452,
+    "lineSegments": 143
+  },
+  "eventKinds": {
+    "notehead-black": 92,
+    "notehead-half": 68,
+    "rest-quarter": 6,
+    "clef-treble": 5,
+    "clef-bass": 3,
+    "rest-eighth": 2
+  },
+  "relations": {
+    "notes": 160,
+    "withStem": 153,
+    "withStemDirection": 153,
+    "chordMembers": 42,
+    "withBeam": 67,
+    "withBeamValue": 67,
+    "eighth": 75,
+    "sixteenth": 0,
+    "dotted": 56,
+    "slurStarts": 21,
+    "slurStops": 21,
+    "tieStarts": 15,
+    "tieStops": 15,
+    "altered": 11
+  },
+  "relationCoveragePercent": {
+    "withStem": 95.6,
+    "withStemDirection": 95.6,
+    "chordMembers": 26.2,
+    "withBeam": 41.9,
+    "withBeamValue": 41.9,
+    "eighth": 46.9,
+    "sixteenth": 0.0,
+    "dotted": 35.0,
+    "slurStarts": 13.1,
+    "slurStops": 13.1,
+    "tieStarts": 9.4,
+    "tieStops": 9.4,
+    "altered": 6.9
+  },
+  "stemGapTriage": {
+    "unattachedNotes": 7,
+    "normalizedStemCandidates": 107,
+    "broadRawVerticalCandidates": 110,
+    "rawVerticalCandidatesNotNormalized": 6,
+    "categories": {
+      "normalizationGap": 7
+    },
+    "samples": [
+      {
+        "category": "normalizationGap",
+        "symbolId": "g",
+        "staff": 1,
+        "x": 152.5115,
+        "y": 194.078,
+        "nearestNormalizedDxSpaces": null,
+        "nearestNormalizedYGapSpaces": null,
+        "nearestRawOnlyDxSpaces": 0.608,
+        "nearestRawOnlyYGapSpaces": 0.0,
+        "rawPathId": "path:000021",
+        "rawContour": 0
+      },
+      {
+        "category": "normalizationGap",
+        "symbolId": "g",
+        "staff": 1,
+        "x": 152.5115,
+        "y": 184.561,
+        "nearestNormalizedDxSpaces": null,
+        "nearestNormalizedYGapSpaces": null,
+        "nearestRawOnlyDxSpaces": 0.608,
+        "nearestRawOnlyYGapSpaces": 0.0,
+        "rawPathId": "path:000021",
+        "rawContour": 0
+      },
+      {
+        "category": "normalizationGap",
+        "symbolId": "g",
+        "staff": 1,
+        "x": 246.3025,
+        "y": 194.078,
+        "nearestNormalizedDxSpaces": null,
+        "nearestNormalizedYGapSpaces": null,
+        "nearestRawOnlyDxSpaces": 0.608,
+        "nearestRawOnlyYGapSpaces": 0.0,
+        "rawPathId": "path:000030",
+        "rawContour": 0
+      },
+      {
+        "category": "normalizationGap",
+        "symbolId": "g",
+        "staff": 1,
+        "x": 246.3025,
+        "y": 184.561,
+        "nearestNormalizedDxSpaces": null,
+        "nearestNormalizedYGapSpaces": null,
+        "nearestRawOnlyDxSpaces": 0.608,
+        "nearestRawOnlyYGapSpaces": 0.0,
+        "rawPathId": "path:000030",
+        "rawContour": 0
+      },
+      {
+        "category": "normalizationGap",
+        "symbolId": "g",
+        "staff": 3,
+        "x": 309.5575,
+        "y": 324.554,
+        "nearestNormalizedDxSpaces": null,
+        "nearestNormalizedYGapSpaces": null,
+        "nearestRawOnlyDxSpaces": 0.547,
+        "nearestRawOnlyYGapSpaces": 0.0,
+        "rawPathId": "path:000069",
+        "rawContour": 0
+      },
+      {
+        "category": "normalizationGap",
+        "symbolId": "g",
+        "staff": 5,
+        "x": 83.51249999999999,
+        "y": 476.445,
+        "nearestNormalizedDxSpaces": null,
+        "nearestNormalizedYGapSpaces": null,
+        "nearestRawOnlyDxSpaces": 0.61,
+        "nearestRawOnlyYGapSpaces": 0.0,
+        "rawPathId": "path:000092",
+        "rawContour": 0
+      },
+      {
+        "category": "normalizationGap",
+        "symbolId": "g",
+        "staff": 5,
+        "x": 83.51249999999999,
+        "y": 466.927,
+        "nearestNormalizedDxSpaces": null,
+        "nearestNormalizedYGapSpaces": null,
+        "nearestRawOnlyDxSpaces": 0.61,
+        "nearestRawOnlyYGapSpaces": 0.0,
+        "rawPathId": "path:000092",
+        "rawContour": 0
+      }
+    ]
+  },
+  "warnings": {
+    "total": 146,
+    "groups": {
+      "low confidence": 144,
+      "Не удалось привязать accidental-sharp в x=419.1": 1,
+      "Не удалось привязать точку в x=463.4": 1
+    }
+  },
+  "suspiciousNearStaffSymbols": [
+    {
+      "symbolId": "s",
+      "usesNearStaff": 6,
+      "kind": "smufl-unknown",
+      "referenceId": "uniE251",
+      "score": 0.7353567544181314,
+      "widthInSpaces": 1.0770899511910668,
+      "heightInSpaces": 2.4491924446123834,
+      "reason": "unknown semantic kind"
+    },
+    {
+      "symbolId": "p",
+      "usesNearStaff": 4,
+      "kind": "clef-treble",
+      "referenceId": "uniE058",
+      "score": 0.5957188554010078,
+      "widthInSpaces": 2.7078542126927543,
+      "heightInSpaces": 6.733598239537442,
+      "reason": "low confidence"
+    },
+    {
+      "symbolId": "C",
+      "usesNearStaff": 2,
+      "kind": "smufl-unknown",
+      "referenceId": "uniE0CF",
+      "score": 0.5179692673369729,
+      "widthInSpaces": 3.125578038230028,
+      "heightInSpaces": 2.27613520534899,
+      "reason": "unknown semantic kind"
+    },
+    {
+      "symbolId": "b",
+      "usesNearStaff": 1,
+      "kind": "clef-treble",
+      "referenceId": "uniE058",
+      "score": 0.5957188554010078,
+      "widthInSpaces": 2.7078542126927543,
+      "heightInSpaces": 6.733598239537442,
+      "reason": "low confidence"
+    },
+    {
+      "symbolId": "d",
+      "usesNearStaff": 1,
+      "kind": "smufl-unknown",
+      "referenceId": "uniE135",
+      "score": 0.7601186390383919,
+      "widthInSpaces": 1.0952737285898717,
+      "heightInSpaces": 1.4843081184576077,
+      "reason": "unknown semantic kind"
+    },
+    {
+      "symbolId": "k",
+      "usesNearStaff": 1,
+      "kind": "smufl-unknown",
+      "referenceId": "uniE00B",
+      "score": 0.451469067740905,
+      "widthInSpaces": 0.36435309702795743,
+      "heightInSpaces": 1.3891224477807538,
+      "reason": "unknown semantic kind"
+    },
+    {
+      "symbolId": "o",
+      "usesNearStaff": 1,
+      "kind": "smufl-unknown",
+      "referenceId": "uniE110",
+      "score": 0.5727407589896902,
+      "widthInSpaces": 3.4275246359400477,
+      "heightInSpaces": 1.89782997252394,
+      "reason": "unknown semantic kind"
+    },
+    {
+      "symbolId": "u",
+      "usesNearStaff": 1,
+      "kind": "smufl-unknown",
+      "referenceId": "uniE045",
+      "score": 0.46843031602133733,
+      "widthInSpaces": 4.668930689712351,
+      "heightInSpaces": 1.7665031641949474,
+      "reason": "unknown semantic kind"
+    },
+    {
+      "symbolId": "w",
+      "usesNearStaff": 1,
+      "kind": "<unclassified>",
+      "referenceId": null,
+      "score": null,
+      "widthInSpaces": null,
+      "heightInSpaces": null,
+      "reason": "no classification"
+    },
+    {
+      "symbolId": "x",
+      "usesNearStaff": 1,
+      "kind": "smufl-unknown",
+      "referenceId": "uniE4A6",
+      "score": 0.7239277060350049,
+      "widthInSpaces": 0.6106171280064847,
+      "heightInSpaces": 1.2212342560129694,
+      "reason": "unknown semantic kind"
+    },
+    {
+      "symbolId": "y",
+      "usesNearStaff": 1,
+      "kind": "smufl-unknown",
+      "referenceId": "uniE5F5",
+      "score": 0.8079285641129366,
+      "widthInSpaces": 0.7616954883081579,
+      "heightInSpaces": 0.9650944490481019,
+      "reason": "unknown semantic kind"
+    },
+    {
+      "symbolId": "z",
+      "usesNearStaff": 1,
+      "kind": "smufl-unknown",
+      "referenceId": "uniE1BD",
+      "score": 0.8766889150045454,
+      "widthInSpaces": 1.5330566297093295,
+      "heightInSpaces": 0.9684564153413241,
+      "reason": "unknown semantic kind"
+    },
+    {
+      "symbolId": "B",
+      "usesNearStaff": 1,
+      "kind": "smufl-unknown",
+      "referenceId": "uniE113",
+      "score": 0.7348685166258611,
+      "widthInSpaces": 0.7419439363354774,
+      "heightInSpaces": 0.9621527285415327,
+      "reason": "unknown semantic kind"
+    },
+    {
+      "symbolId": "E",
+      "usesNearStaff": 1,
+      "kind": "smufl-unknown",
+      "referenceId": "uniE241",
+      "score": 0.8007429056725488,
+      "widthInSpaces": 1.126258708229442,
+      "heightInSpaces": 3.273084309345152,
+      "reason": "unknown semantic kind"
+    },
+    {
+      "symbolId": "F",
+      "usesNearStaff": 1,
+      "kind": "smufl-unknown",
+      "referenceId": "uniE047",
+      "score": 0.5435852121625084,
+      "widthInSpaces": 2.1394451560865173,
+      "heightInSpaces": 4.504614587131115,
+      "reason": "unknown semantic kind"
+    },
+    {
+      "symbolId": "path:000000",
+      "usesNearStaff": 1,
+      "kind": "smufl-unknown",
+      "referenceId": "uniE11A",
+      "score": 0.5201877867114331,
+      "widthInSpaces": 121.60379168610078,
+      "heightInSpaces": 142.75476212833505,
+      "reason": "unknown semantic kind"
+    },
+    {
+      "symbolId": "path:000001",
+      "usesNearStaff": 1,
+      "kind": "rest-1024th",
+      "referenceId": "rest1024th",
+      "score": 0.03745149278966684,
+      "widthInSpaces": 2.101228933263884e-10,
+      "heightInSpaces": 15.791472426919057,
+      "reason": "low confidence"
+    },
+    {
+      "symbolId": "path:000002",
+      "usesNearStaff": 1,
+      "kind": "smufl-unknown",
+      "referenceId": "uniE540",
+      "score": 0.0020342137548115965,
+      "widthInSpaces": 102.08186533118902,
+      "heightInSpaces": 15.791472426919057,
+      "reason": "unknown semantic kind"
+    },
+    {
+      "symbolId": "path:000003",
+      "usesNearStaff": 1,
+      "kind": "smufl-unknown",
+      "referenceId": "uniE4B7",
+      "score": 0.640138785688807,
+      "widthInSpaces": 0.9997647264469566,
+      "heightInSpaces": 7.916380006071686,
+      "reason": "unknown semantic kind"
+    },
+    {
+      "symbolId": "path:000004",
+      "usesNearStaff": 1,
+      "kind": "smufl-unknown",
+      "referenceId": "uniE4B7",
+      "score": 0.6401639100399329,
+      "widthInSpaces": 0.9997647264469566,
+      "heightInSpaces": 7.874775673193059,
+      "reason": "unknown semantic kind"
+    },
+    {
+      "symbolId": "path:000005",
+      "usesNearStaff": 1,
+      "kind": "smufl-unknown",
+      "referenceId": "uniE009",
+      "score": 0.005349593559448185,
+      "widthInSpaces": 53.74873749629442,
+      "heightInSpaces": 2.101228933263884e-10,
+      "reason": "unknown semantic kind"
+    },
+    {
+      "symbolId": "path:000006",
+      "usesNearStaff": 1,
+      "kind": "smufl-unknown",
+      "referenceId": "uniE009",
+      "score": 0.011837780932986298,
+      "widthInSpaces": 51.582661528331194,
+      "heightInSpaces": 24.208002896216268,
+      "reason": "unknown semantic kind"
+    },
+    {
+      "symbolId": "path:000007",
+      "usesNearStaff": 1,
+      "kind": "smufl-unknown",
+      "referenceId": "uniE1FE",
+      "score": 0.2051954824283249,
+      "widthInSpaces": 28.332550690343552,
+      "heightInSpaces": 14.958348527100876,
+      "reason": "unknown semantic kind"
+    },
+    {
+      "symbolId": "path:000008",
+      "usesNearStaff": 1,
+      "kind": "rest-1024th",
+      "referenceId": "rest1024th",
+      "score": 0.03745149278966684,
+      "widthInSpaces": 2.101228933263884e-10,
+      "heightInSpaces": 15.791472426919057,
+      "reason": "low confidence"
+    },
+    {
+      "symbolId": "path:000009",
+      "usesNearStaff": 1,
+      "kind": "rest-1024th",
+      "referenceId": "rest1024th",
+      "score": 0.03745149278966684,
+      "widthInSpaces": 2.101228933263884e-10,
+      "heightInSpaces": 15.791472426919057,
+      "reason": "low confidence"
+    },
+    {
+      "symbolId": "path:000010",
+      "usesNearStaff": 1,
+      "kind": "rest-1024th",
+      "referenceId": "rest1024th",
+      "score": 0.03745149278966684,
+      "widthInSpaces": 2.101228933263884e-10,
+      "heightInSpaces": 15.791472426919057,
+      "reason": "low confidence"
+    },
+    {
+      "symbolId": "path:000011",
+      "usesNearStaff": 1,
+      "kind": "rest-1024th",
+      "referenceId": "rest1024th",
+      "score": 0.03745149278966684,
+      "widthInSpaces": 2.101228933263884e-10,
+      "heightInSpaces": 15.791472426919057,
+      "reason": "low confidence"
+    },
+    {
+      "symbolId": "path:000012",
+      "usesNearStaff": 1,
+      "kind": "rest-1024th",
+      "referenceId": "rest1024th",
+      "score": 0.03745149278966684,
+      "widthInSpaces": 2.101228933263884e-10,
+      "heightInSpaces": 15.791472426919057,
+      "reason": "low confidence"
+    },
+    {
+      "symbolId": "path:000013",
+      "usesNearStaff": 1,
+      "kind": "rest-1024th",
+      "referenceId": "rest1024th",
+      "score": 0.03745149278966684,
+      "widthInSpaces": 2.101228933263884e-10,
+      "heightInSpaces": 15.791472426919057,
+      "reason": "low confidence"
+    },
+    {
+      "symbolId": "path:000014",
+      "usesNearStaff": 1,
+      "kind": "smufl-unknown",
+      "referenceId": "uniE220",
+      "score": 0.8999958560723205,
+      "widthInSpaces": 29.89481440222525,
+      "heightInSpaces": 0.7501387291752052,
+      "reason": "unknown semantic kind"
+    }
+  ]
+}
