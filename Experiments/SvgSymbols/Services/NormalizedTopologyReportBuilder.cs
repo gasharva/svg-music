@@ -6,11 +6,6 @@ using SvgSymbols.Models;
 
 namespace SvgSymbols.Services;
 
-/// <summary>
-/// Diagnostic experiment: normalize each single time-signature digit with Skia PathOps,
-/// save the normalized silhouette, compare structural metrics before/after, and run the
-/// independent whole-number classifier in leave-one-out mode.
-/// </summary>
 public sealed class NormalizedTopologyReportBuilder
 {
     private static readonly Regex SingleDigit = new(
@@ -103,7 +98,7 @@ public sealed class NormalizedTopologyReportBuilder
     {
         var html = new StringBuilder();
         html.AppendLine("<!doctype html><html><head><meta charset=\"utf-8\"><title>Normalized digit topology</title>");
-        html.AppendLine("<style>body{font-family:Segoe UI,Arial,sans-serif;margin:24px;background:#f5f5f5;color:#222}table{border-collapse:collapse;width:100%;background:white;margin-bottom:28px}th,td{border:1px solid #d6d6d6;padding:7px 8px;text-align:left;vertical-align:middle}th{background:#eceff2;position:sticky;top:0}.digit{font-size:22px;font-weight:700;text-align:center}.family{font-weight:700}.glyphs{display:flex;gap:8px;align-items:center}.glyph{width:72px;height:72px;object-fit:contain;background:#fafafa;border:1px solid #eee}.arrow{font-size:22px}.n{font-family:Consolas,monospace;white-space:nowrap}.good{background:#edf8ed}.bad{background:#fff0f0}.error{color:#a00}.result{font-weight:700}.candidates{font-family:Consolas,monospace;font-size:12px;color:#555}</style></head><body>");
+        html.AppendLine("<style>body{font-family:Segoe UI,Arial,sans-serif;margin:24px;background:#f5f5f5;color:#222}table{border-collapse:collapse;width:100%;background:white;margin-bottom:28px}th,td{border:1px solid #d6d6d6;padding:7px 8px;text-align:left;vertical-align:middle}th{background:#eceff2;position:sticky;top:0}.digit{font-size:22px;font-weight:700;text-align:center}.family{font-weight:700}.glyphs{display:flex;gap:8px;align-items:center}.glyph{width:72px;height:72px;object-fit:contain;background:#fafafa;border:1px solid #eee}.arrow{font-size:22px}.n{font-family:Consolas,monospace;white-space:nowrap}.good{background:#edf8ed}.bad{background:#fff0f0}.error{color:#a00}.result{font-weight:700}.candidates{font-family:Consolas,monospace;font-size:12px;color:#555}.diag{font-family:Consolas,monospace;font-size:12px}</style></head><body>");
         html.AppendLine("<h1>Single digit topology — before / after Skia PathOps</h1>");
         html.AppendLine("<p>Normalized SVGs are written to <code>Samples/Rhythm/normalized</code>. The right-hand image is the union+simplify silhouette used for the second set of measurements. Geometry outside the SVG rendered viewport is clipped before Simplify().</p>");
         html.AppendLine("<table><thead><tr><th>Digit</th><th>Family</th><th>Original → normalized</th><th>Contours raw</th><th>Closed / outer</th><th>Holes</th><th>Aspect</th><th>Fill</th><th>Perimeter</th></tr></thead><tbody>");
@@ -144,31 +139,47 @@ public sealed class NormalizedTopologyReportBuilder
         }
 
         html.AppendLine("</tbody></table>");
-
         html.AppendLine("<h1>Whole-number classifier — leave one out</h1>");
-        html.AppendLine("<p>No digit splitting is used here. Each complete raw SVG is normalized to its visible filled silhouette and compared with complete known number silhouettes. The exact test file is removed from the reference set.</p>");
-        html.AppendLine("<table><thead><tr><th>Glyph</th><th>Expected</th><th>Verdict</th><th>Confidence</th><th>Top candidates</th></tr></thead><tbody>");
+        html.AppendLine("<p>For whole-shape candidates the table now shows the distance split into <b>structural</b> and raw <b>Fourier</b> parts. Current combined distance is <code>structural + 0.30 × Fourier</code>. Segmented digit-pair hypotheses have no such split and show dashes.</p>");
+        html.AppendLine("<table><thead><tr><th>Glyph</th><th>Expected</th><th>Verdict</th><th>Confidence</th><th>Winner S / F / combined</th><th>Top candidates</th></tr></thead><tbody>");
 
         foreach (var row in classifications.OrderBy(x => x.Expected).ThenBy(x => x.FileName))
         {
             var result = row.Result;
             var correct = result.Value == row.Expected;
             var css = result.Error is not null ? "bad" : correct ? "good" : "bad";
+            var winner = result.Candidates.FirstOrDefault();
+            var diagnostic = winner is null
+                ? "—"
+                : winner.StructuralDistance is null || winner.FourierDistance is null
+                    ? $"— / — / {winner.Distance:0.000}"
+                    : $"{winner.StructuralDistance:0.000} / {winner.FourierDistance:0.000} / {winner.Distance:0.000}";
+
             var candidates = result.Candidates.Count == 0
                 ? "—"
-                : string.Join(" · ", result.Candidates.Select(x => $"{x.Value}: {x.Probability * 100:0.0}% d={x.Distance:0.00} [{x.BestReference}]"));
+                : string.Join(" · ", result.Candidates.Select(FormatCandidate));
 
             html.AppendLine($"<tr class=\"{css}\">" +
                 $"<td><div class=\"glyphs\"><img class=\"glyph\" src=\"Samples/Rhythm/{Uri.EscapeDataString(row.FileName)}\"><span>{WebUtility.HtmlEncode(row.FileName)}</span></div></td>" +
                 $"<td class=\"digit\">{row.Expected}</td>" +
                 $"<td class=\"result\">{WebUtility.HtmlEncode(result.Value?.ToString(CultureInfo.InvariantCulture) ?? "?")}</td>" +
                 $"<td class=\"n\">{result.Confidence * 100:0.0}%</td>" +
+                $"<td class=\"diag\">{WebUtility.HtmlEncode(diagnostic)}</td>" +
                 $"<td class=\"candidates\">{WebUtility.HtmlEncode(result.Error ?? candidates)}</td>" +
                 "</tr>");
         }
 
         html.AppendLine("</tbody></table></body></html>");
         return html.ToString();
+    }
+
+    private static string FormatCandidate(NumberCandidate candidate)
+    {
+        var parts = candidate.StructuralDistance is null || candidate.FourierDistance is null
+            ? $"d={candidate.Distance:0.00}"
+            : $"S={candidate.StructuralDistance:0.00} F={candidate.FourierDistance:0.00} C={candidate.Distance:0.00}";
+
+        return $"{candidate.Value}: {candidate.Probability * 100:0.0}% {parts} [{candidate.BestReference}]";
     }
 
     private static string Delta(int before, int after) =>
