@@ -34,16 +34,24 @@ public sealed class BravuraClefRecognizer : IClefRecognizer
     private readonly SvgShapeNormalizer _normalizer = new();
     private readonly FourierDescriptorAnalyzer _fourier = new();
     private readonly FourierDescriptorComparer _comparer = new();
+    private readonly ClefOpenSetPolicy _openSetPolicy;
     private readonly IReadOnlyList<Reference> _references;
+    private readonly double _referenceSeparation;
 
-    public BravuraClefRecognizer(string referenceGlyphDirectory, string workDirectory)
+    public BravuraClefRecognizer(
+        string referenceGlyphDirectory,
+        string workDirectory,
+        ClefOpenSetPolicy? openSetPolicy = null)
     {
         Directory.CreateDirectory(workDirectory);
+        _openSetPolicy = openSetPolicy ?? new ClefOpenSetPolicy();
         _references = new[]
         {
             BuildReference(ClefSymbol.G, Path.Combine(referenceGlyphDirectory, "gClef.svg"), workDirectory),
             BuildReference(ClefSymbol.F, Path.Combine(referenceGlyphDirectory, "fClef.svg"), workDirectory)
         };
+
+        _referenceSeparation = CombinedDistance(_references[0].Descriptor, _references[1].Descriptor);
     }
 
     public ClefSymbolRecognition Recognize(IReadOnlyList<IReadOnlyList<Vector2>> contours)
@@ -59,15 +67,10 @@ public sealed class BravuraClefRecognizer : IClefRecognizer
             var descriptor = _fourier.Analyze(temporary);
 
             var ranked = _references
-                .Select(reference =>
+                .Select(reference => new
                 {
-                    var complex = _comparer.ComplexDistance(descriptor, reference.Descriptor);
-                    var magnitude = _comparer.MagnitudeDistance(descriptor, reference.Descriptor);
-                    return new
-                    {
-                        reference.Symbol,
-                        Distance = complex + 0.20 * magnitude
-                    };
+                    reference.Symbol,
+                    Distance = CombinedDistance(descriptor, reference.Descriptor)
                 })
                 .OrderBy(x => x.Distance)
                 .ToArray();
@@ -88,6 +91,15 @@ public sealed class BravuraClefRecognizer : IClefRecognizer
                     Math.Clamp(weights[i] / total * absoluteQuality, 0d, 1d)))
                 .ToArray();
 
+            var secondDistance = ranked.Length > 1 ? ranked[1].Distance : ranked[0].Distance;
+            var openSet = _openSetPolicy.Evaluate(
+                ranked[0].Distance,
+                secondDistance,
+                _referenceSeparation);
+
+            if (!openSet.Accepted)
+                return new ClefSymbolRecognition(null, 0, candidates, openSet.RejectionReason);
+
             var best = candidates[0];
             return new ClefSymbolRecognition(best.Symbol, best.Confidence, candidates);
         }
@@ -100,6 +112,13 @@ public sealed class BravuraClefRecognizer : IClefRecognizer
             try { if (File.Exists(temporary)) File.Delete(temporary); }
             catch { }
         }
+    }
+
+    private double CombinedDistance(FourierDescriptor a, FourierDescriptor b)
+    {
+        var complex = _comparer.ComplexDistance(a, b);
+        var magnitude = _comparer.MagnitudeDistance(a, b);
+        return complex + 0.20 * magnitude;
     }
 
     private Reference BuildReference(ClefSymbol symbol, string sourcePath, string workDirectory)
