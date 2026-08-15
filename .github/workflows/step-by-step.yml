@@ -1,0 +1,98 @@
+name: SvgStructure step-by-step
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: svg-structure-step-by-step
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore SvgStructure/SvgStructure.csproj
+
+      - name: Build
+        run: dotnet build SvgStructure/SvgStructure.csproj --configuration Release --no-restore
+
+      - name: Run step-by-step samples
+        run: >-
+          dotnet run
+          --project SvgStructure/SvgStructure.csproj
+          --configuration Release
+          --no-build
+          --no-launch-profile
+          -- Samples/step-by-step
+
+      - name: Upload run artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: svg-structure-step-by-step-${{ github.sha }}
+          path: Samples/step-by-step/_artifacts/**
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish latest report to ci-output
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          rm -rf /tmp/step-by-step-latest
+          mkdir -p /tmp/step-by-step-latest
+          cp -R Samples/step-by-step/_artifacts/. /tmp/step-by-step-latest/
+
+          cat > /tmp/step-by-step-latest/source.txt <<EOF
+          Branch: ${{ github.ref_name }}
+          Commit: ${{ github.sha }}
+          Workflow run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          EOF
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if git fetch origin ci-output:refs/remotes/origin/ci-output 2>/dev/null; then
+            git switch -C ci-output origin/ci-output
+          else
+            git switch --orphan ci-output
+            git rm -rf . >/dev/null 2>&1 || true
+          fi
+
+          mkdir -p latest
+          rm -rf latest/step-by-step
+          mkdir -p latest/step-by-step
+          cp -R /tmp/step-by-step-latest/. latest/step-by-step/
+
+          git add -A latest/step-by-step
+          if git diff --cached --quiet; then
+            echo "ci-output/latest/step-by-step is already up to date"
+          else
+            git commit -m "Update SvgStructure step-by-step from ${{ github.sha }}"
+            git push origin ci-output
+          fi
+
+      - name: Workflow summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo '## SvgStructure step-by-step'
+            echo
+            echo '- Download the **svg-structure-step-by-step-${{ github.sha }}** artifact from this run.'
+            echo '- The latest browsable Markdown report is published to the `ci-output` branch under `latest/step-by-step/`.'
+          } >> "$GITHUB_STEP_SUMMARY"
