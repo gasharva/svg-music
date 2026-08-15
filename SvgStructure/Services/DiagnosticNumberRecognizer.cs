@@ -44,6 +44,7 @@ public sealed class DiagnosticNumberRecognizer : ISvgNumberRecognizer
         {
             var stem = $"{number:000}";
             WritePng(contours, Path.Combine(_outputDirectory, stem + ".png"));
+            WriteSvg(contours, Path.Combine(_outputDirectory, stem + ".svg"));
             WriteResult(result, contours, Path.Combine(_outputDirectory, stem + ".txt"));
             _entries.Add(new Entry(stem, result));
             WriteIndex();
@@ -69,7 +70,7 @@ public sealed class DiagnosticNumberRecognizer : ISvgNumberRecognizer
             var candidates = string.Join(", ", result.Candidates.Take(8).Select(x => $"{x.Value}:{x.Confidence:0.000}"));
             html.Append($"<div class=\"card\"><a href=\"{entry.Stem}.png\"><img src=\"{entry.Stem}.png\"></a>");
             html.Append($"<div><b>#{entry.Stem}</b> → <b>{WebUtility.HtmlEncode(result.Value?.ToString() ?? "null")}</b> ({result.Confidence:0.000})</div>");
-            html.Append($"<div class=\"mono\">{WebUtility.HtmlEncode(candidates)}</div><a href=\"{entry.Stem}.txt\">details</a></div>");
+            html.Append($"<div class=\"mono\">{WebUtility.HtmlEncode(candidates)}</div><a href=\"{entry.Stem}.svg\">svg</a> · <a href=\"{entry.Stem}.txt\">details</a></div>");
         }
 
         html.AppendLine("</div></body></html>");
@@ -116,6 +117,45 @@ public sealed class DiagnosticNumberRecognizer : ISvgNumberRecognizer
         data.SaveTo(stream);
     }
 
+    private static void WriteSvg(
+        IReadOnlyList<IReadOnlyList<Vector2>> contours,
+        string outputPath)
+    {
+        var points = contours.SelectMany(x => x).ToArray();
+        if (points.Length == 0)
+        {
+            File.WriteAllText(outputPath, "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1 1\"/>");
+            return;
+        }
+
+        var minX = points.Min(x => x.X);
+        var minY = points.Min(x => x.Y);
+        var maxX = points.Max(x => x.X);
+        var maxY = points.Max(x => x.Y);
+        var width = Math.Max(1e-6f, maxX - minX);
+        var height = Math.Max(1e-6f, maxY - minY);
+        var padding = Math.Max(width, height) * 0.05f;
+
+        var sb = new StringBuilder();
+        sb.AppendLine("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+        sb.Append("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"")
+            .Append(Fmt(minX - padding)).Append(' ')
+            .Append(Fmt(minY - padding)).Append(' ')
+            .Append(Fmt(width + padding * 2)).Append(' ')
+            .Append(Fmt(height + padding * 2)).AppendLine("\">");
+        sb.AppendLine("  <path fill=\"black\" fill-rule=\"evenodd\" d=\"");
+        foreach (var contour in contours.Where(x => x.Count >= 3))
+        {
+            sb.Append("    M ").Append(Fmt(contour[0].X)).Append(' ').Append(Fmt(contour[0].Y));
+            for (var i = 1; i < contour.Count; i++)
+                sb.Append(" L ").Append(Fmt(contour[i].X)).Append(' ').Append(Fmt(contour[i].Y));
+            sb.AppendLine(" Z");
+        }
+        sb.AppendLine("  \"/>");
+        sb.AppendLine("</svg>");
+        File.WriteAllText(outputPath, sb.ToString());
+    }
+
     private static void WriteResult(
         SvgNumberRecognition result,
         IReadOnlyList<IReadOnlyList<Vector2>> contours,
@@ -133,6 +173,8 @@ public sealed class DiagnosticNumberRecognizer : ISvgNumberRecognizer
             text.AppendLine($"  {candidate.Value}: {candidate.Confidence:0.0000}");
         File.WriteAllText(outputPath, text.ToString());
     }
+
+    private static string Fmt(float value) => value.ToString("0.######", CultureInfo.InvariantCulture);
 
     private sealed record Entry(string Stem, SvgNumberRecognition Result);
 }
