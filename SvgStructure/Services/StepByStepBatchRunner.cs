@@ -46,10 +46,11 @@ public sealed class StepByStepBatchRunner
 
         var repositoryRoot = FindRepositoryRoot(inputFolder);
         var meterWork = Path.Combine(Path.GetTempPath(), $"svg-music-meter-{Guid.NewGuid():N}");
-        var numberRecognizer = new BravuraNumberRecognizer(
+        var baseNumberRecognizer = new BravuraNumberRecognizer(
             Path.Combine(repositoryRoot, "References", "glyphs"),
             meterWork);
-        var meterResolver = new MeterResolver(numberRecognizer);
+        var diagnosticNumberRecognizer = new DiagnosticNumberRecognizer(baseNumberRecognizer);
+        var meterResolver = new MeterResolver(diagnosticNumberRecognizer);
 
         try
         {
@@ -60,7 +61,7 @@ public sealed class StepByStepBatchRunner
 
             var items = new List<StepByStepItemResult>();
             foreach (var svgPath in svgFiles)
-                items.Add(Process(svgPath, artifactsFolder, meterResolver));
+                items.Add(Process(svgPath, artifactsFolder, meterResolver, diagnosticNumberRecognizer));
 
             var htmlReportPath = Path.Combine(artifactsFolder, "index.html");
             var markdownReportPath = Path.Combine(artifactsFolder, "README.md");
@@ -84,7 +85,8 @@ public sealed class StepByStepBatchRunner
     private StepByStepItemResult Process(
         string svgPath,
         string artifactsFolder,
-        MeterResolver meterResolver)
+        MeterResolver meterResolver,
+        DiagnosticNumberRecognizer diagnosticNumberRecognizer)
     {
         var fileName = Path.GetFileName(svgPath);
         var stem = Path.GetFileNameWithoutExtension(svgPath);
@@ -97,6 +99,10 @@ public sealed class StepByStepBatchRunner
 
             var structure = _partMeasureResolver.Resolve(svgPath);
             var primitives = _primitiveResolver.Resolve(structure);
+
+            // From this point on diagnostics are generated from the resolved contours only.
+            // These PNGs are the exact shapes passed to ISvgNumberRecognizer by MeterResolver.
+            diagnosticNumberRecognizer.BeginDocument(Path.Combine(itemDirectory, "meter-inputs"));
 
             var meters = structure.Map.Blocks
                 .Select(block => meterResolver.Resolve(block, primitives))
