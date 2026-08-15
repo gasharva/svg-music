@@ -13,7 +13,7 @@ public sealed class SvgShapeNormalizer
 {
     public NormalizedShapeResult NormalizeToFile(string sourcePath, string outputPath)
     {
-        using var normalized = Normalize(sourcePath);
+        var normalized = Normalize(sourcePath);
         Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
         WriteSvg(normalized, outputPath);
 
@@ -31,44 +31,30 @@ public sealed class SvgShapeNormalizer
                 $"Svg.Skia did not produce a retained scene model for '{sourcePath}'.");
 
         SKPath? merged = null;
-        try
+
+        ReadPicture(picture, SKMatrix.Identity, path =>
         {
-            ReadPicture(picture, SKMatrix.Identity, path =>
+            var transformed = new SKPath();
+            path.Transform(SKMatrix.Identity, transformed);
+
+            if (merged is null)
             {
-                using var transformed = new SKPath();
-                path.Transform(SKMatrix.Identity, transformed);
+                merged = new SKPath();
+                merged.AddPath(transformed);
+                return;
+            }
 
-                if (merged is null)
-                {
-                    merged = new SKPath();
-                    merged.AddPath(transformed);
-                    return;
-                }
+            var union = merged.Op(transformed, SKPathOp.Union);
+            if (union is null)
+                throw new InvalidOperationException("Skia PathOps union failed while normalizing SVG.");
 
-                var union = merged.Op(transformed, SKPathOp.Union);
-                if (union is null)
-                    throw new InvalidOperationException("Skia PathOps union failed while normalizing SVG.");
+            merged = union;
+        });
 
-                merged.Dispose();
-                merged = union;
-            });
+        if (merged is null || merged.IsEmpty)
+            throw new InvalidOperationException($"No drawable paths found in '{sourcePath}'.");
 
-            if (merged is null || merged.IsEmpty)
-                throw new InvalidOperationException($"No drawable paths found in '{sourcePath}'.");
-
-            var simplified = merged.Simplify();
-            if (simplified is null)
-                return merged;
-
-            merged.Dispose();
-            merged = null;
-            return simplified;
-        }
-        catch
-        {
-            merged?.Dispose();
-            throw;
-        }
+        return merged.Simplify() ?? merged;
     }
 
     private static void ReadPicture(
@@ -102,7 +88,7 @@ public sealed class SvgShapeNormalizer
 
                 case DrawPathCanvasCommand drawPath when drawPath.Path is not null:
                 {
-                    using var transformed = new SKPath();
+                    var transformed = new SKPath();
                     drawPath.Path.Transform(matrix, transformed);
                     onPath(transformed);
                     break;
