@@ -29,7 +29,7 @@ public sealed class StepByStepReportBuilder
 
             html.Append($"<td><a href=\"{dir}/measures.png\"><img class=\"preview\" src=\"{dir}/measures.png\"></a></td>");
             html.Append($"<td><a href=\"{dir}/classified.png\"><img class=\"preview\" src=\"{dir}/classified.png\"></a></td>");
-            html.Append($"<td><a href=\"{dir}/meters.png\"><img class=\"preview\" src=\"{dir}/meters.png\"></a><br><b>meters: {item.MeterCount}</b><br><b>clefs: {item.ClefCount}</b><br><a href=\"{dir}/meter-inputs/index.html\"><b>meter recognizer inputs</b></a></td>");
+            html.Append($"<td><a href=\"{dir}/meters.png\"><img class=\"preview\" src=\"{dir}/meters.png\"></a><br><b>meters: {item.MeterCount}</b><br><b>clefs: {item.ClefCount}</b><br><a href=\"{dir}/meter-inputs/index.html\"><b>meter inputs</b></a><br><a href=\"{dir}/clef-inputs/README.md\"><b>clef inputs</b></a></td>");
             html.Append("<td class=\"mono\">" +
                         $"lines: {item.LineCount}<br>systems: {item.SystemCount}<br>parts: {item.PartCount}<br>measures: {item.MeasureCount}<br>" +
                         $"P+M primitives: {item.PartMeasurePrimitiveCount}<br>M-only: {item.MeasurePrimitiveCount}<br>physical-only: {item.PhysicalOnlyPrimitiveCount}<br>meters: {item.MeterCount}<br>clefs: {item.ClefCount}<br>" +
@@ -64,7 +64,7 @@ public sealed class StepByStepReportBuilder
                 $"| **[{item.FileName}]({dir}/source.svg)** | " +
                 $"[![blocks]({dir}/measures.png)]({dir}/measures.png) | " +
                 $"[![primitives]({dir}/classified.png)]({dir}/classified.png) | " +
-                $"[![symbols]({dir}/meters.png)]({dir}/meters.png)<br>meters={item.MeterCount}<br>clefs={item.ClefCount}<br>[meter inputs]({dir}/meter-inputs/index.html) | " +
+                $"[![symbols]({dir}/meters.png)]({dir}/meters.png)<br>meters={item.MeterCount}<br>clefs={item.ClefCount}<br>[meter inputs]({dir}/meter-inputs/index.html)<br>[clef inputs]({dir}/clef-inputs/README.md) | " +
                 $"parts={item.PartCount}<br>measures={item.MeasureCount}<br>P+M={item.PartMeasurePrimitiveCount}<br>M-only={item.MeasurePrimitiveCount}<br>physical={item.PhysicalOnlyPrimitiveCount}<br>[json]({dir}/structure.json) |");
         }
 
