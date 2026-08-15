@@ -21,17 +21,23 @@ public sealed record ContourFourierDescriptor(
     public IReadOnlyList<double> Magnitudes => Coefficients.Select(x => x.Magnitude).ToArray();
 }
 
+public sealed record ScanlineDescriptor(
+    IReadOnlyList<int> HorizontalIntersections,
+    IReadOnlyList<double> HorizontalWidths,
+    IReadOnlyList<int> VerticalIntersections,
+    IReadOnlyList<double> VerticalHeights);
+
 public sealed record FourierDescriptor(
     int RawContourCount,
     int ContourCount,
-    IReadOnlyList<ContourFourierDescriptor> Contours);
+    IReadOnlyList<ContourFourierDescriptor> Contours,
+    ScanlineDescriptor Scanlines);
 
 /// <summary>
-/// Builds vector-only Fourier descriptors from SVG contours.
-/// Translation is removed by discarding F0; scale is removed by normalizing total spectral energy.
-/// Rotation is intentionally NOT normalized: music glyphs are expected to preserve orientation, and
-/// retaining complex phase helps distinguish visually different shapes with similar Fourier magnitudes.
-/// Start point and contour direction are canonicalized before DFT.
+/// Builds vector-only descriptors from SVG contours.
+/// Fourier: translation is removed by discarding F0; scale is removed by normalizing total spectral energy.
+/// Scanlines: nine horizontal and nine vertical slices (10%..90%) record boundary crossing counts and
+/// normalized silhouette span. No rasterization is used.
 /// </summary>
 public sealed class FourierDescriptorAnalyzer
 {
@@ -39,6 +45,7 @@ public sealed class FourierDescriptorAnalyzer
     private const int ResampleCount = 128;
     private const int CoefficientCount = 8;
     private const int MaxContours = 3;
+    private const int ScanlineCount = 9;
 
     public FourierDescriptor Analyze(string svgPath)
     {
@@ -56,7 +63,7 @@ public sealed class FourierDescriptorAnalyzer
             .ToList();
 
         if (rawUsable.Count == 0)
-            return new FourierDescriptor(0, 0, Array.Empty<ContourFourierDescriptor>());
+            return EmptyDescriptor();
 
         var prepared = rawUsable
             .Select(x => PrepareContour(x.Points, x.Length))
@@ -75,7 +82,11 @@ public sealed class FourierDescriptorAnalyzer
         }
 
         if (unique.Count == 0)
-            return new FourierDescriptor(rawUsable.Count, 0, Array.Empty<ContourFourierDescriptor>());
+            return new FourierDescriptor(
+                rawUsable.Count,
+                0,
+                Array.Empty<ContourFourierDescriptor>(),
+                EmptyScanlines());
 
         var bounds = Bounds(unique.SelectMany(x => x.CanonicalPoints));
         var symbolWidth = Math.Max(bounds.Right - bounds.Left, 1e-9);
@@ -89,7 +100,122 @@ public sealed class FourierDescriptorAnalyzer
             .Select(x => BuildDescriptor(x, bounds, symbolScale, totalLength))
             .ToArray();
 
-        return new FourierDescriptor(rawUsable.Count, unique.Count, descriptors);
+        var scanlines = BuildScanlines(unique.Select(x => x.CanonicalPoints).ToArray(), bounds);
+
+        return new FourierDescriptor(rawUsable.Count, unique.Count, descriptors, scanlines);
+    }
+
+    private static FourierDescriptor EmptyDescriptor() =>
+        new(0, 0, Array.Empty<ContourFourierDescriptor>(), EmptyScanlines());
+
+    private static ScanlineDescriptor EmptyScanlines() =>
+        new(
+            Enumerable.Repeat(0, ScanlineCount).ToArray(),
+            Enumerable.Repeat(0d, ScanlineCount).ToArray(),
+            Enumerable.Repeat(0, ScanlineCount).ToArray(),
+            Enumerable.Repeat(0d, ScanlineCount).ToArray());
+
+    private static ScanlineDescriptor BuildScanlines(
+        IReadOnlyList<Vector2[]> contours,
+        BoundsD bounds)
+    {
+        var width = Math.Max(bounds.Right - bounds.Left, 1e-9);
+        var height = Math.Max(bounds.Bottom - bounds.Top, 1e-9);
+
+        var horizontalCounts = new int[ScanlineCount];
+        var horizontalWidths = new double[ScanlineCount];
+        var verticalCounts = new int[ScanlineCount];
+        var verticalHeights = new double[ScanlineCount];
+
+        for (var i = 0; i < ScanlineCount; i++)
+        {
+            var fraction = (i + 1d) / (ScanlineCount + 1d); // 0.1 .. 0.9
+
+            var y = bounds.Top + height * fraction;
+            var xs = HorizontalIntersections(contours, y);
+            horizontalCounts[i] = xs.Count;
+            horizontalWidths[i] = xs.Count < 2 ? 0d : (xs[^1] - xs[0]) / width;
+
+            var x = bounds.Left + width * fraction;
+            var ys = VerticalIntersections(contours, x);
+            verticalCounts[i] = ys.Count;
+            verticalHeights[i] = ys.Count < 2 ? 0d : (ys[^1] - ys[0]) / height;
+        }
+
+        return new ScanlineDescriptor(
+            horizontalCounts,
+            horizontalWidths,
+            verticalCounts,
+            verticalHeights);
+    }
+
+    private static List<double> HorizontalIntersections(
+        IReadOnlyList<Vector2[]> contours,
+        double y)
+    {
+        var result = new List<double>();
+
+        foreach (var contour in contours)
+        {
+            for (var i = 0; i < contour.Length; i++)
+            {
+                var a = contour[i];
+                var b = contour[(i + 1) % contour.Length];
+
+                // Half-open crossing rule: vertices are counted once and horizontal segments are ignored.
+                if (!((a.Y <= y && b.Y > y) || (b.Y <= y && a.Y > y)))
+                    continue;
+
+                var t = (y - a.Y) / (b.Y - a.Y);
+                result.Add(a.X + (b.X - a.X) * t);
+            }
+        }
+
+        result.Sort();
+        return MergeNearDuplicates(result);
+    }
+
+    private static List<double> VerticalIntersections(
+        IReadOnlyList<Vector2[]> contours,
+        double x)
+    {
+        var result = new List<double>();
+
+        foreach (var contour in contours)
+        {
+            for (var i = 0; i < contour.Length; i++)
+            {
+                var a = contour[i];
+                var b = contour[(i + 1) % contour.Length];
+
+                if (!((a.X <= x && b.X > x) || (b.X <= x && a.X > x)))
+                    continue;
+
+                var t = (x - a.X) / (b.X - a.X);
+                result.Add(a.Y + (b.Y - a.Y) * t);
+            }
+        }
+
+        result.Sort();
+        return MergeNearDuplicates(result);
+    }
+
+    private static List<double> MergeNearDuplicates(IReadOnlyList<double> sorted)
+    {
+        if (sorted.Count < 2)
+            return sorted.ToList();
+
+        var scale = Math.Max(1d, Math.Abs(sorted[^1] - sorted[0]));
+        var epsilon = scale * 1e-6;
+        var result = new List<double> { sorted[0] };
+
+        for (var i = 1; i < sorted.Count; i++)
+        {
+            if (Math.Abs(sorted[i] - result[^1]) > epsilon)
+                result.Add(sorted[i]);
+        }
+
+        return result;
     }
 
     private static PreparedContour? PrepareContour(IReadOnlyList<Vector2> source, double length)
@@ -140,13 +266,9 @@ public sealed class FourierDescriptorAnalyzer
     {
         var result = points.ToArray();
 
-        // Force one traversal direction. This preserves orientation on the page while removing the
-        // arbitrary clockwise/counter-clockwise choice made by SVG authors.
         if (SignedArea(result) < 0)
             Array.Reverse(result);
 
-        // Choose a stable start point: top-most, then left-most. The tolerance avoids tiny Bezier
-        // approximation noise changing the chosen point between visually identical outlines.
         var minY = result.Min(p => p.Y);
         var yTolerance = Math.Max(1e-5f, (result.Max(p => p.Y) - minY) * 1e-4f);
         var candidates = Enumerable.Range(0, result.Length)
@@ -171,7 +293,6 @@ public sealed class FourierDescriptorAnalyzer
         if (scale <= 1e-12)
             scale = 1d;
 
-        // 32 evenly spaced canonical samples are plenty for detecting exact/near-exact duplicate paths.
         var parts = new string[32];
         for (var i = 0; i < parts.Length; i++)
         {
