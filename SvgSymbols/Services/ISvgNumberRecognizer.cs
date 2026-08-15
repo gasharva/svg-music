@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Numerics;
 using System.Xml.Linq;
 using SvgSymbols.Models;
 
@@ -10,75 +11,40 @@ public sealed record SvgNumberRecognition(
     string? Error = null);
 
 /// <summary>
-/// Small reusable boundary around the experimental vector-number recognizer.
-/// Callers only provide an SVG file and a physical rectangle to inspect.
+/// Reusable boundary around the experimental vector-number recognizer.
+/// Callers provide already-resolved vector contours. No source SVG access is allowed here.
 /// </summary>
 public interface ISvgNumberRecognizer
 {
-    SvgNumberRecognition Recognize(string svgPath, double left, double top, double right, double bottom);
+    SvgNumberRecognition Recognize(IReadOnlyList<IReadOnlyList<Vector2>> contours);
 }
 
 /// <summary>
-/// Production-facing adapter over NormalizedNumberClassifier. The reference model is built once
-/// from the repo-local Bravura/SMuFL timeSig glyphs; score code does not depend on classifier
-/// internals or on the SvgSymbols experiment UI.
+/// Production-facing adapter over NormalizedNumberClassifier. The Bravura reference model is
+/// built once; score recognition itself works only with vector contours supplied by step 2.
 /// </summary>
-public sealed class BravuraSvgNumberRecognizer : ISvgNumberRecognizer
+public sealed class BravuraNumberRecognizer : ISvgNumberRecognizer
 {
     private static readonly int[] ReferenceValues = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 16 };
 
     private readonly NormalizedNumberClassifier _classifier = new();
     private readonly IReadOnlyList<NumberReferenceModel> _model;
-    private readonly string _cropDirectory;
 
-    public BravuraSvgNumberRecognizer(string referenceGlyphDirectory, string workDirectory)
+    public BravuraNumberRecognizer(string referenceGlyphDirectory, string workDirectory)
     {
         Directory.CreateDirectory(workDirectory);
-        _cropDirectory = Path.Combine(workDirectory, "crops");
-        Directory.CreateDirectory(_cropDirectory);
-
         var referenceDirectory = Path.Combine(workDirectory, "references");
         Directory.CreateDirectory(referenceDirectory);
         _model = BuildModel(referenceGlyphDirectory, referenceDirectory);
     }
 
-    public SvgNumberRecognition Recognize(
-        string svgPath,
-        double left,
-        double top,
-        double right,
-        double bottom)
+    public SvgNumberRecognition Recognize(IReadOnlyList<IReadOnlyList<Vector2>> contours)
     {
-        if (right <= left || bottom <= top)
-            return new SvgNumberRecognition(null, 0, "Empty recognition rectangle.");
+        if (contours.Count == 0)
+            return new SvgNumberRecognition(null, 0, "No contours supplied.");
 
-        var temp = Path.Combine(_cropDirectory, $"crop-{Guid.NewGuid():N}.svg");
-        try
-        {
-            var document = XDocument.Load(svgPath, LoadOptions.PreserveWhitespace);
-            var root = document.Root
-                ?? throw new InvalidOperationException("SVG root not found.");
-
-            root.SetAttributeValue(
-                "viewBox",
-                string.Join(" ", new[] { left, top, right - left, bottom - top }
-                    .Select(x => x.ToString("0.####", CultureInfo.InvariantCulture))));
-            root.SetAttributeValue("width", null);
-            root.SetAttributeValue("height", null);
-            document.Save(temp);
-
-            var result = _classifier.ClassifySvg(temp, _model);
-            return new SvgNumberRecognition(result.Value, result.Confidence, result.Error);
-        }
-        catch (Exception ex)
-        {
-            return new SvgNumberRecognition(null, 0, ex.Message);
-        }
-        finally
-        {
-            try { if (File.Exists(temp)) File.Delete(temp); }
-            catch { }
-        }
+        var result = _classifier.Classify(contours, _model);
+        return new SvgNumberRecognition(result.Value, result.Confidence, result.Error);
     }
 
     private static IReadOnlyList<NumberReferenceModel> BuildModel(
@@ -162,10 +128,7 @@ public sealed class BravuraSvgNumberRecognizer : ISvgNumberRecognizer
             throw new InvalidOperationException($"Invalid SVG viewBox: {path}");
 
         return new Glyph(
-            viewBox[0],
-            viewBox[1],
-            viewBox[2],
-            viewBox[3],
+            viewBox[0], viewBox[1], viewBox[2], viewBox[3],
             root.Elements().Select(x => new XElement(x)).ToArray());
     }
 
