@@ -8,13 +8,14 @@ public enum PrimitiveLogicalScope
 }
 
 /// <summary>
-/// A real content primitive from the SVG, enriched with logical score coordinates.
-/// PartNumber is null for measure-wide primitives. PhysicalOnly is retained as a safe fallback,
-/// but normal unresolved score content is attached to its nearest measure.
+/// A real content primitive from the SVG, enriched with logical score coordinates and its
+/// physical vector contour. After PrimitiveResolver, later recognition must use this geometry
+/// rather than reopening the source SVG.
 /// </summary>
 public sealed record ResolvedPrimitive(
     int Id,
     RectD PhysicalBounds,
+    PrimitiveContour Contour,
     PrimitiveLogicalScope Scope,
     int? PartNumber,
     int? MeasureNumber)
