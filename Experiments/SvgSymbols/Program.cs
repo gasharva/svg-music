@@ -12,6 +12,7 @@ var localOnly = args.Any(x => string.Equals(x, "--local-only", StringComparison.
 
 var localImporter = new LocalGlyphCorpusImporter();
 var rhythmVariants = new RhythmVariantCorpusBuilder();
+var normalizedTopology = new NormalizedTopologyReportBuilder();
 var other = localImporter.Import(
     referenceGlyphs,
     Path.Combine(samplesRoot, "Other"));
@@ -25,12 +26,14 @@ if (localOnly)
     var trebleValid = ReadLocalSamples(Path.Combine(samplesRoot, "Treble", "valid"), "Treble");
     var bassValid = ReadLocalSamples(Path.Combine(samplesRoot, "Bass", "valid"), "Bass");
     var rhythm = ReadLocalSamples(rhythmRoot, "Rhythm", useValidPrefix: false);
+    var normalizedTopologyPath = await normalizedTopology.BuildAsync(outputRoot, rhythm);
     var galleryPath = await gallery.BuildAsync(outputRoot, trebleValid, bassValid, rhythm, other);
 
     Console.WriteLine($"Treble valid:          {trebleValid.Count}");
     Console.WriteLine($"Bass valid:            {bassValid.Count}");
     Console.WriteLine($"Rhythm total:          {rhythm.Count}");
     Console.WriteLine($"Rhythm Bravura built:  {generatedRhythm.Count}");
+    Console.WriteLine($"Normalized topology:   {normalizedTopologyPath}");
     Console.WriteLine($"Gallery: {galleryPath}");
     return;
 }
@@ -75,6 +78,7 @@ var rhythmDownloaded = await downloader.DownloadAsync(
 
 var generated = rhythmVariants.Build(referenceGlyphs, rhythmRoot);
 var rhythmAll = ReadLocalSamples(rhythmRoot, "Rhythm", useValidPrefix: false);
+var normalizedTopologyPathFull = await normalizedTopology.BuildAsync(outputRoot, rhythmAll);
 var fullGalleryPath = await galleryBuilder.BuildAsync(outputRoot, treble, bass, rhythmAll, other);
 
 Console.WriteLine();
@@ -84,6 +88,7 @@ Console.WriteLine($"Rhythm Wikimedia:       {rhythmDownloaded.Count}");
 Console.WriteLine($"Rhythm Bravura built:   {generated.Count}");
 Console.WriteLine($"Rhythm total:           {rhythmAll.Count}");
 Console.WriteLine($"Other local:            {other.Count}");
+Console.WriteLine($"Normalized topology:    {normalizedTopologyPathFull}");
 Console.WriteLine($"Gallery: {fullGalleryPath}");
 
 static bool IsRhythmNumberSample(SymbolSource source)
