@@ -19,15 +19,15 @@ public sealed record ClefDiagnosticContext(
 public sealed class DiagnosticClefRecognizer : IClefRecognizer
 {
     private readonly IClefRecognizer _inner;
-    private readonly RasterClefAnalyzer? _raster;
+    private readonly LegacyIoUClefAnalyzer? _legacyIoU;
     private string? _outputDirectory;
     private ClefDiagnosticContext? _nextContext;
     private int _counter;
 
-    public DiagnosticClefRecognizer(IClefRecognizer inner, RasterClefAnalyzer? raster = null)
+    public DiagnosticClefRecognizer(IClefRecognizer inner, LegacyIoUClefAnalyzer? legacyIoU = null)
     {
         _inner = inner;
-        _raster = raster;
+        _legacyIoU = legacyIoU;
     }
 
     public void BeginDocument(string outputDirectory)
@@ -44,8 +44,8 @@ public sealed class DiagnosticClefRecognizer : IClefRecognizer
             Path.Combine(outputDirectory, "README.md"),
             "# Clef recognizer inputs\n\n" +
             "These are the exact post-sanity-filter vector candidates sent to `IClefRecognizer`.\n\n" +
-            "`Raster` is an independent 48x48 grayscale baseline: references are rasterized once and cached in memory.\n\n" +
-            "| Candidate | P+M | Logical bbox | Vector recognizer | Raster | Shape |\n" +
+            "`Legacy IoU` is the old shape-matching baseline: bbox-normalized 64x64 binary-mask IoU plus Clipper2 vector IoU. No size or staff-position prior is used.\n\n" +
+            "| Candidate | P+M | Logical bbox | Vector recognizer | Legacy IoU | Shape |\n" +
             "|---|---|---|---|---|---|\n");
     }
 
@@ -54,8 +54,8 @@ public sealed class DiagnosticClefRecognizer : IClefRecognizer
     public ClefSymbolRecognition Recognize(IReadOnlyList<IReadOnlyList<Vector2>> contours)
     {
         var result = _inner.Recognize(contours);
-        var raster = _raster?.Analyze(contours);
-        Save(contours, result, raster, _nextContext);
+        var legacy = _legacyIoU?.Analyze(contours);
+        Save(contours, result, legacy, _nextContext);
         _nextContext = null;
         return result;
     }
@@ -63,7 +63,7 @@ public sealed class DiagnosticClefRecognizer : IClefRecognizer
     private void Save(
         IReadOnlyList<IReadOnlyList<Vector2>> contours,
         ClefSymbolRecognition result,
-        RasterClefAnalysis? raster,
+        LegacyIoUClefAnalysis? legacy,
         ClefDiagnosticContext? context)
     {
         if (string.IsNullOrWhiteSpace(_outputDirectory))
@@ -77,27 +77,26 @@ public sealed class DiagnosticClefRecognizer : IClefRecognizer
         WriteSvg(Path.Combine(_outputDirectory, svgName), contours);
         WritePng(Path.Combine(_outputDirectory, pngName), contours);
 
-        var logical = context is null
-            ? "n/a"
-            : Format(context.LogicalBounds);
-        var pm = context is null
-            ? "n/a"
-            : $"P{context.PartNumber}-M{context.MeasureNumber}";
+        var logical = context is null ? "n/a" : Format(context.LogicalBounds);
+        var pm = context is null ? "n/a" : $"P{context.PartNumber}-M{context.MeasureNumber}";
         var answer = result.Symbol is null
             ? $"none ({result.Error ?? "no result"})"
             : $"{result.Symbol} {result.Confidence:P1}";
+
         var candidates = string.Join(
             Environment.NewLine,
             result.Candidates.Select(x => $"{x.Symbol}: confidence={x.Confidence:P2}, distance={x.Distance:0.###}"));
 
-        var rasterAnswer = raster?.Symbol is null
+        var legacyBest = legacy?.Candidates.FirstOrDefault();
+        var legacyAnswer = legacyBest is null
             ? "n/a"
-            : $"{raster.Symbol} {raster.Confidence:P1}";
-        var rasterCandidates = raster is null
+            : $"{legacyBest.Symbol} {legacyBest.Score:P1}";
+        var legacyCandidates = legacy is null
             ? "n/a"
             : string.Join(
                 Environment.NewLine,
-                raster.Candidates.Select(x => $"{x.Symbol}: similarity={x.Similarity:P2}, distance={x.Distance:0.####}"));
+                legacy.Candidates.Select(x =>
+                    $"{x.Symbol}: maskIoU={x.MaskIoU:P2}, vectorIoU={x.VectorIoU:P2}, score={x.Score:P2}"));
 
         File.WriteAllText(
             Path.Combine(_outputDirectory, txtName),
@@ -106,13 +105,13 @@ public sealed class DiagnosticClefRecognizer : IClefRecognizer
             $"contours: {contours.Count}{Environment.NewLine}" +
             $"points: {contours.Sum(x => x.Count)}{Environment.NewLine}" +
             $"vector result: {answer}{Environment.NewLine}" +
-            $"raster result: {rasterAnswer}{Environment.NewLine}{Environment.NewLine}" +
+            $"legacy IoU result: {legacyAnswer}{Environment.NewLine}{Environment.NewLine}" +
             "vector candidates:" + Environment.NewLine + candidates + Environment.NewLine + Environment.NewLine +
-            "raster candidates:" + Environment.NewLine + rasterCandidates + Environment.NewLine);
+            "legacy IoU candidates:" + Environment.NewLine + legacyCandidates + Environment.NewLine);
 
         File.AppendAllText(
             Path.Combine(_outputDirectory, "README.md"),
-            $"| [{id}]({txtName}) | {pm} | `{logical}` | {answer} | {rasterAnswer} | ![{id}]({pngName}) |{Environment.NewLine}");
+            $"| [{id}]({txtName}) | {pm} | `{logical}` | {answer} | {legacyAnswer} | ![{id}]({pngName}) |{Environment.NewLine}");
     }
 
     private static string Format(LogicalRectD b) =>
