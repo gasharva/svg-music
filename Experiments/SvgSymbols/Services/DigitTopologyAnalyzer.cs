@@ -452,7 +452,7 @@ public sealed class DigitTopologyAnalyzer
     private static bool PointInPolygon(Vector2 p, IReadOnlyList<Vector2> polygon)
     {
         var inside = false;
-        for (var i = 0, j = polygon.Count - 1; i < polygon.Count; j = i++)
+        for (int i = 0, j = polygon.Count - 1; i < polygon.Count; j = i++)
         {
             var pi = polygon[i];
             var pj = polygon[j];
