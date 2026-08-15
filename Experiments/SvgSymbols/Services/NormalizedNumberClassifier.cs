@@ -12,7 +12,8 @@ public sealed record NumberCandidate(
     double Probability,
     string BestReference,
     double? StructuralDistance = null,
-    double? FourierDistance = null);
+    double? FourierDistance = null,
+    double? ComplexFourierDistance = null);
 
 public sealed record NumberClassification(
     int? Value,
@@ -36,7 +37,11 @@ public sealed class NormalizedNumberClassifier
     private const int SeparatorSamples = 96;
     private const double MinimumSeparatorWidthRatio = 0.025;
     private const double MinimumSideWidthRatio = 0.12;
-    private const double FourierWeight = 0.30;
+
+    // Magnitude remains useful but phase-aware Fourier now gets a real vote too.
+    // Keep both weaker than topology so font style cannot dominate the decision.
+    private const double MagnitudeFourierWeight = 0.15;
+    private const double ComplexFourierWeight = 0.20;
 
     private readonly SvgShapeNormalizer _normalizer = new();
     private readonly DigitStructuralFeatureExtractor _features = new();
@@ -157,7 +162,8 @@ public sealed class NormalizedNumberClassifier
                         {
                             Reference = reference,
                             parts.Structural,
-                            parts.Fourier,
+                            parts.MagnitudeFourier,
+                            parts.ComplexFourier,
                             parts.Combined
                         };
                     })
@@ -167,7 +173,13 @@ public sealed class NormalizedNumberClassifier
                 .ToArray();
 
             return BuildClassification(nearestPerValue
-                .Select(x => (x.Reference.Value, x.Combined, x.Reference.FileName, (double?)x.Structural, (double?)x.Fourier))
+                .Select(x => (
+                    x.Reference.Value,
+                    x.Combined,
+                    x.Reference.FileName,
+                    (double?)x.Structural,
+                    (double?)x.MagnitudeFourier,
+                    (double?)x.ComplexFourier))
                 .ToArray());
         }
         finally
@@ -306,7 +318,13 @@ public sealed class NormalizedNumberClassifier
     }
 
     private NumberClassification BuildClassification(
-        IReadOnlyList<(int Value, double Distance, string Reference, double? Structural, double? Fourier)> nearestPerValue)
+        IReadOnlyList<(
+            int Value,
+            double Distance,
+            string Reference,
+            double? Structural,
+            double? MagnitudeFourier,
+            double? ComplexFourier)> nearestPerValue)
     {
         if (nearestPerValue.Count == 0)
             return new NumberClassification(null, 0, Array.Empty<NumberCandidate>(), "No comparable number references.");
@@ -322,7 +340,8 @@ public sealed class NormalizedNumberClassifier
                 Math.Clamp(probabilities[i] * absoluteQuality, 0d, 1d),
                 x.Reference,
                 x.Structural,
-                x.Fourier))
+                x.MagnitudeFourier,
+                x.ComplexFourier))
             .OrderByDescending(x => x.Probability)
             .Take(5)
             .ToArray();
@@ -331,7 +350,7 @@ public sealed class NormalizedNumberClassifier
         return new NumberClassification(best.Value, best.Probability, candidates);
     }
 
-    private (double Structural, double Fourier, double Combined) DistanceParts(
+    private (double Structural, double MagnitudeFourier, double ComplexFourier, double Combined) DistanceParts(
         DigitStructuralFeatures a,
         FourierDescriptor aFourier,
         NumberReferenceModel reference)
@@ -353,8 +372,18 @@ public sealed class NormalizedNumberClassifier
             structural += 1.0 * Square(a.Holes[i].AreaRatio - b.Holes[i].AreaRatio);
         }
 
-        var fourier = Math.Min(_fourierComparer.MagnitudeDistance(aFourier, reference.Fourier), 20d);
-        return (structural, fourier, structural + FourierWeight * fourier);
+        var magnitudeFourier = Math.Min(
+            _fourierComparer.MagnitudeDistance(aFourier, reference.Fourier),
+            20d);
+        var complexFourier = Math.Min(
+            _fourierComparer.ComplexDistance(aFourier, reference.Fourier),
+            20d);
+
+        var combined = structural
+            + MagnitudeFourierWeight * magnitudeFourier
+            + ComplexFourierWeight * complexFourier;
+
+        return (structural, magnitudeFourier, complexFourier, combined);
     }
 
     private static double[] Softmax(IReadOnlyList<double> distances)
