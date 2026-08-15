@@ -2,6 +2,8 @@ block: P1-M9
 logical bbox: X 0.86..3.02, Y -3.36..11.52
 contours: 4
 points: 1636
+skeleton points: 407
+skeleton segments: 400
 vector result: none (Open-set rejection: nearest/ref=0.918 (max 0.72), margin/ref=0.541 (min 0.2).)
 legacy IoU result: G 89.0 %
 
