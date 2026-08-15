@@ -32,7 +32,7 @@ public sealed class ClefResolver
         if (!grid.TryGetBlock(block.PartNumber, block.MeasureNumber, out var logicalBlock))
             return Array.Empty<ClefResolution>();
 
-        var h = Math.Max(1e-9, block.PhysicalBounds.Height);
+        var staffHeight = Math.Max(1e-9, block.PhysicalBounds.Height);
         var available = primitives.Primitives
             .Where(x =>
                 x.Scope == PrimitiveLogicalScope.PartMeasure &&
@@ -45,10 +45,10 @@ public sealed class ClefResolver
             return Array.Empty<ClefResolution>();
 
         var recognized = new List<ScoredClef>();
-        foreach (var candidate in BuildCandidates(available, logicalBlock))
+        foreach (var candidate in BuildCandidates(available, logicalBlock, staffHeight))
         {
             var logicalBounds = logicalBlock.ToLogical(candidate.Bounds);
-            if (!_sanity.Accept(logicalBounds))
+            if (!_sanity.Accept(logicalBounds, candidate.Bounds, staffHeight))
                 continue;
 
             var merged = MergeInsideBounds(candidate, available);
@@ -100,17 +100,15 @@ public sealed class ClefResolver
 
     private IReadOnlyList<Candidate> BuildCandidates(
         IReadOnlyList<ResolvedPrimitive> primitives,
-        LogicalGridBlock logicalBlock)
+        LogicalGridBlock logicalBlock,
+        double staffHeight)
     {
         var result = new List<Candidate>();
 
-        // Seed candidates from substantial primitives only. The full symbol is assembled afterwards
-        // by pulling every contour that lies inside the seed bbox, so holes/dots split by step 2 are
-        // not lost before recognition.
         foreach (var anchor in primitives)
         {
             var logical = logicalBlock.ToLogical(anchor.PhysicalBounds);
-            if (!_sanity.Accept(logical))
+            if (!_sanity.Accept(logical, anchor.PhysicalBounds, staffHeight))
                 continue;
 
             result.Add(new Candidate(new[] { anchor }, anchor.PhysicalBounds));
