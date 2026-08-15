@@ -1,15 +1,21 @@
 using System.Globalization;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using SvgSymbols.Models;
 
 namespace SvgSymbols.Services;
 
 public sealed class GalleryBuilder
 {
+    private static readonly Regex SingleDigitFileName = new(
+        @"^(?<family>Music|Bravura-)(?<digit>[0-9])\.svg$",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
+
     private readonly FourierDescriptorAnalyzer _fourier = new();
     private readonly FourierDescriptorComparer _comparer = new();
     private readonly DigitTopologyAnalyzer _digitTopology = new();
+    private readonly DigitStructuralFeatureExtractor _structural = new();
 
     public async Task<string> BuildAsync(
         string rootDirectory,
@@ -40,11 +46,13 @@ public sealed class GalleryBuilder
         html.AppendLine(".fourier .label,.nearest .label,.digit-verdict .label{font-family:Segoe UI,Arial,sans-serif;font-weight:600;color:#444;margin-bottom:2px}");
         html.AppendLine(".digit-verdict{background:#fff6d8;border:1px solid #eed58a}.digit-main{font-family:Segoe UI,Arial,sans-serif;font-size:18px;font-weight:700}.digit-row{display:grid;grid-template-columns:38px 1fr;gap:5px}.digit-candidates{color:#666}");
         html.AppendLine(".nearest.complex{background:#eef7ee}.nearest.magnitude{background:#f5f1fa}.neighbor{display:grid;grid-template-columns:52px 42px 1fr;gap:4px}.kind{font-weight:700}.error{color:#a00}.muted{color:#777}label{margin-top:auto;font-size:13px}.bad{accent-color:#c00}");
+        html.AppendLine(".topology-wrap{overflow-x:auto;margin:12px 0 28px}.topology{border-collapse:collapse;width:100%;background:white;font-size:13px}.topology th,.topology td{border:1px solid #d7d7d7;padding:7px 9px;text-align:left;vertical-align:middle}.topology th{background:#eceff2;position:sticky;top:0}.topology .digit-head{font-size:20px;text-align:center;background:#f7f7f7}.topology .family{font-weight:700;white-space:nowrap}.topology .mini{width:70px;height:70px;object-fit:contain;background:#fafafa}.topology .number{font-family:Consolas,monospace;white-space:nowrap}.topology .holes{font-family:Consolas,monospace;font-size:12px;min-width:210px}");
         html.AppendLine("</style></head><body>");
         html.AppendLine($"<h1>SvgSymbols corpus — {all.Count} SVG</h1>");
-        html.AppendLine("<p>Vector-only experiment. Fourier/scanline nearest-neighbour remains as before. A separate DigitTopologyAnalyzer now tries to split time-signature numbers into individual vector digit groups and recognizes each group from the single-digit corpus using scanlines, Fourier and simple topology together.</p>");
+        html.AppendLine("<p>Vector-only experiments. The structural table below intentionally does no recognition: it compares the two single-digit families directly using topology and scale-independent geometry. The older DigitTopologyAnalyzer and Fourier/scanline rankings remain below for reference.</p>");
 
-        // Put the current target of the experiment first.
+        AppendSingleDigitTopologyExperiment(html, rootDirectory, rhythm);
+
         AppendSection(html, all, "Time-signature numbers", "Rhythm", rhythm, "Wikimedia source", true, rootDirectory, rhythmCorpus);
         AppendSection(html, all, "Treble / G clef", "Treble", treble, "Wikimedia source", true, rootDirectory, rhythmCorpus);
         AppendSection(html, all, "Bass / F clef", "Bass", bass, "Wikimedia source", true, rootDirectory, rhythmCorpus);
@@ -56,6 +64,78 @@ public sealed class GalleryBuilder
 
         await File.WriteAllTextAsync(path, html.ToString(), cancellationToken);
         return path;
+    }
+
+    private void AppendSingleDigitTopologyExperiment(
+        StringBuilder html,
+        string rootDirectory,
+        IReadOnlyList<SymbolSource> rhythm)
+    {
+        var singles = rhythm
+            .Select(source => new { Source = source, Match = SingleDigitFileName.Match(Path.GetFileName(source.FileName)) })
+            .Where(x => x.Match.Success)
+            .Select(x => new
+            {
+                x.Source,
+                Digit = int.Parse(x.Match.Groups["digit"].Value, CultureInfo.InvariantCulture),
+                Family = x.Match.Groups["family"].Value.StartsWith("Bravura", StringComparison.OrdinalIgnoreCase)
+                    ? "Bravura"
+                    : "Wikimedia"
+            })
+            .OrderBy(x => x.Digit)
+            .ThenBy(x => x.Family)
+            .ToArray();
+
+        html.AppendLine("<h2>Single digit topology experiment</h2>");
+        html.AppendLine("<p>Only Music0..9 and Bravura-0..9 are shown here. No nearest-neighbour, probability or segmentation is involved. Holes are inferred from contour nesting; hole coordinates are normalized inside the glyph bounding box.</p>");
+        html.AppendLine("<div class=\"topology-wrap\"><table class=\"topology\">");
+        html.AppendLine("<thead><tr><th>Digit</th><th>Family</th><th>Glyph</th><th>Contours raw / closed / outer</th><th>Holes</th><th>Aspect</th><th>Fill ratio</th><th>Perimeter / bbox perimeter</th><th>Hole centers (x,y,area)</th></tr></thead><tbody>");
+
+        foreach (var digit in Enumerable.Range(0, 10))
+        {
+            var rows = singles.Where(x => x.Digit == digit).ToArray();
+            if (rows.Length == 0)
+                continue;
+
+            for (var i = 0; i < rows.Length; i++)
+            {
+                var row = rows[i];
+                var localPath = GetLocalPath(rootDirectory, "Rhythm", row.Source.FileName);
+                var relative = $"Samples/Rhythm/{EscapeRelativePath(row.Source.FileName)}";
+
+                if (i == 0)
+                    html.AppendLine($"<tr><td class=\"digit-head\" rowspan=\"{rows.Length}\">{digit}</td>");
+                else
+                    html.AppendLine("<tr>");
+
+                html.AppendLine($"<td class=\"family\">{WebUtility.HtmlEncode(row.Family)}</td>");
+                html.AppendLine($"<td><img class=\"mini\" src=\"{relative}\" title=\"{WebUtility.HtmlEncode(row.Source.FileName)}\"></td>");
+
+                try
+                {
+                    var features = _structural.Extract(localPath);
+                    html.AppendLine($"<td class=\"number\">{features.RawContourCount} / {features.ClosedContourCount} / {features.OuterContourCount}</td>");
+                    html.AppendLine($"<td class=\"number\">{features.HoleCount} (depth {features.MaxNestingDepth})</td>");
+                    html.AppendLine($"<td class=\"number\">{Format(features.AspectRatio)}</td>");
+                    html.AppendLine($"<td class=\"number\">{Format(features.FillRatio)}</td>");
+                    html.AppendLine($"<td class=\"number\">{Format(features.NormalizedPerimeter)}</td>");
+
+                    var holes = features.Holes.Count == 0
+                        ? "—"
+                        : string.Join("; ", features.Holes.Select((hole, index) =>
+                            $"H{index + 1}=({Format(hole.CenterX)},{Format(hole.CenterY)},{Format(hole.AreaRatio)})"));
+                    html.AppendLine($"<td class=\"holes\">{WebUtility.HtmlEncode(holes)}</td>");
+                }
+                catch (Exception ex)
+                {
+                    html.AppendLine($"<td colspan=\"6\" class=\"error\">{WebUtility.HtmlEncode(ex.Message)}</td>");
+                }
+
+                html.AppendLine("</tr>");
+            }
+        }
+
+        html.AppendLine("</tbody></table></div>");
     }
 
     private IReadOnlyList<AnalyzedSymbol> AnalyzeAll(
