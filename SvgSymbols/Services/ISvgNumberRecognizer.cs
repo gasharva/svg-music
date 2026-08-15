@@ -5,9 +5,12 @@ using SvgSymbols.Models;
 
 namespace SvgSymbols.Services;
 
+public sealed record SvgNumberCandidate(int Value, double Confidence);
+
 public sealed record SvgNumberRecognition(
     int? Value,
     double Confidence,
+    IReadOnlyList<SvgNumberCandidate> Candidates,
     string? Error = null);
 
 /// <summary>
@@ -41,10 +44,14 @@ public sealed class BravuraNumberRecognizer : ISvgNumberRecognizer
     public SvgNumberRecognition Recognize(IReadOnlyList<IReadOnlyList<Vector2>> contours)
     {
         if (contours.Count == 0)
-            return new SvgNumberRecognition(null, 0, "No contours supplied.");
+            return new SvgNumberRecognition(null, 0, Array.Empty<SvgNumberCandidate>(), "No contours supplied.");
 
         var result = _classifier.Classify(contours, _model);
-        return new SvgNumberRecognition(result.Value, result.Confidence, result.Error);
+        var candidates = result.Candidates
+            .Select(x => new SvgNumberCandidate(x.Value, x.Probability))
+            .ToArray();
+
+        return new SvgNumberRecognition(result.Value, result.Confidence, candidates, result.Error);
     }
 
     private static IReadOnlyList<NumberReferenceModel> BuildModel(

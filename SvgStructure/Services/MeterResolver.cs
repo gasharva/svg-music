@@ -6,8 +6,8 @@ namespace SvgStructure.Services;
 
 /// <summary>
 /// Pipeline step 3. Works exclusively on step-2 primitives. It first finds a very small set of
-/// geometrically plausible meter clusters, then invokes the heavier number recognizer only for
-/// those clusters. The source SVG is deliberately not accessible here.
+/// geometrically plausible meter clusters, then asks the number recognizer for ranked candidates.
+/// The final decision is constrained by the small set of musically plausible meters.
 /// </summary>
 public sealed class MeterResolver
 {
@@ -156,12 +156,11 @@ public sealed class MeterResolver
         var top = _numberRecognizer.Recognize(ToContours(upper));
         var bottom = _numberRecognizer.Recognize(ToContours(lower));
 
-        if (top.Value is null || bottom.Value is null ||
-            top.Confidence < 0.04 || bottom.Confidence < 0.04 ||
-            !SupportedMeters.Contains((top.Value.Value, bottom.Value.Value)))
+        var pair = BestSupportedPair(top, bottom);
+        if (pair is null)
             return null;
 
-        var confidence = Math.Sqrt(top.Confidence * bottom.Confidence);
+        var confidence = Math.Sqrt(pair.Value.TopConfidence * pair.Value.BottomConfidence);
         var numeratorBounds = BoundsOf(upper);
         var denominatorBounds = BoundsOf(lower);
         var totalBounds = Union(numeratorBounds, denominatorBounds);
@@ -170,14 +169,48 @@ public sealed class MeterResolver
             new MeterResolution(
                 block.PartNumber,
                 block.MeasureNumber,
-                top.Value.Value,
-                bottom.Value.Value,
+                pair.Value.Beats,
+                pair.Value.Value,
                 window.Side,
                 confidence,
                 totalBounds,
                 numeratorBounds,
                 denominatorBounds),
             confidence + 0.18 * window.GeometryScore);
+    }
+
+    private static (int Beats, int Value, double TopConfidence, double BottomConfidence)? BestSupportedPair(
+        SvgNumberRecognition top,
+        SvgNumberRecognition bottom)
+    {
+        var topCandidates = CandidateList(top);
+        var bottomCandidates = CandidateList(bottom);
+
+        return topCandidates
+            .SelectMany(t => bottomCandidates.Select(b => new
+            {
+                Beats = t.Value,
+                Value = b.Value,
+                TopConfidence = t.Confidence,
+                BottomConfidence = b.Confidence,
+                Score = Math.Sqrt(t.Confidence * b.Confidence)
+            }))
+            .Where(x => SupportedMeters.Contains((x.Beats, x.Value)))
+            .Where(x => x.TopConfidence >= 0.01 && x.BottomConfidence >= 0.01)
+            .OrderByDescending(x => x.Score)
+            .Select(x => ((int Beats, int Value, double TopConfidence, double BottomConfidence)?)
+                (x.Beats, x.Value, x.TopConfidence, x.BottomConfidence))
+            .FirstOrDefault();
+    }
+
+    private static IReadOnlyList<SvgNumberCandidate> CandidateList(SvgNumberRecognition result)
+    {
+        if (result.Candidates.Count > 0)
+            return result.Candidates.Take(5).ToArray();
+
+        return result.Value is not null
+            ? new[] { new SvgNumberCandidate(result.Value.Value, result.Confidence) }
+            : Array.Empty<SvgNumberCandidate>();
     }
 
     private static IReadOnlyList<IReadOnlyList<Vector2>> ToContours(
