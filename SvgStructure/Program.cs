@@ -1,38 +1,57 @@
 using SvgStructure.Services;
 
-if (args.Length == 0)
+var repositoryRoot = FindRepositoryRoot(AppContext.BaseDirectory);
+var inputFolder = args.Length > 0
+    ? ResolvePath(repositoryRoot, args[0])
+    : Path.Combine(repositoryRoot, "Samples", "step-by-step");
+
+if (!Directory.Exists(inputFolder))
 {
-    Console.WriteLine("Usage: SvgStructure <svg-file> [classified-output.png]");
+    Console.Error.WriteLine($"Input folder does not exist: {inputFolder}");
+    Environment.ExitCode = 1;
     return;
 }
 
-var svgPath = args[0];
-var classifiedOutputPath = args.Length > 1 ? args[1] : null;
+var runner = new StepByStepBatchRunner();
+var result = runner.Run(inputFolder);
 
-var geometryReader = new SvgSceneGeometryReader();
-var systemDetector = new StaffSystemDetector();
-var structureBuilder = new ScoreStructureBuilder();
-var measureOverlayRenderer = new MeasureOverlayRenderer();
-var classificationRenderer = new PrimitiveClassificationRenderer(0.25);
-
-var lines = geometryReader.ReadLines(svgPath);
-var systems = systemDetector.Detect(lines);
-var score = structureBuilder.Build(systems);
-
-var measureImagePath = measureOverlayRenderer.Render(svgPath, systems);
-var classifiedImagePath = classificationRenderer.Render(svgPath, systems, classifiedOutputPath);
-
-Console.WriteLine($"lines: {lines.Count}");
-Console.WriteLine($"systems: {systems.Count}");
+Console.WriteLine($"input:     {result.InputFolder}");
+Console.WriteLine($"artifacts: {result.ArtifactsFolder}");
+Console.WriteLine($"svg files: {result.Items.Count}");
+Console.WriteLine($"success:   {result.Items.Count(x => x.Error is null)}");
+Console.WriteLine($"failed:    {result.Items.Count(x => x.Error is not null)}");
+Console.WriteLine($"report:    {result.HtmlReportPath}");
 Console.WriteLine();
 
-foreach (var part in score.Parts)
+foreach (var item in result.Items)
 {
-    Console.WriteLine($"part {part.Id}");
-    foreach (var measure in part.Measures)
-        Console.WriteLine($"  measure {measure.Number,2}: width={measure.Width:F2}");
+    if (item.Error is not null)
+    {
+        Console.WriteLine($"[FAIL] {item.FileName}: {item.Error}");
+        continue;
+    }
+
+    Console.WriteLine(
+        $"[ OK ] {item.FileName}: lines={item.LineCount}, systems={item.SystemCount}, " +
+        $"parts={item.PartCount}, measures={item.MeasureCount}");
 }
 
-Console.WriteLine();
-Console.WriteLine($"measure overlay:      {measureImagePath}");
-Console.WriteLine($"classified primitives: {classifiedImagePath}");
+if (result.Items.Any(x => x.Error is not null))
+    Environment.ExitCode = 2;
+
+static string ResolvePath(string root, string path) =>
+    Path.GetFullPath(Path.IsPathRooted(path) ? path : Path.Combine(root, path));
+
+static string FindRepositoryRoot(string start)
+{
+    var current = new DirectoryInfo(start);
+    while (current is not null)
+    {
+        if (File.Exists(Path.Combine(current.FullName, "SvgToMusicXmlPoc.sln")))
+            return current.FullName;
+
+        current = current.Parent;
+    }
+
+    throw new DirectoryNotFoundException("Could not find SvgToMusicXmlPoc.sln above the application directory.");
+}
