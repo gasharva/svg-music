@@ -74,9 +74,11 @@ public sealed class PrimitiveResolver
         IReadOnlySet<int> staffLineIds,
         IReadOnlySet<int> garbageIds)
     {
-        // Staff lines are algorithmic anchors and garbage is deliberately excluded from ownership.
-        if (staffLineIds.Contains(primitive.Id) || garbageIds.Contains(primitive.Id))
-            return PhysicalOnly(primitive);
+        if (staffLineIds.Contains(primitive.Id))
+            return PhysicalOnly(primitive, PrimitiveKind.StaffLine);
+
+        if (garbageIds.Contains(primitive.Id))
+            return PhysicalOnly(primitive, PrimitiveKind.Garbage);
 
         if (claims.TryGetValue(primitive.Id, out var keys) && keys.Count == 1)
         {
@@ -138,13 +140,16 @@ public sealed class PrimitiveResolver
         return null;
     }
 
-    private static ResolvedPrimitive PhysicalOnly(RawPrimitive primitive) =>
+    private static ResolvedPrimitive PhysicalOnly(
+        RawPrimitive primitive,
+        PrimitiveKind kind = PrimitiveKind.Content) =>
         new(
             primitive.Id,
             primitive.Bounds,
             PrimitiveLogicalScope.PhysicalOnly,
             null,
-            null);
+            null,
+            kind);
 
     private void SplitContours(Shim.SKPicture picture)
     {
