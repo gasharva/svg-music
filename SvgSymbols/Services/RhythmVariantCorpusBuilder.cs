@@ -6,9 +6,10 @@ using SvgSymbols.Models;
 namespace SvgSymbols.Services;
 
 /// <summary>
-/// Builds a second family of time-signature number SVGs from the repo-local
-/// Bravura/SMuFL timeSig0..timeSig9 glyphs. Compound values such as 12, 16 or 32
-/// are composed from the individual vector glyphs without rasterization.
+/// Builds repo-local time-signature number SVGs from Bravura/SMuFL
+/// timeSig0..timeSig9 glyphs. Single digits 0..9 are always generated so the
+/// recognizer never depends on Wikimedia samples being present. Compound values
+/// found in the local Rhythm corpus are composed from the same Bravura digits.
 /// </summary>
 public sealed class RhythmVariantCorpusBuilder
 {
@@ -22,12 +23,19 @@ public sealed class RhythmVariantCorpusBuilder
     {
         Directory.CreateDirectory(rhythmDirectory);
 
-        var values = Directory
-            .EnumerateFiles(rhythmDirectory, "Music*.svg", SearchOption.TopDirectoryOnly)
-            .Select(Path.GetFileName)
-            .Select(TryGetValue)
-            .Where(x => x is not null)
-            .Select(x => x!)
+        // Bravura is the reference family. Do not make its basic 0..9 corpus
+        // conditional on Wikimedia downloads: local-only / CI runs must have a
+        // complete single-digit reference set by themselves.
+        var values = Enumerable
+            .Range(0, 10)
+            .Select(x => x.ToString(CultureInfo.InvariantCulture))
+            .Concat(
+                Directory
+                    .EnumerateFiles(rhythmDirectory, "Music*.svg", SearchOption.TopDirectoryOnly)
+                    .Select(Path.GetFileName)
+                    .Select(TryGetValue)
+                    .Where(x => x is not null)
+                    .Select(x => x!))
             .Distinct(StringComparer.Ordinal)
             .OrderBy(x => int.Parse(x, CultureInfo.InvariantCulture))
             .ToList();
