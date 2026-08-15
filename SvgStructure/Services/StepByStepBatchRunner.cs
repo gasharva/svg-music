@@ -1,5 +1,6 @@
 using System.Text.Json;
 using SvgStructure.Models;
+using SvgSymbols.Services;
 
 namespace SvgStructure.Services;
 
@@ -20,6 +21,7 @@ public sealed record StepByStepItemResult(
     int PartMeasurePrimitiveCount = 0,
     int MeasurePrimitiveCount = 0,
     int PhysicalOnlyPrimitiveCount = 0,
+    int MeterCount = 0,
     string? Error = null);
 
 public sealed class StepByStepBatchRunner
@@ -30,6 +32,7 @@ public sealed class StepByStepBatchRunner
     private readonly PrimitiveResolver _primitiveResolver = new(0.25);
     private readonly PartMeasureOverlayRenderer _partMeasureOverlayRenderer = new();
     private readonly PrimitiveOverlayRenderer _primitiveOverlayRenderer = new();
+    private readonly MeterOverlayRenderer _meterOverlayRenderer = new();
     private readonly StepByStepReportBuilder _reportBuilder = new();
 
     public StepByStepBatchResult Run(string inputFolder)
@@ -41,29 +44,47 @@ public sealed class StepByStepBatchRunner
             Directory.Delete(artifactsFolder, recursive: true);
         Directory.CreateDirectory(artifactsFolder);
 
-        var svgFiles = Directory
-            .EnumerateFiles(inputFolder, "*.svg", SearchOption.TopDirectoryOnly)
-            .OrderBy(Path.GetFileName, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
+        var repositoryRoot = FindRepositoryRoot(inputFolder);
+        var meterWork = Path.Combine(Path.GetTempPath(), $"svg-music-meter-{Guid.NewGuid():N}");
+        var numberRecognizer = new BravuraSvgNumberRecognizer(
+            Path.Combine(repositoryRoot, "References", "glyphs"),
+            meterWork);
+        var meterResolver = new MeterResolver(numberRecognizer);
 
-        var items = new List<StepByStepItemResult>();
-        foreach (var svgPath in svgFiles)
-            items.Add(Process(svgPath, artifactsFolder));
+        try
+        {
+            var svgFiles = Directory
+                .EnumerateFiles(inputFolder, "*.svg", SearchOption.TopDirectoryOnly)
+                .OrderBy(Path.GetFileName, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
 
-        var htmlReportPath = Path.Combine(artifactsFolder, "index.html");
-        var markdownReportPath = Path.Combine(artifactsFolder, "README.md");
-        _reportBuilder.WriteHtml(htmlReportPath, items);
-        _reportBuilder.WriteMarkdown(markdownReportPath, items);
+            var items = new List<StepByStepItemResult>();
+            foreach (var svgPath in svgFiles)
+                items.Add(Process(svgPath, artifactsFolder, meterResolver));
 
-        return new StepByStepBatchResult(
-            inputFolder,
-            artifactsFolder,
-            htmlReportPath,
-            markdownReportPath,
-            items);
+            var htmlReportPath = Path.Combine(artifactsFolder, "index.html");
+            var markdownReportPath = Path.Combine(artifactsFolder, "README.md");
+            _reportBuilder.WriteHtml(htmlReportPath, items);
+            _reportBuilder.WriteMarkdown(markdownReportPath, items);
+
+            return new StepByStepBatchResult(
+                inputFolder,
+                artifactsFolder,
+                htmlReportPath,
+                markdownReportPath,
+                items);
+        }
+        finally
+        {
+            try { if (Directory.Exists(meterWork)) Directory.Delete(meterWork, recursive: true); }
+            catch { }
+        }
     }
 
-    private StepByStepItemResult Process(string svgPath, string artifactsFolder)
+    private StepByStepItemResult Process(
+        string svgPath,
+        string artifactsFolder,
+        MeterResolver meterResolver)
     {
         var fileName = Path.GetFileName(svgPath);
         var stem = Path.GetFileNameWithoutExtension(svgPath);
@@ -74,21 +95,37 @@ public sealed class StepByStepBatchRunner
         {
             File.Copy(svgPath, Path.Combine(itemDirectory, "source.svg"), overwrite: true);
 
+            // Step 1: SVG -> logical parts/measures + logical/physical coordinate map.
             var structure = _partMeasureResolver.Resolve(svgPath);
+
+            // Step 2: step-1 result -> raw primitives with logical ownership where resolvable.
             var primitives = _primitiveResolver.Resolve(structure);
 
+            // Step 3: inspect every P+M block for a conventional left/right time signature.
+            var meters = structure.Map.Blocks
+                .Select(block => meterResolver.Resolve(block, primitives))
+                .Where(x => x is not null)
+                .Select(x => x!)
+                .ToArray();
+
+            // Diagnostics consume resolver outputs; recognition never consumes the overlays.
             _partMeasureOverlayRenderer.Render(
                 structure,
                 Path.Combine(itemDirectory, "measures.png"));
             _primitiveOverlayRenderer.Render(
                 primitives,
                 Path.Combine(itemDirectory, "classified.png"));
+            _meterOverlayRenderer.Render(
+                structure,
+                meters,
+                Path.Combine(itemDirectory, "meters.png"));
 
             WriteResolutionJson(
                 Path.Combine(itemDirectory, "structure.json"),
                 fileName,
                 structure,
-                primitives);
+                primitives,
+                meters);
 
             return new StepByStepItemResult(
                 fileName,
@@ -99,7 +136,8 @@ public sealed class StepByStepBatchRunner
                 structure.Measures.Count,
                 primitives.PartMeasurePrimitives.Count,
                 primitives.MeasurePrimitives.Count,
-                primitives.PhysicalOnlyPrimitives.Count);
+                primitives.PhysicalOnlyPrimitives.Count,
+                meters.Length);
         }
         catch (Exception ex)
         {
@@ -114,7 +152,8 @@ public sealed class StepByStepBatchRunner
         string path,
         string fileName,
         PartMeasureResolution structure,
-        PrimitiveResolution primitives)
+        PrimitiveResolution primitives,
+        IReadOnlyList<MeterResolution> meters)
     {
         var payload = new
         {
@@ -131,11 +170,13 @@ public sealed class StepByStepBatchRunner
             primitives = primitives.Primitives.Select(x => new
             {
                 x.Id,
+                x.Kind,
                 x.Scope,
                 x.PartNumber,
                 x.MeasureNumber,
                 x.PhysicalBounds
-            })
+            }),
+            meters
         };
 
         File.WriteAllText(
@@ -145,5 +186,18 @@ public sealed class StepByStepBatchRunner
                 WriteIndented = true,
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             }));
+    }
+
+    private static string FindRepositoryRoot(string start)
+    {
+        var current = new DirectoryInfo(start);
+        while (current is not null)
+        {
+            if (File.Exists(Path.Combine(current.FullName, "SvgToMusicXmlPoc.sln")))
+                return current.FullName;
+            current = current.Parent;
+        }
+
+        throw new DirectoryNotFoundException("Could not find repository root above input folder.");
     }
 }
