@@ -7,6 +7,13 @@ public enum PrimitiveLogicalScope
     PhysicalOnly
 }
 
+public enum PrimitiveKind
+{
+    Content,
+    StaffLine,
+    Garbage
+}
+
 /// <summary>
 /// SVG primitive enriched with logical score coordinates when they can be resolved.
 /// PartNumber is null for measure-wide primitives (for example cross-staff geometry).
@@ -17,7 +24,8 @@ public sealed record ResolvedPrimitive(
     RectD PhysicalBounds,
     PrimitiveLogicalScope Scope,
     int? PartNumber,
-    int? MeasureNumber)
+    int? MeasureNumber,
+    PrimitiveKind Kind = PrimitiveKind.Content)
 {
     public string LogicalLabel => Scope switch
     {
