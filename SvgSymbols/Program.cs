@@ -7,6 +7,7 @@ var outputRoot = Path.Combine(root, "SvgSymbols");
 var samplesRoot = Path.Combine(outputRoot, "Samples");
 var referenceGlyphs = Path.Combine(root, "References", "glyphs");
 var rhythmRoot = Path.Combine(samplesRoot, "Rhythm");
+var realMeterDigitsRoot = Path.Combine(samplesRoot, "RealMeterDigits");
 var depth = GetIntArgument(args, "--depth", 1);
 var localOnly = args.Any(x => string.Equals(x, "--local-only", StringComparison.OrdinalIgnoreCase));
 
@@ -26,12 +27,16 @@ if (localOnly)
     var trebleValid = ReadLocalSamples(Path.Combine(samplesRoot, "Treble", "valid"), "Treble");
     var bassValid = ReadLocalSamples(Path.Combine(samplesRoot, "Bass", "valid"), "Bass");
     var rhythm = ReadLocalSamples(rhythmRoot, "Rhythm", useValidPrefix: false);
-    var normalizedTopologyPath = await normalizedTopology.BuildAsync(outputRoot, rhythm);
-    var galleryPath = await gallery.BuildAsync(outputRoot, trebleValid, bassValid, rhythm, other);
+    var realMeterDigits = ReadRealMeterDigitSamples(realMeterDigitsRoot);
+    var rhythmWithReal = rhythm.Concat(realMeterDigits).ToList();
+    var normalizedTopologyPath = await normalizedTopology.BuildAsync(outputRoot, rhythmWithReal);
+    var galleryPath = await gallery.BuildAsync(outputRoot, trebleValid, bassValid, rhythmWithReal, other);
 
     Console.WriteLine($"Treble valid:          {trebleValid.Count}");
     Console.WriteLine($"Bass valid:            {bassValid.Count}");
-    Console.WriteLine($"Rhythm total:          {rhythm.Count}");
+    Console.WriteLine($"Rhythm reference:      {rhythm.Count}");
+    Console.WriteLine($"Real meter digits:     {realMeterDigits.Count}");
+    Console.WriteLine($"Rhythm total:          {rhythmWithReal.Count}");
     Console.WriteLine($"Rhythm Bravura built:  {generatedRhythm.Count}");
     Console.WriteLine($"Normalized topology:   {normalizedTopologyPath}");
     Console.WriteLine($"Gallery: {galleryPath}");
@@ -78,15 +83,19 @@ var rhythmDownloaded = await downloader.DownloadAsync(
 
 var generated = rhythmVariants.Build(referenceGlyphs, rhythmRoot);
 var rhythmAll = ReadLocalSamples(rhythmRoot, "Rhythm", useValidPrefix: false);
-var normalizedTopologyPathFull = await normalizedTopology.BuildAsync(outputRoot, rhythmAll);
-var fullGalleryPath = await galleryBuilder.BuildAsync(outputRoot, treble, bass, rhythmAll, other);
+var realMeterDigitsAll = ReadRealMeterDigitSamples(realMeterDigitsRoot);
+var rhythmWithRealAll = rhythmAll.Concat(realMeterDigitsAll).ToList();
+var normalizedTopologyPathFull = await normalizedTopology.BuildAsync(outputRoot, rhythmWithRealAll);
+var fullGalleryPath = await galleryBuilder.BuildAsync(outputRoot, treble, bass, rhythmWithRealAll, other);
 
 Console.WriteLine();
 Console.WriteLine($"Treble downloaded:      {treble.Count}");
 Console.WriteLine($"Bass downloaded:        {bass.Count}");
 Console.WriteLine($"Rhythm Wikimedia:       {rhythmDownloaded.Count}");
 Console.WriteLine($"Rhythm Bravura built:   {generated.Count}");
-Console.WriteLine($"Rhythm total:           {rhythmAll.Count}");
+Console.WriteLine($"Rhythm reference:       {rhythmAll.Count}");
+Console.WriteLine($"Real meter digits:      {realMeterDigitsAll.Count}");
+Console.WriteLine($"Rhythm total:           {rhythmWithRealAll.Count}");
 Console.WriteLine($"Other local:            {other.Count}");
 Console.WriteLine($"Normalized topology:    {normalizedTopologyPathFull}");
 Console.WriteLine($"Gallery: {fullGalleryPath}");
@@ -147,5 +156,38 @@ static IReadOnlyList<SymbolSource> ReadLocalSamples(
             License: null,
             LicenseUrl: null,
             Artist: null))
+        .ToList();
+}
+
+static IReadOnlyList<SymbolSource> ReadRealMeterDigitSamples(string directory)
+{
+    if (!Directory.Exists(directory))
+        return Array.Empty<SymbolSource>();
+
+    var pattern = new Regex(
+        @"^Real-(?<digit>\d+)-.+\.svg$",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
+
+    return Directory
+        .EnumerateFiles(directory, "*.svg", SearchOption.TopDirectoryOnly)
+        .Select(path => new { Path = path, Match = pattern.Match(Path.GetFileName(path)) })
+        .Where(x => x.Match.Success)
+        .OrderBy(x => int.Parse(x.Match.Groups["digit"].Value))
+        .ThenBy(x => Path.GetFileName(x.Path), StringComparer.OrdinalIgnoreCase)
+        .Select(x =>
+        {
+            var digit = x.Match.Groups["digit"].Value;
+            var fileName = Path.GetFileName(x.Path);
+            return new SymbolSource(
+                Kind: "Rhythm",
+                Category: $"Real score meter digit / expected {digit}",
+                Title: $"Real meter digit {digit}",
+                FileName: "../RealMeterDigits/" + fileName,
+                DescriptionUrl: "#",
+                FileUrl: x.Path,
+                License: null,
+                LicenseUrl: null,
+                Artist: "SvgStructure pipeline");
+        })
         .ToList();
 }
