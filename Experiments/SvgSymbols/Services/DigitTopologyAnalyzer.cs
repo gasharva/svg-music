@@ -25,8 +25,8 @@ public sealed record NumberRecognition(
 
 /// <summary>
 /// Third experimental recognition mode dedicated to time-signature digits.
-/// It first splits the symbol into horizontal digit groups using vector contour bounds,
-/// then compares every group against the known single-digit corpus using the full current
+/// It splits a symbol into at most two digits using a real vertical whitespace corridor,
+/// then compares every digit against the known single-digit corpus using the full current
 /// vector descriptor (scanlines + geometry + Fourier), with extra topology penalties.
 /// No rasterization and no OCR are used.
 /// </summary>
@@ -34,6 +34,8 @@ public sealed class DigitTopologyAnalyzer
 {
     private const int CurveSteps = 16;
     private const double Temperature = 0.55;
+    private const double MinimumSplitGapOfHeight = 0.03;
+    private const double FirstDigitOnePriorPenalty = 2.0;
 
     private static readonly Regex DigitFileName = new(
         @"^(?:Music|Bravura-)(?<digit>[0-9])\.svg$",
@@ -72,10 +74,15 @@ public sealed class DigitTopologyAnalyzer
                     .GroupBy(x => x.Digit)
                     .Select(group =>
                     {
-                        // Different fonts are alternative examples of the same digit, not features
-                        // that should be averaged together. The best matching known style wins.
                         var distance = group.Min(reference =>
                             CombinedDistance(descriptor, topology, reference.Descriptor, reference.Topology));
+
+                        // Compound time-signature numbers overwhelmingly start with 1 (10..19).
+                        // Keep this as a strong prior rather than a hard rule so 32 can still win
+                        // when its geometry is clearly much closer to 3 than to 1.
+                        if (segments.Count == 2 && i == 0 && group.Key != 1)
+                            distance += FirstDigitOnePriorPenalty;
+
                         return new { Digit = group.Key, Distance = distance };
                     })
                     .OrderBy(x => x.Distance)
@@ -84,8 +91,6 @@ public sealed class DigitTopologyAnalyzer
                 var probabilities = SoftmaxProbabilities(byDigit.Select(x => x.Distance).ToArray());
                 var bestDistance = byDigit[0].Distance;
 
-                // Relative softmax alone would be overconfident for a completely alien symbol.
-                // Reduce confidence as absolute distance grows.
                 var absoluteQuality = Math.Exp(-bestDistance / 3.0);
                 var candidates = byDigit
                     .Select((x, index) => new DigitCandidateScore(
@@ -150,12 +155,9 @@ public sealed class DigitTopologyAnalyzer
         DigitTopology bTopology)
     {
         var distance = _descriptorComparer.ComplexDistance(a, b);
-
-        // Hard-ish topology facts should dominate stylistic contour differences.
         distance += 1.35 * Square(aTopology.HoleCount - bTopology.HoleCount);
         distance += 0.45 * Square(aTopology.AspectRatio - bTopology.AspectRatio);
         distance += 0.08 * Square(Math.Min(aTopology.ContourCount, 8) - Math.Min(bTopology.ContourCount, 8));
-
         return distance;
     }
 
@@ -204,75 +206,66 @@ public sealed class DigitTopologyAnalyzer
 
     private static IReadOnlyList<IReadOnlyList<List<Vector2>>> SplitIntoDigits(IReadOnlyList<List<Vector2>> contours)
     {
-        var items = contours
-            .Where(x => x.Count >= 3)
-            .Select(x => new ContourBox(x, Bounds(x)))
-            .OrderBy(x => x.Bounds.Left)
-            .ToArray();
-
-        if (items.Length == 0)
+        var usable = contours.Where(x => x.Count >= 3).ToArray();
+        if (usable.Length == 0)
             return Array.Empty<IReadOnlyList<List<Vector2>>>();
 
-        var symbolBounds = Bounds(items.SelectMany(x => x.Points));
+        var symbolBounds = Bounds(usable.SelectMany(x => x));
         var symbolHeight = Math.Max(symbolBounds.Bottom - symbolBounds.Top, 1e-9);
-        var joinTolerance = symbolHeight * 0.008; // only truly touching/overlapping parts belong together
+        var minimumGap = symbolHeight * MinimumSplitGapOfHeight;
 
-        var groups = new List<List<ContourBox>>();
-        foreach (var item in items)
-        {
-            var matching = groups
-                .Select((group, index) => new
-                {
-                    Group = group,
-                    Index = index,
-                    Left = group.Min(x => x.Bounds.Left),
-                    Right = group.Max(x => x.Bounds.Right)
-                })
-                .Where(x => HorizontalGap(x.Left, x.Right, item.Bounds.Left, item.Bounds.Right) <= joinTolerance)
-                .OrderBy(x => HorizontalGap(x.Left, x.Right, item.Bounds.Left, item.Bounds.Right))
-                .FirstOrDefault();
-
-            if (matching is null)
-                groups.Add(new List<ContourBox> { item });
-            else
-                matching.Group.Add(item);
-        }
-
-        // Merge groups that became connected transitively after adding wider outer contours.
-        var changed = true;
-        while (changed)
-        {
-            changed = false;
-            for (var i = 0; i < groups.Count && !changed; i++)
-            {
-                var aLeft = groups[i].Min(x => x.Bounds.Left);
-                var aRight = groups[i].Max(x => x.Bounds.Right);
-                for (var j = i + 1; j < groups.Count; j++)
-                {
-                    var bLeft = groups[j].Min(x => x.Bounds.Left);
-                    var bRight = groups[j].Max(x => x.Bounds.Right);
-                    if (HorizontalGap(aLeft, aRight, bLeft, bRight) > joinTolerance)
-                        continue;
-
-                    groups[i].AddRange(groups[j]);
-                    groups.RemoveAt(j);
-                    changed = true;
-                    break;
-                }
-            }
-        }
-
-        return groups
-            .OrderBy(x => x.Min(c => c.Bounds.Left))
-            .Select(x => (IReadOnlyList<List<Vector2>>)x.Select(c => c.Points).ToArray())
+        // Project every contour's occupied X range onto one axis and merge all overlapping ranges.
+        // A split is allowed only through a vertical corridor that is empty for the whole symbol,
+        // not merely through a gap between two individual SVG paths of the same visual digit.
+        var occupied = usable
+            .Select(Bounds)
+            .Select(x => new Interval(x.Left, x.Right))
+            .OrderBy(x => x.Left)
             .ToArray();
-    }
 
-    private static double HorizontalGap(double left1, double right1, double left2, double right2)
-    {
-        if (right1 >= left2 && right2 >= left1)
-            return 0d;
-        return left2 > right1 ? left2 - right1 : left1 - right2;
+        var merged = new List<Interval>();
+        foreach (var interval in occupied)
+        {
+            if (merged.Count == 0 || interval.Left > merged[^1].Right)
+            {
+                merged.Add(interval);
+                continue;
+            }
+
+            merged[^1] = merged[^1] with { Right = Math.Max(merged[^1].Right, interval.Right) };
+        }
+
+        var gaps = Enumerable.Range(0, Math.Max(0, merged.Count - 1))
+            .Select(i => new
+            {
+                Left = merged[i].Right,
+                Right = merged[i + 1].Left,
+                Width = merged[i + 1].Left - merged[i].Right
+            })
+            .Where(x => x.Width >= minimumGap)
+            .OrderByDescending(x => x.Width)
+            .ToArray();
+
+        // No convincing full-height whitespace corridor: treat the glyph as a single digit.
+        if (gaps.Length == 0)
+            return [usable];
+
+        // At most two digits are meaningful for our rhythm-number corpus. Use only the strongest cut.
+        var cut = (gaps[0].Left + gaps[0].Right) / 2d;
+        var left = new List<List<Vector2>>();
+        var right = new List<List<Vector2>>();
+
+        foreach (var contour in usable)
+        {
+            var bounds = Bounds(contour);
+            var centerX = (bounds.Left + bounds.Right) / 2d;
+            (centerX < cut ? left : right).Add(contour);
+        }
+
+        if (left.Count == 0 || right.Count == 0)
+            return [usable];
+
+        return [left, right];
     }
 
     private static List<List<Vector2>> ExtractContours(string svgPath)
@@ -492,6 +485,7 @@ public sealed class DigitTopologyAnalyzer
     private sealed record DigitTopology(int ContourCount, int HoleCount, double AspectRatio);
     private sealed record ContourBox(List<Vector2> Points, BoundsD Bounds);
     private sealed record BoundsD(double Left, double Top, double Right, double Bottom);
+    private sealed record Interval(double Left, double Right);
 
     private sealed class TemporaryVectorGlyph : IDisposable
     {
@@ -526,7 +520,7 @@ public sealed class DigitTopologyAnalyzer
         public void Dispose()
         {
             try { if (File.Exists(Path)) File.Delete(Path); }
-            catch { /* experimental diagnostic file; cleanup failure is harmless */ }
+            catch { }
         }
 
         private static string Fmt(double value) => value.ToString("0.#####", CultureInfo.InvariantCulture);
