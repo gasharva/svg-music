@@ -29,7 +29,7 @@ public sealed class StepByStepReportBuilder
 
             html.Append($"<td><a href=\"{dir}/measures.png\"><img class=\"preview\" src=\"{dir}/measures.png\"></a></td>");
             html.Append($"<td><a href=\"{dir}/classified.png\"><img class=\"preview\" src=\"{dir}/classified.png\"></a></td>");
-            html.Append($"<td><a href=\"{dir}/meters.png\"><img class=\"preview\" src=\"{dir}/meters.png\"></a><br><b>found: {item.MeterCount}</b></td>");
+            html.Append($"<td><a href=\"{dir}/meters.png\"><img class=\"preview\" src=\"{dir}/meters.png\"></a><br><b>found: {item.MeterCount}</b><br><a href=\"{dir}/meter-inputs/index.html\"><b>recognizer inputs</b></a></td>");
             html.Append("<td class=\"mono\">" +
                         $"lines: {item.LineCount}<br>systems: {item.SystemCount}<br>parts: {item.PartCount}<br>measures: {item.MeasureCount}<br>" +
                         $"P+M primitives: {item.PartMeasurePrimitiveCount}<br>M-only: {item.MeasurePrimitiveCount}<br>physical-only: {item.PhysicalOnlyPrimitiveCount}<br>meters: {item.MeterCount}<br>" +
@@ -64,7 +64,7 @@ public sealed class StepByStepReportBuilder
                 $"| **[{item.FileName}]({dir}/source.svg)** | " +
                 $"[![blocks]({dir}/measures.png)]({dir}/measures.png) | " +
                 $"[![primitives]({dir}/classified.png)]({dir}/classified.png) | " +
-                $"[![meters]({dir}/meters.png)]({dir}/meters.png)<br>found={item.MeterCount} | " +
+                $"[![meters]({dir}/meters.png)]({dir}/meters.png)<br>found={item.MeterCount}<br>[recognizer inputs]({dir}/meter-inputs/index.html) | " +
                 $"parts={item.PartCount}<br>measures={item.MeasureCount}<br>P+M={item.PartMeasurePrimitiveCount}<br>M-only={item.MeasurePrimitiveCount}<br>physical={item.PhysicalOnlyPrimitiveCount}<br>[json]({dir}/structure.json) |");
         }
 
