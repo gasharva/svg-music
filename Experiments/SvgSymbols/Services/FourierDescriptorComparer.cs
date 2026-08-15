@@ -5,6 +5,11 @@ public sealed class FourierDescriptorComparer
     private const int MaxContours = 3;
     private const int CoefficientCount = 8;
 
+    // For this experiment scanline topology/silhouette intentionally carries more weight than Fourier.
+    private const double ScanlineIntersectionWeight = 2.5;
+    private const double ScanlineSpanWeight = 4.0;
+    private const double FourierWeight = 0.65;
+
     private static readonly int[][] Permutations =
     [
         [0, 1, 2],
@@ -16,16 +21,42 @@ public sealed class FourierDescriptorComparer
     ];
 
     /// <summary>
-    /// New metric: retains complex Fourier phase and tries every matching of the three largest contours.
+    /// Phase-aware Fourier comparison plus vector scanline features.
     /// </summary>
     public double ComplexDistance(FourierDescriptor a, FourierDescriptor b) =>
-        Permutations.Min(permutation => DistanceForPermutation(a, b, permutation, usePhase: true));
+        Math.Sqrt(ScanlineDistance(a.Scanlines, b.Scanlines) +
+                  Permutations.Min(permutation => DistanceForPermutation(a, b, permutation, usePhase: true)));
 
     /// <summary>
-    /// Baseline metric shown beside the new one: same structural comparison, but Fourier phase is discarded.
+    /// Magnitude-only Fourier baseline, using the same scanline features and weights.
     /// </summary>
     public double MagnitudeDistance(FourierDescriptor a, FourierDescriptor b) =>
-        Permutations.Min(permutation => DistanceForPermutation(a, b, permutation, usePhase: false));
+        Math.Sqrt(ScanlineDistance(a.Scanlines, b.Scanlines) +
+                  Permutations.Min(permutation => DistanceForPermutation(a, b, permutation, usePhase: false)));
+
+    private static double ScanlineDistance(ScanlineDescriptor a, ScanlineDescriptor b)
+    {
+        var sum = 0d;
+        var count = Math.Min(a.HorizontalIntersections.Count, b.HorizontalIntersections.Count);
+
+        for (var i = 0; i < count; i++)
+        {
+            // Crossing counts are topological. Normalize the raw difference a little so a single
+            // extra hole/stroke matters strongly without completely dwarfing every other feature.
+            var horizontalCrossingDelta =
+                (a.HorizontalIntersections[i] - b.HorizontalIntersections[i]) / 2d;
+            var verticalCrossingDelta =
+                (a.VerticalIntersections[i] - b.VerticalIntersections[i]) / 2d;
+
+            sum += ScanlineIntersectionWeight * Square(horizontalCrossingDelta);
+            sum += ScanlineIntersectionWeight * Square(verticalCrossingDelta);
+
+            sum += ScanlineSpanWeight * Square(a.HorizontalWidths[i] - b.HorizontalWidths[i]);
+            sum += ScanlineSpanWeight * Square(a.VerticalHeights[i] - b.VerticalHeights[i]);
+        }
+
+        return sum;
+    }
 
     private static double DistanceForPermutation(
         FourierDescriptor a,
@@ -46,7 +77,7 @@ public sealed class FourierDescriptorComparer
         // Keep topology as a weak hint only: equivalent SVG glyphs may be split into different path counts.
         sum += 0.015 * Square(Math.Min(a.ContourCount, 10) - Math.Min(b.ContourCount, 10));
 
-        return Math.Sqrt(sum);
+        return sum;
     }
 
     private static double ContourDistance(
@@ -60,8 +91,7 @@ public sealed class FourierDescriptorComparer
         if (a is null || b is null)
         {
             var existing = a ?? b!;
-            // Missing a significant contour should hurt much more than missing a tiny dot/hole.
-            return 1.25 * existing.Weight * existing.Weight + 0.08;
+            return FourierWeight * (1.25 * existing.Weight * existing.Weight + 0.08);
         }
 
         var sum = 0d;
@@ -77,16 +107,12 @@ public sealed class FourierDescriptorComparer
             var bc = k < b.Coefficients.Count ? b.Coefficients[k] : new FourierCoefficient(0, 0);
 
             if (usePhase)
-            {
                 sum += Square(ac.Real - bc.Real) + Square(ac.Imag - bc.Imag);
-            }
             else
-            {
                 sum += Square(ac.Magnitude - bc.Magnitude);
-            }
         }
 
-        return sum;
+        return FourierWeight * sum;
     }
 
     private static double Square(double value) => value * value;
