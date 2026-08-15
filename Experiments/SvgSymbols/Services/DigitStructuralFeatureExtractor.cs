@@ -83,7 +83,6 @@ public sealed class DigitStructuralFeatureExtractor
             }
         }
 
-        // Even nesting depth is filled material; odd nesting depth is a hole.
         var holes = closed
             .Select((contour, index) => new { Contour = contour, Depth = depth[index] })
             .Where(x => x.Depth % 2 == 1)
@@ -128,8 +127,6 @@ public sealed class DigitStructuralFeatureExtractor
         if (PointInPolygon(centroid, polygon))
             return centroid;
 
-        // For strongly concave paths the area centroid can fall outside. Try points halfway
-        // from a boundary vertex toward the simple mean until one is inside.
         var mean = new Vector2(
             polygon.Average(x => x.X),
             polygon.Average(x => x.Y));
@@ -187,7 +184,7 @@ public sealed class DigitStructuralFeatureExtractor
     private static bool PointInPolygon(Vector2 p, IReadOnlyList<Vector2> polygon)
     {
         var inside = false;
-        for (var i = 0, j = polygon.Count - 1; i < polygon.Count; j = i++)
+        for (int i = 0, j = polygon.Count - 1; i < polygon.Count; j = i++)
         {
             var pi = polygon[i];
             var pj = polygon[j];
