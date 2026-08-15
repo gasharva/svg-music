@@ -34,7 +34,6 @@ public sealed class MeterResolver
     public MeterResolution? Resolve(PartMeasureBlock block, PrimitiveResolution primitives)
     {
         var available = primitives.Primitives
-            .Where(x => x.Kind == PrimitiveKind.Content)
             .Where(x =>
                 x.Scope == PrimitiveLogicalScope.PartMeasure &&
                 x.PartNumber == block.PartNumber &&

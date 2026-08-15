@@ -95,20 +95,15 @@ public sealed class StepByStepBatchRunner
         {
             File.Copy(svgPath, Path.Combine(itemDirectory, "source.svg"), overwrite: true);
 
-            // Step 1: SVG -> logical parts/measures + logical/physical coordinate map.
             var structure = _partMeasureResolver.Resolve(svgPath);
-
-            // Step 2: step-1 result -> raw primitives with logical ownership where resolvable.
             var primitives = _primitiveResolver.Resolve(structure);
 
-            // Step 3: inspect every P+M block for a conventional left/right time signature.
             var meters = structure.Map.Blocks
                 .Select(block => meterResolver.Resolve(block, primitives))
                 .Where(x => x is not null)
                 .Select(x => x!)
                 .ToArray();
 
-            // Diagnostics consume resolver outputs; recognition never consumes the overlays.
             _partMeasureOverlayRenderer.Render(
                 structure,
                 Path.Combine(itemDirectory, "measures.png"));
@@ -170,7 +165,6 @@ public sealed class StepByStepBatchRunner
             primitives = primitives.Primitives.Select(x => new
             {
                 x.Id,
-                x.Kind,
                 x.Scope,
                 x.PartNumber,
                 x.MeasureNumber,
