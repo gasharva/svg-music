@@ -18679,5 +18679,467 @@
       "label": "2-4",
       "logicalLabel": "P2-M12"
     }
-  ]
+  ],
+  "logicalGrid": {
+    "subdivisionsPerBeat": 8,
+    "blocks": [
+      {
+        "partNumber": 1,
+        "measureNumber": 1,
+        "beatNumber": 4,
+        "beatValue": 4,
+        "subdivisionsPerBeat": 8,
+        "horizontalUnits": 32,
+        "halfStaffSpace": 3.1652984619140625,
+        "physicalBounds": {
+          "left": 94.89642333984375,
+          "top": 192.1337890625,
+          "right": 299.5910339355469,
+          "bottom": 217.4561767578125,
+          "width": 204.69461059570312,
+          "height": 25.3223876953125,
+          "centerX": 197.2437286376953,
+          "centerY": 204.79498291015625
+        }
+      },
+      {
+        "partNumber": 1,
+        "measureNumber": 2,
+        "beatNumber": 3,
+        "beatValue": 4,
+        "subdivisionsPerBeat": 8,
+        "horizontalUnits": 24,
+        "halfStaffSpace": 3.1652984619140625,
+        "physicalBounds": {
+          "left": 299.5910339355469,
+          "top": 192.1337890625,
+          "right": 521.959228515625,
+          "bottom": 217.4561767578125,
+          "width": 222.36819458007812,
+          "height": 25.3223876953125,
+          "centerX": 410.77513122558594,
+          "centerY": 204.79498291015625
+        }
+      },
+      {
+        "partNumber": 1,
+        "measureNumber": 3,
+        "beatNumber": 4,
+        "beatValue": 4,
+        "subdivisionsPerBeat": 8,
+        "horizontalUnits": 32,
+        "halfStaffSpace": 3.1652984619140625,
+        "physicalBounds": {
+          "left": 521.959228515625,
+          "top": 192.1337890625,
+          "right": 710.4339599609375,
+          "bottom": 217.4561767578125,
+          "width": 188.4747314453125,
+          "height": 25.3223876953125,
+          "centerX": 616.1965942382812,
+          "centerY": 204.79498291015625
+        }
+      },
+      {
+        "partNumber": 1,
+        "measureNumber": 4,
+        "beatNumber": 4,
+        "beatValue": 4,
+        "subdivisionsPerBeat": 8,
+        "horizontalUnits": 32,
+        "halfStaffSpace": 3.1659469604492188,
+        "physicalBounds": {
+          "left": 65.0931396484375,
+          "top": 378.8890380859375,
+          "right": 258.1790771484375,
+          "bottom": 404.21661376953125,
+          "width": 193.0859375,
+          "height": 25.32757568359375,
+          "centerX": 161.6361083984375,
+          "centerY": 391.5528259277344
+        }
+      },
+      {
+        "partNumber": 1,
+        "measureNumber": 5,
+        "beatNumber": 4,
+        "beatValue": 4,
+        "subdivisionsPerBeat": 8,
+        "horizontalUnits": 32,
+        "halfStaffSpace": 3.1659469604492188,
+        "physicalBounds": {
+          "left": 258.1790771484375,
+          "top": 378.8890380859375,
+          "right": 408.008544921875,
+          "bottom": 404.21661376953125,
+          "width": 149.8294677734375,
+          "height": 25.32757568359375,
+          "centerX": 333.09381103515625,
+          "centerY": 391.5528259277344
+        }
+      },
+      {
+        "partNumber": 1,
+        "measureNumber": 6,
+        "beatNumber": 4,
+        "beatValue": 4,
+        "subdivisionsPerBeat": 8,
+        "horizontalUnits": 32,
+        "halfStaffSpace": 3.1659469604492188,
+        "physicalBounds": {
+          "left": 408.008544921875,
+          "top": 378.8890380859375,
+          "right": 710.4339599609375,
+          "bottom": 404.21661376953125,
+          "width": 302.4254150390625,
+          "height": 25.32757568359375,
+          "centerX": 559.2212524414062,
+          "centerY": 391.5528259277344
+        }
+      },
+      {
+        "partNumber": 1,
+        "measureNumber": 7,
+        "beatNumber": 4,
+        "beatValue": 4,
+        "subdivisionsPerBeat": 8,
+        "horizontalUnits": 32,
+        "halfStaffSpace": 3.165313720703125,
+        "physicalBounds": {
+          "left": 65.0931396484375,
+          "top": 558.855224609375,
+          "right": 287.4613342285156,
+          "bottom": 584.177734375,
+          "width": 222.36819458007812,
+          "height": 25.322509765625,
+          "centerX": 176.27723693847656,
+          "centerY": 571.5164794921875
+        }
+      },
+      {
+        "partNumber": 1,
+        "measureNumber": 8,
+        "beatNumber": 4,
+        "beatValue": 4,
+        "subdivisionsPerBeat": 8,
+        "horizontalUnits": 32,
+        "halfStaffSpace": 3.165313720703125,
+        "physicalBounds": {
+          "left": 287.4613342285156,
+          "top": 558.855224609375,
+          "right": 482.13128662109375,
+          "bottom": 584.177734375,
+          "width": 194.66995239257812,
+          "height": 25.322509765625,
+          "centerX": 384.7963104248047,
+          "centerY": 571.5164794921875
+        }
+      },
+      {
+        "partNumber": 1,
+        "measureNumber": 9,
+        "beatNumber": 4,
+        "beatValue": 4,
+        "subdivisionsPerBeat": 8,
+        "horizontalUnits": 32,
+        "halfStaffSpace": 3.165313720703125,
+        "physicalBounds": {
+          "left": 482.13128662109375,
+          "top": 558.855224609375,
+          "right": 690.2542724609375,
+          "bottom": 584.177734375,
+          "width": 208.12298583984375,
+          "height": 25.322509765625,
+          "centerX": 586.1927795410156,
+          "centerY": 571.5164794921875
+        }
+      },
+      {
+        "partNumber": 1,
+        "measureNumber": 10,
+        "beatNumber": 3,
+        "beatValue": 4,
+        "subdivisionsPerBeat": 8,
+        "horizontalUnits": 24,
+        "halfStaffSpace": 3.1659393310546875,
+        "physicalBounds": {
+          "left": 65.0931396484375,
+          "top": 745.6105346679688,
+          "right": 394.0290222167969,
+          "bottom": 770.9380493164062,
+          "width": 328.9358825683594,
+          "height": 25.3275146484375,
+          "centerX": 229.5610809326172,
+          "centerY": 758.2742919921875
+        }
+      },
+      {
+        "partNumber": 1,
+        "measureNumber": 11,
+        "beatNumber": 3,
+        "beatValue": 4,
+        "subdivisionsPerBeat": 8,
+        "horizontalUnits": 24,
+        "halfStaffSpace": 3.1659393310546875,
+        "physicalBounds": {
+          "left": 394.0290222167969,
+          "top": 745.6105346679688,
+          "right": 690.2542724609375,
+          "bottom": 770.9380493164062,
+          "width": 296.2252502441406,
+          "height": 25.3275146484375,
+          "centerX": 542.1416473388672,
+          "centerY": 758.2742919921875
+        }
+      },
+      {
+        "partNumber": 1,
+        "measureNumber": 12,
+        "beatNumber": 2,
+        "beatValue": 4,
+        "subdivisionsPerBeat": 8,
+        "horizontalUnits": 16,
+        "halfStaffSpace": 3.1653213500976562,
+        "physicalBounds": {
+          "left": 65.0931396484375,
+          "top": 932.3710327148438,
+          "right": 690.2542724609375,
+          "bottom": 957.693603515625,
+          "width": 625.1611328125,
+          "height": 25.32257080078125,
+          "centerX": 377.6737060546875,
+          "centerY": 945.0323181152344
+        }
+      },
+      {
+        "partNumber": 2,
+        "measureNumber": 1,
+        "beatNumber": 4,
+        "beatValue": 4,
+        "subdivisionsPerBeat": 8,
+        "horizontalUnits": 32,
+        "halfStaffSpace": 3.165313720703125,
+        "physicalBounds": {
+          "left": 94.89642333984375,
+          "top": 266.78277587890625,
+          "right": 299.5910339355469,
+          "bottom": 292.10528564453125,
+          "width": 204.69461059570312,
+          "height": 25.322509765625,
+          "centerX": 197.2437286376953,
+          "centerY": 279.44403076171875
+        }
+      },
+      {
+        "partNumber": 2,
+        "measureNumber": 2,
+        "beatNumber": 3,
+        "beatValue": 4,
+        "subdivisionsPerBeat": 8,
+        "horizontalUnits": 24,
+        "halfStaffSpace": 3.165313720703125,
+        "physicalBounds": {
+          "left": 299.5910339355469,
+          "top": 266.78277587890625,
+          "right": 521.959228515625,
+          "bottom": 292.10528564453125,
+          "width": 222.36819458007812,
+          "height": 25.322509765625,
+          "centerX": 410.77513122558594,
+          "centerY": 279.44403076171875
+        }
+      },
+      {
+        "partNumber": 2,
+        "measureNumber": 3,
+        "beatNumber": 4,
+        "beatValue": 4,
+        "subdivisionsPerBeat": 8,
+        "horizontalUnits": 32,
+        "halfStaffSpace": 3.165313720703125,
+        "physicalBounds": {
+          "left": 521.959228515625,
+          "top": 266.78277587890625,
+          "right": 710.4339599609375,
+          "bottom": 292.10528564453125,
+          "width": 188.4747314453125,
+          "height": 25.322509765625,
+          "centerX": 616.1965942382812,
+          "centerY": 279.44403076171875
+        }
+      },
+      {
+        "partNumber": 2,
+        "measureNumber": 4,
+        "beatNumber": 4,
+        "beatValue": 4,
+        "subdivisionsPerBeat": 8,
+        "horizontalUnits": 32,
+        "halfStaffSpace": 3.165313720703125,
+        "physicalBounds": {
+          "left": 65.0931396484375,
+          "top": 453.5433349609375,
+          "right": 258.1790771484375,
+          "bottom": 478.8658447265625,
+          "width": 193.0859375,
+          "height": 25.322509765625,
+          "centerX": 161.6361083984375,
+          "centerY": 466.20458984375
+        }
+      },
+      {
+        "partNumber": 2,
+        "measureNumber": 5,
+        "beatNumber": 4,
+        "beatValue": 4,
+        "subdivisionsPerBeat": 8,
+        "horizontalUnits": 32,
+        "halfStaffSpace": 3.165313720703125,
+        "physicalBounds": {
+          "left": 258.1790771484375,
+          "top": 453.5433349609375,
+          "right": 408.008544921875,
+          "bottom": 478.8658447265625,
+          "width": 149.8294677734375,
+          "height": 25.322509765625,
+          "centerX": 333.09381103515625,
+          "centerY": 466.20458984375
+        }
+      },
+      {
+        "partNumber": 2,
+        "measureNumber": 6,
+        "beatNumber": 4,
+        "beatValue": 4,
+        "subdivisionsPerBeat": 8,
+        "horizontalUnits": 32,
+        "halfStaffSpace": 3.165313720703125,
+        "physicalBounds": {
+          "left": 408.008544921875,
+          "top": 453.5433349609375,
+          "right": 710.4339599609375,
+          "bottom": 478.8658447265625,
+          "width": 302.4254150390625,
+          "height": 25.322509765625,
+          "centerX": 559.2212524414062,
+          "centerY": 466.20458984375
+        }
+      },
+      {
+        "partNumber": 2,
+        "measureNumber": 7,
+        "beatNumber": 4,
+        "beatValue": 4,
+        "subdivisionsPerBeat": 8,
+        "horizontalUnits": 32,
+        "halfStaffSpace": 3.1653060913085938,
+        "physicalBounds": {
+          "left": 65.0931396484375,
+          "top": 633.5042114257812,
+          "right": 287.4613342285156,
+          "bottom": 658.82666015625,
+          "width": 222.36819458007812,
+          "height": 25.32244873046875,
+          "centerX": 176.27723693847656,
+          "centerY": 646.1654357910156
+        }
+      },
+      {
+        "partNumber": 2,
+        "measureNumber": 8,
+        "beatNumber": 4,
+        "beatValue": 4,
+        "subdivisionsPerBeat": 8,
+        "horizontalUnits": 32,
+        "halfStaffSpace": 3.1653060913085938,
+        "physicalBounds": {
+          "left": 287.4613342285156,
+          "top": 633.5042114257812,
+          "right": 482.13128662109375,
+          "bottom": 658.82666015625,
+          "width": 194.66995239257812,
+          "height": 25.32244873046875,
+          "centerX": 384.7963104248047,
+          "centerY": 646.1654357910156
+        }
+      },
+      {
+        "partNumber": 2,
+        "measureNumber": 9,
+        "beatNumber": 4,
+        "beatValue": 4,
+        "subdivisionsPerBeat": 8,
+        "horizontalUnits": 32,
+        "halfStaffSpace": 3.1653060913085938,
+        "physicalBounds": {
+          "left": 482.13128662109375,
+          "top": 633.5042114257812,
+          "right": 690.2542724609375,
+          "bottom": 658.82666015625,
+          "width": 208.12298583984375,
+          "height": 25.32244873046875,
+          "centerX": 586.1927795410156,
+          "centerY": 646.1654357910156
+        }
+      },
+      {
+        "partNumber": 2,
+        "measureNumber": 10,
+        "beatNumber": 3,
+        "beatValue": 4,
+        "subdivisionsPerBeat": 8,
+        "horizontalUnits": 24,
+        "halfStaffSpace": 3.1653213500976562,
+        "physicalBounds": {
+          "left": 65.0931396484375,
+          "top": 820.2647094726562,
+          "right": 394.0290222167969,
+          "bottom": 845.5872802734375,
+          "width": 328.9358825683594,
+          "height": 25.32257080078125,
+          "centerX": 229.5610809326172,
+          "centerY": 832.9259948730469
+        }
+      },
+      {
+        "partNumber": 2,
+        "measureNumber": 11,
+        "beatNumber": 3,
+        "beatValue": 4,
+        "subdivisionsPerBeat": 8,
+        "horizontalUnits": 24,
+        "halfStaffSpace": 3.1653213500976562,
+        "physicalBounds": {
+          "left": 394.0290222167969,
+          "top": 820.2647094726562,
+          "right": 690.2542724609375,
+          "bottom": 845.5872802734375,
+          "width": 296.2252502441406,
+          "height": 25.32257080078125,
+          "centerX": 542.1416473388672,
+          "centerY": 832.9259948730469
+        }
+      },
+      {
+        "partNumber": 2,
+        "measureNumber": 12,
+        "beatNumber": 2,
+        "beatValue": 4,
+        "subdivisionsPerBeat": 8,
+        "horizontalUnits": 16,
+        "halfStaffSpace": 3.1652984619140625,
+        "physicalBounds": {
+          "left": 65.0931396484375,
+          "top": 1007.02001953125,
+          "right": 690.2542724609375,
+          "bottom": 1032.3424072265625,
+          "width": 625.1611328125,
+          "height": 25.3223876953125,
+          "centerX": 377.6737060546875,
+          "centerY": 1019.6812133789062
+        }
+      }
+    ]
+  },
+  "clefs": []
 }
