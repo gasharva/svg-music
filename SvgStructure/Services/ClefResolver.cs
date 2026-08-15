@@ -17,7 +17,7 @@ public sealed class ClefResolver
     public ClefResolver(
         IClefRecognizer recognizer,
         ClefCandidateSanity? sanity = null,
-        double minimumConfidence = 0.16)
+        double minimumConfidence = 0.0)
     {
         _recognizer = recognizer;
         _sanity = sanity ?? new ClefCandidateSanity();
