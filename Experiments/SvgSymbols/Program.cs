@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using SvgSymbols.Models;
 using SvgSymbols.Services;
 
@@ -19,10 +20,12 @@ if (localOnly)
     var gallery = new GalleryBuilder();
     var trebleValid = ReadLocalSamples(Path.Combine(samplesRoot, "Treble", "valid"), "Treble");
     var bassValid = ReadLocalSamples(Path.Combine(samplesRoot, "Bass", "valid"), "Bass");
-    var galleryPath = await gallery.BuildAsync(outputRoot, trebleValid, bassValid, other);
+    var rhythm = ReadLocalSamples(Path.Combine(samplesRoot, "Rhythm"), "Rhythm", useValidPrefix: false);
+    var galleryPath = await gallery.BuildAsync(outputRoot, trebleValid, bassValid, rhythm, other);
 
     Console.WriteLine($"Treble valid: {trebleValid.Count}");
     Console.WriteLine($"Bass valid:   {bassValid.Count}");
+    Console.WriteLine($"Rhythm digits:{rhythm.Count}");
     Console.WriteLine($"Gallery: {galleryPath}");
     return;
 }
@@ -55,13 +58,35 @@ var bass = await downloader.DownloadAsync(
     bassSources,
     Path.Combine(samplesRoot, "Bass"));
 
-var fullGalleryPath = await galleryBuilder.BuildAsync(outputRoot, treble, bass, other);
+Console.WriteLine();
+Console.WriteLine("Searching time-signature digits...");
+var rhythmSources = (await commons.GetSvgFilesAsync("Rhythm", "SVG Time signatures", 0))
+    .Where(IsRhythmNumberSample)
+    .ToList();
+Console.WriteLine($"Found {rhythmSources.Count} numeric SVG files. Downloading...");
+var rhythmDownloaded = await downloader.DownloadAsync(
+    rhythmSources,
+    Path.Combine(samplesRoot, "Rhythm"));
+
+var fullGalleryPath = await galleryBuilder.BuildAsync(outputRoot, treble, bass, rhythmDownloaded, other);
 
 Console.WriteLine();
 Console.WriteLine($"Treble downloaded: {treble.Count}");
 Console.WriteLine($"Bass downloaded:   {bass.Count}");
+Console.WriteLine($"Rhythm downloaded: {rhythmDownloaded.Count}");
 Console.WriteLine($"Other local:       {other.Count}");
 Console.WriteLine($"Gallery: {fullGalleryPath}");
+
+static bool IsRhythmNumberSample(SymbolSource source)
+{
+    // Wikimedia's SVG Time signatures category contains Music0.svg ... Music9.svg,
+    // plus useful compound forms such as Music10.svg, Music12.svg, Music16.svg and Music32.svg.
+    // Exclude fraction/example files such as Music1-2.svg: here we want only the glyph/number itself.
+    return Regex.IsMatch(
+        source.FileName,
+        @"^Music\d+\.svg$",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+}
 
 static string FindRepositoryRoot(string start)
 {
@@ -86,7 +111,10 @@ static int GetIntArgument(string[] args, string name, int defaultValue)
     return Math.Clamp(value, 0, 3);
 }
 
-static IReadOnlyList<SymbolSource> ReadLocalSamples(string directory, string kind)
+static IReadOnlyList<SymbolSource> ReadLocalSamples(
+    string directory,
+    string kind,
+    bool useValidPrefix = true)
 {
     if (!Directory.Exists(directory))
         return Array.Empty<SymbolSource>();
@@ -96,9 +124,9 @@ static IReadOnlyList<SymbolSource> ReadLocalSamples(string directory, string kin
         .OrderBy(Path.GetFileName, StringComparer.OrdinalIgnoreCase)
         .Select(path => new SymbolSource(
             Kind: kind,
-            Category: "Curated valid",
+            Category: kind == "Rhythm" ? "Time-signature number" : "Curated valid",
             Title: Path.GetFileNameWithoutExtension(path),
-            FileName: "valid/" + Path.GetFileName(path),
+            FileName: useValidPrefix ? "valid/" + Path.GetFileName(path) : Path.GetFileName(path),
             DescriptionUrl: "#",
             FileUrl: path,
             License: null,
