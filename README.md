@@ -2,6 +2,12 @@
 
 Current development is focused on reconstructing musical score structure directly from SVG geometry.
 
+## Step-by-step status
+
+[**Open the latest SvgStructure step-by-step report**](https://github.com/gasharva/svg-music/tree/ci-output/latest/step-by-step)
+
+Every push to `master` runs all SVG files from `Samples/step-by-step` through the current structure pipeline and publishes the latest overlays, structure JSON and report there.
+
 ## Active projects
 
 - `SvgStructure` — detects staff systems, parts, measures and classifies raw SVG primitives.
