@@ -89,10 +89,15 @@ public sealed class RhythmVariantCorpusBuilder
 
         foreach (var placement in placements)
         {
+            // The repo-local Bravura glyphs use the font/SMuFL coordinate convention:
+            // Y grows upwards. SVG's viewport Y grows downwards, so a direct translation
+            // renders every digit vertically mirrored. Map the glyph's top (MaxY) to SVG y=0
+            // and flip the Y axis while preserving X and the target scale.
+            var maxY = placement.Glyph.MinY + placement.Glyph.Height;
             var g = new XElement(ns + "g",
                 new XAttribute(
                     "transform",
-                    $"translate({Fmt(placement.X)} 0) scale({Fmt(placement.Scale)}) translate({Fmt(-placement.Glyph.MinX)} {Fmt(-placement.Glyph.MinY)})"));
+                    $"translate({Fmt(placement.X)} 0) scale({Fmt(placement.Scale)} {Fmt(-placement.Scale)}) translate({Fmt(-placement.Glyph.MinX)} {Fmt(-maxY)})"));
 
             foreach (var node in placement.Glyph.Content)
                 g.Add(new XElement(node));
