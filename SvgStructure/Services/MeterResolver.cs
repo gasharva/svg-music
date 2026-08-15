@@ -74,11 +74,14 @@ public sealed class MeterResolver
         var middleY = b.CenterY;
 
         // A time-signature digit normally occupies a substantial fraction of one half of the
-        // five-line staff. Tiny dots/accidentals and huge clefs are poor row candidates.
+        // five-line staff. Tiny dots/accidentals, very thin vertical ornaments (for example
+        // arpeggiation squiggles) and huge clefs are poor row candidates.
         var rowPrimitives = primitives
             .Where(x => x.PhysicalBounds.Height >= staffHeight * 0.22)
             .Where(x => x.PhysicalBounds.Height <= staffHeight * 0.72)
             .Where(x => x.PhysicalBounds.Width <= staffHeight * 1.15)
+            .Where(x => x.PhysicalBounds.Width >= staffHeight * 0.10)
+            .Where(x => x.PhysicalBounds.Width / Math.Max(1e-9, x.PhysicalBounds.Height) >= 0.20)
             .ToArray();
 
         var upper = rowPrimitives.Where(x => x.PhysicalBounds.CenterY < middleY).ToArray();
@@ -103,6 +106,12 @@ public sealed class MeterResolver
                 var widthRatio = Ratio(top.Bounds.Width, bottom.Bounds.Width);
                 var heightRatio = Ratio(top.Bounds.Height, bottom.Bounds.Height);
                 if (widthRatio < 0.48 || heightRatio < 0.52)
+                    continue;
+
+                // The combined meter column itself must also have meaningful width. This catches
+                // vertically long, narrow symbols that happen to split into two aligned pieces.
+                var averageRowWidth = (top.Bounds.Width + bottom.Bounds.Width) / 2d;
+                if (averageRowWidth < staffHeight * 0.14)
                     continue;
 
                 // Stacked rows should meet around the staff middle, not live on the same side.
