@@ -1,7 +1,7 @@
-block: P1-M5
-logical bbox: X 0.9..3.11, Y -3.27..11.5
-contours: 4
-points: 902
+block: P2-M1
+logical bbox: X 1.01..3.01, Y 0.01..6.66
+contours: 1
+points: 420
 result: F 5.5 %
 
 candidates:
