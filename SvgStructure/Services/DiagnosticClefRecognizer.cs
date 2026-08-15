@@ -20,6 +20,7 @@ public sealed class DiagnosticClefRecognizer : IClefRecognizer
 {
     private readonly IClefRecognizer _inner;
     private readonly LegacyIoUClefAnalyzer? _legacyIoU;
+    private readonly VectorSkeletonAnalyzer _skeleton = new();
     private string? _outputDirectory;
     private ClefDiagnosticContext? _nextContext;
     private int _counter;
@@ -45,8 +46,9 @@ public sealed class DiagnosticClefRecognizer : IClefRecognizer
             "# Clef recognizer inputs\n\n" +
             "These are the exact post-sanity-filter vector candidates sent to `IClefRecognizer`.\n\n" +
             "`Legacy IoU` is the old shape-matching baseline: bbox-normalized 64x64 binary-mask IoU plus Clipper2 vector IoU. No size or staff-position prior is used.\n\n" +
-            "| Candidate | P+M | Logical bbox | Vector recognizer | Legacy IoU | Shape |\n" +
-            "|---|---|---|---|---|---|\n");
+            "`Skeleton` is an experimental vector-only scanline midpoint skeleton. It is diagnostic only: no smoothing and no recognition yet.\n\n" +
+            "| Candidate | P+M | Logical bbox | Vector recognizer | Legacy IoU | Shape | Skeleton |\n" +
+            "|---|---|---|---|---|---|---|\n");
     }
 
     public void SetNextContext(ClefDiagnosticContext context) => _nextContext = context;
@@ -55,7 +57,8 @@ public sealed class DiagnosticClefRecognizer : IClefRecognizer
     {
         var result = _inner.Recognize(contours);
         var legacy = _legacyIoU?.Analyze(contours);
-        Save(contours, result, legacy, _nextContext);
+        var skeleton = _skeleton.Analyze(contours);
+        Save(contours, result, legacy, skeleton, _nextContext);
         _nextContext = null;
         return result;
     }
@@ -64,6 +67,7 @@ public sealed class DiagnosticClefRecognizer : IClefRecognizer
         IReadOnlyList<IReadOnlyList<Vector2>> contours,
         ClefSymbolRecognition result,
         LegacyIoUClefAnalysis? legacy,
+        VectorSkeletonAnalysis skeleton,
         ClefDiagnosticContext? context)
     {
         if (string.IsNullOrWhiteSpace(_outputDirectory))
@@ -72,10 +76,12 @@ public sealed class DiagnosticClefRecognizer : IClefRecognizer
         var id = (++_counter).ToString("000", CultureInfo.InvariantCulture);
         var svgName = id + ".svg";
         var pngName = id + ".png";
+        var skeletonName = id + ".skeleton.svg";
         var txtName = id + ".txt";
 
         WriteSvg(Path.Combine(_outputDirectory, svgName), contours);
         WritePng(Path.Combine(_outputDirectory, pngName), contours);
+        WriteSkeletonSvg(Path.Combine(_outputDirectory, skeletonName), contours, skeleton);
 
         var logical = context is null ? "n/a" : Format(context.LogicalBounds);
         var pm = context is null ? "n/a" : $"P{context.PartNumber}-M{context.MeasureNumber}";
@@ -104,6 +110,8 @@ public sealed class DiagnosticClefRecognizer : IClefRecognizer
             $"logical bbox: {logical}{Environment.NewLine}" +
             $"contours: {contours.Count}{Environment.NewLine}" +
             $"points: {contours.Sum(x => x.Count)}{Environment.NewLine}" +
+            $"skeleton points: {skeleton.Points.Count}{Environment.NewLine}" +
+            $"skeleton segments: {skeleton.Segments.Count}{Environment.NewLine}" +
             $"vector result: {answer}{Environment.NewLine}" +
             $"legacy IoU result: {legacyAnswer}{Environment.NewLine}{Environment.NewLine}" +
             "vector candidates:" + Environment.NewLine + candidates + Environment.NewLine + Environment.NewLine +
@@ -111,7 +119,7 @@ public sealed class DiagnosticClefRecognizer : IClefRecognizer
 
         File.AppendAllText(
             Path.Combine(_outputDirectory, "README.md"),
-            $"| [{id}]({txtName}) | {pm} | `{logical}` | {answer} | {legacyAnswer} | ![{id}]({pngName}) |{Environment.NewLine}");
+            $"| [{id}]({txtName}) | {pm} | `{logical}` | {answer} | {legacyAnswer} | ![{id}]({pngName}) | [skeleton]({skeletonName}) |{Environment.NewLine}");
     }
 
     private static string Format(LogicalRectD b) =>
@@ -153,6 +161,47 @@ public sealed class DiagnosticClefRecognizer : IClefRecognizer
         using var stream = File.Create(path);
         data.SaveTo(stream);
     }
+
+    private static void WriteSkeletonSvg(
+        string path,
+        IReadOnlyList<IReadOnlyList<Vector2>> contours,
+        VectorSkeletonAnalysis skeleton)
+    {
+        var bounds = Bounds(contours);
+        var pad = Math.Max(1f, Math.Max(bounds.Width, bounds.Height) * 0.06f);
+        var stroke = Math.Max(0.25f, Math.Min(bounds.Width, bounds.Height) * 0.008f);
+        var radius = stroke * 1.4f;
+        var sb = new StringBuilder();
+        sb.AppendLine("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+        sb.AppendLine($"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"{F(bounds.Left - pad)} {F(bounds.Top - pad)} {F(bounds.Width + 2 * pad)} {F(bounds.Height + 2 * pad)}\">");
+
+        sb.Append("<path fill=\"#777\" fill-opacity=\"0.16\" fill-rule=\"evenodd\" d=\"");
+        foreach (var contour in contours.Where(x => x.Count >= 2))
+        {
+            sb.Append($"M {F(contour[0].X)} {F(contour[0].Y)} ");
+            foreach (var p in contour.Skip(1))
+                sb.Append($"L {F(p.X)} {F(p.Y)} ");
+            sb.Append("Z ");
+        }
+        sb.AppendLine("\"/>");
+
+        foreach (var segment in skeleton.Segments)
+        {
+            var color = segment.A.HorizontalScan ? "#d62728" : "#1f77b4";
+            sb.AppendLine($"<line x1=\"{F(segment.A.X)}\" y1=\"{F(segment.A.Y)}\" x2=\"{F(segment.B.X)}\" y2=\"{F(segment.B.Y)}\" stroke=\"{color}\" stroke-width=\"{F(stroke)}\" stroke-linecap=\"round\" opacity=\"0.75\"/>");
+        }
+
+        foreach (var point in skeleton.Points)
+        {
+            var color = point.HorizontalScan ? "#d62728" : "#1f77b4";
+            sb.AppendLine($"<circle cx=\"{F(point.X)}\" cy=\"{F(point.Y)}\" r=\"{F(radius)}\" fill=\"{color}\" opacity=\"0.85\"/>");
+        }
+
+        sb.AppendLine("</svg>");
+        File.WriteAllText(path, sb.ToString());
+    }
+
+    private static string F(float value) => value.ToString("0.####", CultureInfo.InvariantCulture);
 
     private static void WriteSvg(string path, IReadOnlyList<IReadOnlyList<Vector2>> contours)
     {
