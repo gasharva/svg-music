@@ -38,9 +38,6 @@ public sealed class ClefResolver
                 x.Scope == PrimitiveLogicalScope.PartMeasure &&
                 x.PartNumber == block.PartNumber &&
                 x.MeasureNumber == block.MeasureNumber)
-            .Where(x => x.PhysicalBounds.Width >= h * 0.08)
-            .Where(x => x.PhysicalBounds.Width <= h * 1.80)
-            .Where(x => _sanity.Accept(logicalBlock.ToLogical(x.PhysicalBounds)))
             .OrderBy(x => x.PhysicalBounds.Left)
             .ToArray();
 
@@ -48,11 +45,13 @@ public sealed class ClefResolver
             return Array.Empty<ClefResolution>();
 
         var recognized = new List<ScoredClef>();
-        foreach (var candidate in BuildCandidates(available, h))
+        foreach (var candidate in BuildCandidates(available, logicalBlock))
         {
             var logicalBounds = logicalBlock.ToLogical(candidate.Bounds);
             if (!_sanity.Accept(logicalBounds))
                 continue;
+
+            var merged = MergeInsideBounds(candidate, available);
 
             if (_recognizer is DiagnosticClefRecognizer diagnostic)
             {
@@ -62,7 +61,7 @@ public sealed class ClefResolver
                     logicalBounds));
             }
 
-            var recognition = _recognizer.Recognize(ToContours(candidate.Primitives));
+            var recognition = _recognizer.Recognize(ToContours(merged));
             if (recognition.Symbol is null || recognition.Confidence < _minimumConfidence)
                 continue;
 
@@ -99,46 +98,55 @@ public sealed class ClefResolver
         return result.OrderBy(x => x.PhysicalBounds.Left).ToArray();
     }
 
-    private static IReadOnlyList<Candidate> BuildCandidates(
+    private IReadOnlyList<Candidate> BuildCandidates(
         IReadOnlyList<ResolvedPrimitive> primitives,
-        double staffHeight)
+        LogicalGridBlock logicalBlock)
     {
         var result = new List<Candidate>();
 
+        // Seed candidates from substantial primitives only. The full symbol is assembled afterwards
+        // by pulling every contour that lies inside the seed bbox, so holes/dots split by step 2 are
+        // not lost before recognition.
         foreach (var anchor in primitives)
         {
-            result.Add(new Candidate(new[] { anchor }, anchor.PhysicalBounds));
-
-            var neighbors = primitives
-                .Where(x => x.Id != anchor.Id)
-                .Where(x => Math.Abs(x.PhysicalBounds.CenterX - anchor.PhysicalBounds.CenterX) <= staffHeight * 0.62)
-                .Where(x => x.PhysicalBounds.Top <= anchor.PhysicalBounds.Bottom + staffHeight * 0.42)
-                .Where(x => x.PhysicalBounds.Bottom >= anchor.PhysicalBounds.Top - staffHeight * 0.42)
-                .OrderBy(x => Distance(anchor.PhysicalBounds, x.PhysicalBounds))
-                .Take(3)
-                .ToArray();
-
-            if (neighbors.Length == 0)
+            var logical = logicalBlock.ToLogical(anchor.PhysicalBounds);
+            if (!_sanity.Accept(logical))
                 continue;
 
-            var group = new List<ResolvedPrimitive> { anchor };
-            foreach (var neighbor in neighbors)
-            {
-                var proposed = Union(group.Select(x => x.PhysicalBounds).Append(neighbor.PhysicalBounds));
-                if (proposed.Width > staffHeight * 1.85 || proposed.Height > staffHeight * 3.15)
-                    continue;
-                group.Add(neighbor);
-            }
-
-            if (group.Count > 1)
-                result.Add(new Candidate(group.ToArray(), Union(group.Select(x => x.PhysicalBounds))));
+            result.Add(new Candidate(new[] { anchor }, anchor.PhysicalBounds));
         }
 
         return result
-            .GroupBy(x => string.Join(',', x.Primitives.Select(p => p.Id).OrderBy(id => id)))
+            .GroupBy(x => (
+                X: Math.Round(x.Bounds.CenterX, 2),
+                Y: Math.Round(x.Bounds.CenterY, 2),
+                W: Math.Round(x.Bounds.Width, 2),
+                H: Math.Round(x.Bounds.Height, 2)))
             .Select(x => x.First())
             .ToArray();
     }
+
+    private static IReadOnlyList<ResolvedPrimitive> MergeInsideBounds(
+        Candidate candidate,
+        IReadOnlyList<ResolvedPrimitive> available)
+    {
+        var b = candidate.Bounds;
+        var padX = Math.Max(0.5, b.Width * 0.12);
+        var padY = Math.Max(0.5, b.Height * 0.08);
+        var expanded = new RectD(
+            b.Left - padX,
+            b.Top - padY,
+            b.Right + padX,
+            b.Bottom + padY);
+
+        return available
+            .Where(x => Contains(expanded, x.PhysicalBounds.CenterX, x.PhysicalBounds.CenterY))
+            .OrderBy(x => x.Id)
+            .ToArray();
+    }
+
+    private static bool Contains(RectD b, double x, double y) =>
+        x >= b.Left && x <= b.Right && y >= b.Top && y <= b.Bottom;
 
     private static IReadOnlyList<IReadOnlyList<Vector2>> ToContours(
         IEnumerable<ResolvedPrimitive> primitives) =>
@@ -146,23 +154,6 @@ public sealed class ClefResolver
             .Where(x => x.Contour.Points.Count >= 3)
             .Select(x => (IReadOnlyList<Vector2>)x.Contour.Points)
             .ToArray();
-
-    private static double Distance(RectD a, RectD b)
-    {
-        var dx = a.CenterX - b.CenterX;
-        var dy = a.CenterY - b.CenterY;
-        return Math.Sqrt(dx * dx + dy * dy);
-    }
-
-    private static RectD Union(IEnumerable<RectD> rects)
-    {
-        var array = rects.ToArray();
-        return new RectD(
-            array.Min(x => x.Left),
-            array.Min(x => x.Top),
-            array.Max(x => x.Right),
-            array.Max(x => x.Bottom));
-    }
 
     private static double OverlapRatio(RectD a, RectD b)
     {
