@@ -46,7 +46,7 @@ public sealed class StepByStepBatchRunner
 
         var repositoryRoot = FindRepositoryRoot(inputFolder);
         var meterWork = Path.Combine(Path.GetTempPath(), $"svg-music-meter-{Guid.NewGuid():N}");
-        var numberRecognizer = new BravuraSvgNumberRecognizer(
+        var numberRecognizer = new BravuraNumberRecognizer(
             Path.Combine(repositoryRoot, "References", "glyphs"),
             meterWork);
         var meterResolver = new MeterResolver(numberRecognizer);
@@ -168,7 +168,8 @@ public sealed class StepByStepBatchRunner
                 x.Scope,
                 x.PartNumber,
                 x.MeasureNumber,
-                x.PhysicalBounds
+                x.PhysicalBounds,
+                contourPointCount = x.Contour.Points.Count
             }),
             meters
         };
