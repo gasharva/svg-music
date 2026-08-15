@@ -17,17 +17,19 @@ public sealed record StepByStepItemResult(
     int SystemCount,
     int PartCount,
     int MeasureCount,
+    int PartMeasurePrimitiveCount = 0,
+    int MeasurePrimitiveCount = 0,
+    int PhysicalOnlyPrimitiveCount = 0,
     string? Error = null);
 
 public sealed class StepByStepBatchRunner
 {
     public const string ArtifactsDirectoryName = "_artifacts";
 
-    private readonly SvgSceneGeometryReader _geometryReader = new();
-    private readonly StaffSystemDetector _systemDetector = new();
-    private readonly ScoreStructureBuilder _structureBuilder = new();
-    private readonly MeasureOverlayRenderer _measureOverlayRenderer = new();
-    private readonly PrimitiveClassificationRenderer _classificationRenderer = new(0.25);
+    private readonly PartMeasureResolver _partMeasureResolver = new();
+    private readonly PrimitiveResolver _primitiveResolver = new(0.25);
+    private readonly PartMeasureOverlayRenderer _partMeasureOverlayRenderer = new();
+    private readonly PrimitiveOverlayRenderer _primitiveOverlayRenderer = new();
     private readonly StepByStepReportBuilder _reportBuilder = new();
 
     public StepByStepBatchResult Run(string inputFolder)
@@ -70,70 +72,83 @@ public sealed class StepByStepBatchRunner
 
         try
         {
-            var sourceCopyPath = Path.Combine(itemDirectory, "source.svg");
-            File.Copy(svgPath, sourceCopyPath, overwrite: true);
+            File.Copy(svgPath, Path.Combine(itemDirectory, "source.svg"), overwrite: true);
 
-            var lines = _geometryReader.ReadLines(svgPath);
-            var systems = _systemDetector.Detect(lines);
-            var score = _structureBuilder.Build(systems);
+            // Step 1: SVG -> logical parts/measures + logical/physical coordinate map.
+            var structure = _partMeasureResolver.Resolve(svgPath);
 
-            _measureOverlayRenderer.Render(
-                svgPath,
-                systems,
+            // Step 2: step-1 result -> raw primitives with logical ownership where resolvable.
+            var primitives = _primitiveResolver.Resolve(structure);
+
+            // Diagnostics consume resolver outputs; recognition never consumes the overlays.
+            _partMeasureOverlayRenderer.Render(
+                structure,
                 Path.Combine(itemDirectory, "measures.png"));
-
-            _classificationRenderer.Render(
-                svgPath,
-                systems,
+            _primitiveOverlayRenderer.Render(
+                primitives,
                 Path.Combine(itemDirectory, "classified.png"));
 
-            WriteStructureJson(
+            WriteResolutionJson(
                 Path.Combine(itemDirectory, "structure.json"),
                 fileName,
-                lines.Count,
-                systems.Count,
-                score);
+                structure,
+                primitives);
 
             return new StepByStepItemResult(
                 fileName,
                 stem,
-                lines.Count,
-                systems.Count,
-                score.Parts.Count,
-                score.Parts.FirstOrDefault()?.Measures.Count ?? 0);
+                structure.LineCount,
+                structure.SystemCount,
+                structure.Parts.Count,
+                structure.Measures.Count,
+                primitives.PartMeasurePrimitives.Count,
+                primitives.MeasurePrimitives.Count,
+                primitives.PhysicalOnlyPrimitives.Count);
         }
         catch (Exception ex)
         {
             File.WriteAllText(Path.Combine(itemDirectory, "error.txt"), ex.ToString());
-            return new StepByStepItemResult(fileName, stem, 0, 0, 0, 0, ex.Message);
+            return new StepByStepItemResult(
+                fileName, stem, 0, 0, 0, 0,
+                Error: ex.Message);
         }
     }
 
-    private static void WriteStructureJson(
+    private static void WriteResolutionJson(
         string path,
         string fileName,
-        int lineCount,
-        int systemCount,
-        ScoreStructure score)
+        PartMeasureResolution structure,
+        PrimitiveResolution primitives)
     {
         var payload = new
         {
             source = fileName,
-            lineCount,
-            systemCount,
-            parts = score.Parts.Select(part => new
+            structure = new
             {
-                id = part.Id,
-                measures = part.Measures.Select(measure => new
-                {
-                    number = measure.Number,
-                    width = Math.Round(measure.Width, 4)
-                })
+                lineCount = structure.LineCount,
+                systemCount = structure.SystemCount,
+                pageBounds = structure.Map.PageBounds,
+                parts = structure.Parts,
+                measures = structure.Measures,
+                blocks = structure.Map.Blocks
+            },
+            primitives = primitives.Primitives.Select(x => new
+            {
+                x.Id,
+                x.Kind,
+                x.Scope,
+                x.PartNumber,
+                x.MeasureNumber,
+                x.PhysicalBounds
             })
         };
 
         File.WriteAllText(
             path,
-            JsonSerializer.Serialize(payload, new JsonSerializerOptions { WriteIndented = true }));
+            JsonSerializer.Serialize(payload, new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            }));
     }
 }
