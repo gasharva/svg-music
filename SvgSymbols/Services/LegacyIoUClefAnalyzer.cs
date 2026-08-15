@@ -213,8 +213,8 @@ public sealed class LegacyIoUClefAnalyzer
             var path = new Path64(contour.Count);
             foreach (var point in contour)
             {
-                var x = point.x / PolygonScale;
-                var y = point.y / PolygonScale;
+                var x = point.X / PolygonScale;
+                var y = point.Y / PolygonScale;
                 if (flipX) x = 1 - x;
                 if (flipY) y = 1 - y;
                 path.Add(new Point64(
@@ -359,7 +359,7 @@ public sealed class LegacyIoUClefAnalyzer
 
     private static Vector2 Map(SKMatrix matrix, float x, float y)
     {
-        var p = matrix.MapPoint(x, y);
+        var p = matrix.MapPoint(new SKPoint(x, y));
         return new Vector2(p.X, p.Y);
     }
 
