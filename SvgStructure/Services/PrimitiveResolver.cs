@@ -5,11 +5,12 @@ using Shim = ShimSkiaSharp;
 namespace SvgStructure.Services;
 
 /// <summary>
-/// Pipeline step 2. Resolves raw SVG primitives against the logical map produced by
+/// Pipeline step 2. Resolves real SVG content primitives against the logical map produced by
 /// <see cref="PartMeasureResolver"/>.
 ///
-/// A primitive may belong to one Pn-Mm block, to a measure as a whole (part is unknown / shared),
-/// or remain physical-only when no unambiguous logical coordinate can be assigned.
+/// Primitives confidently owned by one staff-measure receive Pn-Mm coordinates.
+/// Everything else is kept available to later recognition steps at measure scope (Mm only).
+/// Staff lines are temporary classification anchors and giant garbage shapes are discarded.
 /// </summary>
 public sealed class PrimitiveResolver
 {
@@ -49,19 +50,17 @@ public sealed class PrimitiveResolver
                 x.PhysicalBounds.Bottom))
             .ToArray();
 
+        // Staff lines participate only as virtual/physical anchors inside the classifier.
+        // They are not recognition output.
         var staffLineIds = _staffLineDetector.Detect(raw, regions);
-        var classifiable = raw.Where(x => !staffLineIds.Contains(x.Id)).ToArray();
-        var cleanup = _garbageCleaner.Clean(classifiable, regions);
-        var claims = _classifier.Classify(cleanup.Primitives, regions, structure.Map.PageBounds);
-        var garbageIds = cleanup.GarbageIds.ToHashSet();
+        var content = raw.Where(x => !staffLineIds.Contains(x.Id)).ToArray();
 
-        var resolved = raw
-            .Select(primitive => ResolvePrimitive(
-                primitive,
-                structure,
-                claims,
-                staffLineIds,
-                garbageIds))
+        // Giant page-spanning shapes are renderer/SVG infrastructure noise. Remove them entirely.
+        var cleanup = _garbageCleaner.Clean(content, regions);
+        var claims = _classifier.Classify(cleanup.Primitives, regions, structure.Map.PageBounds);
+
+        var resolved = cleanup.Primitives
+            .Select(primitive => ResolvePrimitive(primitive, structure, claims))
             .ToArray();
 
         return new PrimitiveResolution(structure, resolved);
@@ -70,16 +69,8 @@ public sealed class PrimitiveResolver
     private static ResolvedPrimitive ResolvePrimitive(
         RawPrimitive primitive,
         PartMeasureResolution structure,
-        IReadOnlyDictionary<int, HashSet<StaffMeasureKey>> claims,
-        IReadOnlySet<int> staffLineIds,
-        IReadOnlySet<int> garbageIds)
+        IReadOnlyDictionary<int, HashSet<StaffMeasureKey>> claims)
     {
-        if (staffLineIds.Contains(primitive.Id))
-            return PhysicalOnly(primitive, PrimitiveKind.StaffLine);
-
-        if (garbageIds.Contains(primitive.Id))
-            return PhysicalOnly(primitive, PrimitiveKind.Garbage);
-
         if (claims.TryGetValue(primitive.Id, out var keys) && keys.Count == 1)
         {
             var key = keys.Single();
@@ -91,65 +82,79 @@ public sealed class PrimitiveResolver
                 key.MeasureNumber);
         }
 
-        var sharedMeasure = TryResolveMeasureOnly(primitive.Bounds, structure.Map);
-        if (sharedMeasure is not null)
+        // Deliberately broad fallback: pedals, dynamics, hairpins, cross-staff lines and even
+        // currently-uninteresting page text must stay visible to subsequent steps. Attach every
+        // unresolved content primitive to the physically nearest measure, without guessing a part.
+        var measureNumber = ResolveNearestMeasure(primitive.Bounds, structure.Map);
+        if (measureNumber is not null)
         {
             return new ResolvedPrimitive(
                 primitive.Id,
                 primitive.Bounds,
                 PrimitiveLogicalScope.Measure,
                 null,
-                sharedMeasure);
+                measureNumber);
         }
 
-        return PhysicalOnly(primitive);
-    }
-
-    /// <summary>
-    /// A still-unclassified primitive is measure-wide only when it belongs horizontally to one
-    /// measure and intersects/spans a vertical gap between adjacent parts of that measure.
-    /// This captures cross-staff geometry without pretending that it belongs to either staff.
-    /// </summary>
-    private static int? TryResolveMeasureOnly(RectD bounds, PartMeasureMap map)
-    {
-        var candidateMeasures = map.Blocks
-            .Where(x => bounds.IntersectsHorizontally(x.PhysicalBounds.Left, x.PhysicalBounds.Right))
-            .Select(x => x.MeasureNumber)
-            .Distinct()
-            .ToArray();
-
-        if (candidateMeasures.Length != 1)
-            return null;
-
-        var measureNumber = candidateMeasures[0];
-        var blocks = map.GetMeasureBlocks(measureNumber)
-            .OrderBy(x => x.PhysicalBounds.Top)
-            .ToArray();
-
-        for (var i = 0; i < blocks.Length - 1; i++)
-        {
-            var gapTop = blocks[i].PhysicalBounds.Bottom;
-            var gapBottom = blocks[i + 1].PhysicalBounds.Top;
-            if (gapBottom < gapTop)
-                (gapTop, gapBottom) = (gapBottom, gapTop);
-
-            if (bounds.Bottom >= gapTop && bounds.Top <= gapBottom)
-                return measureNumber;
-        }
-
-        return null;
-    }
-
-    private static ResolvedPrimitive PhysicalOnly(
-        RawPrimitive primitive,
-        PrimitiveKind kind = PrimitiveKind.Content) =>
-        new(
+        // This should only happen for a malformed/empty logical map.
+        return new ResolvedPrimitive(
             primitive.Id,
             primitive.Bounds,
             PrimitiveLogicalScope.PhysicalOnly,
             null,
-            null,
-            kind);
+            null);
+    }
+
+    private static int? ResolveNearestMeasure(RectD bounds, PartMeasureMap map)
+    {
+        if (map.Blocks.Count == 0)
+            return null;
+
+        var measureBounds = map.Blocks
+            .GroupBy(x => x.MeasureNumber)
+            .Select(group => new
+            {
+                MeasureNumber = group.Key,
+                Bounds = new RectD(
+                    group.Min(x => x.PhysicalBounds.Left),
+                    group.Min(x => x.PhysicalBounds.Top),
+                    group.Max(x => x.PhysicalBounds.Right),
+                    group.Max(x => x.PhysicalBounds.Bottom))
+            })
+            .ToArray();
+
+        var centerX = bounds.CenterX;
+        var horizontalCandidates = measureBounds
+            .Where(x => centerX >= x.Bounds.Left && centerX <= x.Bounds.Right)
+            .ToArray();
+
+        var candidates = horizontalCandidates.Length > 0
+            ? horizontalCandidates
+            : measureBounds;
+
+        return candidates
+            .OrderBy(x => RectangleDistance(bounds, x.Bounds))
+            .ThenBy(x => Math.Abs(bounds.CenterX - x.Bounds.CenterX))
+            .Select(x => (int?)x.MeasureNumber)
+            .FirstOrDefault();
+    }
+
+    private static double RectangleDistance(RectD a, RectD b)
+    {
+        var dx = a.Right < b.Left
+            ? b.Left - a.Right
+            : b.Right < a.Left
+                ? a.Left - b.Right
+                : 0;
+
+        var dy = a.Bottom < b.Top
+            ? b.Top - a.Bottom
+            : b.Bottom < a.Top
+                ? a.Top - b.Bottom
+                : 0;
+
+        return Math.Sqrt(dx * dx + dy * dy);
+    }
 
     private void SplitContours(Shim.SKPicture picture)
     {
@@ -220,10 +225,14 @@ public sealed class PrimitiveResolver
 
                 case Shim.DrawPathCanvasCommand drawPath when drawPath.Path is not null:
                 {
-                    var bounds = matrix.MapRect(drawPath.Path.Bounds);
+                    var mappedBounds = matrix.MapRect(drawPath.Path.Bounds);
                     primitives.Add(new RawPrimitive(
                         primitives.Count,
-                        new RectD(bounds.Left, bounds.Top, bounds.Right, bounds.Bottom)));
+                        new RectD(
+                            mappedBounds.Left,
+                            mappedBounds.Top,
+                            mappedBounds.Right,
+                            mappedBounds.Bottom)));
                     break;
                 }
 
