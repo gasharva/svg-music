@@ -4,6 +4,8 @@ contours: 2
 points: 282
 skeleton points: 228
 skeleton segments: 224
+skeleton polylines: 5
+skeleton simplified points: 25
 vector result: none (Open-set rejection: nearest/ref=0.918 (max 0.72), margin/ref=0.541 (min 0.2).)
 legacy IoU result: G 24.2 %
 
