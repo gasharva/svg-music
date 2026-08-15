@@ -3,7 +3,7 @@ using SvgSymbols.Models;
 using SvgSymbols.Services;
 
 var root = FindRepositoryRoot(AppContext.BaseDirectory);
-var outputRoot = Path.Combine(root, "Experiments", "SvgSymbols");
+var outputRoot = Path.Combine(root, "SvgSymbols");
 var samplesRoot = Path.Combine(outputRoot, "Samples");
 var referenceGlyphs = Path.Combine(root, "References", "glyphs");
 var rhythmRoot = Path.Combine(samplesRoot, "Rhythm");
@@ -93,9 +93,6 @@ Console.WriteLine($"Gallery: {fullGalleryPath}");
 
 static bool IsRhythmNumberSample(SymbolSource source)
 {
-    // Wikimedia's SVG Time signatures category contains Music0.svg ... Music9.svg,
-    // plus useful compound forms such as Music10.svg, Music12.svg, Music16.svg and Music32.svg.
-    // Exclude fraction/example files such as Music1-2.svg: here we want only the glyph/number itself.
     return Regex.IsMatch(
         source.FileName,
         @"^Music\d+\.svg$",
