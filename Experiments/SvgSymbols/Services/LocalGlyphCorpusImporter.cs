@@ -55,8 +55,13 @@ public sealed class LocalGlyphCorpusImporter
         if (stem.StartsWith("uni", StringComparison.OrdinalIgnoreCase))
             return false;
 
-        // No clef of any kind belongs in the negative corpus.
+        // Clefs are positive samples elsewhere.
         if (stem.Contains("clef", StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        // timeSig0..9 are now used as a second positive rhythm-number family,
+        // so keeping them in the negative corpus would poison the experiment.
+        if (stem.StartsWith("timeSig", StringComparison.OrdinalIgnoreCase))
             return false;
 
         return true;
@@ -67,7 +72,6 @@ public sealed class LocalGlyphCorpusImporter
         if (name.StartsWith("accidental", StringComparison.OrdinalIgnoreCase)) return "Accidental";
         if (name.StartsWith("notehead", StringComparison.OrdinalIgnoreCase)) return "Notehead";
         if (name.StartsWith("rest", StringComparison.OrdinalIgnoreCase)) return "Rest";
-        if (name.StartsWith("timeSig", StringComparison.OrdinalIgnoreCase)) return "Time signature";
         if (name.StartsWith("flag", StringComparison.OrdinalIgnoreCase)) return "Flag";
         if (name.StartsWith("artic", StringComparison.OrdinalIgnoreCase)) return "Articulation";
         if (name.StartsWith("dynamic", StringComparison.OrdinalIgnoreCase)) return "Dynamic";
