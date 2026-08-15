@@ -1,10 +1,11 @@
+using System.Globalization;
 using SkiaSharp;
 using Svg.Skia;
 using SvgStructure.Models;
 
 namespace SvgStructure.Services;
 
-/// <summary>Diagnostic only. Dims the score and redraws recognized meters at full intensity.</summary>
+/// <summary>Diagnostic only. Dims the score and redraws recognized meters and clefs at full intensity.</summary>
 public sealed class MeterOverlayRenderer
 {
     private const float RenderScale = 2f;
@@ -12,6 +13,7 @@ public sealed class MeterOverlayRenderer
     public string Render(
         PartMeasureResolution structure,
         IReadOnlyList<MeterResolution> meters,
+        IReadOnlyList<ClefResolution> clefs,
         string outputPath)
     {
         using var svg = SKSvg.CreateFromFile(structure.SvgPath);
@@ -36,23 +38,18 @@ public sealed class MeterOverlayRenderer
 
         foreach (var meter in meters)
         {
-            var r = meter.PhysicalBounds;
-            var clip = new SKRect((float)r.Left, (float)r.Top, (float)r.Right, (float)r.Bottom);
-            canvas.Save();
-            canvas.ClipRect(clip);
-            canvas.DrawPicture(picture);
-            canvas.Restore();
+            RedrawRegion(canvas, picture, meter.PhysicalBounds);
+            using var border = Border(SKColors.DeepPink);
+            canvas.DrawRect(ToRect(meter.PhysicalBounds), border);
+            DrawMeterLabel(canvas, meter, bounds);
+        }
 
-            using var border = new SKPaint
-            {
-                Color = SKColors.DeepPink,
-                Style = SKPaintStyle.Stroke,
-                StrokeWidth = 1.5f,
-                IsAntialias = true
-            };
-            canvas.DrawRect(clip, border);
-
-            DrawLabel(canvas, meter, bounds);
+        foreach (var clef in clefs)
+        {
+            RedrawRegion(canvas, picture, clef.PhysicalBounds);
+            using var border = Border(SKColors.DodgerBlue);
+            canvas.DrawRect(ToRect(clef.PhysicalBounds), border);
+            DrawClefLabel(canvas, clef, bounds);
         }
 
         Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
@@ -63,55 +60,141 @@ public sealed class MeterOverlayRenderer
         return outputPath;
     }
 
-    private static void DrawLabel(SKCanvas canvas, MeterResolution meter, SKRect page)
+    private static void RedrawRegion(SKCanvas canvas, SKPicture picture, RectD region)
+    {
+        var clip = ToRect(region);
+        canvas.Save();
+        canvas.ClipRect(clip);
+        canvas.DrawPicture(picture);
+        canvas.Restore();
+    }
+
+    private static SKPaint Border(SKColor color) => new()
+    {
+        Color = color,
+        Style = SKPaintStyle.Stroke,
+        StrokeWidth = 1.5f,
+        IsAntialias = true
+    };
+
+    private static SKRect ToRect(RectD r) =>
+        new((float)r.Left, (float)r.Top, (float)r.Right, (float)r.Bottom);
+
+    private static void DrawMeterLabel(SKCanvas canvas, MeterResolution meter, SKRect page)
     {
         var b = meter.PhysicalBounds;
-        var digitHeight = (float)Math.Max(8, Math.Min(18, b.Height * 0.34));
-        var digitWidth = digitHeight * 0.58f;
-        var spacing = digitWidth * 0.24f;
-        var text = $"{meter.BeatNumber}-{meter.BeatValue}";
-        var totalWidth = text.Sum(ch => ch == '-' ? digitWidth * 0.55f : digitWidth + spacing);
+        var height = (float)Math.Max(8, Math.Min(18, b.Height * 0.34));
+        DrawVectorLabel(
+            canvas,
+            $"{meter.BeatNumber}-{meter.BeatValue}",
+            b.Left,
+            b.Top,
+            b.Bottom,
+            height,
+            SKColors.DeepPink,
+            page);
+    }
 
-        var x = (float)Math.Clamp(b.Left, page.Left + 2, Math.Max(page.Left + 2, page.Right - totalWidth - 2));
-        var preferredTop = b.Top - digitHeight - 3;
-        var y = (float)(preferredTop >= page.Top ? preferredTop : Math.Min(page.Bottom - digitHeight - 2, b.Bottom + 3));
+    private static void DrawClefLabel(SKCanvas canvas, ClefResolution clef, SKRect page)
+    {
+        var b = clef.PhysicalBounds;
+        var logical = clef.LogicalBounds;
+        var left = logical.Left?.ToString("0.0", CultureInfo.InvariantCulture) ?? "?";
+        var right = logical.Right?.ToString("0.0", CultureInfo.InvariantCulture) ?? "?";
+        var top = logical.Top.ToString("0.0", CultureInfo.InvariantCulture);
+        var bottom = logical.Bottom.ToString("0.0", CultureInfo.InvariantCulture);
+        var text = $"{clef.Kind} X{left}-{right} Y{top}-{bottom}";
+        var height = (float)Math.Max(7, Math.Min(12, b.Height * 0.18));
+        DrawVectorLabel(canvas, text, b.Left, b.Top, b.Bottom, height, SKColors.DodgerBlue, page);
+    }
 
-        using var background = new SKPaint { Color = new SKColor(255, 255, 255, 235) };
-        canvas.DrawRoundRect(
-            new SKRect(x - 2, y - 2, x + totalWidth + 2, y + digitHeight + 2),
-            2,
-            2,
-            background);
+    private static void DrawVectorLabel(
+        SKCanvas canvas,
+        string text,
+        double left,
+        double top,
+        double bottom,
+        float height,
+        SKColor color,
+        SKRect page)
+    {
+        var charWidth = height * 0.58f;
+        var spacing = charWidth * 0.24f;
+        var totalWidth = text.Sum(ch => CharAdvance(ch, charWidth, spacing));
+        var x = (float)Math.Clamp(left, page.Left + 2, Math.Max(page.Left + 2, page.Right - totalWidth - 2));
+        var preferredTop = top - height - 3;
+        var y = (float)(preferredTop >= page.Top ? preferredTop : Math.Min(page.Bottom - height - 2, bottom + 3));
+
+        using var background = new SKPaint { Color = new SKColor(255, 255, 255, 238) };
+        canvas.DrawRoundRect(new SKRect(x - 2, y - 2, x + totalWidth + 2, y + height + 2), 2, 2, background);
 
         using var paint = new SKPaint
         {
-            Color = SKColors.DeepPink,
+            Color = color,
             Style = SKPaintStyle.Stroke,
-            StrokeWidth = Math.Max(1.2f, digitHeight * 0.10f),
+            StrokeWidth = Math.Max(1.0f, height * 0.09f),
             StrokeCap = SKStrokeCap.Round,
             IsAntialias = true
         };
 
         foreach (var ch in text)
         {
-            if (ch == '-')
-            {
-                canvas.DrawLine(x, y + digitHeight * 0.5f, x + digitWidth * 0.45f, y + digitHeight * 0.5f, paint);
-                x += digitWidth * 0.55f;
-                continue;
-            }
+            DrawChar(canvas, char.ToUpperInvariant(ch), x, y, charWidth, height, paint);
+            x += CharAdvance(ch, charWidth, spacing);
+        }
+    }
 
-            DrawDigit(canvas, ch - '0', x, y, digitWidth, digitHeight, paint);
-            x += digitWidth + spacing;
+    private static float CharAdvance(char ch, float width, float spacing) =>
+        ch == ' ' ? width * 0.55f : width + spacing;
+
+    private static void DrawChar(SKCanvas canvas, char ch, float x, float y, float w, float h, SKPaint paint)
+    {
+        if (char.IsDigit(ch))
+        {
+            DrawDigit(canvas, ch - '0', x, y, w, h, paint);
+            return;
+        }
+
+        switch (ch)
+        {
+            case '-': canvas.DrawLine(x, y + h * .5f, x + w * .75f, y + h * .5f, paint); break;
+            case '.': canvas.DrawPoint(x + w * .35f, y + h, paint); break;
+            case '?':
+                canvas.DrawLine(x, y, x + w, y, paint);
+                canvas.DrawLine(x + w, y, x + w, y + h * .45f, paint);
+                canvas.DrawLine(x + w, y + h * .45f, x + w * .45f, y + h * .65f, paint);
+                canvas.DrawPoint(x + w * .45f, y + h, paint);
+                break;
+            case 'G':
+                canvas.DrawOval(new SKRect(x, y, x + w, y + h), paint);
+                canvas.DrawLine(x + w * .52f, y + h * .55f, x + w, y + h * .55f, paint);
+                canvas.DrawLine(x + w, y + h * .55f, x + w, y + h * .82f, paint);
+                break;
+            case 'F':
+                canvas.DrawLine(x, y, x, y + h, paint);
+                canvas.DrawLine(x, y, x + w, y, paint);
+                canvas.DrawLine(x, y + h * .48f, x + w * .75f, y + h * .48f, paint);
+                break;
+            case 'C':
+                canvas.DrawArc(new SKRect(x, y, x + w, y + h), 45, 270, false, paint);
+                break;
+            case 'X':
+                canvas.DrawLine(x, y, x + w, y + h, paint);
+                canvas.DrawLine(x + w, y, x, y + h, paint);
+                break;
+            case 'Y':
+                canvas.DrawLine(x, y, x + w * .5f, y + h * .5f, paint);
+                canvas.DrawLine(x + w, y, x + w * .5f, y + h * .5f, paint);
+                canvas.DrawLine(x + w * .5f, y + h * .5f, x + w * .5f, y + h, paint);
+                break;
         }
     }
 
     private static void DrawDigit(SKCanvas canvas, int digit, float x, float y, float w, float h, SKPaint paint)
     {
-        // Seven-segment label: avoids any font dependency on the CI runner.
         var segments = digit switch
         {
-            0 => "ab cdef".Replace(" ", ""),
+            0 => "abcdef",
             1 => "bc",
             2 => "abdeg",
             3 => "abcdg",

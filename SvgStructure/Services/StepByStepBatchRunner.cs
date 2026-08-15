@@ -22,14 +22,17 @@ public sealed record StepByStepItemResult(
     int MeasurePrimitiveCount = 0,
     int PhysicalOnlyPrimitiveCount = 0,
     int MeterCount = 0,
+    int ClefCount = 0,
     string? Error = null);
 
 public sealed class StepByStepBatchRunner
 {
     public const string ArtifactsDirectoryName = "_artifacts";
+    public const int DefaultSubdivisionsPerBeat = 8;
 
     private readonly PartMeasureResolver _partMeasureResolver = new();
     private readonly PrimitiveResolver _primitiveResolver = new(0.25);
+    private readonly LogicalGridResolver _logicalGridResolver = new(DefaultSubdivisionsPerBeat);
     private readonly PartMeasureOverlayRenderer _partMeasureOverlayRenderer = new();
     private readonly PrimitiveOverlayRenderer _primitiveOverlayRenderer = new();
     private readonly MeterOverlayRenderer _meterOverlayRenderer = new();
@@ -45,12 +48,19 @@ public sealed class StepByStepBatchRunner
         Directory.CreateDirectory(artifactsFolder);
 
         var repositoryRoot = FindRepositoryRoot(inputFolder);
-        var meterWork = Path.Combine(Path.GetTempPath(), $"svg-music-meter-{Guid.NewGuid():N}");
+        var recognizerWork = Path.Combine(Path.GetTempPath(), $"svg-music-recognizers-{Guid.NewGuid():N}");
+        var glyphs = Path.Combine(repositoryRoot, "References", "glyphs");
+
         var baseNumberRecognizer = new BravuraNumberRecognizer(
-            Path.Combine(repositoryRoot, "References", "glyphs"),
-            meterWork);
+            glyphs,
+            Path.Combine(recognizerWork, "meter"));
         var diagnosticNumberRecognizer = new DiagnosticNumberRecognizer(baseNumberRecognizer);
         var meterResolver = new MeterResolver(diagnosticNumberRecognizer);
+
+        var clefRecognizer = new BravuraClefRecognizer(
+            glyphs,
+            Path.Combine(recognizerWork, "clef"));
+        var clefResolver = new ClefResolver(clefRecognizer);
 
         try
         {
@@ -61,7 +71,12 @@ public sealed class StepByStepBatchRunner
 
             var items = new List<StepByStepItemResult>();
             foreach (var svgPath in svgFiles)
-                items.Add(Process(svgPath, artifactsFolder, meterResolver, diagnosticNumberRecognizer));
+                items.Add(Process(
+                    svgPath,
+                    artifactsFolder,
+                    meterResolver,
+                    clefResolver,
+                    diagnosticNumberRecognizer));
 
             var htmlReportPath = Path.Combine(artifactsFolder, "index.html");
             var markdownReportPath = Path.Combine(artifactsFolder, "README.md");
@@ -77,7 +92,7 @@ public sealed class StepByStepBatchRunner
         }
         finally
         {
-            try { if (Directory.Exists(meterWork)) Directory.Delete(meterWork, recursive: true); }
+            try { if (Directory.Exists(recognizerWork)) Directory.Delete(recognizerWork, recursive: true); }
             catch { }
         }
     }
@@ -86,6 +101,7 @@ public sealed class StepByStepBatchRunner
         string svgPath,
         string artifactsFolder,
         MeterResolver meterResolver,
+        ClefResolver clefResolver,
         DiagnosticNumberRecognizer diagnosticNumberRecognizer)
     {
         var fileName = Path.GetFileName(svgPath);
@@ -100,14 +116,20 @@ public sealed class StepByStepBatchRunner
             var structure = _partMeasureResolver.Resolve(svgPath);
             var primitives = _primitiveResolver.Resolve(structure);
 
-            // From this point on diagnostics are generated from the resolved contours only.
-            // These PNGs are the exact shapes passed to ISvgNumberRecognizer by MeterResolver.
             diagnosticNumberRecognizer.BeginDocument(Path.Combine(itemDirectory, "meter-inputs"));
 
             var meters = structure.Map.Blocks
                 .Select(block => meterResolver.Resolve(block, primitives))
                 .Where(x => x is not null)
                 .Select(x => x!)
+                .ToArray();
+
+            // Meter is the first semantic symbol that lets us complete the fine logical grid.
+            // From here on later resolvers compare positions in logical coordinates, not SVG pixels.
+            var logicalGrid = _logicalGridResolver.Resolve(structure, meters);
+
+            var clefs = structure.Map.Blocks
+                .SelectMany(block => clefResolver.Resolve(block, primitives, logicalGrid))
                 .ToArray();
 
             _partMeasureOverlayRenderer.Render(
@@ -119,6 +141,7 @@ public sealed class StepByStepBatchRunner
             _meterOverlayRenderer.Render(
                 structure,
                 meters,
+                clefs,
                 Path.Combine(itemDirectory, "meters.png"));
 
             WriteResolutionJson(
@@ -126,7 +149,9 @@ public sealed class StepByStepBatchRunner
                 fileName,
                 structure,
                 primitives,
-                meters);
+                meters,
+                logicalGrid,
+                clefs);
 
             return new StepByStepItemResult(
                 fileName,
@@ -138,7 +163,8 @@ public sealed class StepByStepBatchRunner
                 primitives.PartMeasurePrimitives.Count,
                 primitives.MeasurePrimitives.Count,
                 primitives.PhysicalOnlyPrimitives.Count,
-                meters.Length);
+                meters.Length,
+                clefs.Length);
         }
         catch (Exception ex)
         {
@@ -154,7 +180,9 @@ public sealed class StepByStepBatchRunner
         string fileName,
         PartMeasureResolution structure,
         PrimitiveResolution primitives,
-        IReadOnlyList<MeterResolution> meters)
+        IReadOnlyList<MeterResolution> meters,
+        LogicalGridResolution logicalGrid,
+        IReadOnlyList<ClefResolution> clefs)
     {
         var payload = new
         {
@@ -177,7 +205,23 @@ public sealed class StepByStepBatchRunner
                 x.PhysicalBounds,
                 contourPointCount = x.Contour.Points.Count
             }),
-            meters
+            meters,
+            logicalGrid = new
+            {
+                subdivisionsPerBeat = DefaultSubdivisionsPerBeat,
+                blocks = logicalGrid.Blocks.Select(x => new
+                {
+                    x.PartNumber,
+                    x.MeasureNumber,
+                    x.BeatNumber,
+                    x.BeatValue,
+                    x.SubdivisionsPerBeat,
+                    x.HorizontalUnits,
+                    x.HalfStaffSpace,
+                    x.PhysicalBounds
+                })
+            },
+            clefs
         };
 
         File.WriteAllText(
