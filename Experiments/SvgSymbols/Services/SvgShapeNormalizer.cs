@@ -60,6 +60,26 @@ public sealed class SvgShapeNormalizer
             if (merged is null || merged.IsEmpty)
                 throw new InvalidOperationException($"No drawable paths found in '{sourcePath}'.");
 
+            // Some Wikimedia SVGs keep a whole strip/sprite of glyph geometry outside the
+            // visible SVG viewport. Svg.Skia correctly clips it while rendering, but our
+            // previous manual DrawPath walk ignored that clipping and therefore exposed the
+            // neighbouring digits in the normalized output. Clip the merged geometry to the
+            // root picture's cull rect before Simplify(), so normalization describes only what
+            // is actually visible in this SVG.
+            var cull = picture.CullRect;
+            if (cull.Width > 0 && cull.Height > 0)
+            {
+                using var viewport = new Skia.SKPath();
+                viewport.AddRect(new Skia.SKRect(cull.Left, cull.Top, cull.Right, cull.Bottom));
+
+                var clipped = merged.Op(viewport, Skia.SKPathOp.Intersect);
+                if (clipped is not null)
+                {
+                    merged.Dispose();
+                    merged = clipped;
+                }
+            }
+
             var simplified = merged.Simplify();
             if (simplified is null)
                 return merged;
@@ -73,6 +93,66 @@ public sealed class SvgShapeNormalizer
             merged?.Dispose();
             throw;
         }
+    }
+
+    /// <summary>
+    /// Normalizes already extracted raw vector contours. This is the entry point intended for
+    /// the eventual score classifier: callers do not need to reconstruct an SVG document first.
+    /// Contours are expected in one common coordinate system.
+    /// </summary>
+    public Skia.SKPath NormalizeContours(IReadOnlyList<IReadOnlyList<System.Numerics.Vector2>> contours)
+    {
+        Skia.SKPath? merged = null;
+        try
+        {
+            foreach (var contour in contours)
+            {
+                if (contour.Count < 3)
+                    continue;
+
+                using var path = new Skia.SKPath();
+                path.MoveTo(contour[0].X, contour[0].Y);
+                for (var i = 1; i < contour.Count; i++)
+                    path.LineTo(contour[i].X, contour[i].Y);
+                path.Close();
+
+                if (merged is null)
+                {
+                    merged = new Skia.SKPath();
+                    merged.AddPath(path);
+                    continue;
+                }
+
+                var union = merged.Op(path, Skia.SKPathOp.Union);
+                if (union is null)
+                    continue;
+
+                merged.Dispose();
+                merged = union;
+            }
+
+            if (merged is null || merged.IsEmpty)
+                throw new InvalidOperationException("No usable raw contours were supplied.");
+
+            var simplified = merged.Simplify();
+            if (simplified is null)
+                return merged;
+
+            merged.Dispose();
+            merged = null;
+            return simplified;
+        }
+        catch
+        {
+            merged?.Dispose();
+            throw;
+        }
+    }
+
+    public void WriteNormalizedPath(Skia.SKPath path, string outputPath)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
+        WriteSvg(path, outputPath);
     }
 
     private static void ReadPicture(
@@ -173,9 +253,6 @@ public sealed class SvgShapeNormalizer
 
                 case Shim.ArcToPathCommand arc when hasCurrent:
                 {
-                    // Svg.Skia glyph paths are overwhelmingly cubic/linear. The shim ArcTo
-                    // command does not expose a directly compatible SkiaSharp overload here,
-                    // so preserve connectivity by using the arc endpoint.
                     var p = Map(matrix, arc.X, arc.Y);
                     result.LineTo(p);
                     current = p;
@@ -198,8 +275,6 @@ public sealed class SvgShapeNormalizer
                     break;
 
                 case Shim.AddRoundRectPathCommand roundRect:
-                    // For normalization we only need the filled silhouette. Preserve the outer
-                    // extent if a round-rect primitive appears in a source glyph.
                     AddRect(result, roundRect.Rect, matrix);
                     hasCurrent = false;
                     break;
