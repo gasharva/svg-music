@@ -11,11 +11,16 @@ namespace SvgStructure.Services;
 public sealed class ClefResolver
 {
     private readonly IClefRecognizer _recognizer;
+    private readonly ClefCandidateSanity _sanity;
     private readonly double _minimumConfidence;
 
-    public ClefResolver(IClefRecognizer recognizer, double minimumConfidence = 0.16)
+    public ClefResolver(
+        IClefRecognizer recognizer,
+        ClefCandidateSanity? sanity = null,
+        double minimumConfidence = 0.16)
     {
         _recognizer = recognizer;
+        _sanity = sanity ?? new ClefCandidateSanity();
         _minimumConfidence = minimumConfidence;
     }
 
@@ -33,10 +38,9 @@ public sealed class ClefResolver
                 x.Scope == PrimitiveLogicalScope.PartMeasure &&
                 x.PartNumber == block.PartNumber &&
                 x.MeasureNumber == block.MeasureNumber)
-            .Where(x => x.PhysicalBounds.Height >= h * 0.52)
-            .Where(x => x.PhysicalBounds.Height <= h * 3.10)
-            .Where(x => x.PhysicalBounds.Width >= h * 0.10)
+            .Where(x => x.PhysicalBounds.Width >= h * 0.08)
             .Where(x => x.PhysicalBounds.Width <= h * 1.80)
+            .Where(x => _sanity.Accept(logicalBlock.ToLogical(x.PhysicalBounds)))
             .OrderBy(x => x.PhysicalBounds.Left)
             .ToArray();
 
@@ -46,6 +50,18 @@ public sealed class ClefResolver
         var recognized = new List<ScoredClef>();
         foreach (var candidate in BuildCandidates(available, h))
         {
+            var logicalBounds = logicalBlock.ToLogical(candidate.Bounds);
+            if (!_sanity.Accept(logicalBounds))
+                continue;
+
+            if (_recognizer is DiagnosticClefRecognizer diagnostic)
+            {
+                diagnostic.SetNextContext(new ClefDiagnosticContext(
+                    block.PartNumber,
+                    block.MeasureNumber,
+                    logicalBounds));
+            }
+
             var recognition = _recognizer.Recognize(ToContours(candidate.Primitives));
             if (recognition.Symbol is null || recognition.Confidence < _minimumConfidence)
                 continue;
@@ -58,7 +74,6 @@ public sealed class ClefResolver
                 _ => throw new ArgumentOutOfRangeException()
             };
 
-            var logicalBounds = logicalBlock.ToLogical(candidate.Bounds);
             recognized.Add(new ScoredClef(
                 new ClefResolution(
                     block.PartNumber,
@@ -70,8 +85,6 @@ public sealed class ClefResolver
                 recognition.Confidence));
         }
 
-        // The same physical clef may be represented by an anchor alone and by an anchor+dots cluster.
-        // Keep the strongest overlapping interpretation.
         var result = new List<ClefResolution>();
         foreach (var item in recognized.OrderByDescending(x => x.Score))
         {
