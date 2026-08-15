@@ -74,11 +74,6 @@ public sealed class PrimitiveOverlayRenderer
             if (!commands.TryGetValue(primitive.Id, out var command) || command.Paint is null)
                 continue;
 
-            // Keep staff lines and deliberately rejected giant garbage untouched: they are not
-            // logical recognition output, only physical SVG infrastructure/noise.
-            if (primitive.Kind is PrimitiveKind.StaffLine or PrimitiveKind.Garbage)
-                continue;
-
             var color = primitive.Scope switch
             {
                 PrimitiveLogicalScope.PartMeasure => GetBlockColor(
