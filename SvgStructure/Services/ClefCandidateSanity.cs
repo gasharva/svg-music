@@ -3,28 +3,31 @@ using SvgStructure.Models;
 namespace SvgStructure.Services;
 
 /// <summary>
-/// Cheap logical-size sanity gate before invoking the expensive clef recognizer.
-/// X/Y are expressed in the logical P+M grid, so these limits are independent of SVG scale
-/// and of where inside the measure the clef happens to be drawn.
+/// Cheap size sanity gate before invoking the expensive clef recognizer.
+/// Vertical size is expressed in logical Y (half staff-spaces), which is stable across the score.
+/// Horizontal size must NOT use logical X: logical X is measure-relative and the same clef becomes
+/// numerically narrower in a physically wide measure. Instead we use width relative to staff height.
 /// </summary>
 public sealed class ClefCandidateSanity
 {
-    public double MinimumLogicalHeight { get; init; } = 8.0;
+    // F clefs are substantially shorter than G clefs. In our real samples an F clef is about
+    // 6.6 logical Y units high, while a G clef is around 14.8.
+    public double MinimumLogicalHeight { get; init; } = 5.5;
     public double MaximumLogicalHeight { get; init; } = 22.0;
-    public double MinimumLogicalWidth { get; init; } = 1.10;
-    public double MaximumLogicalWidth { get; init; } = 4.50;
 
-    public bool Accept(LogicalRectD bounds)
+    // Width is normalized by physical staff height, not by logical X.
+    // This rejects thin arpeggiation waves while remaining independent of measure width/meter.
+    public double MinimumWidthPerStaffHeight { get; init; } = 0.28;
+    public double MaximumWidthPerStaffHeight { get; init; } = 1.80;
+
+    public bool Accept(LogicalRectD logicalBounds, RectD physicalBounds, double staffHeight)
     {
-        if (bounds.Left is null || bounds.Right is null)
-            return false;
+        var logicalHeight = logicalBounds.Bottom - logicalBounds.Top;
+        var normalizedWidth = physicalBounds.Width / Math.Max(1e-9, staffHeight);
 
-        var width = bounds.Right.Value - bounds.Left.Value;
-        var height = bounds.Bottom - bounds.Top;
-
-        return height >= MinimumLogicalHeight &&
-               height <= MaximumLogicalHeight &&
-               width >= MinimumLogicalWidth &&
-               width <= MaximumLogicalWidth;
+        return logicalHeight >= MinimumLogicalHeight &&
+               logicalHeight <= MaximumLogicalHeight &&
+               normalizedWidth >= MinimumWidthPerStaffHeight &&
+               normalizedWidth <= MaximumWidthPerStaffHeight;
     }
 }
