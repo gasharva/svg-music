@@ -1,7 +1,8 @@
 name: MXL credit-image smoke test
 
+# Legacy workflow kept for reference. Automatic CI is intentionally disabled.
 on:
-  pull_request:
+  workflow_dispatch:
 
 jobs:
   mxl-image-smoke:
