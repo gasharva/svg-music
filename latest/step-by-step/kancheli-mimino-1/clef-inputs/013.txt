@@ -2,7 +2,7 @@ block: P1-M18
 logical bbox: X 10.24..11.32, Y -5.79..1.35
 contours: 2
 points: 763
-result: F 5.5 %
+result: none (Open-set rejection: nearest/ref=0.918 (max 0.72), margin/ref=0.541 (min 0.2).)
 
 candidates:
 F: confidence=5.45 %, distance=17.445
