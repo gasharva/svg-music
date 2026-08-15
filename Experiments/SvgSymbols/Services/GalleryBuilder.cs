@@ -14,11 +14,12 @@ public sealed class GalleryBuilder
         string rootDirectory,
         IReadOnlyList<SymbolSource> treble,
         IReadOnlyList<SymbolSource> bass,
+        IReadOnlyList<SymbolSource> rhythm,
         IReadOnlyList<SymbolSource> other,
         CancellationToken cancellationToken = default)
     {
         var path = Path.Combine(rootDirectory, "gallery.html");
-        var all = AnalyzeAll(rootDirectory, treble, bass, other);
+        var all = AnalyzeAll(rootDirectory, treble, bass, rhythm, other);
         var html = new StringBuilder();
 
         html.AppendLine("<!doctype html>");
@@ -40,6 +41,7 @@ public sealed class GalleryBuilder
 
         AppendSection(html, all, "Treble / G clef", "Treble", treble, "Wikimedia source", true);
         AppendSection(html, all, "Bass / F clef", "Bass", bass, "Wikimedia source", true);
+        AppendSection(html, all, "Time-signature numbers", "Rhythm", rhythm, "Wikimedia source", true);
         AppendSection(html, all, "Other musical symbols (negative/control corpus)", "Other", other, "Reference glyph", false);
 
         html.AppendLine("<script>");
@@ -54,11 +56,13 @@ public sealed class GalleryBuilder
         string rootDirectory,
         IReadOnlyList<SymbolSource> treble,
         IReadOnlyList<SymbolSource> bass,
+        IReadOnlyList<SymbolSource> rhythm,
         IReadOnlyList<SymbolSource> other)
     {
         var result = new List<AnalyzedSymbol>();
         AnalyzeGroup(result, rootDirectory, "Treble", treble);
         AnalyzeGroup(result, rootDirectory, "Bass", bass);
+        AnalyzeGroup(result, rootDirectory, "Rhythm", rhythm);
         AnalyzeGroup(result, rootDirectory, "Other", other);
         return result;
     }
@@ -197,6 +201,7 @@ public sealed class GalleryBuilder
     {
         "Treble" => "G",
         "Bass" => "F",
+        "Rhythm" => "R",
         _ => "Other"
     };
 
