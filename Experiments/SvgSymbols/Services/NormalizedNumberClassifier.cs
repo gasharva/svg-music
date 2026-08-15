@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Numerics;
 using System.Text.RegularExpressions;
 using SvgSymbols.Models;
+using Skia = SkiaSharp;
 
 namespace SvgSymbols.Services;
 
@@ -24,12 +25,15 @@ public sealed record NumberReferenceModel(
     FourierDescriptor Fourier);
 
 /// <summary>
-/// Experimental whole-number classifier for time-signature numbers.
+/// Experimental classifier for time-signature numbers.
 ///
-/// Important difference from the previous DigitTopologyAnalyzer: this classifier never tries
-/// to split a candidate into digits. The complete raw silhouette is normalized with Skia
-/// PathOps and compared against complete known numbers (0..9, 10, 12, 16, 32, ...).
-/// This avoids confusing the hole in "0" with whitespace between two digits.
+/// Raw geometry is first normalized with Skia PathOps. The classifier then uses two views:
+///  1. whole-number shape matching against known complete numbers;
+///  2. when the normalized silhouette has a real full-height vertical gap, split it into two
+///     vector pieces and classify each piece against the known single digits.
+///
+/// The second path is deliberately applied only after normalization. Before normalization,
+/// Wikimedia's sprite-like SVG structure created many fake gaps and fake contours.
 /// </summary>
 public sealed class NormalizedNumberClassifier
 {
@@ -38,6 +42,9 @@ public sealed class NormalizedNumberClassifier
         RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
     private const double Temperature = 0.70;
+    private const int SeparatorSamples = 96;
+    private const double MinimumSeparatorWidthRatio = 0.025;
+    private const double MinimumSideWidthRatio = 0.12;
 
     private readonly SvgShapeNormalizer _normalizer = new();
     private readonly DigitStructuralFeatureExtractor _features = new();
@@ -77,7 +84,7 @@ public sealed class NormalizedNumberClassifier
             }
             catch
             {
-                // A single bad corpus item must not prevent the rest of the model from being built.
+                // One bad corpus item must not prevent the rest of the model from being built.
             }
         }
 
@@ -100,10 +107,6 @@ public sealed class NormalizedNumberClassifier
         }
     }
 
-    /// <summary>
-    /// Production-shaped entry point: raw vector contours in one coordinate system go in;
-    /// number + confidence come out. No SVG DOM and no rasterization are required here.
-    /// </summary>
     public NumberClassification Classify(
         IReadOnlyList<IReadOnlyList<Vector2>> rawContours,
         IReadOnlyList<NumberReferenceModel> model)
@@ -120,7 +123,7 @@ public sealed class NormalizedNumberClassifier
     }
 
     private NumberClassification ClassifyNormalizedPath(
-        SkiaSharp.SKPath normalized,
+        Skia.SKPath normalized,
         IReadOnlyList<NumberReferenceModel> model,
         string? excludeFileName)
     {
@@ -132,6 +135,25 @@ public sealed class NormalizedNumberClassifier
         if (usable.Length == 0)
             return new NumberClassification(null, 0, Array.Empty<NumberCandidate>(), "No usable number references.");
 
+        var whole = ClassifyWhole(normalized, usable);
+        var segmented = TryClassifyAsTwoDigits(normalized, usable);
+
+        if (segmented is null)
+            return whole;
+
+        // A real full-height separator in the already normalized filled silhouette is strong
+        // evidence for a compound number. Prefer digit-wise recognition unless it is extremely
+        // uncertain. Keep the whole-shape result as fallback and as an additional candidate.
+        if (segmented.Confidence >= 0.12 || whole.Value is >= 10)
+            return Merge(segmented, whole);
+
+        return whole;
+    }
+
+    private NumberClassification ClassifyWhole(
+        Skia.SKPath normalized,
+        IReadOnlyList<NumberReferenceModel> usable)
+    {
         var temp = Path.Combine(Path.GetTempPath(), $"svg-number-classifier-{Guid.NewGuid():N}.svg");
         try
         {
@@ -152,34 +174,171 @@ public sealed class NormalizedNumberClassifier
                 .OrderBy(x => x.Distance)
                 .ToArray();
 
-            if (nearestPerValue.Length == 0)
-                return new NumberClassification(null, 0, Array.Empty<NumberCandidate>(), "No comparable number references.");
-
-            var probabilities = Softmax(nearestPerValue.Select(x => x.Distance).ToArray());
-            var bestDistance = nearestPerValue[0].Distance;
-
-            // Softmax only says "best among available classes". Penalize a winner that is
-            // absolutely far from every known vector shape.
-            var absoluteQuality = Math.Exp(-bestDistance / 4.0);
-
-            var candidates = nearestPerValue
-                .Select((x, i) => new NumberCandidate(
-                    x.Reference.Value,
-                    x.Distance,
-                    Math.Clamp(probabilities[i] * absoluteQuality, 0d, 1d),
-                    x.Reference.FileName))
-                .OrderByDescending(x => x.Probability)
-                .Take(5)
-                .ToArray();
-
-            var best = candidates[0];
-            return new NumberClassification(best.Value, best.Probability, candidates);
+            return BuildClassification(nearestPerValue
+                .Select(x => (x.Reference.Value, x.Distance, x.Reference.FileName))
+                .ToArray());
         }
         finally
         {
-            try { if (File.Exists(temp)) File.Delete(temp); }
-            catch { /* diagnostic experiment; temp cleanup failure is harmless */ }
+            TryDelete(temp);
         }
+    }
+
+    private NumberClassification? TryClassifyAsTwoDigits(
+        Skia.SKPath normalized,
+        IReadOnlyList<NumberReferenceModel> usable)
+    {
+        var split = TrySplitAtFullHeightGap(normalized);
+        if (split is null)
+            return null;
+
+        using var left = split.Value.Left;
+        using var right = split.Value.Right;
+
+        var singleDigitReferences = usable.Where(x => x.Value is >= 0 and <= 9).ToArray();
+        if (singleDigitReferences.Length == 0)
+            return null;
+
+        var leftResult = ClassifyWhole(left, singleDigitReferences);
+        var rightResult = ClassifyWhole(right, singleDigitReferences);
+        if (leftResult.Value is null || rightResult.Value is null)
+            return null;
+
+        var value = leftResult.Value.Value * 10 + rightResult.Value.Value;
+
+        // Musical time-signature numerators form a tiny domain. If the combined number is not
+        // represented by our corpus, treat digit segmentation as a hypothesis rather than
+        // inventing a new class.
+        if (!usable.Any(x => x.Value == value))
+            return null;
+
+        var confidence = Math.Sqrt(leftResult.Confidence * rightResult.Confidence);
+        var distance = -Math.Log(Math.Max(confidence, 1e-9));
+
+        var candidate = new NumberCandidate(
+            value,
+            distance,
+            confidence,
+            $"digits {leftResult.Value}+{rightResult.Value}");
+
+        return new NumberClassification(value, confidence, new[] { candidate });
+    }
+
+    private (Skia.SKPath Left, Skia.SKPath Right)? TrySplitAtFullHeightGap(Skia.SKPath path)
+    {
+        var bounds = path.Bounds;
+        if (bounds.Width <= 1e-6f || bounds.Height <= 1e-6f)
+            return null;
+
+        var sampleWidth = bounds.Width / SeparatorSamples;
+        var empty = new bool[SeparatorSamples];
+
+        for (var i = 1; i < SeparatorSamples - 1; i++)
+        {
+            var x0 = bounds.Left + i * sampleWidth;
+            var x1 = x0 + sampleWidth;
+
+            using var strip = new Skia.SKPath();
+            strip.AddRect(new Skia.SKRect(x0, bounds.Top, x1, bounds.Bottom));
+            using var intersection = path.Op(strip, Skia.SKPathOp.Intersect);
+            empty[i] = intersection is null || intersection.IsEmpty;
+        }
+
+        var bestStart = -1;
+        var bestEnd = -1;
+        var runStart = -1;
+
+        for (var i = 1; i < SeparatorSamples - 1; i++)
+        {
+            if (empty[i])
+            {
+                if (runStart < 0)
+                    runStart = i;
+                continue;
+            }
+
+            if (runStart >= 0)
+            {
+                if (bestStart < 0 || i - runStart > bestEnd - bestStart)
+                {
+                    bestStart = runStart;
+                    bestEnd = i;
+                }
+                runStart = -1;
+            }
+        }
+
+        if (runStart >= 0 && (bestStart < 0 || SeparatorSamples - 1 - runStart > bestEnd - bestStart))
+        {
+            bestStart = runStart;
+            bestEnd = SeparatorSamples - 1;
+        }
+
+        if (bestStart < 0)
+            return null;
+
+        var gapWidth = (bestEnd - bestStart) * sampleWidth;
+        if (gapWidth / bounds.Width < MinimumSeparatorWidthRatio)
+            return null;
+
+        var splitX = bounds.Left + (bestStart + bestEnd) * 0.5f * sampleWidth;
+        if ((splitX - bounds.Left) / bounds.Width < MinimumSideWidthRatio ||
+            (bounds.Right - splitX) / bounds.Width < MinimumSideWidthRatio)
+            return null;
+
+        using var leftRect = new Skia.SKPath();
+        leftRect.AddRect(new Skia.SKRect(bounds.Left, bounds.Top, splitX, bounds.Bottom));
+        using var rightRect = new Skia.SKPath();
+        rightRect.AddRect(new Skia.SKRect(splitX, bounds.Top, bounds.Right, bounds.Bottom));
+
+        var left = path.Op(leftRect, Skia.SKPathOp.Intersect);
+        var right = path.Op(rightRect, Skia.SKPathOp.Intersect);
+        if (left is null || right is null || left.IsEmpty || right.IsEmpty)
+        {
+            left?.Dispose();
+            right?.Dispose();
+            return null;
+        }
+
+        return (left, right);
+    }
+
+    private NumberClassification Merge(NumberClassification segmented, NumberClassification whole)
+    {
+        var byValue = segmented.Candidates
+            .Concat(whole.Candidates)
+            .GroupBy(x => x.Value)
+            .Select(group => group.OrderByDescending(x => x.Probability).First())
+            .OrderByDescending(x => x.Probability)
+            .Take(5)
+            .ToArray();
+
+        var winner = byValue[0];
+        return new NumberClassification(winner.Value, winner.Probability, byValue);
+    }
+
+    private NumberClassification BuildClassification(
+        IReadOnlyList<(int Value, double Distance, string Reference)> nearestPerValue)
+    {
+        if (nearestPerValue.Count == 0)
+            return new NumberClassification(null, 0, Array.Empty<NumberCandidate>(), "No comparable number references.");
+
+        var probabilities = Softmax(nearestPerValue.Select(x => x.Distance).ToArray());
+        var bestDistance = nearestPerValue[0].Distance;
+        var absoluteQuality = Math.Exp(-bestDistance / 4.0);
+
+        var candidates = nearestPerValue
+            .Select((x, i) => new NumberCandidate(
+                x.Value,
+                x.Distance,
+                Math.Clamp(probabilities[i] * absoluteQuality, 0d, 1d),
+                x.Reference))
+            .OrderByDescending(x => x.Probability)
+            .Take(5)
+            .ToArray();
+
+        var best = candidates[0];
+        return new NumberClassification(best.Value, best.Probability, candidates);
     }
 
     private double Distance(
@@ -189,14 +348,22 @@ public sealed class NormalizedNumberClassifier
     {
         var b = reference.Features;
 
-        // Topology and proportions dominate. Fourier remains a weak tie-breaker because our
-        // earlier experiment showed that its spectrum still carries a lot of font style.
         var distance = 0d;
         distance += 4.00 * Square(a.HoleCount - b.HoleCount);
         distance += 0.35 * Square(Math.Min(a.OuterContourCount, 8) - Math.Min(b.OuterContourCount, 8));
         distance += 1.80 * Square(LogRatio(a.AspectRatio, b.AspectRatio));
         distance += 2.20 * Square(a.FillRatio - b.FillRatio);
         distance += 0.80 * Square(a.NormalizedPerimeter - b.NormalizedPerimeter);
+
+        // Hole placement is highly semantic for digits: 6 and 9 both have one hole, but on
+        // opposite halves; 8 has two. After PathOps normalization these positions are stable.
+        var holeCount = Math.Min(a.Holes.Count, b.Holes.Count);
+        for (var i = 0; i < holeCount; i++)
+        {
+            distance += 2.2 * Square(a.Holes[i].CenterX - b.Holes[i].CenterX);
+            distance += 4.0 * Square(a.Holes[i].CenterY - b.Holes[i].CenterY);
+            distance += 1.0 * Square(a.Holes[i].AreaRatio - b.Holes[i].AreaRatio);
+        }
 
         var fourier = _fourierComparer.MagnitudeDistance(aFourier, reference.Fourier);
         distance += 0.30 * Math.Min(fourier, 20d);
@@ -222,6 +389,12 @@ public sealed class NormalizedNumberClassifier
         a = Math.Max(a, 1e-9);
         b = Math.Max(b, 1e-9);
         return Math.Log(a / b);
+    }
+
+    private static void TryDelete(string path)
+    {
+        try { if (File.Exists(path)) File.Delete(path); }
+        catch { }
     }
 
     private static double Square(double value) => value * value;
