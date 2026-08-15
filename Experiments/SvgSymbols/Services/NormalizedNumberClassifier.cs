@@ -10,7 +10,9 @@ public sealed record NumberCandidate(
     int Value,
     double Distance,
     double Probability,
-    string BestReference);
+    string BestReference,
+    double? StructuralDistance = null,
+    double? FourierDistance = null);
 
 public sealed record NumberClassification(
     int? Value,
@@ -24,17 +26,6 @@ public sealed record NumberReferenceModel(
     DigitStructuralFeatures Features,
     FourierDescriptor Fourier);
 
-/// <summary>
-/// Experimental classifier for time-signature numbers.
-///
-/// Raw geometry is first normalized with Skia PathOps. The classifier then uses two views:
-///  1. whole-number shape matching against known complete numbers;
-///  2. when the normalized silhouette has a real full-height vertical gap, split it into two
-///     vector pieces and classify each piece against the known single digits.
-///
-/// The second path is deliberately applied only after normalization. Before normalization,
-/// Wikimedia's sprite-like SVG structure created many fake gaps and fake contours.
-/// </summary>
 public sealed class NormalizedNumberClassifier
 {
     private static readonly Regex NumberFileName = new(
@@ -45,6 +36,7 @@ public sealed class NormalizedNumberClassifier
     private const int SeparatorSamples = 96;
     private const double MinimumSeparatorWidthRatio = 0.025;
     private const double MinimumSideWidthRatio = 0.12;
+    private const double FourierWeight = 0.30;
 
     private readonly SvgShapeNormalizer _normalizer = new();
     private readonly DigitStructuralFeatureExtractor _features = new();
@@ -60,7 +52,6 @@ public sealed class NormalizedNumberClassifier
         Directory.CreateDirectory(normalizedRoot);
 
         var result = new List<NumberReferenceModel>();
-
         foreach (var source in rhythm)
         {
             var fileName = Path.GetFileName(source.FileName);
@@ -84,7 +75,6 @@ public sealed class NormalizedNumberClassifier
             }
             catch
             {
-                // One bad corpus item must not prevent the rest of the model from being built.
             }
         }
 
@@ -137,13 +127,9 @@ public sealed class NormalizedNumberClassifier
 
         var whole = ClassifyWhole(normalized, usable);
         var segmented = TryClassifyAsTwoDigits(normalized, usable);
-
         if (segmented is null)
             return whole;
 
-        // A real full-height separator in the already normalized filled silhouette is strong
-        // evidence for a compound number. Prefer digit-wise recognition unless it is extremely
-        // uncertain. Keep the whole-shape result as fallback and as an additional candidate.
         if (segmented.Confidence >= 0.12 || whole.Value is >= 10)
             return Merge(segmented, whole);
 
@@ -164,18 +150,24 @@ public sealed class NormalizedNumberClassifier
             var nearestPerValue = usable
                 .GroupBy(x => x.Value)
                 .Select(group => group
-                    .Select(reference => new
+                    .Select(reference =>
                     {
-                        Reference = reference,
-                        Distance = Distance(candidateFeatures, candidateFourier, reference)
+                        var parts = DistanceParts(candidateFeatures, candidateFourier, reference);
+                        return new
+                        {
+                            Reference = reference,
+                            parts.Structural,
+                            parts.Fourier,
+                            parts.Combined
+                        };
                     })
-                    .OrderBy(x => x.Distance)
+                    .OrderBy(x => x.Combined)
                     .First())
-                .OrderBy(x => x.Distance)
+                .OrderBy(x => x.Combined)
                 .ToArray();
 
             return BuildClassification(nearestPerValue
-                .Select(x => (x.Reference.Value, x.Distance, x.Reference.FileName))
+                .Select(x => (x.Reference.Value, x.Combined, x.Reference.FileName, (double?)x.Structural, (double?)x.Fourier))
                 .ToArray());
         }
         finally
@@ -205,10 +197,6 @@ public sealed class NormalizedNumberClassifier
             return null;
 
         var value = leftResult.Value.Value * 10 + rightResult.Value.Value;
-
-        // Musical time-signature numerators form a tiny domain. If the combined number is not
-        // represented by our corpus, treat digit segmentation as a hypothesis rather than
-        // inventing a new class.
         if (!usable.Any(x => x.Value == value))
             return null;
 
@@ -303,7 +291,7 @@ public sealed class NormalizedNumberClassifier
         return (left, right);
     }
 
-    private NumberClassification Merge(NumberClassification segmented, NumberClassification whole)
+    private static NumberClassification Merge(NumberClassification segmented, NumberClassification whole)
     {
         var byValue = segmented.Candidates
             .Concat(whole.Candidates)
@@ -318,7 +306,7 @@ public sealed class NormalizedNumberClassifier
     }
 
     private NumberClassification BuildClassification(
-        IReadOnlyList<(int Value, double Distance, string Reference)> nearestPerValue)
+        IReadOnlyList<(int Value, double Distance, string Reference, double? Structural, double? Fourier)> nearestPerValue)
     {
         if (nearestPerValue.Count == 0)
             return new NumberClassification(null, 0, Array.Empty<NumberCandidate>(), "No comparable number references.");
@@ -332,7 +320,9 @@ public sealed class NormalizedNumberClassifier
                 x.Value,
                 x.Distance,
                 Math.Clamp(probabilities[i] * absoluteQuality, 0d, 1d),
-                x.Reference))
+                x.Reference,
+                x.Structural,
+                x.Fourier))
             .OrderByDescending(x => x.Probability)
             .Take(5)
             .ToArray();
@@ -341,42 +331,36 @@ public sealed class NormalizedNumberClassifier
         return new NumberClassification(best.Value, best.Probability, candidates);
     }
 
-    private double Distance(
+    private (double Structural, double Fourier, double Combined) DistanceParts(
         DigitStructuralFeatures a,
         FourierDescriptor aFourier,
         NumberReferenceModel reference)
     {
         var b = reference.Features;
 
-        var distance = 0d;
-        distance += 4.00 * Square(a.HoleCount - b.HoleCount);
-        distance += 0.35 * Square(Math.Min(a.OuterContourCount, 8) - Math.Min(b.OuterContourCount, 8));
-        distance += 1.80 * Square(LogRatio(a.AspectRatio, b.AspectRatio));
-        distance += 2.20 * Square(a.FillRatio - b.FillRatio);
-        distance += 0.80 * Square(a.NormalizedPerimeter - b.NormalizedPerimeter);
+        var structural = 0d;
+        structural += 4.00 * Square(a.HoleCount - b.HoleCount);
+        structural += 0.35 * Square(Math.Min(a.OuterContourCount, 8) - Math.Min(b.OuterContourCount, 8));
+        structural += 1.80 * Square(LogRatio(a.AspectRatio, b.AspectRatio));
+        structural += 2.20 * Square(a.FillRatio - b.FillRatio);
+        structural += 0.80 * Square(a.NormalizedPerimeter - b.NormalizedPerimeter);
 
-        // Hole placement is highly semantic for digits: 6 and 9 both have one hole, but on
-        // opposite halves; 8 has two. After PathOps normalization these positions are stable.
         var holeCount = Math.Min(a.Holes.Count, b.Holes.Count);
         for (var i = 0; i < holeCount; i++)
         {
-            distance += 2.2 * Square(a.Holes[i].CenterX - b.Holes[i].CenterX);
-            distance += 4.0 * Square(a.Holes[i].CenterY - b.Holes[i].CenterY);
-            distance += 1.0 * Square(a.Holes[i].AreaRatio - b.Holes[i].AreaRatio);
+            structural += 2.2 * Square(a.Holes[i].CenterX - b.Holes[i].CenterX);
+            structural += 4.0 * Square(a.Holes[i].CenterY - b.Holes[i].CenterY);
+            structural += 1.0 * Square(a.Holes[i].AreaRatio - b.Holes[i].AreaRatio);
         }
 
-        var fourier = _fourierComparer.MagnitudeDistance(aFourier, reference.Fourier);
-        distance += 0.30 * Math.Min(fourier, 20d);
-
-        return distance;
+        var fourier = Math.Min(_fourierComparer.MagnitudeDistance(aFourier, reference.Fourier), 20d);
+        return (structural, fourier, structural + FourierWeight * fourier);
     }
 
     private static double[] Softmax(IReadOnlyList<double> distances)
     {
         var min = distances.Min();
-        var weights = distances
-            .Select(x => Math.Exp(-(x - min) / Temperature))
-            .ToArray();
+        var weights = distances.Select(x => Math.Exp(-(x - min) / Temperature)).ToArray();
         var total = weights.Sum();
 
         return total <= 1e-12
