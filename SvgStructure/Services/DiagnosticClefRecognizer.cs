@@ -46,7 +46,7 @@ public sealed class DiagnosticClefRecognizer : IClefRecognizer
             "# Clef recognizer inputs\n\n" +
             "These are the exact post-sanity-filter vector candidates sent to `IClefRecognizer`.\n\n" +
             "`Legacy IoU` is the old shape-matching baseline: bbox-normalized 64x64 binary-mask IoU plus Clipper2 vector IoU. No size or staff-position prior is used.\n\n" +
-            "`Skeleton` is an experimental vector-only scanline midpoint skeleton. It is diagnostic only: no smoothing and no recognition yet.\n\n" +
+            "`Skeleton` is the raw scanline-midpoint graph. `lines` traces that graph into chains and simplifies each chain with Ramer-Douglas-Peucker; no smoothing yet.\n\n" +
             "| Candidate | P+M | Logical bbox | Vector recognizer | Legacy IoU | Shape | Skeleton |\n" +
             "|---|---|---|---|---|---|---|\n");
     }
@@ -77,11 +77,13 @@ public sealed class DiagnosticClefRecognizer : IClefRecognizer
         var svgName = id + ".svg";
         var pngName = id + ".png";
         var skeletonName = id + ".skeleton.svg";
+        var skeletonLinesName = id + ".skeleton-lines.svg";
         var txtName = id + ".txt";
 
         WriteSvg(Path.Combine(_outputDirectory, svgName), contours);
         WritePng(Path.Combine(_outputDirectory, pngName), contours);
         WriteSkeletonSvg(Path.Combine(_outputDirectory, skeletonName), contours, skeleton);
+        _skeleton.WriteLinesDiagnosticSvg(Path.Combine(_outputDirectory, skeletonLinesName), contours, skeleton);
 
         var logical = context is null ? "n/a" : Format(context.LogicalBounds);
         var pm = context is null ? "n/a" : $"P{context.PartNumber}-M{context.MeasureNumber}";
@@ -112,6 +114,8 @@ public sealed class DiagnosticClefRecognizer : IClefRecognizer
             $"points: {contours.Sum(x => x.Count)}{Environment.NewLine}" +
             $"skeleton points: {skeleton.Points.Count}{Environment.NewLine}" +
             $"skeleton segments: {skeleton.Segments.Count}{Environment.NewLine}" +
+            $"skeleton polylines: {skeleton.Polylines.Count}{Environment.NewLine}" +
+            $"skeleton simplified points: {skeleton.Polylines.Sum(x => x.SimplifiedPoints.Count)}{Environment.NewLine}" +
             $"vector result: {answer}{Environment.NewLine}" +
             $"legacy IoU result: {legacyAnswer}{Environment.NewLine}{Environment.NewLine}" +
             "vector candidates:" + Environment.NewLine + candidates + Environment.NewLine + Environment.NewLine +
@@ -119,7 +123,7 @@ public sealed class DiagnosticClefRecognizer : IClefRecognizer
 
         File.AppendAllText(
             Path.Combine(_outputDirectory, "README.md"),
-            $"| [{id}]({txtName}) | {pm} | `{logical}` | {answer} | {legacyAnswer} | ![{id}]({pngName}) | [skeleton]({skeletonName}) |{Environment.NewLine}");
+            $"| [{id}]({txtName}) | {pm} | `{logical}` | {answer} | {legacyAnswer} | ![{id}]({pngName}) | [raw]({skeletonName}) · [lines]({skeletonLinesName}) |{Environment.NewLine}");
     }
 
     private static string Format(LogicalRectD b) =>
