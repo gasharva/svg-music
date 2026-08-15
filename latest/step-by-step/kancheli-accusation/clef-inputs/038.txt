@@ -1,9 +1,0 @@
-block: P1-M10
-logical bbox: X 0.62..1.34, Y 2.44..7.83
-contours: 1
-points: 215
-result: F 5.5 %
-
-candidates:
-F: confidence=5.45 %, distance=17.445
-G: confidence=0.01 %, distance=27.719
