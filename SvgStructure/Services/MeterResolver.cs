@@ -5,9 +5,10 @@ using SvgSymbols.Services;
 namespace SvgStructure.Services;
 
 /// <summary>
-/// Pipeline step 3. Works exclusively on step-2 primitives. It first finds a very small set of
-/// geometrically plausible meter clusters, then asks the number recognizer for ranked candidates.
-/// The final decision is constrained by the small set of musically plausible meters.
+/// Pipeline step 3. Works exclusively on step-2 primitives.
+/// A conventional numeric time signature is two vertically stacked number shapes with almost
+/// the same horizontal footprint. We detect that cheap geometry first and only then invoke the
+/// heavier number recognizer. The source SVG is deliberately not accessible here.
 /// </summary>
 public sealed class MeterResolver
 {
@@ -23,7 +24,6 @@ public sealed class MeterResolver
         (12, 8), (12, 16)
     };
 
-    private static readonly double[] WindowWidthsInStaffHeights = { 0.55, 0.75, 0.95 };
     private readonly ISvgNumberRecognizer _numberRecognizer;
 
     public MeterResolver(ISvgNumberRecognizer numberRecognizer) =>
@@ -46,16 +46,15 @@ public sealed class MeterResolver
         if (available.Length < 2 || block.PhysicalBounds.Height <= 0)
             return null;
 
-        var windows = BuildWindows(block, available, MeterSide.Left)
-            .Concat(BuildWindows(block, available, MeterSide.Right))
+        var candidates = BuildCandidates(block, available)
             .OrderByDescending(x => x.GeometryScore)
-            .Take(4)
+            .Take(8)
             .ToArray();
 
         var recognized = new List<ScoredMeter>();
-        foreach (var window in windows)
+        foreach (var candidate in candidates)
         {
-            var meter = RecognizeWindow(block, window);
+            var meter = RecognizeCandidate(block, candidate);
             if (meter is not null)
                 recognized.Add(meter);
         }
@@ -66,104 +65,136 @@ public sealed class MeterResolver
             .FirstOrDefault();
     }
 
-    private static IReadOnlyList<CandidateWindow> BuildWindows(
+    private static IReadOnlyList<MeterCandidate> BuildCandidates(
         PartMeasureBlock block,
-        IReadOnlyList<ResolvedPrimitive> primitives,
-        MeterSide side)
+        IReadOnlyList<ResolvedPrimitive> primitives)
     {
         var b = block.PhysicalBounds;
-        var height = b.Height;
-        var leftLimit = b.Left + b.Width * 0.48;
-        var rightLimit = b.Right - b.Width * 0.36;
+        var staffHeight = b.Height;
+        var middleY = b.CenterY;
 
-        var sidePrimitives = primitives
-            .Where(x => side == MeterSide.Left
-                ? x.PhysicalBounds.CenterX <= leftLimit
-                : x.PhysicalBounds.CenterX >= rightLimit)
+        // A time-signature digit normally occupies a substantial fraction of one half of the
+        // five-line staff. Tiny dots/accidentals and huge clefs are poor row candidates.
+        var rowPrimitives = primitives
+            .Where(x => x.PhysicalBounds.Height >= staffHeight * 0.22)
+            .Where(x => x.PhysicalBounds.Height <= staffHeight * 0.72)
+            .Where(x => x.PhysicalBounds.Width <= staffHeight * 1.15)
             .ToArray();
 
-        var candidates = new List<CandidateWindow>();
-        foreach (var anchor in sidePrimitives)
+        var upper = rowPrimitives.Where(x => x.PhysicalBounds.CenterY < middleY).ToArray();
+        var lower = rowPrimitives.Where(x => x.PhysicalBounds.CenterY >= middleY).ToArray();
+
+        var upperClusters = BuildRowClusters(upper, staffHeight);
+        var lowerClusters = BuildRowClusters(lower, staffHeight);
+        var result = new List<MeterCandidate>();
+
+        foreach (var top in upperClusters)
         {
-            foreach (var factor in WindowWidthsInStaffHeights)
+            foreach (var bottom in lowerClusters)
             {
-                var width = Math.Min(b.Width * 0.34, height * factor);
-                var left = anchor.PhysicalBounds.CenterX - width / 2;
-                var right = anchor.PhysicalBounds.CenterX + width / 2;
-
-                if (side == MeterSide.Left)
-                {
-                    left = Math.Max(left, b.Left);
-                    right = Math.Min(right, leftLimit);
-                }
-                else
-                {
-                    left = Math.Max(left, rightLimit);
-                    right = Math.Min(right, b.Right);
-                }
-
-                if (right <= left)
+                var xOverlap = HorizontalOverlapRatio(top.Bounds, bottom.Bounds);
+                if (xOverlap < 0.58)
                     continue;
 
-                var members = sidePrimitives
-                    .Where(x => x.PhysicalBounds.CenterX >= left && x.PhysicalBounds.CenterX <= right)
-                    .ToArray();
-                if (members.Length < 2)
+                var centerDelta = Math.Abs(top.Bounds.CenterX - bottom.Bounds.CenterX) / staffHeight;
+                if (centerDelta > 0.22)
                     continue;
 
-                var minY = members.Min(x => x.PhysicalBounds.Top);
-                var maxY = members.Max(x => x.PhysicalBounds.Bottom);
-                var coverage = (maxY - minY) / height;
-                if (coverage < 0.52)
+                var widthRatio = Ratio(top.Bounds.Width, bottom.Bounds.Width);
+                var heightRatio = Ratio(top.Bounds.Height, bottom.Bounds.Height);
+                if (widthRatio < 0.48 || heightRatio < 0.52)
                     continue;
 
-                var middle = b.CenterY;
-                var upper = members.Count(x => x.PhysicalBounds.CenterY < middle);
-                var lower = members.Length - upper;
-                if (upper == 0 || lower == 0)
+                // Stacked rows should meet around the staff middle, not live on the same side.
+                var verticalGap = bottom.Bounds.Top - top.Bounds.Bottom;
+                if (verticalGap > staffHeight * 0.24 || verticalGap < -staffHeight * 0.18)
                     continue;
 
-                var balance = 1d - Math.Abs(upper - lower) / (double)members.Length;
-                var edge = side == MeterSide.Left
-                    ? 1d - Math.Clamp((left - b.Left) / Math.Max(1, b.Width * 0.48), 0, 1)
-                    : Math.Clamp((right - rightLimit) / Math.Max(1, b.Right - rightLimit), 0, 1);
-                var geometryScore = Math.Min(coverage, 1.2) + 0.25 * balance + 0.12 * edge;
+                var total = Union(top.Bounds, bottom.Bounds);
+                var verticalCoverage = total.Height / staffHeight;
+                if (verticalCoverage < 0.72 || verticalCoverage > 1.35)
+                    continue;
 
-                candidates.Add(new CandidateWindow(
-                    side,
-                    new RectD(left, minY, right, maxY),
-                    members,
+                var side = ResolveSide(block, total);
+                if (side is null)
+                    continue;
+
+                // Alignment is by far the strongest cheap signal. A genuine 4/4 in our samples,
+                // for example, has practically identical x-bounds for the two fours.
+                var geometryScore =
+                    1.8 * xOverlap +
+                    0.65 * widthRatio +
+                    0.35 * heightRatio +
+                    0.35 * Math.Min(verticalCoverage, 1.05) -
+                    0.55 * centerDelta;
+
+                result.Add(new MeterCandidate(
+                    side.Value,
+                    top,
+                    bottom,
+                    total,
                     geometryScore));
             }
         }
 
-        return candidates
+        // Several clusters can describe the same glyphs. Keep only the strongest version of each
+        // physical location before invoking the expensive recognizer.
+        return result
             .OrderByDescending(x => x.GeometryScore)
-            .GroupBy(x => Math.Round(x.Bounds.CenterX / Math.Max(1, height * 0.20)))
+            .GroupBy(x => (
+                Side: x.Side,
+                X: Math.Round(x.Bounds.CenterX / Math.Max(1, staffHeight * 0.12)),
+                W: Math.Round(x.Bounds.Width / Math.Max(1, staffHeight * 0.12))))
             .Select(x => x.First())
-            .Take(2)
             .ToArray();
     }
 
-    private ScoredMeter? RecognizeWindow(PartMeasureBlock block, CandidateWindow window)
+    private static IReadOnlyList<RowCluster> BuildRowClusters(
+        IReadOnlyList<ResolvedPrimitive> primitives,
+        double staffHeight)
     {
-        var middleY = block.PhysicalBounds.CenterY;
-        var upper = window.Primitives.Where(x => x.PhysicalBounds.CenterY < middleY).ToArray();
-        var lower = window.Primitives.Where(x => x.PhysicalBounds.CenterY >= middleY).ToArray();
-        if (upper.Length == 0 || lower.Length == 0)
-            return null;
+        if (primitives.Count == 0)
+            return Array.Empty<RowCluster>();
 
-        var top = _numberRecognizer.Recognize(ToContours(upper));
-        var bottom = _numberRecognizer.Recognize(ToContours(lower));
+        var ordered = primitives.OrderBy(x => x.PhysicalBounds.Left).ToArray();
+        var result = new List<RowCluster>();
+
+        // Every primitive is a valid one-symbol cluster.
+        foreach (var primitive in ordered)
+            result.Add(new RowCluster(new[] { primitive }, primitive.PhysicalBounds));
+
+        // Compound numbers such as 12 and 16 consist of adjacent primitives. Build only short,
+        // tightly-spaced horizontal groups; no generic combinatorial search is needed.
+        for (var i = 0; i < ordered.Length - 1; i++)
+        {
+            var first = ordered[i];
+            var second = ordered[i + 1];
+            var gap = second.PhysicalBounds.Left - first.PhysicalBounds.Right;
+            if (gap < -staffHeight * 0.10 || gap > staffHeight * 0.32)
+                continue;
+
+            var yOverlap = VerticalOverlapRatio(first.PhysicalBounds, second.PhysicalBounds);
+            if (yOverlap < 0.55)
+                continue;
+
+            result.Add(new RowCluster(
+                new[] { first, second },
+                Union(first.PhysicalBounds, second.PhysicalBounds)));
+        }
+
+        return result;
+    }
+
+    private ScoredMeter? RecognizeCandidate(PartMeasureBlock block, MeterCandidate candidate)
+    {
+        var top = _numberRecognizer.Recognize(ToContours(candidate.Top.Primitives));
+        var bottom = _numberRecognizer.Recognize(ToContours(candidate.Bottom.Primitives));
 
         var pair = BestSupportedPair(top, bottom);
         if (pair is null)
             return null;
 
         var confidence = Math.Sqrt(pair.Value.TopConfidence * pair.Value.BottomConfidence);
-        var numeratorBounds = BoundsOf(upper);
-        var denominatorBounds = BoundsOf(lower);
-        var totalBounds = Union(numeratorBounds, denominatorBounds);
 
         return new ScoredMeter(
             new MeterResolution(
@@ -171,12 +202,28 @@ public sealed class MeterResolver
                 block.MeasureNumber,
                 pair.Value.Beats,
                 pair.Value.Value,
-                window.Side,
+                candidate.Side,
                 confidence,
-                totalBounds,
-                numeratorBounds,
-                denominatorBounds),
-            confidence + 0.18 * window.GeometryScore);
+                candidate.Bounds,
+                candidate.Top.Bounds,
+                candidate.Bottom.Bounds),
+            confidence + 0.18 * candidate.GeometryScore);
+    }
+
+    private static MeterSide? ResolveSide(PartMeasureBlock block, RectD bounds)
+    {
+        var b = block.PhysicalBounds;
+        var localCenter = (bounds.CenterX - b.Left) / Math.Max(1e-9, b.Width);
+
+        // Left: after clef/key signature, but still in the left half of the measure.
+        if (localCenter <= 0.48)
+            return MeterSide.Left;
+
+        // Right: meter change immediately before the following barline.
+        if (localCenter >= 0.72)
+            return MeterSide.Right;
+
+        return null;
     }
 
     private static (int Beats, int Value, double TopConfidence, double BottomConfidence)? BestSupportedPair(
@@ -196,7 +243,7 @@ public sealed class MeterResolver
                 Score = Math.Sqrt(t.Confidence * b.Confidence)
             }))
             .Where(x => SupportedMeters.Contains((x.Beats, x.Value)))
-            .Where(x => x.TopConfidence >= 0.01 && x.BottomConfidence >= 0.01)
+            .Where(x => x.TopConfidence >= 0.005 && x.BottomConfidence >= 0.005)
             .OrderByDescending(x => x.Score)
             .Select(x => ((int Beats, int Value, double TopConfidence, double BottomConfidence)?)
                 (x.Beats, x.Value, x.TopConfidence, x.BottomConfidence))
@@ -206,7 +253,7 @@ public sealed class MeterResolver
     private static IReadOnlyList<SvgNumberCandidate> CandidateList(SvgNumberRecognition result)
     {
         if (result.Candidates.Count > 0)
-            return result.Candidates.Take(5).ToArray();
+            return result.Candidates.Take(8).ToArray();
 
         return result.Value is not null
             ? new[] { new SvgNumberCandidate(result.Value.Value, result.Confidence) }
@@ -220,12 +267,20 @@ public sealed class MeterResolver
             .Select(x => (IReadOnlyList<Vector2>)x.Contour.Points)
             .ToArray();
 
-    private static RectD BoundsOf(IReadOnlyList<ResolvedPrimitive> primitives) =>
-        new(
-            primitives.Min(x => x.PhysicalBounds.Left),
-            primitives.Min(x => x.PhysicalBounds.Top),
-            primitives.Max(x => x.PhysicalBounds.Right),
-            primitives.Max(x => x.PhysicalBounds.Bottom));
+    private static double HorizontalOverlapRatio(RectD a, RectD b)
+    {
+        var overlap = Math.Max(0, Math.Min(a.Right, b.Right) - Math.Max(a.Left, b.Left));
+        return overlap / Math.Max(1e-9, Math.Min(a.Width, b.Width));
+    }
+
+    private static double VerticalOverlapRatio(RectD a, RectD b)
+    {
+        var overlap = Math.Max(0, Math.Min(a.Bottom, b.Bottom) - Math.Max(a.Top, b.Top));
+        return overlap / Math.Max(1e-9, Math.Min(a.Height, b.Height));
+    }
+
+    private static double Ratio(double a, double b) =>
+        Math.Min(a, b) / Math.Max(1e-9, Math.Max(a, b));
 
     private static RectD Union(RectD a, RectD b) =>
         new(
@@ -234,10 +289,15 @@ public sealed class MeterResolver
             Math.Max(a.Right, b.Right),
             Math.Max(a.Bottom, b.Bottom));
 
-    private sealed record CandidateWindow(
-        MeterSide Side,
-        RectD Bounds,
+    private sealed record RowCluster(
         IReadOnlyList<ResolvedPrimitive> Primitives,
+        RectD Bounds);
+
+    private sealed record MeterCandidate(
+        MeterSide Side,
+        RowCluster Top,
+        RowCluster Bottom,
+        RectD Bounds,
         double GeometryScore);
 
     private sealed record ScoredMeter(MeterResolution Meter, double Score);
