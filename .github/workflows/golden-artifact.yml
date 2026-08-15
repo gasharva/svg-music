@@ -1,7 +1,8 @@
 name: Golden conversion artifact
 
+# Legacy workflow kept for reference. Automatic CI is intentionally disabled.
 on:
-  pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -48,47 +49,27 @@ jobs:
           pages_dir="artifacts/yellow-leaves.pages"
           for analysis in "$pages_dir"/*.analysis.json; do
             stem="${analysis%.analysis.json}"
-            python3 Scripts/artifact_inventory.py \
-              "$analysis" \
-              "$stem.classification.json" \
-              "$stem"
-            python3 Scripts/missing_stem_beam_probe.py \
-              "$analysis" \
-              "$stem.beam-probe.md"
-            python3 Scripts/notation_gap_inventory.py \
-              "$analysis" \
-              "$stem.classification.json" \
-              "$stem.notation-gaps.md"
-            python3 Scripts/standalone_flag_probe.py \
-              "$analysis" \
-              "$stem.classification.json" \
-              "$stem.flag-probe.md"
-            python3 Scripts/text_glyph_inventory.py \
-              "$analysis" \
-              "$stem.classification.json" \
-              "$stem.text-glyphs.html" \
-              --json "$stem.text-glyphs.json"
+            python3 Scripts/artifact_inventory.py "$analysis" "$stem.classification.json" "$stem"
+            python3 Scripts/missing_stem_beam_probe.py "$analysis" "$stem.beam-probe.md"
+            python3 Scripts/notation_gap_inventory.py "$analysis" "$stem.classification.json" "$stem.notation-gaps.md"
+            python3 Scripts/standalone_flag_probe.py "$analysis" "$stem.classification.json" "$stem.flag-probe.md"
+            python3 Scripts/text_glyph_inventory.py "$analysis" "$stem.classification.json" "$stem.text-glyphs.html" --json "$stem.text-glyphs.json"
           done
 
       - name: Build whole-score diagnostic summary
         if: steps.convert.outcome == 'success'
-        run: |
-          python3 Scripts/build_multi_page_artifacts.py \
-            artifacts/yellow-leaves.pages \
-            artifacts/yellow-leaves
+        run: python3 Scripts/build_multi_page_artifacts.py artifacts/yellow-leaves.pages artifacts/yellow-leaves
 
       - name: Show generated files
         if: always()
         shell: bash
-        run: |
-          echo "Generated artifact contents:"
-          find artifacts -maxdepth 2 -type f -printf '%P\n' | sort || true
+        run: find artifacts -maxdepth 2 -type f -printf '%P\n' | sort || true
 
       - name: Upload golden conversion artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: yellow-leaves-pr-${{ github.event.pull_request.number }}
+          name: yellow-leaves-manual-${{ github.run_number }}
           path: |
             artifacts/yellow-leaves.musicxml
             artifacts/yellow-leaves.analysis.json
@@ -96,57 +77,3 @@ jobs:
             artifacts/yellow-leaves.pages/**
           if-no-files-found: error
           retention-days: 14
-
-      - name: Publish latest conversion to ci-output
-        if: steps.convert.outcome == 'success' && github.event.pull_request.head.repo.full_name == github.repository
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          mkdir -p /tmp/golden-latest
-          cp artifacts/yellow-leaves.musicxml /tmp/golden-latest/
-          cp artifacts/yellow-leaves.analysis.json /tmp/golden-latest/
-          cp artifacts/yellow-leaves.inventory.md /tmp/golden-latest/
-          cp -R artifacts/yellow-leaves.pages /tmp/golden-latest/pages
-
-          cat > /tmp/golden-latest/source.txt <<EOF
-          PR: #${{ github.event.pull_request.number }}
-          Head SHA: ${{ github.event.pull_request.head.sha }}
-          Workflow run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          EOF
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          if git fetch origin ci-output:refs/remotes/origin/ci-output 2>/dev/null; then
-            git switch -C ci-output origin/ci-output
-          else
-            git switch --orphan ci-output
-            git rm -rf . >/dev/null 2>&1 || true
-          fi
-
-          rm -rf latest
-          mkdir -p latest
-          cp -R /tmp/golden-latest/. latest/
-
-          git add -A latest
-          if git diff --cached --quiet; then
-            echo "ci-output/latest is already up to date"
-          else
-            git commit -m "Update Yellow Leaves from PR #${{ github.event.pull_request.number }}"
-            git push origin ci-output
-          fi
-
-      - name: Add download hint to workflow summary
-        if: always()
-        run: |
-          {
-            echo '## Golden conversion artifact'
-            echo
-            echo 'Download **yellow-leaves-pr-${{ github.event.pull_request.number }}** from the Artifacts section at the bottom of this workflow run.'
-            echo
-            echo '- [Latest MusicXML](https://raw.githubusercontent.com/${{ github.repository }}/ci-output/latest/yellow-leaves.musicxml)'
-            echo '- [Whole-score analysis](https://raw.githubusercontent.com/${{ github.repository }}/ci-output/latest/yellow-leaves.analysis.json)'
-            echo '- [Whole-score inventory](https://raw.githubusercontent.com/${{ github.repository }}/ci-output/latest/yellow-leaves.inventory.md)'
-            echo '- Per-page diagnostics are under `ci-output/latest/pages/` and are also included in the workflow artifact.'
-          } >> "$GITHUB_STEP_SUMMARY"
