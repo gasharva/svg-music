@@ -57,10 +57,11 @@ public sealed class StepByStepBatchRunner
         var diagnosticNumberRecognizer = new DiagnosticNumberRecognizer(baseNumberRecognizer);
         var meterResolver = new MeterResolver(diagnosticNumberRecognizer);
 
-        var clefRecognizer = new BravuraClefRecognizer(
+        var baseClefRecognizer = new BravuraClefRecognizer(
             glyphs,
             Path.Combine(recognizerWork, "clef"));
-        var clefResolver = new ClefResolver(clefRecognizer);
+        var diagnosticClefRecognizer = new DiagnosticClefRecognizer(baseClefRecognizer);
+        var clefResolver = new ClefResolver(diagnosticClefRecognizer);
 
         try
         {
@@ -76,7 +77,8 @@ public sealed class StepByStepBatchRunner
                     artifactsFolder,
                     meterResolver,
                     clefResolver,
-                    diagnosticNumberRecognizer));
+                    diagnosticNumberRecognizer,
+                    diagnosticClefRecognizer));
 
             var htmlReportPath = Path.Combine(artifactsFolder, "index.html");
             var markdownReportPath = Path.Combine(artifactsFolder, "README.md");
@@ -102,7 +104,8 @@ public sealed class StepByStepBatchRunner
         string artifactsFolder,
         MeterResolver meterResolver,
         ClefResolver clefResolver,
-        DiagnosticNumberRecognizer diagnosticNumberRecognizer)
+        DiagnosticNumberRecognizer diagnosticNumberRecognizer,
+        DiagnosticClefRecognizer diagnosticClefRecognizer)
     {
         var fileName = Path.GetFileName(svgPath);
         var stem = Path.GetFileNameWithoutExtension(svgPath);
@@ -124,10 +127,9 @@ public sealed class StepByStepBatchRunner
                 .Select(x => x!)
                 .ToArray();
 
-            // Meter is the first semantic symbol that lets us complete the fine logical grid.
-            // From here on later resolvers compare positions in logical coordinates, not SVG pixels.
             var logicalGrid = _logicalGridResolver.Resolve(structure, meters);
 
+            diagnosticClefRecognizer.BeginDocument(Path.Combine(itemDirectory, "clef-inputs"));
             var clefs = structure.Map.Blocks
                 .SelectMany(block => clefResolver.Resolve(block, primitives, logicalGrid))
                 .ToArray();
