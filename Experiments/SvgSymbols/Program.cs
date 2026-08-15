@@ -5,27 +5,32 @@ using SvgSymbols.Services;
 var root = FindRepositoryRoot(AppContext.BaseDirectory);
 var outputRoot = Path.Combine(root, "Experiments", "SvgSymbols");
 var samplesRoot = Path.Combine(outputRoot, "Samples");
+var referenceGlyphs = Path.Combine(root, "References", "glyphs");
+var rhythmRoot = Path.Combine(samplesRoot, "Rhythm");
 var depth = GetIntArgument(args, "--depth", 1);
 var localOnly = args.Any(x => string.Equals(x, "--local-only", StringComparison.OrdinalIgnoreCase));
 
 var localImporter = new LocalGlyphCorpusImporter();
+var rhythmVariants = new RhythmVariantCorpusBuilder();
 var other = localImporter.Import(
-    Path.Combine(root, "References", "glyphs"),
+    referenceGlyphs,
     Path.Combine(samplesRoot, "Other"));
 
 Console.WriteLine($"Local non-clef reference glyphs: {other.Count}");
 
 if (localOnly)
 {
+    var generatedRhythm = rhythmVariants.Build(referenceGlyphs, rhythmRoot);
     var gallery = new GalleryBuilder();
     var trebleValid = ReadLocalSamples(Path.Combine(samplesRoot, "Treble", "valid"), "Treble");
     var bassValid = ReadLocalSamples(Path.Combine(samplesRoot, "Bass", "valid"), "Bass");
-    var rhythm = ReadLocalSamples(Path.Combine(samplesRoot, "Rhythm"), "Rhythm", useValidPrefix: false);
+    var rhythm = ReadLocalSamples(rhythmRoot, "Rhythm", useValidPrefix: false);
     var galleryPath = await gallery.BuildAsync(outputRoot, trebleValid, bassValid, rhythm, other);
 
-    Console.WriteLine($"Treble valid: {trebleValid.Count}");
-    Console.WriteLine($"Bass valid:   {bassValid.Count}");
-    Console.WriteLine($"Rhythm digits:{rhythm.Count}");
+    Console.WriteLine($"Treble valid:          {trebleValid.Count}");
+    Console.WriteLine($"Bass valid:            {bassValid.Count}");
+    Console.WriteLine($"Rhythm total:          {rhythm.Count}");
+    Console.WriteLine($"Rhythm Bravura built:  {generatedRhythm.Count}");
     Console.WriteLine($"Gallery: {galleryPath}");
     return;
 }
@@ -66,15 +71,19 @@ var rhythmSources = (await commons.GetSvgFilesAsync("Rhythm", "SVG Time signatur
 Console.WriteLine($"Found {rhythmSources.Count} numeric SVG files. Downloading...");
 var rhythmDownloaded = await downloader.DownloadAsync(
     rhythmSources,
-    Path.Combine(samplesRoot, "Rhythm"));
+    rhythmRoot);
 
-var fullGalleryPath = await galleryBuilder.BuildAsync(outputRoot, treble, bass, rhythmDownloaded, other);
+var generated = rhythmVariants.Build(referenceGlyphs, rhythmRoot);
+var rhythmAll = ReadLocalSamples(rhythmRoot, "Rhythm", useValidPrefix: false);
+var fullGalleryPath = await galleryBuilder.BuildAsync(outputRoot, treble, bass, rhythmAll, other);
 
 Console.WriteLine();
-Console.WriteLine($"Treble downloaded: {treble.Count}");
-Console.WriteLine($"Bass downloaded:   {bass.Count}");
-Console.WriteLine($"Rhythm downloaded: {rhythmDownloaded.Count}");
-Console.WriteLine($"Other local:       {other.Count}");
+Console.WriteLine($"Treble downloaded:      {treble.Count}");
+Console.WriteLine($"Bass downloaded:        {bass.Count}");
+Console.WriteLine($"Rhythm Wikimedia:       {rhythmDownloaded.Count}");
+Console.WriteLine($"Rhythm Bravura built:   {generated.Count}");
+Console.WriteLine($"Rhythm total:           {rhythmAll.Count}");
+Console.WriteLine($"Other local:            {other.Count}");
 Console.WriteLine($"Gallery: {fullGalleryPath}");
 
 static bool IsRhythmNumberSample(SymbolSource source)
@@ -124,7 +133,11 @@ static IReadOnlyList<SymbolSource> ReadLocalSamples(
         .OrderBy(Path.GetFileName, StringComparer.OrdinalIgnoreCase)
         .Select(path => new SymbolSource(
             Kind: kind,
-            Category: kind == "Rhythm" ? "Time-signature number" : "Curated valid",
+            Category: kind == "Rhythm"
+                ? (Path.GetFileName(path).StartsWith("Bravura-", StringComparison.OrdinalIgnoreCase)
+                    ? "Time-signature number / Bravura"
+                    : "Time-signature number / Wikimedia")
+                : "Curated valid",
             Title: Path.GetFileNameWithoutExtension(path),
             FileName: useValidPrefix ? "valid/" + Path.GetFileName(path) : Path.GetFileName(path),
             DescriptionUrl: "#",
