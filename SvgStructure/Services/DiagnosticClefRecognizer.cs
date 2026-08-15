@@ -19,11 +19,16 @@ public sealed record ClefDiagnosticContext(
 public sealed class DiagnosticClefRecognizer : IClefRecognizer
 {
     private readonly IClefRecognizer _inner;
+    private readonly RasterClefAnalyzer? _raster;
     private string? _outputDirectory;
     private ClefDiagnosticContext? _nextContext;
     private int _counter;
 
-    public DiagnosticClefRecognizer(IClefRecognizer inner) => _inner = inner;
+    public DiagnosticClefRecognizer(IClefRecognizer inner, RasterClefAnalyzer? raster = null)
+    {
+        _inner = inner;
+        _raster = raster;
+    }
 
     public void BeginDocument(string outputDirectory)
     {
@@ -39,8 +44,9 @@ public sealed class DiagnosticClefRecognizer : IClefRecognizer
             Path.Combine(outputDirectory, "README.md"),
             "# Clef recognizer inputs\n\n" +
             "These are the exact post-sanity-filter vector candidates sent to `IClefRecognizer`.\n\n" +
-            "| Candidate | P+M | Logical bbox | Recognizer | Shape |\n" +
-            "|---|---|---|---|---|\n");
+            "`Raster` is an independent 48x48 grayscale baseline: references are rasterized once and cached in memory.\n\n" +
+            "| Candidate | P+M | Logical bbox | Vector recognizer | Raster | Shape |\n" +
+            "|---|---|---|---|---|---|\n");
     }
 
     public void SetNextContext(ClefDiagnosticContext context) => _nextContext = context;
@@ -48,7 +54,8 @@ public sealed class DiagnosticClefRecognizer : IClefRecognizer
     public ClefSymbolRecognition Recognize(IReadOnlyList<IReadOnlyList<Vector2>> contours)
     {
         var result = _inner.Recognize(contours);
-        Save(contours, result, _nextContext);
+        var raster = _raster?.Analyze(contours);
+        Save(contours, result, raster, _nextContext);
         _nextContext = null;
         return result;
     }
@@ -56,6 +63,7 @@ public sealed class DiagnosticClefRecognizer : IClefRecognizer
     private void Save(
         IReadOnlyList<IReadOnlyList<Vector2>> contours,
         ClefSymbolRecognition result,
+        RasterClefAnalysis? raster,
         ClefDiagnosticContext? context)
     {
         if (string.IsNullOrWhiteSpace(_outputDirectory))
@@ -82,18 +90,29 @@ public sealed class DiagnosticClefRecognizer : IClefRecognizer
             Environment.NewLine,
             result.Candidates.Select(x => $"{x.Symbol}: confidence={x.Confidence:P2}, distance={x.Distance:0.###}"));
 
+        var rasterAnswer = raster?.Symbol is null
+            ? "n/a"
+            : $"{raster.Symbol} {raster.Confidence:P1}";
+        var rasterCandidates = raster is null
+            ? "n/a"
+            : string.Join(
+                Environment.NewLine,
+                raster.Candidates.Select(x => $"{x.Symbol}: similarity={x.Similarity:P2}, distance={x.Distance:0.####}"));
+
         File.WriteAllText(
             Path.Combine(_outputDirectory, txtName),
             $"block: {pm}{Environment.NewLine}" +
             $"logical bbox: {logical}{Environment.NewLine}" +
             $"contours: {contours.Count}{Environment.NewLine}" +
             $"points: {contours.Sum(x => x.Count)}{Environment.NewLine}" +
-            $"result: {answer}{Environment.NewLine}{Environment.NewLine}" +
-            "candidates:" + Environment.NewLine + candidates + Environment.NewLine);
+            $"vector result: {answer}{Environment.NewLine}" +
+            $"raster result: {rasterAnswer}{Environment.NewLine}{Environment.NewLine}" +
+            "vector candidates:" + Environment.NewLine + candidates + Environment.NewLine + Environment.NewLine +
+            "raster candidates:" + Environment.NewLine + rasterCandidates + Environment.NewLine);
 
         File.AppendAllText(
             Path.Combine(_outputDirectory, "README.md"),
-            $"| [{id}]({txtName}) | {pm} | `{logical}` | {answer} | ![{id}]({pngName}) |{Environment.NewLine}");
+            $"| [{id}]({txtName}) | {pm} | `{logical}` | {answer} | {rasterAnswer} | ![{id}]({pngName}) |{Environment.NewLine}");
     }
 
     private static string Format(LogicalRectD b) =>
