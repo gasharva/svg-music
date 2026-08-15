@@ -60,7 +60,8 @@ public sealed class StepByStepBatchRunner
         var baseClefRecognizer = new BravuraClefRecognizer(
             glyphs,
             Path.Combine(recognizerWork, "clef"));
-        var diagnosticClefRecognizer = new DiagnosticClefRecognizer(baseClefRecognizer);
+        var rasterClefAnalyzer = new RasterClefAnalyzer(glyphs);
+        var diagnosticClefRecognizer = new DiagnosticClefRecognizer(baseClefRecognizer, rasterClefAnalyzer);
         var clefResolver = new ClefResolver(diagnosticClefRecognizer);
 
         try
