@@ -2,8 +2,13 @@ block: P2-M1
 logical bbox: X 1.01..3.01, Y 0.01..6.66
 contours: 1
 points: 420
-result: none (Open-set rejection: nearest/ref=0.918 (max 0.72), margin/ref=0.541 (min 0.2).)
+vector result: none (Open-set rejection: nearest/ref=0.918 (max 0.72), margin/ref=0.541 (min 0.2).)
+raster result: G 13.7 %
 
-candidates:
+vector candidates:
 F: confidence=5.45 %, distance=17.445
 G: confidence=0.01 %, distance=27.719
+
+raster candidates:
+G: similarity=81.21 %, distance=0.1879
+F: similarity=76.98 %, distance=0.2302
