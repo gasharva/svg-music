@@ -140,8 +140,8 @@ public sealed class NormalizedTopologyReportBuilder
 
         html.AppendLine("</tbody></table>");
         html.AppendLine("<h1>Whole-number classifier — leave one out</h1>");
-        html.AppendLine("<p>For whole-shape candidates the table now shows the distance split into <b>structural</b> and raw <b>Fourier</b> parts. Current combined distance is <code>structural + 0.30 × Fourier</code>. Segmented digit-pair hypotheses have no such split and show dashes.</p>");
-        html.AppendLine("<table><thead><tr><th>Glyph</th><th>Expected</th><th>Verdict</th><th>Confidence</th><th>Winner S / F / combined</th><th>Top candidates</th></tr></thead><tbody>");
+        html.AppendLine("<p>Whole-shape voting now combines <b>structural</b>, magnitude Fourier and phase-aware <b>complex Fourier</b>: <code>S + 0.15 × Fm + 0.20 × Fc</code>. Green/red is the actual final verdict. Segmented digit-pair hypotheses show dashes for the Fourier diagnostics.</p>");
+        html.AppendLine("<table><thead><tr><th>Glyph</th><th>Expected</th><th>Verdict</th><th>Confidence</th><th>Winner S / Fm / Fc / combined</th><th>Top candidates</th></tr></thead><tbody>");
 
         foreach (var row in classifications.OrderBy(x => x.Expected).ThenBy(x => x.FileName))
         {
@@ -151,9 +151,9 @@ public sealed class NormalizedTopologyReportBuilder
             var winner = result.Candidates.FirstOrDefault();
             var diagnostic = winner is null
                 ? "—"
-                : winner.StructuralDistance is null || winner.FourierDistance is null
-                    ? $"— / — / {winner.Distance:0.000}"
-                    : $"{winner.StructuralDistance:0.000} / {winner.FourierDistance:0.000} / {winner.Distance:0.000}";
+                : winner.StructuralDistance is null || winner.FourierDistance is null || winner.ComplexFourierDistance is null
+                    ? $"— / — / — / {winner.Distance:0.000}"
+                    : $"{winner.StructuralDistance:0.000} / {winner.FourierDistance:0.000} / {winner.ComplexFourierDistance:0.000} / {winner.Distance:0.000}";
 
             var candidates = result.Candidates.Count == 0
                 ? "—"
@@ -175,9 +175,9 @@ public sealed class NormalizedTopologyReportBuilder
 
     private static string FormatCandidate(NumberCandidate candidate)
     {
-        var parts = candidate.StructuralDistance is null || candidate.FourierDistance is null
+        var parts = candidate.StructuralDistance is null || candidate.FourierDistance is null || candidate.ComplexFourierDistance is null
             ? $"d={candidate.Distance:0.00}"
-            : $"S={candidate.StructuralDistance:0.00} F={candidate.FourierDistance:0.00} C={candidate.Distance:0.00}";
+            : $"S={candidate.StructuralDistance:0.00} Fm={candidate.FourierDistance:0.00} Fc={candidate.ComplexFourierDistance:0.00} C={candidate.Distance:0.00}";
 
         return $"{candidate.Value}: {candidate.Probability * 100:0.0}% {parts} [{candidate.BestReference}]";
     }
