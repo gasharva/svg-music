@@ -1,18 +1,7 @@
 name: SVG symbol scaler
 
+# Legacy workflow kept for reference. Automatic CI is intentionally disabled.
 on:
-  push:
-    branches: [ master, "agent/**" ]
-    paths:
-      - "Tools/SvgSymbolScaler/**"
-      - "Tools/SvgSymbolScaler.Tests/**"
-      - ".github/workflows/svg-symbol-scaler.yml"
-  pull_request:
-    branches: [ master ]
-    paths:
-      - "Tools/SvgSymbolScaler/**"
-      - "Tools/SvgSymbolScaler.Tests/**"
-      - ".github/workflows/svg-symbol-scaler.yml"
   workflow_dispatch:
 
 jobs:
