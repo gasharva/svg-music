@@ -15,7 +15,10 @@ public readonly record struct RectD(double Left, double Top, double Right, doubl
         Right >= left && Left <= right;
 }
 
-public sealed record RawPrimitive(int Id, RectD Bounds);
+public sealed record RawPrimitive(
+    int Id,
+    RectD Bounds,
+    PrimitiveContour Contour);
 
 /// <summary>
 /// One visual staff inside one measure: e.g. P2-M5.
