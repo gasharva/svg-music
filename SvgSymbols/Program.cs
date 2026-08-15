@@ -8,12 +8,14 @@ var samplesRoot = Path.Combine(outputRoot, "Samples");
 var referenceGlyphs = Path.Combine(root, "References", "glyphs");
 var rhythmRoot = Path.Combine(samplesRoot, "Rhythm");
 var realMeterDigitsRoot = Path.Combine(samplesRoot, "RealMeterDigits");
+var realClefCandidatesRoot = Path.Combine(samplesRoot, "RealClefCandidates");
 var depth = GetIntArgument(args, "--depth", 1);
 var localOnly = args.Any(x => string.Equals(x, "--local-only", StringComparison.OrdinalIgnoreCase));
 
 var localImporter = new LocalGlyphCorpusImporter();
 var rhythmVariants = new RhythmVariantCorpusBuilder();
 var normalizedTopology = new NormalizedTopologyReportBuilder();
+var clefDiagnostics = new ClefDiagnosticReportBuilder();
 var other = localImporter.Import(
     referenceGlyphs,
     Path.Combine(samplesRoot, "Other"));
@@ -31,6 +33,7 @@ if (localOnly)
     var rhythmWithReal = rhythm.Concat(realMeterDigits).ToList();
     var normalizedTopologyPath = await normalizedTopology.BuildAsync(outputRoot, rhythmWithReal);
     var galleryPath = await gallery.BuildAsync(outputRoot, trebleValid, bassValid, rhythmWithReal, other);
+    var clefDiagnosticsPath = clefDiagnostics.Build(outputRoot, realClefCandidatesRoot, referenceGlyphs);
 
     Console.WriteLine($"Treble valid:          {trebleValid.Count}");
     Console.WriteLine($"Bass valid:            {bassValid.Count}");
@@ -39,6 +42,7 @@ if (localOnly)
     Console.WriteLine($"Rhythm total:          {rhythmWithReal.Count}");
     Console.WriteLine($"Rhythm Bravura built:  {generatedRhythm.Count}");
     Console.WriteLine($"Normalized topology:   {normalizedTopologyPath}");
+    Console.WriteLine($"Clef diagnostics:      {clefDiagnosticsPath}");
     Console.WriteLine($"Gallery: {galleryPath}");
     return;
 }
@@ -87,6 +91,7 @@ var realMeterDigitsAll = ReadRealMeterDigitSamples(realMeterDigitsRoot);
 var rhythmWithRealAll = rhythmAll.Concat(realMeterDigitsAll).ToList();
 var normalizedTopologyPathFull = await normalizedTopology.BuildAsync(outputRoot, rhythmWithRealAll);
 var fullGalleryPath = await galleryBuilder.BuildAsync(outputRoot, treble, bass, rhythmWithRealAll, other);
+var clefDiagnosticsPathFull = clefDiagnostics.Build(outputRoot, realClefCandidatesRoot, referenceGlyphs);
 
 Console.WriteLine();
 Console.WriteLine($"Treble downloaded:      {treble.Count}");
@@ -98,6 +103,7 @@ Console.WriteLine($"Real meter digits:      {realMeterDigitsAll.Count}");
 Console.WriteLine($"Rhythm total:           {rhythmWithRealAll.Count}");
 Console.WriteLine($"Other local:            {other.Count}");
 Console.WriteLine($"Normalized topology:    {normalizedTopologyPathFull}");
+Console.WriteLine($"Clef diagnostics:       {clefDiagnosticsPathFull}");
 Console.WriteLine($"Gallery: {fullGalleryPath}");
 
 static bool IsRhythmNumberSample(SymbolSource source)
