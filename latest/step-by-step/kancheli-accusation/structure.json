@@ -18520,46 +18520,6 @@
       "logicalLabel": "P2-M3"
     },
     {
-      "partNumber": 2,
-      "measureNumber": 8,
-      "beatNumber": 4,
-      "beatValue": 4,
-      "side": 0,
-      "confidence": 0.047432990150829815,
-      "physicalBounds": {
-        "left": 294.3667297363281,
-        "top": 629.7603759765625,
-        "right": 297.7213134765625,
-        "bottom": 657.7188110351562,
-        "width": 3.354583740234375,
-        "height": 27.95843505859375,
-        "centerX": 296.0440216064453,
-        "centerY": 643.7395935058594
-      },
-      "numeratorBounds": {
-        "left": 294.3667297363281,
-        "top": 629.7603759765625,
-        "right": 297.7213134765625,
-        "bottom": 645.0567626953125,
-        "width": 3.354583740234375,
-        "height": 15.29638671875,
-        "centerX": 296.0440216064453,
-        "centerY": 637.4085693359375
-      },
-      "denominatorBounds": {
-        "left": 294.3667297363281,
-        "top": 642.4224243164062,
-        "right": 297.7213134765625,
-        "bottom": 657.7188110351562,
-        "width": 3.354583740234375,
-        "height": 15.29638671875,
-        "centerX": 296.0440216064453,
-        "centerY": 650.0706176757812
-      },
-      "label": "4-4",
-      "logicalLabel": "P2-M8"
-    },
-    {
       "partNumber": 1,
       "measureNumber": 10,
       "beatNumber": 3,
