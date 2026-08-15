@@ -3,12 +3,12 @@ logical bbox: X 16.99..17.87, Y -5.7..0.07
 contours: 1
 points: 405
 vector result: none (Open-set rejection: nearest/ref=0.918 (max 0.72), margin/ref=0.541 (min 0.2).)
-raster result: G 39.1 %
+legacy IoU result: F 32.5 %
 
 vector candidates:
 F: confidence=5.45 %, distance=17.445
 G: confidence=0.01 %, distance=27.719
 
-raster candidates:
-G: similarity=89.85 %, distance=0.1015
-F: similarity=78.97 %, distance=0.2103
+legacy IoU candidates:
+F: maskIoU=28.49 %, vectorIoU=39.88 %, score=32.47 %
+G: maskIoU=25.10 %, vectorIoU=33.50 %, score=28.04 %
