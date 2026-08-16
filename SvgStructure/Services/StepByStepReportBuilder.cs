@@ -19,7 +19,7 @@ public sealed class StepByStepReportBuilder
             var dir = Uri.EscapeDataString(item.ArtifactDirectoryName);
             var css = item.Error is null ? "good" : "bad";
             html.Append($"<tr class=\"{css}\">");
-            html.Append($"<td><b>{WebUtility.HtmlEncode(item.FileName)}</b><br><a href=\"{dir}/source.svg\">source.svg</a></td>");
+            html.Append($"<td><b>{WebUtility.HtmlEncode(item.FileName)}</b><br><a href=\"{dir}/source.svg\">source.svg</a><br><a href=\"{dir}/source-tree.txt\"><b>Svg.Skia source tree</b></a><br><a href=\"{dir}/source-uses.json\"><b>&lt;use&gt; instances ({item.SourceUseCount})</b></a></td>");
 
             if (item.Error is not null)
             {
@@ -31,7 +31,7 @@ public sealed class StepByStepReportBuilder
             html.Append($"<td><a href=\"{dir}/classified.png\"><img class=\"preview\" src=\"{dir}/classified.png\"></a><br><a href=\"{dir}/primitives.html\"><b>primitive SVG gallery ({item.ExportedPrimitiveCount})</b></a></td>");
             html.Append($"<td><a href=\"{dir}/meters.png\"><img class=\"preview\" src=\"{dir}/meters.png\"></a><br><b>meters: {item.MeterCount}</b><br><b>clefs: {item.ClefCount}</b><br><a href=\"{dir}/meter-inputs/index.html\"><b>meter inputs</b></a><br><a href=\"{dir}/clef-inputs/README.md\"><b>clef inputs</b></a></td>");
             html.Append("<td class=\"mono\">" +
-                        $"lines: {item.LineCount}<br>systems: {item.SystemCount}<br>parts: {item.PartCount}<br>measures: {item.MeasureCount}<br>" +
+                        $"source elements: {item.SourceElementCount}<br>source uses: {item.SourceUseCount}<br>lines: {item.LineCount}<br>systems: {item.SystemCount}<br>parts: {item.PartCount}<br>measures: {item.MeasureCount}<br>" +
                         $"P+M primitives: {item.PartMeasurePrimitiveCount}<br>exported SVGs: {item.ExportedPrimitiveCount}<br>M-only: {item.MeasurePrimitiveCount}<br>physical-only: {item.PhysicalOnlyPrimitiveCount}<br>meters: {item.MeterCount}<br>clefs: {item.ClefCount}<br>" +
                         $"<a href=\"{dir}/structure.json\">structure.json</a></td>");
             html.AppendLine("</tr>");
@@ -61,11 +61,11 @@ public sealed class StepByStepReportBuilder
             }
 
             md.AppendLine(
-                $"| **[{item.FileName}]({dir}/source.svg)** | " +
+                $"| **[{item.FileName}]({dir}/source.svg)**<br>[source tree]({dir}/source-tree.txt)<br>[uses={item.SourceUseCount}]({dir}/source-uses.json) | " +
                 $"[![blocks]({dir}/measures.png)]({dir}/measures.png) | " +
                 $"[![primitives]({dir}/classified.png)]({dir}/classified.png)<br>[primitive SVG gallery]({dir}/primitives.html) ({item.ExportedPrimitiveCount}) | " +
                 $"[![symbols]({dir}/meters.png)]({dir}/meters.png)<br>meters={item.MeterCount}<br>clefs={item.ClefCount}<br>[meter inputs]({dir}/meter-inputs/index.html)<br>[clef inputs]({dir}/clef-inputs/README.md) | " +
-                $"parts={item.PartCount}<br>measures={item.MeasureCount}<br>P+M={item.PartMeasurePrimitiveCount}<br>exported={item.ExportedPrimitiveCount}<br>M-only={item.MeasurePrimitiveCount}<br>physical={item.PhysicalOnlyPrimitiveCount}<br>[json]({dir}/structure.json) |");
+                $"sourceElements={item.SourceElementCount}<br>sourceUses={item.SourceUseCount}<br>parts={item.PartCount}<br>measures={item.MeasureCount}<br>P+M={item.PartMeasurePrimitiveCount}<br>exported={item.ExportedPrimitiveCount}<br>M-only={item.MeasurePrimitiveCount}<br>physical={item.PhysicalOnlyPrimitiveCount}<br>[json]({dir}/structure.json) |");
         }
 
         md.AppendLine();
