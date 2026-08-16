@@ -291,7 +291,7 @@ public sealed class StepByStepBatchRunner
         while (current is not null)
         {
             if (File.Exists(Path.Combine(current.FullName, "SvgToMusicXmlPoc.sln")))
-                return current;
+                return current.FullName;
             current = current.Parent;
         }
 
