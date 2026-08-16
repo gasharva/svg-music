@@ -21,6 +21,7 @@ public sealed record StepByStepItemResult(
     int PartMeasurePrimitiveCount = 0,
     int MeasurePrimitiveCount = 0,
     int PhysicalOnlyPrimitiveCount = 0,
+    int MusicSymbolCount = 0,
     int MeterCount = 0,
     int ClefCount = 0,
     int ExportedPrimitiveCount = 0,
@@ -36,6 +37,8 @@ public sealed class StepByStepBatchRunner
     private readonly PartMeasureResolver _partMeasureResolver = new();
     private readonly PrimitiveResolver _primitiveResolver = new(0.25);
     private readonly PrimitiveSvgExporter _primitiveSvgExporter = new();
+    private readonly MusicSymbolResolver _musicSymbolResolver = new();
+    private readonly MusicSymbolSvgExporter _musicSymbolSvgExporter = new();
     private readonly SvgSourceModelDumper _sourceModelDumper = new();
     private readonly LogicalGridResolver _logicalGridResolver = new(DefaultSubdivisionsPerBeat);
     private readonly PartMeasureOverlayRenderer _partMeasureOverlayRenderer = new();
@@ -128,8 +131,15 @@ public sealed class StepByStepBatchRunner
             var primitives = _primitiveResolver.Resolve(structure);
             var primitiveExport = _primitiveSvgExporter.Export(primitives, itemDirectory);
 
+            // New bridge step: low-poly primitive contours stop being recognition geometry here.
+            // They only define spatial groups; candidates recover original Bezier paths from SourceDocument.
+            var musicSymbols = _musicSymbolResolver.Resolve(primitives);
+            _musicSymbolSvgExporter.Export(musicSymbols, itemDirectory);
+
             diagnosticNumberRecognizer.BeginDocument(Path.Combine(itemDirectory, "meter-inputs"));
 
+            // Meter/Clef resolvers are intentionally still wired to primitives for this experiment.
+            // Once the candidate grouping looks sane they can be migrated to MusicSymbolResolution.
             var meters = structure.Map.Blocks
                 .Select(block => meterResolver.Resolve(block, primitives))
                 .Where(x => x is not null)
@@ -160,6 +170,7 @@ public sealed class StepByStepBatchRunner
                 fileName,
                 structure,
                 primitives,
+                musicSymbols,
                 meters,
                 logicalGrid,
                 clefs);
@@ -174,6 +185,7 @@ public sealed class StepByStepBatchRunner
                 primitives.PartMeasurePrimitives.Count,
                 primitives.MeasurePrimitives.Count,
                 primitives.PhysicalOnlyPrimitives.Count,
+                musicSymbols.Candidates.Count,
                 meters.Length,
                 clefs.Length,
                 primitiveExport.Items.Count,
@@ -194,6 +206,7 @@ public sealed class StepByStepBatchRunner
         string fileName,
         PartMeasureResolution structure,
         PrimitiveResolution primitives,
+        MusicSymbolResolution musicSymbols,
         IReadOnlyList<MeterResolution> meters,
         LogicalGridResolution logicalGrid,
         IReadOnlyList<ClefResolution> clefs)
@@ -231,6 +244,17 @@ public sealed class StepByStepBatchRunner
                     groupContourCount = x.SourceGroupContours?.Count
                 },
                 contourPointCount = x.Contour.Points.Count
+            }),
+            musicSymbols = musicSymbols.Candidates.Select(x => new
+            {
+                x.Id,
+                x.Scope,
+                x.PartNumber,
+                x.MeasureNumber,
+                x.PhysicalBounds,
+                x.PrimitiveIds,
+                smoothPathCount = x.SmoothPaths.Count,
+                sourceAddresses = x.Sources.Select(s => s.ElementAddress ?? s.Anchor).ToArray()
             }),
             meters,
             logicalGrid = new
