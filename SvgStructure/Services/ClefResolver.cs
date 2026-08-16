@@ -1,12 +1,11 @@
-using System.Numerics;
 using SvgStructure.Models;
 using SvgSymbols.Services;
 
 namespace SvgStructure.Services;
 
 /// <summary>
-/// Pipeline step 4. Finds clefs from already-resolved primitives.
-/// Position inside the measure is deliberately not used as a prior: clef changes may occur anywhere.
+/// Finds clefs from MusicSymbolResolver candidates. Position inside the measure is deliberately not
+/// used as a prior: clef changes may occur anywhere. Recognition consumes only smooth source geometry.
 /// </summary>
 public sealed class ClefResolver
 {
@@ -26,18 +25,19 @@ public sealed class ClefResolver
 
     public IReadOnlyList<ClefResolution> Resolve(
         PartMeasureBlock block,
-        PrimitiveResolution primitives,
+        MusicSymbolResolution symbols,
         LogicalGridResolution grid)
     {
         if (!grid.TryGetBlock(block.PartNumber, block.MeasureNumber, out var logicalBlock))
             return Array.Empty<ClefResolution>();
 
         var staffHeight = Math.Max(1e-9, block.PhysicalBounds.Height);
-        var available = primitives.Primitives
+        var available = symbols.Candidates
             .Where(x =>
                 x.Scope == PrimitiveLogicalScope.PartMeasure &&
                 x.PartNumber == block.PartNumber &&
                 x.MeasureNumber == block.MeasureNumber)
+            .Where(x => x.SmoothPaths.Count > 0)
             .OrderBy(x => x.PhysicalBounds.Left)
             .ToArray();
 
@@ -51,8 +51,6 @@ public sealed class ClefResolver
             if (!_sanity.Accept(logicalBounds, candidate.Bounds, staffHeight))
                 continue;
 
-            var merged = MergeInsideBounds(candidate, available);
-
             if (_recognizer is DiagnosticClefRecognizer diagnostic)
             {
                 diagnostic.SetNextContext(new ClefDiagnosticContext(
@@ -61,7 +59,11 @@ public sealed class ClefResolver
                     logicalBounds));
             }
 
-            var recognition = _recognizer.Recognize(ToContours(merged));
+            var contours = SmoothSymbolContourConverter.ToContours(new[] { candidate.Symbol });
+            if (contours.Count == 0)
+                continue;
+
+            var recognition = _recognizer.Recognize(contours);
             if (recognition.Symbol is null || recognition.Confidence < _minimumConfidence)
                 continue;
 
@@ -99,19 +101,19 @@ public sealed class ClefResolver
     }
 
     private IReadOnlyList<Candidate> BuildCandidates(
-        IReadOnlyList<ResolvedPrimitive> primitives,
+        IReadOnlyList<MusicSymbolCandidate> symbols,
         LogicalGridBlock logicalBlock,
         double staffHeight)
     {
         var result = new List<Candidate>();
 
-        foreach (var anchor in primitives)
+        foreach (var symbol in symbols)
         {
-            var logical = logicalBlock.ToLogical(anchor.PhysicalBounds);
-            if (!_sanity.Accept(logical, anchor.PhysicalBounds, staffHeight))
+            var logical = logicalBlock.ToLogical(symbol.PhysicalBounds);
+            if (!_sanity.Accept(logical, symbol.PhysicalBounds, staffHeight))
                 continue;
 
-            result.Add(new Candidate(new[] { anchor }, anchor.PhysicalBounds));
+            result.Add(new Candidate(symbol, symbol.PhysicalBounds));
         }
 
         return result
@@ -120,38 +122,12 @@ public sealed class ClefResolver
                 Y: Math.Round(x.Bounds.CenterY, 2),
                 W: Math.Round(x.Bounds.Width, 2),
                 H: Math.Round(x.Bounds.Height, 2)))
-            .Select(x => x.First())
+            .Select(x => x
+                .OrderBy(candidate => candidate.Symbol.IsDerived)
+                .ThenByDescending(candidate => candidate.Symbol.SmoothPaths.Count)
+                .First())
             .ToArray();
     }
-
-    private static IReadOnlyList<ResolvedPrimitive> MergeInsideBounds(
-        Candidate candidate,
-        IReadOnlyList<ResolvedPrimitive> available)
-    {
-        var b = candidate.Bounds;
-        var padX = Math.Max(0.5, b.Width * 0.12);
-        var padY = Math.Max(0.5, b.Height * 0.08);
-        var expanded = new RectD(
-            b.Left - padX,
-            b.Top - padY,
-            b.Right + padX,
-            b.Bottom + padY);
-
-        return available
-            .Where(x => Contains(expanded, x.PhysicalBounds.CenterX, x.PhysicalBounds.CenterY))
-            .OrderBy(x => x.Id)
-            .ToArray();
-    }
-
-    private static bool Contains(RectD b, double x, double y) =>
-        x >= b.Left && x <= b.Right && y >= b.Top && y <= b.Bottom;
-
-    private static IReadOnlyList<IReadOnlyList<Vector2>> ToContours(
-        IEnumerable<ResolvedPrimitive> primitives) =>
-        primitives
-            .Where(x => x.Contour.Points.Count >= 3)
-            .Select(x => (IReadOnlyList<Vector2>)x.Contour.Points)
-            .ToArray();
 
     private static double OverlapRatio(RectD a, RectD b)
     {
@@ -168,7 +144,7 @@ public sealed class ClefResolver
     }
 
     private sealed record Candidate(
-        IReadOnlyList<ResolvedPrimitive> Primitives,
+        MusicSymbolCandidate Symbol,
         RectD Bounds);
 
     private sealed record ScoredClef(ClefResolution Clef, double Score);
