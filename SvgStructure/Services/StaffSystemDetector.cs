@@ -10,6 +10,7 @@ public sealed class StaffSystemDetector
     private const double CoordinateToleranceFraction = 0.001;
     private const double StaffSpacingTolerance = 0.30;
     private const double BarlineEdgeToleranceInStaffSpaces = 0.25;
+    private const double VerticalSegmentJoinToleranceInStaffSpaces = 0.10;
 
     public IReadOnlyList<StaffSystem> Detect(IReadOnlyList<LineSegment> lines, RectD pageBounds)
     {
@@ -153,7 +154,20 @@ public sealed class StaffSystemDetector
             .Where(x => x.IsVertical(xTolerance))
             .ToList();
 
-        var highEnoughLines = verticalLines
+        // MuseScore 4.6 may emit one visual grand-staff barline as two adjacent SVG polylines:
+        // a long segment down to the upper edge of the lower staff, then a shorter continuation
+        // through the lower staff. SvgSceneGeometryReader quite correctly returns those as two
+        // LineSegments, so reconstruct the visual vertical line before applying height tests.
+        var verticalSegmentJoinTolerance = Math.Max(
+            yTolerance,
+            staffSpacing * VerticalSegmentJoinToleranceInStaffSpaces);
+
+        var mergedVerticalLines = MergeCollinearVerticalSegments(
+            verticalLines,
+            xTolerance,
+            verticalSegmentJoinTolerance);
+
+        var highEnoughLines = mergedVerticalLines
             .Where(x => x.Height >= requiredHeight)
             .ToList();
 
@@ -181,6 +195,92 @@ public sealed class StaffSystemDetector
         return barXs.Count >= 2
             ? new StaffSystem(left, right, top, bottom, staffs.Count, barXs, staffs)
             : null;
+    }
+
+    private static IReadOnlyList<LineSegment> MergeCollinearVerticalSegments(
+        IReadOnlyList<LineSegment> lines,
+        double xTolerance,
+        double yJoinTolerance)
+    {
+        var ordered = lines
+            .Select(x => new
+            {
+                Line = x,
+                X = (x.Start.X + x.End.X) / 2
+            })
+            .OrderBy(x => x.X)
+            .ThenBy(x => x.Line.Top)
+            .ToList();
+
+        var xGroups = new List<List<LineSegment>>();
+        var xGroupCenters = new List<double>();
+
+        foreach (var item in ordered)
+        {
+            var groupIndex = -1;
+            for (var i = xGroupCenters.Count - 1; i >= 0; i--)
+            {
+                if (item.X - xGroupCenters[i] > xTolerance)
+                    break;
+
+                if (Math.Abs(item.X - xGroupCenters[i]) <= xTolerance)
+                {
+                    groupIndex = i;
+                    break;
+                }
+            }
+
+            if (groupIndex < 0)
+            {
+                xGroups.Add(new List<LineSegment> { item.Line });
+                xGroupCenters.Add(item.X);
+                continue;
+            }
+
+            xGroups[groupIndex].Add(item.Line);
+            xGroupCenters[groupIndex] = xGroups[groupIndex]
+                .Average(x => (x.Start.X + x.End.X) / 2);
+        }
+
+        var result = new List<LineSegment>();
+
+        foreach (var xGroup in xGroups)
+        {
+            var byY = xGroup
+                .OrderBy(x => x.Top)
+                .ToList();
+
+            if (byY.Count == 0)
+                continue;
+
+            var x = byY.Average(line => (line.Start.X + line.End.X) / 2);
+            var currentTop = byY[0].Top;
+            var currentBottom = byY[0].Bottom;
+
+            for (var i = 1; i < byY.Count; i++)
+            {
+                var next = byY[i];
+
+                if (next.Top <= currentBottom + yJoinTolerance)
+                {
+                    currentBottom = Math.Max(currentBottom, next.Bottom);
+                    continue;
+                }
+
+                result.Add(new LineSegment(
+                    new PointD(x, currentTop),
+                    new PointD(x, currentBottom)));
+
+                currentTop = next.Top;
+                currentBottom = next.Bottom;
+            }
+
+            result.Add(new LineSegment(
+                new PointD(x, currentTop),
+                new PointD(x, currentBottom)));
+        }
+
+        return result;
     }
 
     private static IReadOnlyList<YLineGroup> GroupByY(
