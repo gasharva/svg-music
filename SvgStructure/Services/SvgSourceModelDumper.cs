@@ -14,11 +14,10 @@ public sealed record SvgSourceModelDumpResult(
     string UsesPath);
 
 /// <summary>
-/// Diagnostic probe for Svg.Skia's pre-render SVG object model. This deliberately walks
-/// SKSvg.SourceDocument rather than the flattened retained SKPicture model so we can see whether
-/// semantic elements such as &lt;use&gt; survive parsing and what instance metadata is available.
-/// Reflection is used for element-specific properties to keep the diagnostic resilient across
-/// Svg.Skia/Svg package versions.
+/// Diagnostic probe for Svg.Skia's pre-render SVG object model. Paths deliberately use the exact
+/// address convention from SvgElementAddressKeyCache: SvgDocument has no address; its direct
+/// children are 0, 1, 2... and descendants are 0/3/1 etc. These values can therefore be compared
+/// directly with retained CanvasCommand.SourceElementAddress.
 /// </summary>
 public sealed class SvgSourceModelDumper
 {
@@ -45,7 +44,7 @@ public sealed class SvgSourceModelDumper
         var elementCount = 0;
         var useCount = 0;
 
-        Walk(sourceDocument, "0", 0);
+        Walk(sourceDocument, null, 0);
 
         File.WriteAllText(treePath, tree.ToString());
         File.WriteAllText(
@@ -54,7 +53,7 @@ public sealed class SvgSourceModelDumper
 
         return new SvgSourceModelDumpResult(elementCount, useCount, treePath, usesPath);
 
-        void Walk(object node, string path, int depth)
+        void Walk(object node, string? path, int depth)
         {
             elementCount++;
             var type = node.GetType();
@@ -71,7 +70,7 @@ public sealed class SvgSourceModelDumper
                         string.Equals(elementName, "use", StringComparison.OrdinalIgnoreCase);
 
             tree.Append(' ', depth * 2);
-            tree.Append(path).Append("  ").Append(typeName);
+            tree.Append(path ?? "(document)").Append("  ").Append(typeName);
             if (!string.IsNullOrWhiteSpace(elementName)) tree.Append(" <").Append(elementName).Append('>');
             if (!string.IsNullOrWhiteSpace(id)) tree.Append(" id=").Append(id);
             if (!string.IsNullOrWhiteSpace(reference)) tree.Append(" ref=").Append(reference);
@@ -80,7 +79,7 @@ public sealed class SvgSourceModelDumper
                 tree.Append(" xy=").Append(x ?? "?").Append(',').Append(y ?? "?");
             tree.AppendLine();
 
-            if (isUse)
+            if (isUse && path is not null)
             {
                 useCount++;
                 uses.Add(new
@@ -101,7 +100,11 @@ public sealed class SvgSourceModelDumper
 
             var children = Children(node).ToArray();
             for (var i = 0; i < children.Length; i++)
-                Walk(children[i], path + "/" + i.ToString(CultureInfo.InvariantCulture), depth + 1);
+            {
+                var index = i.ToString(CultureInfo.InvariantCulture);
+                var childPath = path is null ? index : path + "/" + index;
+                Walk(children[i], childPath, depth + 1);
+            }
         }
     }
 
