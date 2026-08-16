@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Net;
 using System.Numerics;
 using System.Text;
 using SvgStructure.Models;
@@ -6,8 +7,9 @@ using SvgStructure.Models;
 namespace SvgStructure.Services;
 
 /// <summary>
-/// Step-2 diagnostic export. Writes every P+M primitive as a standalone SVG.
-/// Contours originating from the same SVG &lt;use&gt; are exported once as one complete glyph.
+/// Step-2 diagnostic export. Writes every P+M source instance as a standalone SVG.
+/// All contours that came from the same retained source picture are emitted once. This catches
+/// flattened SVG <use> instances even when Svg.Skia no longer labels their child paths as "use".
 /// </summary>
 public sealed class PrimitiveSvgExporter
 {
@@ -43,7 +45,7 @@ public sealed class PrimitiveSvgExporter
                 export.PartNumber,
                 export.MeasureNumber,
                 index,
-                export.SourceUseKey is not null,
+                export.Source,
                 export.Contours.Count,
                 export.Bounds));
         }
@@ -57,24 +59,24 @@ public sealed class PrimitiveSvgExporter
         IReadOnlyList<ResolvedPrimitive> primitives)
     {
         var result = new List<ExportCandidate>();
-        var emittedUses = new HashSet<string>(StringComparer.Ordinal);
+        var emittedGroups = new HashSet<string>(StringComparer.Ordinal);
 
         foreach (var primitive in primitives
                      .Where(x => x.PartNumber is not null && x.MeasureNumber is not null)
                      .OrderBy(x => x.Id))
         {
-            if (!string.IsNullOrWhiteSpace(primitive.SourceUseKey))
+            if (!string.IsNullOrWhiteSpace(primitive.Source.GroupAnchor))
             {
-                if (!emittedUses.Add(primitive.SourceUseKey!))
+                if (!emittedGroups.Add(primitive.Source.GroupAnchor!))
                     continue;
 
-                var contours = primitive.SourceUseContours is { Count: > 0 }
-                    ? primitive.SourceUseContours
+                var contours = primitive.SourceGroupContours is { Count: > 0 }
+                    ? primitive.SourceGroupContours
                     : new[] { primitive.Contour };
                 result.Add(new ExportCandidate(
                     primitive.PartNumber!.Value,
                     primitive.MeasureNumber!.Value,
-                    primitive.SourceUseKey,
+                    primitive.Source,
                     contours,
                     Bounds(contours)));
                 continue;
@@ -83,7 +85,7 @@ public sealed class PrimitiveSvgExporter
             result.Add(new ExportCandidate(
                 primitive.PartNumber!.Value,
                 primitive.MeasureNumber!.Value,
-                null,
+                primitive.Source,
                 new[] { primitive.Contour },
                 primitive.PhysicalBounds));
         }
@@ -123,16 +125,20 @@ public sealed class PrimitiveSvgExporter
         var sb = new StringBuilder();
         sb.AppendLine("<!doctype html>");
         sb.AppendLine("<html><head><meta charset=\"utf-8\"><title>Step 2 primitives</title>");
-        sb.AppendLine("<style>body{font-family:system-ui,Arial,sans-serif;margin:24px;background:#fafafa;color:#222}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px}.card{background:white;border:1px solid #ddd;border-radius:8px;padding:10px}.shape{height:130px;display:flex;align-items:center;justify-content:center;background:#f6f6f6}.shape img{max-width:100%;max-height:120px}.name{font:12px ui-monospace,Consolas,monospace;margin-top:8px;word-break:break-all}.meta{font-size:12px;color:#666;margin-top:4px}</style></head><body>");
-        sb.AppendLine($"<h1>Step 2 primitives</h1><p>{items.Count} exported P+M primitives. SVG &lt;use&gt; instances are emitted once with all contours.</p><div class=\"grid\">");
+        sb.AppendLine("<style>body{font-family:system-ui,Arial,sans-serif;margin:24px;background:#fafafa;color:#222}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}.card{background:white;border:1px solid #ddd;border-radius:8px;padding:10px}.shape{height:140px;display:flex;align-items:center;justify-content:center;background:#f6f6f6}.shape img{max-width:100%;max-height:130px}.name{font:12px ui-monospace,Consolas,monospace;margin-top:8px;word-break:break-all}.meta{font-size:12px;color:#666;margin-top:4px}.anchor{font:11px ui-monospace,Consolas,monospace;color:#888;word-break:break-all;margin-top:5px}</style></head><body>");
+        sb.AppendLine($"<h1>Step 2 primitives</h1><p>{items.Count} exported P+M source instances. Contours sharing one retained SVG source picture are emitted once.</p><div class=\"grid\">");
 
         foreach (var item in items)
         {
             var src = $"{DirectoryName}/{item.FileName}";
+            var kind = item.Source.GroupAnchor is null
+                ? "single"
+                : item.Source.IsExplicitUse ? "&lt;use&gt; group" : "source group";
             sb.AppendLine("<div class=\"card\">");
             sb.AppendLine($"<a class=\"shape\" href=\"{src}\"><img src=\"{src}\" loading=\"lazy\"></a>");
             sb.AppendLine($"<div class=\"name\">{item.FileName}</div>");
-            sb.AppendLine($"<div class=\"meta\">P{item.PartNumber}-M{item.MeasureNumber} · contours={item.ContourCount}{(item.IsUse ? " · &lt;use&gt;" : "")}</div>");
+            sb.AppendLine($"<div class=\"meta\">P{item.PartNumber}-M{item.MeasureNumber} · contours={item.ContourCount} · {kind}</div>");
+            sb.AppendLine($"<div class=\"anchor\">anchor: {H(item.Source.Anchor)}<br>group: {H(item.Source.GroupAnchor ?? "—")}</div>");
             sb.AppendLine("</div>");
         }
 
@@ -152,13 +158,14 @@ public sealed class PrimitiveSvgExporter
             points.Max(x => x.Y));
     }
 
+    private static string H(string value) => WebUtility.HtmlEncode(value);
     private static string F(double value) => value.ToString("0.####", CultureInfo.InvariantCulture);
     private static string F(float value) => value.ToString("0.####", CultureInfo.InvariantCulture);
 
     private sealed record ExportCandidate(
         int PartNumber,
         int MeasureNumber,
-        string? SourceUseKey,
+        PrimitiveSourceRef Source,
         IReadOnlyList<PrimitiveContour> Contours,
         RectD Bounds);
 }
@@ -168,7 +175,7 @@ public sealed record PrimitiveExportItem(
     int PartNumber,
     int MeasureNumber,
     int Index,
-    bool IsUse,
+    PrimitiveSourceRef Source,
     int ContourCount,
     RectD Bounds);
 
