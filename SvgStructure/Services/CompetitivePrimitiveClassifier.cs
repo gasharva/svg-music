@@ -11,7 +11,7 @@ namespace SvgStructure.Services;
 /// </summary>
 public sealed class CompetitivePrimitiveClassifier
 {
-    public double ProximityPercentOfMeasureHeight { get; init; } = 0.25;
+    public double ProximityInStaffSpaces { get; init; } = 2.0;
 
     public IReadOnlyDictionary<int, HashSet<StaffMeasureKey>> Classify(
         IReadOnlyList<RawPrimitive> primitives,
@@ -31,18 +31,21 @@ public sealed class CompetitivePrimitiveClassifier
         // Intersections with several regions are ambiguous immediately and never propagate.
         foreach (var primitive in primitives)
         {
-            var direct = regions
+            var directRegions = regions
                 .Where(x => primitive.Bounds.Intersects(x.Bounds))
+                .ToArray();
+
+            var directKeys = directRegions
                 .Select(x => x.Key)
                 .Distinct()
                 .ToArray();
 
-            if (direct.Length == 1)
+            if (directKeys.Length == 1)
             {
-                assigned[primitive.Id] = direct[0];
+                assigned[primitive.Id] = directKeys[0];
                 pending.Remove(primitive.Id);
             }
-            else if (direct.Length > 1)
+            else if (directKeys.Length > 1)
             {
                 ambiguous.Add(primitive.Id);
                 pending.Remove(primitive.Id);
@@ -76,22 +79,28 @@ public sealed class CompetitivePrimitiveClassifier
 
                 foreach (var region in regions)
                 {
-                    if (!primitive.Bounds.IntersectsHorizontally(region.Left, region.Right))
+                    var overlapsHorizontally = primitive.Bounds.IntersectsHorizontally(region.Left, region.Right);
+                    if (!overlapsHorizontally)
                         continue;
 
                     var limits = limitsByKey[region.Key];
-                    if (primitive.Bounds.Bottom < limits.Top || primitive.Bounds.Top > limits.Bottom)
+                    var insideVerticalLimits =
+                        primitive.Bounds.Bottom >= limits.Top &&
+                        primitive.Bounds.Top <= limits.Bottom;
+                    if (!insideVerticalLimits)
                         continue;
 
-                    var maxGap = Math.Max(1, region.Height * ProximityPercentOfMeasureHeight);
-                    if (IsCloseToColor(
-                            primitive.Bounds,
-                            virtualSeeds[region.Key],
-                            realSeedsByKey.GetValueOrDefault(region.Key),
-                            maxGap))
-                    {
+                    var staffSpace = region.Height <= 0 ? 0 : region.Height / 4.0;
+                    var maxGap = staffSpace * ProximityInStaffSpaces;
+
+                    var closeToColor = IsCloseToColor(
+                        primitive.Bounds,
+                        virtualSeeds[region.Key],
+                        realSeedsByKey.GetValueOrDefault(region.Key),
+                        maxGap);
+
+                    if (closeToColor)
                         nearbyColors.Add(region.Key);
-                    }
                 }
 
                 if (nearbyColors.Count == 1)
@@ -139,11 +148,15 @@ public sealed class CompetitivePrimitiveClassifier
         IReadOnlyList<RawPrimitive>? realSeeds,
         double maxGap)
     {
-        if (virtualSeeds.Any(x => RectangleDistance(candidate, x) <= maxGap))
+        var closeToVirtualSeed = virtualSeeds
+            .Any(x => RectangleDistance(candidate, x) <= maxGap);
+        if (closeToVirtualSeed)
             return true;
 
-        return realSeeds is not null &&
-               realSeeds.Any(x => RectangleDistance(candidate, x.Bounds) <= maxGap);
+        if (realSeeds is null)
+            return false;
+
+        return realSeeds.Any(x => RectangleDistance(candidate, x.Bounds) <= maxGap);
     }
 
     private static IReadOnlyList<RectD> CreateVirtualStaffLines(StaffMeasureRegion region)
@@ -169,8 +182,11 @@ public sealed class CompetitivePrimitiveClassifier
         RawPrimitive primitive,
         IReadOnlyList<StaffMeasureRegion> regions)
     {
-        var keys = regions
+        var horizontallyOverlapping = regions
             .Where(x => primitive.Bounds.IntersectsHorizontally(x.Left, x.Right))
+            .ToArray();
+
+        var keys = horizontallyOverlapping
             .Select(x => x.Key)
             .Distinct()
             .Take(2)
@@ -188,16 +204,20 @@ public sealed class CompetitivePrimitiveClassifier
         IReadOnlyList<StaffMeasureRegion> regions,
         RectD pageBounds)
     {
-        var above = regions
+        var otherRegions = regions
             .Where(x => x.Key != region.Key || x.SystemIndex != region.SystemIndex)
+            .ToArray();
+
+        var horizontallyOverlapping = otherRegions
             .Where(x => HorizontallyOverlaps(x, region))
+            .ToArray();
+
+        var above = horizontallyOverlapping
             .Where(x => x.Bottom <= region.Top)
             .OrderByDescending(x => x.Bottom)
             .FirstOrDefault();
 
-        var below = regions
-            .Where(x => x.Key != region.Key || x.SystemIndex != region.SystemIndex)
-            .Where(x => HorizontallyOverlaps(x, region))
+        var below = horizontallyOverlapping
             .Where(x => x.Top >= region.Bottom)
             .OrderBy(x => x.Top)
             .FirstOrDefault();
