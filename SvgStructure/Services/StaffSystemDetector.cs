@@ -9,6 +9,7 @@ public sealed class StaffSystemDetector
     private const double MinStaffLineWidthFraction = 0.35;
     private const double CoordinateToleranceFraction = 0.001;
     private const double StaffSpacingTolerance = 0.30;
+    private const double BarlineEdgeToleranceInStaffSpaces = 0.25;
 
     public IReadOnlyList<StaffSystem> Detect(IReadOnlyList<LineSegment> lines, RectD pageBounds)
     {
@@ -48,7 +49,7 @@ public sealed class StaffSystemDetector
         var grandStaffGroups = PairConsecutiveStaffs(staffs);
 
         var systems = grandStaffGroups
-            .Select(group => BuildSystem(group, lines, xTolerance, yTolerance))
+            .Select(group => BuildSystem(group, lines, staffSpacing, xTolerance, yTolerance))
             .ToList();
 
         var validSystems = systems
@@ -120,6 +121,7 @@ public sealed class StaffSystemDetector
     private static StaffSystem? BuildSystem(
         IReadOnlyList<DetectedStaff> detectedStaffs,
         IReadOnlyList<LineSegment> allLines,
+        double staffSpacing,
         double xTolerance,
         double yTolerance)
     {
@@ -135,7 +137,15 @@ public sealed class StaffSystemDetector
         var right = staffLines.Average(x => x.Right);
         var top = detectedStaffs.Min(x => x.Top);
         var bottom = detectedStaffs.Max(x => x.Bottom);
-        var requiredHeight = bottom - top - 2 * yTolerance;
+
+        // MuseScore/exporters may draw a grand-staff barline a little inside the outer staff-line
+        // centres. Treat a quarter of one staff space at each edge as equivalent to spanning the
+        // whole grand staff. This remains scale-independent and still rejects materially shorter
+        // vertical symbols/stems.
+        var barlineEdgeTolerance = Math.Max(
+            yTolerance,
+            staffSpacing * BarlineEdgeToleranceInStaffSpaces);
+        var requiredHeight = bottom - top - 2 * barlineEdgeTolerance;
 
         // Keep every filter as a named stage. Besides being easier to read, this makes it trivial
         // to see exactly which condition rejects geometry when debugging a new engraving style.
@@ -152,7 +162,9 @@ public sealed class StaffSystemDetector
             .ToList();
 
         var spanningGrandStaff = horizontallyInsideStaff
-            .Where(x => x.Top <= top + yTolerance && x.Bottom >= bottom - yTolerance)
+            .Where(x =>
+                x.Top <= top + barlineEdgeTolerance &&
+                x.Bottom >= bottom - barlineEdgeTolerance)
             .ToList();
 
         var barXValues = spanningGrandStaff
