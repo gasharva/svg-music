@@ -4,30 +4,39 @@ namespace SvgStructure.Services;
 
 public sealed class StaffSystemDetector
 {
-    private const double MinStaffLineWidth = 300;
-    private const double CoordinateTolerance = 0.75;
+    // Geometry thresholds in this detector are deliberately dimensionless. Different SVG exporters
+    // (and even different MuseScore page settings) use wildly different coordinate systems.
+    private const double MinStaffLineWidthFraction = 0.35;
+    private const double CoordinateToleranceFraction = 0.001;
     private const double StaffSpacingTolerance = 0.30;
-    private const double MaxGapBetweenStaffsInSystem = 12.0;
+    private const double MaxGapBetweenStaffsInSystemFraction = 0.09;
 
-    public IReadOnlyList<StaffSystem> Detect(IReadOnlyList<LineSegment> lines)
+    public IReadOnlyList<StaffSystem> Detect(IReadOnlyList<LineSegment> lines, RectD pageBounds)
     {
+        var pageWidth = Math.Max(1e-9, pageBounds.Width);
+        var pageHeight = Math.Max(1e-9, pageBounds.Height);
+        var xTolerance = pageWidth * CoordinateToleranceFraction;
+        var yTolerance = pageHeight * CoordinateToleranceFraction;
+        var minStaffLineWidth = pageWidth * MinStaffLineWidthFraction;
+        var maxGapBetweenStaffsInSystem = pageHeight * MaxGapBetweenStaffsInSystemFraction;
+
         var horizontalCandidates = lines
-            .Where(x => x.IsHorizontal() && x.Width >= MinStaffLineWidth)
+            .Where(x => x.IsHorizontal(yTolerance) && x.Width >= minStaffLineWidth)
             .OrderBy(CenterY)
             .ToList();
 
         if (horizontalCandidates.Count < 5)
             return Array.Empty<StaffSystem>();
 
-        var yGroups = GroupByY(horizontalCandidates);
-        var staffSpacing = EstimateStaffSpacing(yGroups.Select(x => x.Y).ToList());
+        var yGroups = GroupByY(horizontalCandidates, yTolerance);
+        var staffSpacing = EstimateStaffSpacing(yGroups.Select(x => x.Y).ToList(), yTolerance);
         var staffs = DetectFiveLineStaffs(yGroups, staffSpacing);
 
         if (staffs.Count == 0)
             return Array.Empty<StaffSystem>();
 
-        return GroupStaffsIntoSystems(staffs, staffSpacing)
-            .Select(group => BuildSystem(group, lines))
+        return GroupStaffsIntoSystems(staffs, maxGapBetweenStaffsInSystem)
+            .Select(group => BuildSystem(group, lines, xTolerance, yTolerance))
             .Where(x => x is not null)
             .Cast<StaffSystem>()
             .OrderBy(x => x.Top)
@@ -77,11 +86,10 @@ public sealed class StaffSystemDetector
 
     private static IReadOnlyList<IReadOnlyList<DetectedStaff>> GroupStaffsIntoSystems(
         IReadOnlyList<DetectedStaff> staffs,
-        double spacing)
+        double maxGap)
     {
         var result = new List<IReadOnlyList<DetectedStaff>>();
         var current = new List<DetectedStaff>();
-        var maxGap = spacing * MaxGapBetweenStaffsInSystem;
 
         foreach (var staff in staffs.OrderBy(x => x.Top))
         {
@@ -102,7 +110,9 @@ public sealed class StaffSystemDetector
 
     private static StaffSystem? BuildSystem(
         IReadOnlyList<DetectedStaff> detectedStaffs,
-        IReadOnlyList<LineSegment> allLines)
+        IReadOnlyList<LineSegment> allLines,
+        double xTolerance,
+        double yTolerance)
     {
         if (detectedStaffs.Count == 0)
             return null;
@@ -116,14 +126,17 @@ public sealed class StaffSystemDetector
         var right = staffLines.Average(x => x.Right);
         var top = detectedStaffs.Min(x => x.Top);
         var bottom = detectedStaffs.Max(x => x.Bottom);
-        var requiredHeight = bottom - top - 2;
+        var requiredHeight = bottom - top - 2 * yTolerance;
 
+        // Barlines are still deliberately expected to cross the entire grand staff. The only
+        // change here is that equality/edge tolerances now scale with the page instead of assuming
+        // a particular SVG unit system.
         var barXs = Distinct(allLines
-                .Where(x => x.IsVertical())
+                .Where(x => x.IsVertical(xTolerance))
                 .Where(x => x.Height >= requiredHeight)
-                .Where(x => x.Left >= left - 1 && x.Left <= right + 1)
-                .Where(x => x.Top <= top + 1 && x.Bottom >= bottom - 1)
-                .Select(x => (x.Start.X + x.End.X) / 2))
+                .Where(x => x.Left >= left - xTolerance && x.Left <= right + xTolerance)
+                .Where(x => x.Top <= top + yTolerance && x.Bottom >= bottom - yTolerance)
+                .Select(x => (x.Start.X + x.End.X) / 2), xTolerance)
             .OrderBy(x => x)
             .ToList();
 
@@ -132,7 +145,9 @@ public sealed class StaffSystemDetector
             : null;
     }
 
-    private static IReadOnlyList<YLineGroup> GroupByY(IReadOnlyList<LineSegment> lines)
+    private static IReadOnlyList<YLineGroup> GroupByY(
+        IReadOnlyList<LineSegment> lines,
+        double tolerance)
     {
         var result = new List<YLineGroup>();
 
@@ -141,7 +156,7 @@ public sealed class StaffSystemDetector
             var y = CenterY(line);
             var existing = result.LastOrDefault();
 
-            if (existing is not null && Math.Abs(y - existing.Y) <= CoordinateTolerance)
+            if (existing is not null && Math.Abs(y - existing.Y) <= tolerance)
             {
                 existing.Lines.Add(line);
                 existing.Y = existing.Lines.Average(CenterY);
@@ -155,11 +170,11 @@ public sealed class StaffSystemDetector
         return result;
     }
 
-    private static double EstimateStaffSpacing(IReadOnlyList<double> ys)
+    private static double EstimateStaffSpacing(IReadOnlyList<double> ys, double coordinateTolerance)
     {
         var gaps = ys
             .Zip(ys.Skip(1), (a, b) => b - a)
-            .Where(x => x > CoordinateTolerance)
+            .Where(x => x > coordinateTolerance)
             .OrderBy(x => x)
             .ToList();
 
@@ -176,12 +191,12 @@ public sealed class StaffSystemDetector
     private static double CenterY(LineSegment line) =>
         (line.Start.Y + line.End.Y) / 2;
 
-    private static IEnumerable<double> Distinct(IEnumerable<double> values)
+    private static IEnumerable<double> Distinct(IEnumerable<double> values, double tolerance)
     {
         double? previous = null;
         foreach (var value in values.OrderBy(x => x))
         {
-            if (previous is null || Math.Abs(value - previous.Value) > CoordinateTolerance)
+            if (previous is null || Math.Abs(value - previous.Value) > tolerance)
             {
                 yield return value;
                 previous = value;
