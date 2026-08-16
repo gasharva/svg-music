@@ -136,8 +136,6 @@ public sealed class StepByStepBatchRunner
 
             diagnosticNumberRecognizer.BeginDocument(Path.Combine(itemDirectory, "meter-inputs"));
 
-            // First semantic resolver migrated to MusicSymbolResolution: meter recognition now uses
-            // smooth source Beziers from symbol candidates rather than PrimitiveResolver contours.
             var meters = structure.Map.Blocks
                 .Select(block => meterResolver.Resolve(block, musicSymbols))
                 .Where(x => x is not null)
@@ -146,10 +144,9 @@ public sealed class StepByStepBatchRunner
 
             var logicalGrid = _logicalGridResolver.Resolve(structure, meters);
 
-            // ClefResolver still consumes primitives until the meter migration is validated.
             diagnosticClefRecognizer.BeginDocument(Path.Combine(itemDirectory, "clef-inputs"));
             var clefs = structure.Map.Blocks
-                .SelectMany(block => clefResolver.Resolve(block, primitives, logicalGrid))
+                .SelectMany(block => clefResolver.Resolve(block, musicSymbols, logicalGrid))
                 .ToArray();
 
             _partMeasureOverlayRenderer.Render(
