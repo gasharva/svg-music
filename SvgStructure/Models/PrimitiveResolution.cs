@@ -18,7 +18,9 @@ public sealed record ResolvedPrimitive(
     PrimitiveContour Contour,
     PrimitiveLogicalScope Scope,
     int? PartNumber,
-    int? MeasureNumber)
+    int? MeasureNumber,
+    string? SourceUseKey = null,
+    IReadOnlyList<PrimitiveContour>? SourceUseContours = null)
 {
     public string LogicalLabel => Scope switch
     {
