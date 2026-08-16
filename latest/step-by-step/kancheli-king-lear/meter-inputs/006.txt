@@ -1,8 +1,8 @@
-contours: 1
-points: 116
+contours: 2
+points: 285
 value: 1
-confidence: 0.1677
+confidence: 0.0674
 candidates:
-  1: 0.1677
-  4: 0.0046
-  7: 0.0025
+  1: 0.0674
+  4: 0.0361
+  5: 0.0093
