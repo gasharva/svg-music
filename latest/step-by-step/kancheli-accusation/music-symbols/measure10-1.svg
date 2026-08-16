@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="43.1329 733.6187 30.3247 123.9707">
-  <path fill="black" fill-rule="evenodd" d="M46.078 558.98 c-11.863 18.989 5.934 28.082 -4.746 37.575 h0.594 c9.969 -7.117 -3.086 -23.332 4.035 -36.149"/>
-  <path fill="black" fill-rule="evenodd" d="M46.078 633.934 c-11.863 -18.985 5.934 -27.883 -4.746 -37.38 h0.594 c9.969 7.122 -3.086 23.141 4.035 35.954"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="20.1384 710.6241 76.3138 169.9598">
+  <rect x="55.1301" y="745.6158" width="6.3304" height="50.1189" fill="none" stroke="#999" stroke-width="0.45" stroke-dasharray="1.2 0.8"/>
+  <rect x="55.1301" y="795.7335" width="6.3304" height="49.8588" fill="none" stroke="#999" stroke-width="0.45" stroke-dasharray="1.2 0.8"/>
+  <path fill="black" fill-rule="evenodd" transform="matrix(1.333835 0 0 1.333835 0.000031 0.028809)" d="M46.078 558.98 c-11.863 18.989 5.934 28.082 -4.746 37.575 h0.594 c9.969 -7.117 -3.086 -23.332 4.035 -36.149"/>
+  <path fill="black" fill-rule="evenodd" transform="matrix(1.333835 0 0 1.333835 0.000031 0.028809)" d="M46.078 633.934 c-11.863 -18.985 5.934 -27.883 -4.746 -37.38 h0.594 c9.969 7.122 -3.086 23.141 4.035 35.954"/>
 </svg>
