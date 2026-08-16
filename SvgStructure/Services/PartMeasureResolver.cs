@@ -17,8 +17,16 @@ public sealed class PartMeasureResolver
     {
         svgPath = Path.GetFullPath(svgPath);
 
+        // Resolve the physical page first. Staff detection must be scale-independent: SVG exporters
+        // are free to choose completely different coordinate systems for the same printed page.
+        using var svg = SKSvg.CreateFromFile(svgPath);
+        var picture = svg.Picture
+            ?? throw new InvalidOperationException("Svg.Skia did not produce a renderable picture.");
+        var page = picture.CullRect;
+        var pageBounds = new RectD(page.Left, page.Top, page.Right, page.Bottom);
+
         var lines = _geometryReader.ReadLines(svgPath);
-        var systems = _systemDetector.Detect(lines);
+        var systems = _systemDetector.Detect(lines, pageBounds);
         if (systems.Count == 0)
             throw new InvalidOperationException("No staff systems were detected.");
 
@@ -55,12 +63,6 @@ public sealed class PartMeasureResolver
                 }
             }
         }
-
-        using var svg = SKSvg.CreateFromFile(svgPath);
-        var picture = svg.Picture
-            ?? throw new InvalidOperationException("Svg.Skia did not produce a renderable picture.");
-        var page = picture.CullRect;
-        var pageBounds = new RectD(page.Left, page.Top, page.Right, page.Bottom);
 
         return new PartMeasureResolution(
             svgPath,
