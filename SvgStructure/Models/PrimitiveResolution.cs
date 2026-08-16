@@ -8,9 +8,9 @@ public enum PrimitiveLogicalScope
 }
 
 /// <summary>
-/// A real content primitive from the SVG, enriched with logical score coordinates and its
-/// physical vector contour. After PrimitiveResolver, later recognition must use this geometry
-/// rather than reopening the source SVG.
+/// A real content primitive from the SVG, enriched with logical score coordinates, physical vector
+/// geometry and stable source provenance. Later steps must preserve Source so any recognition result
+/// can be traced back to the original SVG scene/XML element without reopening the source SVG.
 /// </summary>
 public sealed record ResolvedPrimitive(
     int Id,
@@ -19,8 +19,8 @@ public sealed record ResolvedPrimitive(
     PrimitiveLogicalScope Scope,
     int? PartNumber,
     int? MeasureNumber,
-    string? SourceUseKey = null,
-    IReadOnlyList<PrimitiveContour>? SourceUseContours = null)
+    PrimitiveSourceRef Source,
+    IReadOnlyList<PrimitiveContour>? SourceGroupContours = null)
 {
     public string LogicalLabel => Scope switch
     {
