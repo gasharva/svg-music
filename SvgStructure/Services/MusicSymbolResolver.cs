@@ -221,7 +221,8 @@ public sealed class MusicSymbolResolver
     private static IEnumerable<SmoothSvgPath> ResolveSmoothPaths(SKSvg svg, ResolvedPrimitive primitive)
     {
         var address = NormalizeAddress(primitive.Source.ElementAddress);
-        if (address is null || !svg.TryGetRetainedSceneNodes(address, out var nodes) || nodes.Count == 0)
+        var scene = svg.RetainedSceneGraph;
+        if (address is null || scene is null || !svg.TryGetRetainedSceneNodes(address, out var nodes) || nodes.Count == 0)
             yield break;
 
         var root = nodes
@@ -231,12 +232,21 @@ public sealed class MusicSymbolResolver
 
         foreach (var node in DescendantsAndSelf(root))
         {
-            var pathData = ReadPathData(node.Element);
+            var sourceAddress = node.ElementAddressKey ?? address;
+
+            // Important: node.Element may be a compiled/derived scene element whose PathData has already
+            // been flattened to line segments. Resolve the element again from SvgSceneDocument.SourceDocument
+            // by its stable address so we read the original SVG path commands (C/Q/A etc.).
+            object? sourceElement = node.Element;
+            if (scene.TryGetElement(sourceAddress, out var originalElement) && originalElement is not null)
+                sourceElement = originalElement;
+
+            var pathData = ReadPathData(sourceElement);
             if (string.IsNullOrWhiteSpace(pathData))
                 continue;
 
             yield return new SmoothSvgPath(
-                node.ElementAddressKey ?? address,
+                sourceAddress,
                 pathData!,
                 Matrix(node.TotalTransform));
         }
