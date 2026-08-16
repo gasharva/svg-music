@@ -18,8 +18,17 @@ public sealed class StaffSystemDetector
         var yTolerance = pageHeight * CoordinateToleranceFraction;
         var minStaffLineWidth = pageWidth * MinStaffLineWidthFraction;
 
-        var horizontalCandidates = lines
-            .Where(x => x.IsHorizontal(yTolerance) && x.Width >= minStaffLineWidth)
+        // Keep filtering stages separate on purpose: these intermediate collections are useful
+        // breakpoints/watch targets when a new SVG layout stops being detected.
+        var horizontalLines = lines
+            .Where(x => x.IsHorizontal(yTolerance))
+            .ToList();
+
+        var wideHorizontalLines = horizontalLines
+            .Where(x => x.Width >= minStaffLineWidth)
+            .ToList();
+
+        var horizontalCandidates = wideHorizontalLines
             .OrderBy(CenterY)
             .ToList();
 
@@ -36,10 +45,18 @@ public sealed class StaffSystemDetector
         // Temporary but deterministic score model: every input system is a grand staff made of
         // exactly two consecutive five-line staves. Do not infer system membership from page
         // geometry here; that made the detector depend too heavily on engraving/page layout.
-        return PairConsecutiveStaffs(staffs)
+        var grandStaffGroups = PairConsecutiveStaffs(staffs);
+
+        var systems = grandStaffGroups
             .Select(group => BuildSystem(group, lines, xTolerance, yTolerance))
+            .ToList();
+
+        var validSystems = systems
             .Where(x => x is not null)
             .Cast<StaffSystem>()
+            .ToList();
+
+        return validSystems
             .OrderBy(x => x.Top)
             .ToList();
     }
@@ -120,14 +137,32 @@ public sealed class StaffSystemDetector
         var bottom = detectedStaffs.Max(x => x.Bottom);
         var requiredHeight = bottom - top - 2 * yTolerance;
 
-        // Barlines are deliberately expected to cross the entire grand staff. Equality/edge
-        // tolerances scale with the page instead of assuming a particular SVG unit system.
-        var barXs = Distinct(allLines
-                .Where(x => x.IsVertical(xTolerance))
-                .Where(x => x.Height >= requiredHeight)
-                .Where(x => x.Left >= left - xTolerance && x.Left <= right + xTolerance)
-                .Where(x => x.Top <= top + yTolerance && x.Bottom >= bottom - yTolerance)
-                .Select(x => (x.Start.X + x.End.X) / 2), xTolerance)
+        // Keep every filter as a named stage. Besides being easier to read, this makes it trivial
+        // to see exactly which condition rejects geometry when debugging a new engraving style.
+        var verticalLines = allLines
+            .Where(x => x.IsVertical(xTolerance))
+            .ToList();
+
+        var highEnoughLines = verticalLines
+            .Where(x => x.Height >= requiredHeight)
+            .ToList();
+
+        var horizontallyInsideStaff = highEnoughLines
+            .Where(x => x.Left >= left - xTolerance && x.Left <= right + xTolerance)
+            .ToList();
+
+        var spanningGrandStaff = horizontallyInsideStaff
+            .Where(x => x.Top <= top + yTolerance && x.Bottom >= bottom - yTolerance)
+            .ToList();
+
+        var barXValues = spanningGrandStaff
+            .Select(x => (x.Start.X + x.End.X) / 2)
+            .ToList();
+
+        var distinctBarXs = Distinct(barXValues, xTolerance)
+            .ToList();
+
+        var barXs = distinctBarXs
             .OrderBy(x => x)
             .ToList();
 
