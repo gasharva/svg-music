@@ -11,6 +11,17 @@ public sealed class MusicSymbolSvgExporter
     public const string DirectoryName = "music-symbols";
     public const string GalleryFileName = "music-symbols.html";
 
+    private readonly bool _drawPrimitiveBounds;
+
+    /// <param name="drawPrimitiveBounds">
+    /// Draw the PrimitiveResolver bbox scaffold into exported SVGs. Off by default so the files can
+    /// be reused directly for recognition/debugging without gray diagnostic geometry contaminating them.
+    /// </param>
+    public MusicSymbolSvgExporter(bool drawPrimitiveBounds = false)
+    {
+        _drawPrimitiveBounds = drawPrimitiveBounds;
+    }
+
     public MusicSymbolExportResult Export(MusicSymbolResolution resolution, string itemDirectory)
     {
         var outputDirectory = Path.Combine(itemDirectory, DirectoryName);
@@ -19,6 +30,7 @@ public sealed class MusicSymbolSvgExporter
         Directory.CreateDirectory(outputDirectory);
 
         var counters = new Dictionary<(int? Part, int Measure), int>();
+        var splitCounters = new Dictionary<int, int>();
         var items = new List<MusicSymbolExportItem>();
 
         foreach (var candidate in resolution.Candidates)
@@ -31,7 +43,20 @@ public sealed class MusicSymbolSvgExporter
             var prefix = candidate.PartNumber is null
                 ? $"measure{candidate.MeasureNumber}"
                 : $"part{candidate.PartNumber}-measure{candidate.MeasureNumber}";
-            var fileName = $"{prefix}-{index}.svg";
+
+            string fileName;
+            if (candidate.ParentCandidateId is int parentId)
+            {
+                splitCounters.TryGetValue(parentId, out var splitIndex);
+                splitIndex++;
+                splitCounters[parentId] = splitIndex;
+                fileName = $"{prefix}-candidate{parentId}-split{splitIndex}.svg";
+            }
+            else
+            {
+                fileName = $"{prefix}-{index}.svg";
+            }
+
             WriteSvg(Path.Combine(outputDirectory, fileName), candidate);
             items.Add(new MusicSymbolExportItem(fileName, candidate, index));
         }
@@ -41,11 +66,8 @@ public sealed class MusicSymbolSvgExporter
         return new MusicSymbolExportResult(outputDirectory, galleryPath, items);
     }
 
-    private static void WriteSvg(string path, MusicSymbolCandidate candidate)
+    private void WriteSvg(string path, MusicSymbolCandidate candidate)
     {
-        // Include both the PrimitiveResolver scaffold and the transformed smooth geometry. The
-        // scaffold determines the viewport, while a little extra padding makes transform mistakes
-        // visible instead of silently clipping them at the candidate edge.
         var b = candidate.PhysicalBounds;
         var extent = Math.Max(b.Width, b.Height);
         var pad = Math.Max(extent * 0.35, 2.0);
@@ -56,10 +78,12 @@ public sealed class MusicSymbolSvgExporter
         sb.AppendLine("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
         sb.AppendLine($"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"{F(b.Left - pad)} {F(b.Top - pad)} {F(width)} {F(height)}\">");
 
-        // PrimitiveResolver evidence: never used as recognition geometry, only shown for alignment.
-        foreach (var box in candidate.PrimitiveBounds)
+        if (_drawPrimitiveBounds)
         {
-            sb.AppendLine($"  <rect x=\"{F(box.Left)}\" y=\"{F(box.Top)}\" width=\"{F(box.Width)}\" height=\"{F(box.Height)}\" fill=\"none\" stroke=\"#999\" stroke-width=\"0.45\" stroke-dasharray=\"1.2 0.8\"/>");
+            foreach (var box in candidate.PrimitiveBounds)
+            {
+                sb.AppendLine($"  <rect x=\"{F(box.Left)}\" y=\"{F(box.Top)}\" width=\"{F(box.Width)}\" height=\"{F(box.Height)}\" fill=\"none\" stroke=\"#999\" stroke-width=\"0.45\" stroke-dasharray=\"1.2 0.8\"/>");
+            }
         }
 
         foreach (var smooth in candidate.SmoothPaths)
@@ -73,18 +97,28 @@ public sealed class MusicSymbolSvgExporter
         File.WriteAllText(path, sb.ToString());
     }
 
-    private static void WriteGallery(string path, IReadOnlyList<MusicSymbolExportItem> items)
+    private void WriteGallery(string path, IReadOnlyList<MusicSymbolExportItem> items)
     {
         var resolved = items.Where(x => x.Candidate.SmoothPaths.Count > 0).ToArray();
         var unresolved = items.Where(x => x.Candidate.SmoothPaths.Count == 0).ToArray();
+        var roots = resolved.Where(x => !x.Candidate.IsDerived).ToArray();
+        var derived = resolved.Where(x => x.Candidate.IsDerived).ToArray();
 
         var sb = new StringBuilder();
         sb.AppendLine("<!doctype html><html><head><meta charset=\"utf-8\"><title>Music symbol candidates</title>");
-        sb.AppendLine("<style>body{font-family:system-ui,Arial,sans-serif;margin:24px;background:#fafafa;color:#222}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}.card{background:#fff;border:1px solid #ddd;border-radius:8px;padding:10px}.shape{height:150px;display:flex;align-items:center;justify-content:center;background:#f6f6f6}.shape img{max-width:100%;max-height:140px}.name{font:12px ui-monospace,Consolas,monospace;margin-top:8px}.meta{font-size:12px;color:#666;margin-top:4px}.src{font:10px ui-monospace,Consolas,monospace;color:#888;margin-top:5px;word-break:break-all}.bad{color:#a00}h2{margin-top:36px}</style></head><body>");
-        sb.AppendLine($"<h1>MusicSymbolResolver</h1><p>{items.Count} candidates: {resolved.Length} with retained smooth geometry, {unresolved.Length} unresolved. Gray dashed boxes are the PrimitiveResolver artifacts used only for spatial grouping; black paths are original Beziers positioned by Svg.Skia's retained-scene TotalTransform.</p>");
-        sb.AppendLine("<h2>Resolved smooth geometry</h2><div class=\"grid\">");
-        WriteCards(sb, resolved);
+        sb.AppendLine("<style>body{font-family:system-ui,Arial,sans-serif;margin:24px;background:#fafafa;color:#222}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}.card{background:#fff;border:1px solid #ddd;border-radius:8px;padding:10px}.shape{height:150px;display:flex;align-items:center;justify-content:center;background:#f6f6f6}.shape img{max-width:100%;max-height:140px}.name{font:12px ui-monospace,Consolas,monospace;margin-top:8px}.meta{font-size:12px;color:#666;margin-top:4px}.src{font:10px ui-monospace,Consolas,monospace;color:#888;margin-top:5px;word-break:break-all}.bad{color:#a00}.split{border-color:#9ab6d8}h2{margin-top:36px}</style></head><body>");
+        sb.AppendLine($"<h1>MusicSymbolResolver</h1><p>{items.Count} candidates total: {roots.Length} resolved bbox roots, {derived.Length} ink-split alternatives, {unresolved.Length} unresolved. Primitive bbox drawing in exported SVGs is {(_drawPrimitiveBounds ? "ON" : "OFF")}.</p>");
+
+        sb.AppendLine("<h2>Original bbox candidates</h2><div class=\"grid\">");
+        WriteCards(sb, roots);
         sb.AppendLine("</div>");
+
+        if (derived.Length > 0)
+        {
+            sb.AppendLine($"<h2>Ink-split alternatives ({derived.Length})</h2><p>Generated only when a bbox candidate contains multiple disconnected positive-area ink components. The original parent candidate above is always preserved.</p><div class=\"grid\">");
+            WriteCards(sb, derived);
+            sb.AppendLine("</div>");
+        }
 
         if (unresolved.Length > 0)
         {
@@ -103,10 +137,13 @@ public sealed class MusicSymbolSvgExporter
         {
             var c = item.Candidate;
             var src = $"{DirectoryName}/{item.FileName}";
-            sb.AppendLine("<div class=\"card\">");
+            var css = c.IsDerived ? "card split" : "card";
+            sb.AppendLine($"<div class=\"{css}\">");
             sb.AppendLine($"<a class=\"shape\" href=\"{src}\"><img src=\"{src}\" loading=\"lazy\"></a>");
             sb.AppendLine($"<div class=\"name\">{H(item.FileName)}</div>");
-            sb.AppendLine($"<div class=\"meta\">{H(c.LogicalLabel)} · primitives={c.PrimitiveIds.Count} · smooth paths={c.SmoothPaths.Count}</div>");
+            sb.AppendLine($"<div class=\"meta\">#{c.Id} · {H(c.LogicalLabel)} · primitives={c.PrimitiveIds.Count} · smooth paths={c.SmoothPaths.Count}</div>");
+            if (c.ParentCandidateId is int parentId)
+                sb.AppendLine($"<div class=\"meta\"><b>ink split of parent #{parentId}</b></div>");
             if (c.SmoothPaths.Count == 0)
                 sb.AppendLine("<div class=\"meta bad\">No retained smooth path resolved</div>");
             sb.AppendLine($"<div class=\"src\">primitive ids: {string.Join(",", c.PrimitiveIds)}<br>{string.Join("<br>", c.Sources.Select(x => H(x.ElementAddress ?? x.Anchor)))}</div>");
