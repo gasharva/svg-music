@@ -1,17 +1,21 @@
 using System.Numerics;
+using System.Text;
+using Svg.Skia;
 using SvgStructure.Models;
 using SvgSymbols.Services;
+using Shim = ShimSkiaSharp;
 
 namespace SvgStructure.Services;
 
 /// <summary>
-/// Pipeline step 3. Works exclusively on step-2 primitives.
-/// A conventional numeric time signature is two vertically stacked number shapes with almost
-/// the same horizontal footprint. We detect that cheap geometry first and only then invoke the
-/// heavier number recognizer. The source SVG is deliberately not accessible here.
+/// Resolves conventional numeric time signatures from MusicSymbolResolver candidates.
+/// Candidate grouping and placement come from the pipeline; recognition consumes only the
+/// recovered smooth Bezier geometry carried by MusicSymbolCandidate.
 /// </summary>
 public sealed class MeterResolver
 {
+    private const int CurveSteps = 20;
+
     private static readonly HashSet<(int Beats, int Value)> SupportedMeters = new()
     {
         (2, 2), (2, 4), (2, 8),
@@ -29,9 +33,9 @@ public sealed class MeterResolver
     public MeterResolver(ISvgNumberRecognizer numberRecognizer) =>
         _numberRecognizer = numberRecognizer;
 
-    public MeterResolution? Resolve(PartMeasureBlock block, PrimitiveResolution primitives)
+    public MeterResolution? Resolve(PartMeasureBlock block, MusicSymbolResolution symbols)
     {
-        var available = primitives.Primitives
+        var available = symbols.Candidates
             .Where(x =>
                 x.Scope == PrimitiveLogicalScope.PartMeasure &&
                 x.PartNumber == block.PartNumber &&
@@ -41,6 +45,7 @@ public sealed class MeterResolver
             .Where(x => x.PhysicalBounds.IntersectsHorizontally(
                 block.PhysicalBounds.Left,
                 block.PhysicalBounds.Right))
+            .Where(x => x.SmoothPaths.Count > 0)
             .ToArray();
 
         if (available.Length < 2 || block.PhysicalBounds.Height <= 0)
@@ -67,16 +72,13 @@ public sealed class MeterResolver
 
     private static IReadOnlyList<MeterCandidate> BuildCandidates(
         PartMeasureBlock block,
-        IReadOnlyList<ResolvedPrimitive> primitives)
+        IReadOnlyList<MusicSymbolCandidate> symbols)
     {
         var b = block.PhysicalBounds;
         var staffHeight = b.Height;
         var middleY = b.CenterY;
 
-        // A time-signature digit normally occupies a substantial fraction of one half of the
-        // five-line staff. Tiny dots/accidentals, very thin vertical ornaments (for example
-        // arpeggiation squiggles) and huge clefs are poor row candidates.
-        var rowPrimitives = primitives
+        var rowSymbols = symbols
             .Where(x => x.PhysicalBounds.Height >= staffHeight * 0.22)
             .Where(x => x.PhysicalBounds.Height <= staffHeight * 0.72)
             .Where(x => x.PhysicalBounds.Width <= staffHeight * 1.15)
@@ -84,8 +86,8 @@ public sealed class MeterResolver
             .Where(x => x.PhysicalBounds.Width / Math.Max(1e-9, x.PhysicalBounds.Height) >= 0.20)
             .ToArray();
 
-        var upper = rowPrimitives.Where(x => x.PhysicalBounds.CenterY < middleY).ToArray();
-        var lower = rowPrimitives.Where(x => x.PhysicalBounds.CenterY >= middleY).ToArray();
+        var upper = rowSymbols.Where(x => x.PhysicalBounds.CenterY < middleY).ToArray();
+        var lower = rowSymbols.Where(x => x.PhysicalBounds.CenterY >= middleY).ToArray();
 
         var upperClusters = BuildRowClusters(upper, staffHeight);
         var lowerClusters = BuildRowClusters(lower, staffHeight);
@@ -108,13 +110,10 @@ public sealed class MeterResolver
                 if (widthRatio < 0.48 || heightRatio < 0.52)
                     continue;
 
-                // The combined meter column itself must also have meaningful width. This catches
-                // vertically long, narrow symbols that happen to split into two aligned pieces.
                 var averageRowWidth = (top.Bounds.Width + bottom.Bounds.Width) / 2d;
                 if (averageRowWidth < staffHeight * 0.14)
                     continue;
 
-                // Stacked rows should meet around the staff middle, not live on the same side.
                 var verticalGap = bottom.Bounds.Top - top.Bounds.Bottom;
                 if (verticalGap > staffHeight * 0.24 || verticalGap < -staffHeight * 0.18)
                     continue;
@@ -128,8 +127,6 @@ public sealed class MeterResolver
                 if (side is null)
                     continue;
 
-                // Alignment is by far the strongest cheap signal. A genuine 4/4 in our samples,
-                // for example, has practically identical x-bounds for the two fours.
                 var geometryScore =
                     1.8 * xOverlap +
                     0.65 * widthRatio +
@@ -146,8 +143,6 @@ public sealed class MeterResolver
             }
         }
 
-        // Several clusters can describe the same glyphs. Keep only the strongest version of each
-        // physical location before invoking the expensive recognizer.
         return result
             .OrderByDescending(x => x.GeometryScore)
             .GroupBy(x => (
@@ -159,21 +154,19 @@ public sealed class MeterResolver
     }
 
     private static IReadOnlyList<RowCluster> BuildRowClusters(
-        IReadOnlyList<ResolvedPrimitive> primitives,
+        IReadOnlyList<MusicSymbolCandidate> symbols,
         double staffHeight)
     {
-        if (primitives.Count == 0)
+        if (symbols.Count == 0)
             return Array.Empty<RowCluster>();
 
-        var ordered = primitives.OrderBy(x => x.PhysicalBounds.Left).ToArray();
+        var ordered = symbols.OrderBy(x => x.PhysicalBounds.Left).ToArray();
         var result = new List<RowCluster>();
 
-        // Every primitive is a valid one-symbol cluster.
-        foreach (var primitive in ordered)
-            result.Add(new RowCluster(new[] { primitive }, primitive.PhysicalBounds));
+        foreach (var symbol in ordered)
+            result.Add(new RowCluster(new[] { symbol }, symbol.PhysicalBounds));
 
-        // Compound numbers such as 12 and 16 consist of adjacent primitives. Build only short,
-        // tightly-spaced horizontal groups; no generic combinatorial search is needed.
+        // Compound meter numbers (12, 16) may still arrive as adjacent symbol candidates.
         for (var i = 0; i < ordered.Length - 1; i++)
         {
             var first = ordered[i];
@@ -196,8 +189,13 @@ public sealed class MeterResolver
 
     private ScoredMeter? RecognizeCandidate(PartMeasureBlock block, MeterCandidate candidate)
     {
-        var top = _numberRecognizer.Recognize(ToContours(candidate.Top.Primitives));
-        var bottom = _numberRecognizer.Recognize(ToContours(candidate.Bottom.Primitives));
+        var topContours = ToContours(candidate.Top.Symbols);
+        var bottomContours = ToContours(candidate.Bottom.Symbols);
+        if (topContours.Count == 0 || bottomContours.Count == 0)
+            return null;
+
+        var top = _numberRecognizer.Recognize(topContours);
+        var bottom = _numberRecognizer.Recognize(bottomContours);
 
         var pair = BestSupportedPair(top, bottom);
         if (pair is null)
@@ -219,19 +217,189 @@ public sealed class MeterResolver
             confidence + 0.18 * candidate.GeometryScore);
     }
 
+    /// <summary>
+    /// Converts the candidate's retained smooth SVG paths to contours only at the recognizer boundary.
+    /// The MusicSymbolCandidate itself remains Bezier-based; this flattening exists solely because the
+    /// current experimental number-recognizer interface consumes point contours.
+    /// </summary>
+    private static IReadOnlyList<IReadOnlyList<Vector2>> ToContours(
+        IEnumerable<MusicSymbolCandidate> symbols)
+    {
+        var paths = symbols
+            .SelectMany(x => x.SmoothPaths)
+            .DistinctBy(x => $"{x.SourceAddress}\n{x.PathData}\n{x.Transform}", StringComparer.Ordinal)
+            .ToArray();
+        if (paths.Length == 0)
+            return Array.Empty<IReadOnlyList<Vector2>>();
+
+        var tempPath = Path.Combine(Path.GetTempPath(), $"meter-symbol-{Guid.NewGuid():N}.svg");
+        try
+        {
+            WriteSmoothSvg(paths, tempPath);
+            using var svg = SKSvg.CreateFromFile(tempPath);
+            var picture = svg.Model;
+            if (picture is null)
+                return Array.Empty<IReadOnlyList<Vector2>>();
+
+            var contours = new List<List<Vector2>>();
+            ReadPicture(picture, Shim.SKMatrix.Identity, contours);
+            return contours.Cast<IReadOnlyList<Vector2>>().ToArray();
+        }
+        finally
+        {
+            try { if (File.Exists(tempPath)) File.Delete(tempPath); }
+            catch { }
+        }
+    }
+
+    private static void WriteSmoothSvg(IReadOnlyList<SmoothSvgPath> paths, string outputPath)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("<svg xmlns=\"http://www.w3.org/2000/svg\" overflow=\"visible\">");
+        foreach (var path in paths)
+        {
+            var transform = string.IsNullOrWhiteSpace(path.Transform)
+                ? string.Empty
+                : $" transform=\"{System.Net.WebUtility.HtmlEncode(path.Transform)}\"";
+            sb.Append("<path fill=\"black\" fill-rule=\"evenodd\"")
+                .Append(transform)
+                .Append(" d=\"")
+                .Append(System.Net.WebUtility.HtmlEncode(path.PathData))
+                .AppendLine("\"/>");
+        }
+        sb.AppendLine("</svg>");
+        File.WriteAllText(outputPath, sb.ToString());
+    }
+
+    private static void ReadPicture(
+        Shim.SKPicture picture,
+        Shim.SKMatrix parentMatrix,
+        ICollection<List<Vector2>> contours)
+    {
+        if (picture.Commands is null)
+            return;
+
+        var matrix = parentMatrix;
+        var stack = new Stack<Shim.SKMatrix>();
+        foreach (var command in picture.Commands)
+        {
+            switch (command)
+            {
+                case Shim.SaveCanvasCommand:
+                case Shim.SaveLayerCanvasCommand:
+                    stack.Push(matrix);
+                    break;
+                case Shim.RestoreCanvasCommand:
+                    if (stack.Count > 0)
+                        matrix = stack.Pop();
+                    break;
+                case Shim.SetMatrixCanvasCommand setMatrix:
+                    matrix = parentMatrix.PreConcat(setMatrix.TotalMatrix);
+                    break;
+                case Shim.DrawPathCanvasCommand drawPath when drawPath.Path is not null:
+                    ReadPath(drawPath.Path, matrix, contours);
+                    break;
+                case Shim.DrawPictureCanvasCommand drawPicture when drawPicture.Picture is not null:
+                    ReadPicture(drawPicture.Picture, matrix, contours);
+                    break;
+            }
+        }
+    }
+
+    private static void ReadPath(
+        Shim.SKPath path,
+        Shim.SKMatrix matrix,
+        ICollection<List<Vector2>> contours)
+    {
+        List<Vector2>? contour = null;
+        Vector2 current = default;
+        var hasCurrent = false;
+
+        void Flush()
+        {
+            if (contour is { Count: >= 3 })
+                contours.Add(contour);
+            contour = null;
+            hasCurrent = false;
+        }
+
+        void Start(Vector2 point)
+        {
+            Flush();
+            contour = new List<Vector2> { point };
+            current = point;
+            hasCurrent = true;
+        }
+
+        void Add(Vector2 point)
+        {
+            contour ??= new List<Vector2>();
+            if (contour.Count == 0 || Vector2.DistanceSquared(contour[^1], point) > 1e-10f)
+                contour.Add(point);
+            current = point;
+            hasCurrent = true;
+        }
+
+        foreach (var command in path)
+        {
+            switch (command)
+            {
+                case Shim.MoveToPathCommand move:
+                    Start(Map(matrix, move.X, move.Y));
+                    break;
+                case Shim.LineToPathCommand line when hasCurrent:
+                    Add(Map(matrix, line.X, line.Y));
+                    break;
+                case Shim.QuadToPathCommand quad when hasCurrent:
+                {
+                    var p0 = current;
+                    var p1 = Map(matrix, quad.X0, quad.Y0);
+                    var p2 = Map(matrix, quad.X1, quad.Y1);
+                    for (var i = 1; i <= CurveSteps; i++)
+                    {
+                        var t = i / (float)CurveSteps;
+                        var mt = 1f - t;
+                        Add(mt * mt * p0 + 2f * mt * t * p1 + t * t * p2);
+                    }
+                    break;
+                }
+                case Shim.CubicToPathCommand cubic when hasCurrent:
+                {
+                    var p0 = current;
+                    var p1 = Map(matrix, cubic.X0, cubic.Y0);
+                    var p2 = Map(matrix, cubic.X1, cubic.Y1);
+                    var p3 = Map(matrix, cubic.X2, cubic.Y2);
+                    for (var i = 1; i <= CurveSteps; i++)
+                    {
+                        var t = i / (float)CurveSteps;
+                        var mt = 1f - t;
+                        Add(mt * mt * mt * p0 + 3f * mt * mt * t * p1 + 3f * mt * t * t * p2 + t * t * t * p3);
+                    }
+                    break;
+                }
+                case Shim.ClosePathCommand:
+                    Flush();
+                    break;
+            }
+        }
+        Flush();
+    }
+
+    private static Vector2 Map(Shim.SKMatrix matrix, float x, float y)
+    {
+        var point = matrix.MapPoint(new Shim.SKPoint(x, y));
+        return new Vector2(point.X, point.Y);
+    }
+
     private static MeterSide? ResolveSide(PartMeasureBlock block, RectD bounds)
     {
         var b = block.PhysicalBounds;
         var localCenter = (bounds.CenterX - b.Left) / Math.Max(1e-9, b.Width);
 
-        // Left: after clef/key signature, but still in the left half of the measure.
         if (localCenter <= 0.48)
             return MeterSide.Left;
-
-        // Right: meter change immediately before the following barline.
         if (localCenter >= 0.72)
             return MeterSide.Right;
-
         return null;
     }
 
@@ -269,13 +437,6 @@ public sealed class MeterResolver
             : Array.Empty<SvgNumberCandidate>();
     }
 
-    private static IReadOnlyList<IReadOnlyList<Vector2>> ToContours(
-        IEnumerable<ResolvedPrimitive> primitives) =>
-        primitives
-            .Where(x => x.Contour.Points.Count >= 3)
-            .Select(x => (IReadOnlyList<Vector2>)x.Contour.Points)
-            .ToArray();
-
     private static double HorizontalOverlapRatio(RectD a, RectD b)
     {
         var overlap = Math.Max(0, Math.Min(a.Right, b.Right) - Math.Max(a.Left, b.Left));
@@ -291,6 +452,15 @@ public sealed class MeterResolver
     private static double Ratio(double a, double b) =>
         Math.Min(a, b) / Math.Max(1e-9, Math.Max(a, b));
 
+    private static double Area(RectD rect) => rect.Width * rect.Height;
+
+    private static bool HasPositiveAreaOverlap(RectD a, RectD b)
+    {
+        var width = Math.Min(a.Right, b.Right) - Math.Max(a.Left, b.Left);
+        var height = Math.Min(a.Bottom, b.Bottom) - Math.Max(a.Top, b.Top);
+        return width > 1e-6 && height > 1e-6;
+    }
+
     private static RectD Union(RectD a, RectD b) =>
         new(
             Math.Min(a.Left, b.Left),
@@ -299,7 +469,7 @@ public sealed class MeterResolver
             Math.Max(a.Bottom, b.Bottom));
 
     private sealed record RowCluster(
-        IReadOnlyList<ResolvedPrimitive> Primitives,
+        IReadOnlyList<MusicSymbolCandidate> Symbols,
         RectD Bounds);
 
     private sealed record MeterCandidate(
