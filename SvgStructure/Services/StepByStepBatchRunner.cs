@@ -23,6 +23,7 @@ public sealed record StepByStepItemResult(
     int PhysicalOnlyPrimitiveCount = 0,
     int MeterCount = 0,
     int ClefCount = 0,
+    int ExportedPrimitiveCount = 0,
     string? Error = null);
 
 public sealed class StepByStepBatchRunner
@@ -32,6 +33,7 @@ public sealed class StepByStepBatchRunner
 
     private readonly PartMeasureResolver _partMeasureResolver = new();
     private readonly PrimitiveResolver _primitiveResolver = new(0.25);
+    private readonly PrimitiveSvgExporter _primitiveSvgExporter = new();
     private readonly LogicalGridResolver _logicalGridResolver = new(DefaultSubdivisionsPerBeat);
     private readonly PartMeasureOverlayRenderer _partMeasureOverlayRenderer = new();
     private readonly PrimitiveOverlayRenderer _primitiveOverlayRenderer = new();
@@ -119,6 +121,7 @@ public sealed class StepByStepBatchRunner
 
             var structure = _partMeasureResolver.Resolve(svgPath);
             var primitives = _primitiveResolver.Resolve(structure);
+            var primitiveExport = _primitiveSvgExporter.Export(primitives, itemDirectory);
 
             diagnosticNumberRecognizer.BeginDocument(Path.Combine(itemDirectory, "meter-inputs"));
 
@@ -167,7 +170,8 @@ public sealed class StepByStepBatchRunner
                 primitives.MeasurePrimitives.Count,
                 primitives.PhysicalOnlyPrimitives.Count,
                 meters.Length,
-                clefs.Length);
+                clefs.Length,
+                primitiveExport.Items.Count);
         }
         catch (Exception ex)
         {
@@ -206,7 +210,9 @@ public sealed class StepByStepBatchRunner
                 x.PartNumber,
                 x.MeasureNumber,
                 x.PhysicalBounds,
-                contourPointCount = x.Contour.Points.Count
+                x.SourceUseKey,
+                contourPointCount = x.Contour.Points.Count,
+                sourceUseContourCount = x.SourceUseContours?.Count
             }),
             meters,
             logicalGrid = new
