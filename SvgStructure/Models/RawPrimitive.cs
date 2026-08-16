@@ -18,7 +18,8 @@ public readonly record struct RectD(double Left, double Top, double Right, doubl
 public sealed record RawPrimitive(
     int Id,
     RectD Bounds,
-    PrimitiveContour Contour);
+    PrimitiveContour Contour,
+    string? SourceUseKey = null);
 
 /// <summary>
 /// One visual staff inside one measure: e.g. P2-M5.
