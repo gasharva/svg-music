@@ -3,7 +3,7 @@ namespace SvgStructure.Models;
 /// <summary>
 /// Candidate visual music symbol produced after PrimitiveResolver. Primitive geometry is used only
 /// to decide grouping and logical placement; recognition should use SmoothPaths reconstructed from
-/// Svg.Skia's original SourceDocument whenever possible.
+/// Svg.Skia's retained scene graph whenever possible.
 /// </summary>
 public sealed record MusicSymbolCandidate(
     int Id,
@@ -12,6 +12,7 @@ public sealed record MusicSymbolCandidate(
     int MeasureNumber,
     RectD PhysicalBounds,
     IReadOnlyList<int> PrimitiveIds,
+    IReadOnlyList<RectD> PrimitiveBounds,
     IReadOnlyList<PrimitiveSourceRef> Sources,
     IReadOnlyList<SmoothSvgPath> SmoothPaths)
 {
@@ -21,8 +22,8 @@ public sealed record MusicSymbolCandidate(
 }
 
 /// <summary>
-/// Original smooth SVG path data. Transform is deliberately kept as SVG transform text instead of
-/// flattening Beziers into points.
+/// Original smooth SVG path data plus the exact total transform supplied by Svg.Skia's retained
+/// scene graph. Keeping the matrix as SVG transform text preserves Bezier curves without flattening.
 /// </summary>
 public sealed record SmoothSvgPath(
     string SourceAddress,
