@@ -248,6 +248,8 @@ public sealed class StepByStepBatchRunner
             musicSymbols = musicSymbols.Candidates.Select(x => new
             {
                 x.Id,
+                x.ParentCandidateId,
+                x.IsDerived,
                 x.Scope,
                 x.PartNumber,
                 x.MeasureNumber,
