@@ -131,23 +131,22 @@ public sealed class StepByStepBatchRunner
             var primitives = _primitiveResolver.Resolve(structure);
             var primitiveExport = _primitiveSvgExporter.Export(primitives, itemDirectory);
 
-            // New bridge step: low-poly primitive contours stop being recognition geometry here.
-            // They only define spatial groups; candidates recover original Bezier paths from SourceDocument.
             var musicSymbols = _musicSymbolResolver.Resolve(primitives);
             _musicSymbolSvgExporter.Export(musicSymbols, itemDirectory);
 
             diagnosticNumberRecognizer.BeginDocument(Path.Combine(itemDirectory, "meter-inputs"));
 
-            // Meter/Clef resolvers are intentionally still wired to primitives for this experiment.
-            // Once the candidate grouping looks sane they can be migrated to MusicSymbolResolution.
+            // First semantic resolver migrated to MusicSymbolResolution: meter recognition now uses
+            // smooth source Beziers from symbol candidates rather than PrimitiveResolver contours.
             var meters = structure.Map.Blocks
-                .Select(block => meterResolver.Resolve(block, primitives))
+                .Select(block => meterResolver.Resolve(block, musicSymbols))
                 .Where(x => x is not null)
                 .Select(x => x!)
                 .ToArray();
 
             var logicalGrid = _logicalGridResolver.Resolve(structure, meters);
 
+            // ClefResolver still consumes primitives until the meter migration is validated.
             diagnosticClefRecognizer.BeginDocument(Path.Combine(itemDirectory, "clef-inputs"));
             var clefs = structure.Map.Blocks
                 .SelectMany(block => clefResolver.Resolve(block, primitives, logicalGrid))
@@ -292,7 +291,7 @@ public sealed class StepByStepBatchRunner
         while (current is not null)
         {
             if (File.Exists(Path.Combine(current.FullName, "SvgToMusicXmlPoc.sln")))
-                return current.FullName;
+                return current;
             current = current.Parent;
         }
 
