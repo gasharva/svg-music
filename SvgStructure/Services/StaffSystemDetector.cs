@@ -9,12 +9,7 @@ public sealed class StaffSystemDetector
     private const double MinStaffLineWidthFraction = 0.35;
     private const double CoordinateToleranceFraction = 0.001;
     private const double StaffSpacingTolerance = 0.30;
-
-    // A grand-staff pair is normally noticeably tighter than the vertical gap to the next system.
-    // Keep this page-relative: ~5% of page height separates the two staves in our supported layouts,
-    // while system-to-system gaps are larger. 0.09 was too permissive and merged several systems
-    // into one giant group, after which no barline could span the whole thing.
-    private const double MaxGapBetweenStaffsInSystemFraction = 0.05;
+    private const double MaxGapBetweenStaffsInSystemInStaffSpaces = 12.0;
 
     public IReadOnlyList<StaffSystem> Detect(IReadOnlyList<LineSegment> lines, RectD pageBounds)
     {
@@ -23,7 +18,6 @@ public sealed class StaffSystemDetector
         var xTolerance = pageWidth * CoordinateToleranceFraction;
         var yTolerance = pageHeight * CoordinateToleranceFraction;
         var minStaffLineWidth = pageWidth * MinStaffLineWidthFraction;
-        var maxGapBetweenStaffsInSystem = pageHeight * MaxGapBetweenStaffsInSystemFraction;
 
         var horizontalCandidates = lines
             .Where(x => x.IsHorizontal(yTolerance) && x.Width >= minStaffLineWidth)
@@ -40,7 +34,7 @@ public sealed class StaffSystemDetector
         if (staffs.Count == 0)
             return Array.Empty<StaffSystem>();
 
-        return GroupStaffsIntoSystems(staffs, maxGapBetweenStaffsInSystem)
+        return GroupStaffsIntoSystems(staffs, staffSpacing)
             .Select(group => BuildSystem(group, lines, xTolerance, yTolerance))
             .Where(x => x is not null)
             .Cast<StaffSystem>()
@@ -91,10 +85,11 @@ public sealed class StaffSystemDetector
 
     private static IReadOnlyList<IReadOnlyList<DetectedStaff>> GroupStaffsIntoSystems(
         IReadOnlyList<DetectedStaff> staffs,
-        double maxGap)
+        double staffSpacing)
     {
         var result = new List<IReadOnlyList<DetectedStaff>>();
         var current = new List<DetectedStaff>();
+        var maxGap = staffSpacing * MaxGapBetweenStaffsInSystemInStaffSpaces;
 
         foreach (var staff in staffs.OrderBy(x => x.Top))
         {
@@ -134,7 +129,7 @@ public sealed class StaffSystemDetector
         var requiredHeight = bottom - top - 2 * yTolerance;
 
         // Barlines are still deliberately expected to cross the entire grand staff. The only
-        // change here is that equality/edge tolerances now scale with the page instead of assuming
+        // change here is that equality/edge tolerances scale with the page instead of assuming
         // a particular SVG unit system.
         var barXs = Distinct(allLines
                 .Where(x => x.IsVertical(xTolerance))
