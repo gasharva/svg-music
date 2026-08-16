@@ -202,11 +202,11 @@ public sealed class PrimitiveResolver
 
                     var source = new PrimitiveSourceRef(
                         SourceAnchor(drawPath, commandPath + "/path"),
-                        GroupAnchor: null,
+                        null,
                         drawPath.SourceElementTypeName,
                         drawPath.SourceElementId,
                         drawPath.SourceElementAddress,
-                        IsExplicitUse: false);
+                        false);
 
                     primitives.Add(new RawPrimitive(
                         primitives.Count,
