@@ -1,18 +1,18 @@
-block: P2-M12
+block: P1-M12
 logical bbox: X 0.18..0.62, Y -3.27..11.5
 contours: 4
-points: 902
-skeleton points: 404
-skeleton segments: 396
-skeleton polylines: 18
-skeleton simplified points: 85
+points: 1107
+skeleton points: 397
+skeleton segments: 389
+skeleton polylines: 16
+skeleton simplified points: 77
 vector result: none (Open-set rejection: nearest/ref=0.918 (max 0.72), margin/ref=0.541 (min 0.2).)
-legacy IoU result: G 88.5 %
+legacy IoU result: G 85.8 %
 
 vector candidates:
 F: confidence=5.45 %, distance=17.445
 G: confidence=0.01 %, distance=27.719
 
 legacy IoU candidates:
-G: maskIoU=82.35 %, vectorIoU=100.00 %, score=88.53 %
-F: maskIoU=19.44 %, vectorIoU=24.47 %, score=21.20 %
+G: maskIoU=78.23 %, vectorIoU=100.00 %, score=85.85 %
+F: maskIoU=20.38 %, vectorIoU=26.01 %, score=22.35 %
