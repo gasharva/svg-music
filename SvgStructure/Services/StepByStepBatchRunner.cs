@@ -122,8 +122,6 @@ public sealed class StepByStepBatchRunner
         {
             File.Copy(svgPath, Path.Combine(itemDirectory, "source.svg"), overwrite: true);
 
-            // Probe Svg.Skia before touching the flattened retained scene. If SourceDocument really
-            // keeps <use> instances, this dump gives us the authoritative provenance source for step 2.
             var sourceModel = _sourceModelDumper.Dump(svgPath, itemDirectory);
 
             var structure = _partMeasureResolver.Resolve(svgPath);
@@ -223,6 +221,9 @@ public sealed class StepByStepBatchRunner
                 {
                     x.Source.Anchor,
                     x.Source.GroupAnchor,
+                    x.Source.ReferenceAnchor,
+                    x.Source.InstanceX,
+                    x.Source.InstanceY,
                     x.Source.ElementType,
                     x.Source.ElementId,
                     x.Source.ElementAddress,
