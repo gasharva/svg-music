@@ -9,7 +9,6 @@ public sealed class StaffSystemDetector
     private const double MinStaffLineWidthFraction = 0.35;
     private const double CoordinateToleranceFraction = 0.001;
     private const double StaffSpacingTolerance = 0.30;
-    private const double MaxGapBetweenStaffsInSystemInStaffSpaces = 12.0;
 
     public IReadOnlyList<StaffSystem> Detect(IReadOnlyList<LineSegment> lines, RectD pageBounds)
     {
@@ -31,10 +30,13 @@ public sealed class StaffSystemDetector
         var staffSpacing = EstimateStaffSpacing(yGroups.Select(x => x.Y).ToList(), yTolerance);
         var staffs = DetectFiveLineStaffs(yGroups, staffSpacing);
 
-        if (staffs.Count == 0)
+        if (staffs.Count < 2)
             return Array.Empty<StaffSystem>();
 
-        return GroupStaffsIntoSystems(staffs, staffSpacing)
+        // Temporary but deterministic score model: every input system is a grand staff made of
+        // exactly two consecutive five-line staves. Do not infer system membership from page
+        // geometry here; that made the detector depend too heavily on engraving/page layout.
+        return PairConsecutiveStaffs(staffs)
             .Select(group => BuildSystem(group, lines, xTolerance, yTolerance))
             .Where(x => x is not null)
             .Cast<StaffSystem>()
@@ -83,27 +85,17 @@ public sealed class StaffSystemDetector
         return result;
     }
 
-    private static IReadOnlyList<IReadOnlyList<DetectedStaff>> GroupStaffsIntoSystems(
-        IReadOnlyList<DetectedStaff> staffs,
-        double staffSpacing)
+    private static IReadOnlyList<IReadOnlyList<DetectedStaff>> PairConsecutiveStaffs(
+        IReadOnlyList<DetectedStaff> staffs)
     {
-        var result = new List<IReadOnlyList<DetectedStaff>>();
-        var current = new List<DetectedStaff>();
-        var maxGap = staffSpacing * MaxGapBetweenStaffsInSystemInStaffSpaces;
+        var ordered = staffs.OrderBy(x => x.Top).ToArray();
+        var result = new List<IReadOnlyList<DetectedStaff>>(ordered.Length / 2);
 
-        foreach (var staff in staffs.OrderBy(x => x.Top))
-        {
-            if (current.Count > 0 && staff.Top - current[^1].Bottom > maxGap)
-            {
-                result.Add(current);
-                current = new List<DetectedStaff>();
-            }
-
-            current.Add(staff);
-        }
-
-        if (current.Count > 0)
-            result.Add(current);
+        // By current pipeline contract an input page contains only two-staff grand staffs.
+        // If a malformed/unsupported page leaves an odd staff at the end, do not invent a system
+        // for it: BuildSystem expects a complete grand staff and its spanning barlines.
+        for (var i = 0; i + 1 < ordered.Length; i += 2)
+            result.Add(new[] { ordered[i], ordered[i + 1] });
 
         return result;
     }
@@ -128,9 +120,8 @@ public sealed class StaffSystemDetector
         var bottom = detectedStaffs.Max(x => x.Bottom);
         var requiredHeight = bottom - top - 2 * yTolerance;
 
-        // Barlines are still deliberately expected to cross the entire grand staff. The only
-        // change here is that equality/edge tolerances scale with the page instead of assuming
-        // a particular SVG unit system.
+        // Barlines are deliberately expected to cross the entire grand staff. Equality/edge
+        // tolerances scale with the page instead of assuming a particular SVG unit system.
         var barXs = Distinct(allLines
                 .Where(x => x.IsVertical(xTolerance))
                 .Where(x => x.Height >= requiredHeight)
