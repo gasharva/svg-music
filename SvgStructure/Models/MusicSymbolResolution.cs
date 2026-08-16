@@ -4,6 +4,8 @@ namespace SvgStructure.Models;
 /// Candidate visual music symbol produced after PrimitiveResolver. Primitive geometry is used only
 /// to decide grouping and logical placement; recognition should use SmoothPaths reconstructed from
 /// Svg.Skia's retained scene graph whenever possible.
+/// ParentCandidateId is set for optional ink-connected sub-candidates derived from a broader bbox
+/// candidate. If the parent is later recognized confidently, consumers may ignore its children.
 /// </summary>
 public sealed record MusicSymbolCandidate(
     int Id,
@@ -14,11 +16,14 @@ public sealed record MusicSymbolCandidate(
     IReadOnlyList<int> PrimitiveIds,
     IReadOnlyList<RectD> PrimitiveBounds,
     IReadOnlyList<PrimitiveSourceRef> Sources,
-    IReadOnlyList<SmoothSvgPath> SmoothPaths)
+    IReadOnlyList<SmoothSvgPath> SmoothPaths,
+    int? ParentCandidateId = null)
 {
     public string LogicalLabel => PartNumber is null
         ? $"M{MeasureNumber}"
         : $"P{PartNumber}-M{MeasureNumber}";
+
+    public bool IsDerived => ParentCandidateId is not null;
 }
 
 /// <summary>
