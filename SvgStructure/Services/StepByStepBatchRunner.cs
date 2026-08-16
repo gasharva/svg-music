@@ -210,9 +210,17 @@ public sealed class StepByStepBatchRunner
                 x.PartNumber,
                 x.MeasureNumber,
                 x.PhysicalBounds,
-                x.SourceUseKey,
-                contourPointCount = x.Contour.Points.Count,
-                sourceUseContourCount = x.SourceUseContours?.Count
+                source = new
+                {
+                    x.Source.Anchor,
+                    x.Source.GroupAnchor,
+                    x.Source.ElementType,
+                    x.Source.ElementId,
+                    x.Source.ElementAddress,
+                    x.Source.IsExplicitUse,
+                    groupContourCount = x.SourceGroupContours?.Count
+                },
+                contourPointCount = x.Contour.Points.Count
             }),
             meters,
             logicalGrid = new
