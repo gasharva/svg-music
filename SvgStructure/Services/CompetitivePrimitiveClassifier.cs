@@ -11,7 +11,7 @@ namespace SvgStructure.Services;
 /// </summary>
 public sealed class CompetitivePrimitiveClassifier
 {
-    public double ProximityInStaffSpaces { get; init; } = 2.0;
+    public double ProximityInStaffSpaces { get; init; } = 1.5;
 
     public IReadOnlyDictionary<int, HashSet<StaffMeasureKey>> Classify(
         IReadOnlyList<RawPrimitive> primitives,
