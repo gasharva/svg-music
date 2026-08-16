@@ -3,6 +3,7 @@ using Clipper2Lib;
 using Svg.Skia;
 using SvgStructure.Models;
 using Shim = ShimSkiaSharp;
+using ModelRectD = SvgStructure.Models.RectD;
 
 namespace SvgStructure.Services;
 
@@ -24,15 +25,13 @@ public sealed class MusicSymbolResolver
     public MusicSymbolResolution Resolve(PrimitiveResolution primitives)
     {
         using var svg = SKSvg.CreateFromFile(primitives.Structure.SvgPath);
-        _ = svg.RetainedSceneGraph; // force compilation once; subsequent lookups are cached by Svg.Skia
+        _ = svg.RetainedSceneGraph;
 
         var usable = primitives.Primitives
             .Where(x => x.Scope is PrimitiveLogicalScope.PartMeasure or PrimitiveLogicalScope.Measure)
             .Where(x => x.MeasureNumber is not null)
             .ToArray();
 
-        // First build only the existing broad bbox candidates. Keep their member primitives around;
-        // after reading-order sorting we can assign stable ids and derive children from them.
         var roots = new List<RootDraft>();
         foreach (var bucket in usable
                      .GroupBy(x => new BucketKey(x.Scope, x.PartNumber, x.MeasureNumber!.Value))
@@ -82,9 +81,6 @@ public sealed class MusicSymbolResolver
             if (components.Count <= 1)
                 continue;
 
-            // Preserve the original bbox candidate and add each ink-connected component as an
-            // alternative interpretation. Even one-primitive components are useful (e.g. touching
-            // noteheads whose bboxes overlap but whose filled areas do not).
             foreach (var component in components
                          .OrderBy(x => Union(x.Select(m => m.PhysicalBounds)).Left)
                          .ThenBy(x => Union(x.Select(m => m.PhysicalBounds)).Top))
@@ -132,11 +128,6 @@ public sealed class MusicSymbolResolver
             parentCandidateId);
     }
 
-    /// <summary>
-    /// Builds a graph where two primitives are adjacent only when their actual filled polygon areas
-    /// overlap. Bounding-box overlap is used only as a cheap prefilter. Boundary touching gives zero
-    /// intersection area and therefore does not connect components.
-    /// </summary>
     private static IReadOnlyList<IReadOnlyList<ResolvedPrimitive>> SplitByInkConnectivity(
         IReadOnlyList<ResolvedPrimitive> members)
     {
@@ -233,9 +224,6 @@ public sealed class MusicSymbolResolver
         if (address is null || !svg.TryGetRetainedSceneNodes(address, out var nodes) || nodes.Count == 0)
             yield break;
 
-        // One source element can be rendered many times through <use>. Svg.Skia retains a separate
-        // scene node for each rendered occurrence; choose the occurrence whose transformed bounds
-        // are physically closest to the PrimitiveResolver artifact that led us here.
         var root = nodes
             .OrderBy(node => RectangleDistance(primitive.PhysicalBounds, ToRectD(node.TransformedBounds)))
             .ThenBy(node => CenterDistanceSquared(primitive.PhysicalBounds, ToRectD(node.TransformedBounds)))
@@ -289,16 +277,16 @@ public sealed class MusicSymbolResolver
 
     private static string F(float value) => value.ToString("0.######", System.Globalization.CultureInfo.InvariantCulture);
 
-    private static RectD ToRectD(Shim.SKRect rect) => new(rect.Left, rect.Top, rect.Right, rect.Bottom);
+    private static ModelRectD ToRectD(Shim.SKRect rect) => new(rect.Left, rect.Top, rect.Right, rect.Bottom);
 
-    private static double RectangleDistance(RectD a, RectD b)
+    private static double RectangleDistance(ModelRectD a, ModelRectD b)
     {
         var dx = a.Right < b.Left ? b.Left - a.Right : b.Right < a.Left ? a.Left - b.Right : 0;
         var dy = a.Bottom < b.Top ? b.Top - a.Bottom : b.Bottom < a.Top ? a.Top - b.Bottom : 0;
         return Math.Sqrt(dx * dx + dy * dy);
     }
 
-    private static double CenterDistanceSquared(RectD a, RectD b)
+    private static double CenterDistanceSquared(ModelRectD a, ModelRectD b)
     {
         var dx = a.CenterX - b.CenterX;
         var dy = a.CenterY - b.CenterY;
@@ -314,19 +302,19 @@ public sealed class MusicSymbolResolver
         return address.StartsWith("xml:", StringComparison.Ordinal) ? address[4..] : address;
     }
 
-    private static double Area(RectD rect) => rect.Width * rect.Height;
+    private static double Area(ModelRectD rect) => rect.Width * rect.Height;
 
-    private static bool HasPositiveAreaOverlap(RectD a, RectD b)
+    private static bool HasPositiveAreaOverlap(ModelRectD a, ModelRectD b)
     {
         var width = Math.Min(a.Right, b.Right) - Math.Max(a.Left, b.Left);
         var height = Math.Min(a.Bottom, b.Bottom) - Math.Max(a.Top, b.Top);
         return width > 1e-6 && height > 1e-6;
     }
 
-    private static RectD Union(IEnumerable<RectD> rects)
+    private static ModelRectD Union(IEnumerable<ModelRectD> rects)
     {
         var values = rects.ToArray();
-        return new RectD(
+        return new ModelRectD(
             values.Min(x => x.Left),
             values.Min(x => x.Top),
             values.Max(x => x.Right),
