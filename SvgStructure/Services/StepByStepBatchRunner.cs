@@ -24,6 +24,8 @@ public sealed record StepByStepItemResult(
     int MeterCount = 0,
     int ClefCount = 0,
     int ExportedPrimitiveCount = 0,
+    int SourceElementCount = 0,
+    int SourceUseCount = 0,
     string? Error = null);
 
 public sealed class StepByStepBatchRunner
@@ -34,6 +36,7 @@ public sealed class StepByStepBatchRunner
     private readonly PartMeasureResolver _partMeasureResolver = new();
     private readonly PrimitiveResolver _primitiveResolver = new(0.25);
     private readonly PrimitiveSvgExporter _primitiveSvgExporter = new();
+    private readonly SvgSourceModelDumper _sourceModelDumper = new();
     private readonly LogicalGridResolver _logicalGridResolver = new(DefaultSubdivisionsPerBeat);
     private readonly PartMeasureOverlayRenderer _partMeasureOverlayRenderer = new();
     private readonly PrimitiveOverlayRenderer _primitiveOverlayRenderer = new();
@@ -119,6 +122,10 @@ public sealed class StepByStepBatchRunner
         {
             File.Copy(svgPath, Path.Combine(itemDirectory, "source.svg"), overwrite: true);
 
+            // Probe Svg.Skia before touching the flattened retained scene. If SourceDocument really
+            // keeps <use> instances, this dump gives us the authoritative provenance source for step 2.
+            var sourceModel = _sourceModelDumper.Dump(svgPath, itemDirectory);
+
             var structure = _partMeasureResolver.Resolve(svgPath);
             var primitives = _primitiveResolver.Resolve(structure);
             var primitiveExport = _primitiveSvgExporter.Export(primitives, itemDirectory);
@@ -171,7 +178,9 @@ public sealed class StepByStepBatchRunner
                 primitives.PhysicalOnlyPrimitives.Count,
                 meters.Length,
                 clefs.Length,
-                primitiveExport.Items.Count);
+                primitiveExport.Items.Count,
+                sourceModel.ElementCount,
+                sourceModel.UseCount);
         }
         catch (Exception ex)
         {
