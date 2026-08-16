@@ -38,14 +38,13 @@ public sealed class PrimitiveResolver
             currentGroupAnchor: null,
             inheritedExplicitUse: false);
 
-        // Capture complete geometry for every retained picture/source group before any filtering.
-        // Svg.Skia frequently expands an SVG <use> into a DrawPicture whose children are DrawPath
-        // commands and no longer labels those child paths as "use". Grouping by the nearest picture
-        // instance therefore preserves the original glyph instance even when the explicit <use>
-        // marker was lost during SVG parsing.
+        // Important: Svg.Skia usually preserves SourceElementAddress on DrawPath commands even when
+        // the retained scene no longer has a DrawPicture boundary for the original <use>/<path>.
+        // After SplitContours all contours from one original SVG element retain the same XML address.
+        // Therefore the effective source group is Source.GroupAnchor when a retained picture survived,
+        // otherwise the stable source Anchor itself. This is what lets a multi-contour glyph be rebuilt.
         var sourceGroupContours = raw
-            .Where(x => !string.IsNullOrWhiteSpace(x.Source.GroupAnchor))
-            .GroupBy(x => x.Source.GroupAnchor!, StringComparer.Ordinal)
+            .GroupBy(x => EffectiveGroupAnchor(x.Source), StringComparer.Ordinal)
             .ToDictionary(
                 x => x.Key,
                 x => (IReadOnlyList<PrimitiveContour>)x.Select(p => p.Contour).ToArray(),
@@ -76,10 +75,11 @@ public sealed class PrimitiveResolver
         IReadOnlyDictionary<int, HashSet<StaffMeasureKey>> claims,
         IReadOnlyDictionary<string, IReadOnlyList<PrimitiveContour>> sourceGroupContours)
     {
-        var allGroupContours = primitive.Source.GroupAnchor is not null &&
-                               sourceGroupContours.TryGetValue(primitive.Source.GroupAnchor, out var groupContours)
+        var groupAnchor = EffectiveGroupAnchor(primitive.Source);
+        var allGroupContours = sourceGroupContours.TryGetValue(groupAnchor, out var groupContours)
             ? groupContours
             : null;
+        var source = primitive.Source with { GroupAnchor = groupAnchor };
 
         if (claims.TryGetValue(primitive.Id, out var keys) && keys.Count == 1)
         {
@@ -87,7 +87,7 @@ public sealed class PrimitiveResolver
             return new ResolvedPrimitive(
                 primitive.Id, primitive.Bounds, primitive.Contour,
                 PrimitiveLogicalScope.PartMeasure, key.PartIndex + 1, key.MeasureNumber,
-                primitive.Source, allGroupContours);
+                source, allGroupContours);
         }
 
         var measureNumber = ResolveNearestMeasure(primitive.Bounds, structure.Map);
@@ -96,14 +96,19 @@ public sealed class PrimitiveResolver
             return new ResolvedPrimitive(
                 primitive.Id, primitive.Bounds, primitive.Contour,
                 PrimitiveLogicalScope.Measure, null, measureNumber,
-                primitive.Source, allGroupContours);
+                source, allGroupContours);
         }
 
         return new ResolvedPrimitive(
             primitive.Id, primitive.Bounds, primitive.Contour,
             PrimitiveLogicalScope.PhysicalOnly, null, null,
-            primitive.Source, allGroupContours);
+            source, allGroupContours);
     }
+
+    private static string EffectiveGroupAnchor(PrimitiveSourceRef source) =>
+        !string.IsNullOrWhiteSpace(source.GroupAnchor)
+            ? source.GroupAnchor!
+            : source.Anchor;
 
     private static int? ResolveNearestMeasure(RectD bounds, PartMeasureMap map)
     {
@@ -218,9 +223,6 @@ public sealed class PrimitiveResolver
                 }
                 case Shim.DrawPictureCanvasCommand drawPicture when drawPicture.Picture is not null:
                 {
-                    // A retained picture is the strongest surviving instance boundary in Svg.Skia.
-                    // Prefer the original XML-ish address/id when exposed; otherwise the deterministic
-                    // scene path remains a stable anchor for this exact SVG and parser version.
                     var pictureAnchor = SourceAnchor(drawPicture, commandPath + "/picture");
                     var explicitUse = inheritedExplicitUse || IsExplicitUse(drawPicture);
                     CollectPrimitives(
