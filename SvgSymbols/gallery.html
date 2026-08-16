@@ -4,872 +4,2002 @@
 <style>
 body{font-family:Segoe UI,Arial,sans-serif;margin:24px;background:#f5f5f5;color:#222}
 h1,h2{margin:0 0 16px} h2{margin-top:32px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
-.card{background:white;border:1px solid #ccc;border-radius:8px;padding:10px;min-height:270px;display:flex;flex-direction:column}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+.card{background:white;border:1px solid #ccc;border-radius:8px;padding:10px;min-height:480px;display:flex;flex-direction:column}
 .preview{height:180px;display:flex;align-items:center;justify-content:center;background:#fafafa;border:1px solid #eee;margin-bottom:8px}
 img{max-width:100%;max-height:170px}.name{font-weight:600;word-break:break-word}.meta{font-size:12px;color:#666;margin-top:5px;word-break:break-word}
-label{margin-top:auto;font-size:13px}.bad{accent-color:#c00}
+.fourier,.nearest,.digit-verdict{margin-top:8px;padding:7px 8px;background:#f1f3f5;border-radius:5px;font-family:Consolas,monospace;font-size:12px;line-height:1.45}
+.fourier .label,.nearest .label,.digit-verdict .label{font-family:Segoe UI,Arial,sans-serif;font-weight:600;color:#444;margin-bottom:2px}
+.digit-verdict{background:#fff6d8;border:1px solid #eed58a}.digit-main{font-family:Segoe UI,Arial,sans-serif;font-size:18px;font-weight:700}.digit-row{display:grid;grid-template-columns:38px 1fr;gap:5px}.digit-candidates{color:#666}
+.nearest.complex{background:#eef7ee}.nearest.magnitude{background:#f5f1fa}.neighbor{display:grid;grid-template-columns:52px 42px 1fr;gap:4px}.kind{font-weight:700}.error{color:#a00}.muted{color:#777}label{margin-top:auto;font-size:13px}.bad{accent-color:#c00}
+.topology-wrap{overflow-x:auto;margin:12px 0 28px}.topology{border-collapse:collapse;width:100%;background:white;font-size:13px}.topology th,.topology td{border:1px solid #d7d7d7;padding:7px 9px;text-align:left;vertical-align:middle}.topology th{background:#eceff2;position:sticky;top:0}.topology .digit-head{font-size:20px;text-align:center;background:#f7f7f7}.topology .family{font-weight:700;white-space:nowrap}.topology .mini{width:70px;height:70px;object-fit:contain;background:#fafafa}.topology .number{font-family:Consolas,monospace;white-space:nowrap}.topology .holes{font-family:Consolas,monospace;font-size:12px;min-width:210px}
 </style></head><body>
-<h1>SvgSymbols corpus — 107 SVG</h1>
-<p>Отметь глазами мусор/не-ключи. Состояние чекбоксов сохраняется в браузере.</p>
-<h2>Treble / G clef (65)</h2><div class="grid">
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/7m%20SVG.svg"></div>
-<div class="name">7m SVG.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: CC BY-SA 3.0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:7m_SVG.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:7m SVG.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/7w%20SVG.svg"></div>
-<div class="name">7w SVG.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: CC BY-SA 3.0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:7w_SVG.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:7w SVG.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/A%20flat%202.svg"></div>
-<div class="name">A flat 2.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: Public domain</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:A_flat_2.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:A flat 2.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/A%20Major%202.svg"></div>
-<div class="name">A Major 2.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: CC BY-SA 3.0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:A_Major_2.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:A Major 2.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Appogiatura%20Execution.svg"></div>
-<div class="name">Appogiatura Execution.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: CC BY-SA 3.0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Appogiatura_Execution.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Appogiatura Execution.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Apprendre%20dessiner%20clef%20sol.svg"></div>
-<div class="name">Apprendre dessiner clef sol.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: CC0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Apprendre_dessiner_clef_sol.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Apprendre dessiner clef sol.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Chiave%20di%20violino%20piccola.svg"></div>
-<div class="name">Chiave di violino piccola.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: Public domain</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Chiave_di_violino_piccola.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Chiave di violino piccola.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Chiave%20di%20violino.svg"></div>
-<div class="name">Chiave di violino.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: Public domain</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Chiave_di_violino.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Chiave di violino.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Chiave-di-sol.svg"></div>
-<div class="name">Chiave-di-sol.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: CC BY-SA 4.0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Chiave-di-sol.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Chiave-di-sol.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Clef%20de%20sol%202%20nom%20des%20notes%20sol%20bleu.svg"></div>
-<div class="name">Clef de sol 2 nom des notes sol bleu.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: CC0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Clef_de_sol_2_nom_des_notes_sol_bleu.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Clef de sol 2 nom des notes sol bleu.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Clef%20de%20sol%202%20nom%20des%20notes.svg"></div>
-<div class="name">Clef de sol 2 nom des notes.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: CC0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Clef_de_sol_2_nom_des_notes.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Clef de sol 2 nom des notes.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Clefs.svg"></div>
-<div class="name">Clefs.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: Public domain</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Clefs.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Clefs.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Correspondance%20do%20dans%20trois%20clef.svg"></div>
-<div class="name">Correspondance do dans trois clef.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: CC0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Correspondance_do_dans_trois_clef.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Correspondance do dans trois clef.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Cruz%20Latina%20Mart%C3%ADn%20Rom%C3%A1n.svg"></div>
-<div class="name">Cruz Latina Mart&#237;n Rom&#225;n.svg</div>
-<div class="meta">Category: G clef in art</div>
-<div class="meta">License: CC0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Cruz_Latina_Mart%C3%ADn_Rom%C3%A1n.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Cruz Latina Mart&#237;n Rom&#225;n.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/DMajor.svg"></div>
-<div class="name">DMajor.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: CC BY-SA 3.0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:DMajor.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:DMajor.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Do%20Mayor%20armadura.svg"></div>
-<div class="name">Do Mayor armadura.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: Public domain</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Do_Mayor_armadura.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Do Mayor armadura.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/French%20clef%20with%20note.svg"></div>
-<div class="name">French clef with note.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: Public domain</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:French_clef_with_note.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:French clef with note.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/French%20clef%20with%20ref.svg"></div>
-<div class="name">French clef with ref.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: Public domain</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:French_clef_with_ref.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:French clef with ref.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/G-clef-stave-with-note-names.svg"></div>
-<div class="name">G-clef-stave-with-note-names.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: CC BY-SA 3.0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:G-clef-stave-with-note-names.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:G-clef-stave-with-note-names.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/G-clef.svg"></div>
-<div class="name">G-clef.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: Public domain</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:G-clef.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:G-clef.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/G-Clef_2.svg"></div>
-<div class="name">G-Clef_2.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: CC BY-SA 4.0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:G-Clef.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:G-Clef_2.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Gamme%20clef%20fa%20vers%20clef%20sol.svg"></div>
-<div class="name">Gamme clef fa vers clef sol.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: CC0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Gamme_clef_fa_vers_clef_sol.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Gamme clef fa vers clef sol.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/GClef.svg"></div>
-<div class="name">GClef.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: Public domain</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:GClef.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:GClef.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Gclef_2.svg"></div>
-<div class="name">Gclef_2.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: Public domain</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Gclef.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Gclef_2.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/GNU%20Unifont%20-%20U%2B1D11E.svg"></div>
-<div class="name">GNU Unifont - U+1D11E.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: OFL</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:GNU_Unifont_-_U%2B1D11E.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:GNU Unifont - U+1D11E.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/GNU%20Unifont%20-%20U%2B1D11F.svg"></div>
-<div class="name">GNU Unifont - U+1D11F.svg</div>
-<div class="meta">Category: &#119071;</div>
-<div class="meta">License: OFL</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:GNU_Unifont_-_U%2B1D11F.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:GNU Unifont - U+1D11F.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/GNU%20Unifont%20-%20U%2B1D120.svg"></div>
-<div class="name">GNU Unifont - U+1D120.svg</div>
-<div class="meta">Category: &#119072;</div>
-<div class="meta">License: OFL</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:GNU_Unifont_-_U%2B1D120.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:GNU Unifont - U+1D120.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/IEC%2060417%20-%20Ref-No%205037.svg"></div>
-<div class="name">IEC 60417 - Ref-No 5037.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: Public domain</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:IEC_60417_-_Ref-No_5037.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:IEC 60417 - Ref-No 5037.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Ledger%20line.svg"></div>
-<div class="name">Ledger line.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: CC BY-SA 4.0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Ledger_line.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Ledger line.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Lilypond%20Clef-G.svg"></div>
-<div class="name">Lilypond Clef-G.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: CC0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Lilypond_Clef-G.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Lilypond Clef-G.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Melody%20road.svg"></div>
-<div class="name">Melody road.svg</div>
-<div class="meta">Category: G clef in art</div>
-<div class="meta">License: CC BY 3.0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Melody_road.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Melody road.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Mensural%20g%20clef%2001.svg"></div>
-<div class="name">Mensural g clef 01.svg</div>
-<div class="meta">Category: Mensural G clef</div>
-<div class="meta">License: CC0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Mensural_g_clef_01.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Mensural g clef 01.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Mensural%20g%20clef%2002.svg"></div>
-<div class="name">Mensural g clef 02.svg</div>
-<div class="meta">Category: Mensural G clef</div>
-<div class="meta">License: CC0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Mensural_g_clef_02.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Mensural g clef 02.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Mensural%20g%20clef%2003.svg"></div>
-<div class="name">Mensural g clef 03.svg</div>
-<div class="meta">Category: Mensural G clef</div>
-<div class="meta">License: CC0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Mensural_g_clef_03.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Mensural g clef 03.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Mensural%20g%20clef%2004.svg"></div>
-<div class="name">Mensural g clef 04.svg</div>
-<div class="meta">Category: Mensural G clef</div>
-<div class="meta">License: CC0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Mensural_g_clef_04.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Mensural g clef 04.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Mensural%20g%20clef%2005.svg"></div>
-<div class="name">Mensural g clef 05.svg</div>
-<div class="meta">Category: Mensural G clef</div>
-<div class="meta">License: CC0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Mensural_g_clef_05.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Mensural g clef 05.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Mensural%20g%20clef%2006.svg"></div>
-<div class="name">Mensural g clef 06.svg</div>
-<div class="meta">Category: Mensural G clef</div>
-<div class="meta">License: CC0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Mensural_g_clef_06.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Mensural g clef 06.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Mensural%20g%20clef%2007.svg"></div>
-<div class="name">Mensural g clef 07.svg</div>
-<div class="meta">Category: Mensural G clef</div>
-<div class="meta">License: CC0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Mensural_g_clef_07.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Mensural g clef 07.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Mensural%20g%20clef%2008.svg"></div>
-<div class="name">Mensural g clef 08.svg</div>
-<div class="meta">Category: Mensural G clef</div>
-<div class="meta">License: CC0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Mensural_g_clef_08.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Mensural g clef 08.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Mensural%20g%20clef%2009.svg"></div>
-<div class="name">Mensural g clef 09.svg</div>
-<div class="meta">Category: Mensural G clef</div>
-<div class="meta">License: CC0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Mensural_g_clef_09.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Mensural g clef 09.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Music%20C%20sharp.svg"></div>
-<div class="name">Music C sharp.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: CC BY-SA 3.0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Music_C_sharp.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Music C sharp.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Music%20ClefG.svg"></div>
-<div class="name">Music ClefG.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: Public domain</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Music_ClefG.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Music ClefG.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Music-GClef.svg"></div>
-<div class="name">Music-GClef.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: Public domain</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Music-GClef.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Music-GClef.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Notenschluessel.svg"></div>
-<div class="name">Notenschluessel.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: Public domain</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Notenschluessel.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Notenschluessel.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Octaveclef%202.svg"></div>
-<div class="name">Octaveclef 2.svg</div>
-<div class="meta">Category: &#119072;</div>
-<div class="meta">License: CC BY-SA 4.0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Octaveclef_2.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Octaveclef 2.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Octaveclef.svg"></div>
-<div class="name">Octaveclef.svg</div>
-<div class="meta">Category: &#119072;</div>
-<div class="meta">License: CC BY-SA 3.0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Octaveclef.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Octaveclef.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/P%20treble%20clef.svg"></div>
-<div class="name">P treble clef.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: Public domain</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:P_treble_clef.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:P treble clef.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Positions%20of%20%E2%99%AF%20and%20%E2%99%AD%20in%20Key%20Signatures%20in%204%20Clefs.svg"></div>
-<div class="name">Positions of ♯ and ♭ in Key Signatures in 4 Clefs.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: CC BY-SA 4.0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Positions_of_%E2%99%AF_and_%E2%99%AD_in_Key_Signatures_in_4_Clefs.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Positions of ♯ and ♭ in Key Signatures in 4 Clefs.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Treble%20clef%201.svg"></div>
-<div class="name">Treble clef 1.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: CC BY-SA 3.0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Treble_clef_1.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Treble clef 1.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Treble%20clef%202.svg"></div>
-<div class="name">Treble clef 2.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: Public domain</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Treble_clef_2.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Treble clef 2.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Treble%20Clef%20Barnstar.svg"></div>
-<div class="name">Treble Clef Barnstar.svg</div>
-<div class="meta">Category: G clef in art</div>
-<div class="meta">License: Public domain</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Treble_Clef_Barnstar.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Treble Clef Barnstar.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Treble%20clef%20draw.svg"></div>
-<div class="name">Treble clef draw.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: CC BY-SA 4.0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Treble_clef_draw.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Treble clef draw.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Treble%20clef%20with%20empty%20staff.svg"></div>
-<div class="name">Treble clef with empty staff.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: Public domain</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Treble_clef_with_empty_staff.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Treble clef with empty staff.svg"> мусор / не подходит</label>
+<h1>SvgSymbols corpus — 55 SVG</h1>
+<p>Vector-only experiments. The structural table below intentionally does no recognition: it compares the two single-digit families directly using topology and scale-independent geometry. The older DigitTopologyAnalyzer and Fourier/scanline rankings remain below for reference.</p>
+<h2>Single digit topology experiment</h2>
+<p>Only Music0..9 and Bravura-0..9 are shown here. No nearest-neighbour, probability or segmentation is involved. Holes are inferred from contour nesting; hole coordinates are normalized inside the glyph bounding box.</p>
+<div class="topology-wrap"><table class="topology">
+<thead><tr><th>Digit</th><th>Family</th><th>Glyph</th><th>Contours raw / closed / outer</th><th>Holes</th><th>Aspect</th><th>Fill ratio</th><th>Perimeter / bbox perimeter</th><th>Hole centers (x,y,area)</th></tr></thead><tbody>
+<tr><td class="digit-head" rowspan="1">0</td>
+<td class="family">Bravura</td>
+<td><img class="mini" src="Samples/Rhythm/Bravura-0.svg" title="Bravura-0.svg"></td>
+<td class="number">2 / 2 / 1</td>
+<td class="number">1 (depth 1)</td>
+<td class="number">0.858</td>
+<td class="number">0.553</td>
+<td class="number">1.300</td>
+<td class="holes">H1=(0.500,0.486,0.232)</td>
+</tr>
+<tr><td class="digit-head" rowspan="1">1</td>
+<td class="family">Bravura</td>
+<td><img class="mini" src="Samples/Rhythm/Bravura-1.svg" title="Bravura-1.svg"></td>
+<td class="number">1 / 1 / 1</td>
+<td class="number">0 (depth 0)</td>
+<td class="number">0.587</td>
+<td class="number">0.576</td>
+<td class="number">1.075</td>
+<td class="holes">—</td>
+</tr>
+<tr><td class="digit-head" rowspan="1">2</td>
+<td class="family">Bravura</td>
+<td><img class="mini" src="Samples/Rhythm/Bravura-2.svg" title="Bravura-2.svg"></td>
+<td class="number">1 / 1 / 1</td>
+<td class="number">0 (depth 0)</td>
+<td class="number">0.795</td>
+<td class="number">0.549</td>
+<td class="number">1.560</td>
+<td class="holes">—</td>
+</tr>
+<tr><td class="digit-head" rowspan="1">3</td>
+<td class="family">Bravura</td>
+<td><img class="mini" src="Samples/Rhythm/Bravura-3.svg" title="Bravura-3.svg"></td>
+<td class="number">1 / 1 / 1</td>
+<td class="number">0 (depth 0)</td>
+<td class="number">0.762</td>
+<td class="number">0.567</td>
+<td class="number">1.584</td>
+<td class="holes">—</td>
+</tr>
+<tr><td class="digit-head" rowspan="1">4</td>
+<td class="family">Bravura</td>
+<td><img class="mini" src="Samples/Rhythm/Bravura-4.svg" title="Bravura-4.svg"></td>
+<td class="number">1 / 1 / 1</td>
+<td class="number">0 (depth 0)</td>
+<td class="number">0.858</td>
+<td class="number">0.466</td>
+<td class="number">1.399</td>
+<td class="holes">—</td>
+</tr>
+<tr><td class="digit-head" rowspan="1">5</td>
+<td class="family">Bravura</td>
+<td><img class="mini" src="Samples/Rhythm/Bravura-5.svg" title="Bravura-5.svg"></td>
+<td class="number">1 / 1 / 1</td>
+<td class="number">0 (depth 0)</td>
+<td class="number">0.730</td>
+<td class="number">0.592</td>
+<td class="number">1.608</td>
+<td class="holes">—</td>
+</tr>
+<tr><td class="digit-head" rowspan="1">6</td>
+<td class="family">Bravura</td>
+<td><img class="mini" src="Samples/Rhythm/Bravura-6.svg" title="Bravura-6.svg"></td>
+<td class="number">2 / 2 / 1</td>
+<td class="number">1 (depth 1)</td>
+<td class="number">0.788</td>
+<td class="number">0.580</td>
+<td class="number">1.498</td>
+<td class="holes">H1=(0.514,0.722,0.104)</td>
+</tr>
+<tr><td class="digit-head" rowspan="1">7</td>
+<td class="family">Bravura</td>
+<td><img class="mini" src="Samples/Rhythm/Bravura-7.svg" title="Bravura-7.svg"></td>
+<td class="number">1 / 1 / 1</td>
+<td class="number">0 (depth 0)</td>
+<td class="number">0.804</td>
+<td class="number">0.468</td>
+<td class="number">1.197</td>
+<td class="holes">—</td>
+</tr>
+<tr><td class="digit-head" rowspan="1">8</td>
+<td class="family">Bravura</td>
+<td><img class="mini" src="Samples/Rhythm/Bravura-8.svg" title="Bravura-8.svg"></td>
+<td class="number">3 / 3 / 1</td>
+<td class="number">2 (depth 1)</td>
+<td class="number">0.764</td>
+<td class="number">0.525</td>
+<td class="number">1.602</td>
+<td class="holes">H1=(0.423,0.764,0.157); H2=(0.533,0.209,0.133)</td>
+</tr>
+<tr><td class="digit-head" rowspan="1">9</td>
+<td class="family">Bravura</td>
+<td><img class="mini" src="Samples/Rhythm/Bravura-9.svg" title="Bravura-9.svg"></td>
+<td class="number">2 / 2 / 1</td>
+<td class="number">1 (depth 1)</td>
+<td class="number">0.788</td>
+<td class="number">0.580</td>
+<td class="number">1.498</td>
+<td class="holes">H1=(0.486,0.278,0.104)</td>
+</tr>
+</tbody></table></div>
+<h2>Time-signature numbers (16)</h2><div class="grid">
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Rhythm/Bravura-0.svg"></div>
+<div class="digit-verdict">
+<div class="label">DigitTopologyAnalyzer</div>
+<div class="digit-main">→ 9 &nbsp; 14,5%</div>
+<div class="muted">segments=1</div>
+<div class="digit-row"><b>#1</b><span>9 (14,5%) <span class="digit-candidates">9:14,5% d=5,25 &#183; 6:1,2% d=6,62 &#183; 4:0,5% d=7,15</span></span></div>
+</div>
+<div class="name">Bravura-0.svg</div>
+<div class="meta">Category: Time-signature number / Bravura</div>
+<div class="meta">License: unknown</div>
+<div class="meta"><a href="#">Wikimedia source</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=0.605 x=-0.000 y=0.000 size=0.858×1.000</div>
+<div>F1=+0.002-1.000i  F2=0.000+0.000i</div>
+<div>F3=0.000-0.019i  F4=0.000+0.000i</div>
+<div><b>C2</b> w=0.395 x=-0.000 y=-0.014 size=0.299×0.848</div>
+<div>F1=+0.001-0.995i  F2=0.000+0.000i</div>
+<div>F3=0.000-0.097i  F4=0.000+0.000i</div>
+<div class="muted">contours raw=2, unique=2, described=2</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>2.280</span><span class="kind">Other</span><span>noteheadWhole.svg</span></div>
+<div class="neighbor"><span>4.235</span><span class="kind">Other</span><span>noteheadHalf.svg</span></div>
+<div class="neighbor"><span>5.040</span><span class="kind">Other</span><span>accidentalSharp.svg</span></div>
+<div class="neighbor"><span>5.245</span><span class="kind">R</span><span>Bravura-9.svg</span></div>
+<div class="neighbor"><span>5.268</span><span class="kind">R</span><span>Bravura-6.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>2.274</span><span class="kind">Other</span><span>noteheadWhole.svg</span></div>
+<div class="neighbor"><span>4.205</span><span class="kind">Other</span><span>noteheadHalf.svg</span></div>
+<div class="neighbor"><span>5.021</span><span class="kind">Other</span><span>accidentalSharp.svg</span></div>
+<div class="neighbor"><span>5.242</span><span class="kind">R</span><span>Bravura-9.svg</span></div>
+<div class="neighbor"><span>5.242</span><span class="kind">R</span><span>Bravura-6.svg</span></div>
+</div>
+<label><input class="bad" type="checkbox" data-id="Rhythm:Bravura-0.svg"> мусор / не подходит</label>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Rhythm/Bravura-1.svg"></div>
+<div class="digit-verdict">
+<div class="label">DigitTopologyAnalyzer</div>
+<div class="digit-main">→ 7 &nbsp; 7,7%</div>
+<div class="muted">segments=1</div>
+<div class="digit-row"><b>#1</b><span>7 (7,7%) <span class="digit-candidates">7:7,7% d=5,87 &#183; 4:5,8% d=6,03 &#183; 0:0,5% d=7,40</span></span></div>
+</div>
+<div class="name">Bravura-1.svg</div>
+<div class="meta">Category: Time-signature number / Bravura</div>
+<div class="meta">License: unknown</div>
+<div class="meta"><a href="#">Wikimedia source</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=1.000 x=0.003 y=0.034 size=0.586×1.000</div>
+<div>F1=+0.070-0.949i  F2=-0.241-0.059i</div>
+<div>F3=+0.010-0.165i  F4=-0.011-0.038i</div>
+<div class="muted">contours raw=1, unique=1, described=1</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>3.784</span><span class="kind">Other</span><span>noteheadBlack.svg</span></div>
+<div class="neighbor"><span>3.867</span><span class="kind">Other</span><span>augmentationDot.svg</span></div>
+<div class="neighbor"><span>4.762</span><span class="kind">Other</span><span>restDoubleWhole.svg</span></div>
+<div class="neighbor"><span>4.763</span><span class="kind">Other</span><span>restLonga.svg</span></div>
+<div class="neighbor"><span>4.763</span><span class="kind">Other</span><span>restMaxima.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>3.773</span><span class="kind">Other</span><span>noteheadBlack.svg</span></div>
+<div class="neighbor"><span>3.866</span><span class="kind">Other</span><span>augmentationDot.svg</span></div>
+<div class="neighbor"><span>4.748</span><span class="kind">Other</span><span>restDoubleWhole.svg</span></div>
+<div class="neighbor"><span>4.754</span><span class="kind">Other</span><span>restHalf.svg</span></div>
+<div class="neighbor"><span>4.754</span><span class="kind">Other</span><span>restWhole.svg</span></div>
+</div>
+<label><input class="bad" type="checkbox" data-id="Rhythm:Bravura-1.svg"> мусор / не подходит</label>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Rhythm/Bravura-2.svg"></div>
+<div class="digit-verdict">
+<div class="label">DigitTopologyAnalyzer</div>
+<div class="digit-main">→ 3 &nbsp; 15,8%</div>
+<div class="muted">segments=1</div>
+<div class="digit-row"><b>#1</b><span>3 (15,8%) <span class="digit-candidates">3:15,8% d=4,45 &#183; 8:1,6% d=5,71 &#183; 5:1,5% d=5,75</span></span></div>
+</div>
+<div class="name">Bravura-2.svg</div>
+<div class="meta">Category: Time-signature number / Bravura</div>
+<div class="meta">License: unknown</div>
+<div class="meta"><a href="#">Wikimedia source</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=1.000 x=-0.003 y=-0.018 size=0.795×1.000</div>
+<div>F1=+0.349-0.754i  F2=-0.240-0.057i</div>
+<div>F3=+0.117-0.421i  F4=-0.122-0.180i</div>
+<div class="muted">contours raw=1, unique=1, described=1</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>2.262</span><span class="kind">R</span><span>../RealMeterDigits/Real-2-accusation-019.svg</span></div>
+<div class="neighbor"><span>2.262</span><span class="kind">R</span><span>../RealMeterDigits/Real-2-accusation-021.svg</span></div>
+<div class="neighbor"><span>4.040</span><span class="kind">R</span><span>Bravura-8.svg</span></div>
+<div class="neighbor"><span>4.454</span><span class="kind">R</span><span>Bravura-3.svg</span></div>
+<div class="neighbor"><span>4.461</span><span class="kind">R</span><span>Bravura-9.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>2.260</span><span class="kind">R</span><span>../RealMeterDigits/Real-2-accusation-019.svg</span></div>
+<div class="neighbor"><span>2.260</span><span class="kind">R</span><span>../RealMeterDigits/Real-2-accusation-021.svg</span></div>
+<div class="neighbor"><span>4.027</span><span class="kind">R</span><span>Bravura-8.svg</span></div>
+<div class="neighbor"><span>4.417</span><span class="kind">R</span><span>Bravura-3.svg</span></div>
+<div class="neighbor"><span>4.442</span><span class="kind">R</span><span>Bravura-9.svg</span></div>
+</div>
+<label><input class="bad" type="checkbox" data-id="Rhythm:Bravura-2.svg"> мусор / не подходит</label>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Rhythm/Bravura-3.svg"></div>
+<div class="digit-verdict">
+<div class="label">DigitTopologyAnalyzer</div>
+<div class="digit-main">→ 2 &nbsp; 18,4%</div>
+<div class="muted">segments=1</div>
+<div class="digit-row"><b>#1</b><span>2 (18,4%) <span class="digit-candidates">2:18,4% d=4,45 &#183; 5:3,3% d=5,40 &#183; 8:0,5% d=6,48</span></span></div>
+</div>
+<div class="name">Bravura-3.svg</div>
+<div class="meta">Category: Time-signature number / Bravura</div>
+<div class="meta">License: unknown</div>
+<div class="meta"><a href="#">Wikimedia source</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=1.000 x=-0.012 y=-0.005 size=0.762×1.000</div>
+<div>F1=+0.451-0.643i  F2=-0.192-0.411i</div>
+<div>F3=-0.288-0.024i  F4=+0.163-0.164i</div>
+<div class="muted">contours raw=1, unique=1, described=1</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>3.142</span><span class="kind">R</span><span>../RealMeterDigits/Real-2-accusation-021.svg</span></div>
+<div class="neighbor"><span>3.142</span><span class="kind">R</span><span>../RealMeterDigits/Real-2-accusation-019.svg</span></div>
+<div class="neighbor"><span>3.378</span><span class="kind">R</span><span>../RealMeterDigits/Real-3-accusation-015.svg</span></div>
+<div class="neighbor"><span>3.378</span><span class="kind">R</span><span>../RealMeterDigits/Real-3-accusation-005.svg</span></div>
+<div class="neighbor"><span>4.454</span><span class="kind">R</span><span>Bravura-2.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>3.087</span><span class="kind">R</span><span>../RealMeterDigits/Real-2-accusation-021.svg</span></div>
+<div class="neighbor"><span>3.087</span><span class="kind">R</span><span>../RealMeterDigits/Real-2-accusation-019.svg</span></div>
+<div class="neighbor"><span>3.377</span><span class="kind">R</span><span>../RealMeterDigits/Real-3-accusation-015.svg</span></div>
+<div class="neighbor"><span>3.377</span><span class="kind">R</span><span>../RealMeterDigits/Real-3-accusation-005.svg</span></div>
+<div class="neighbor"><span>4.417</span><span class="kind">R</span><span>Bravura-2.svg</span></div>
+</div>
+<label><input class="bad" type="checkbox" data-id="Rhythm:Bravura-3.svg"> мусор / не подходит</label>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Rhythm/Bravura-4.svg"></div>
+<div class="digit-verdict">
+<div class="label">DigitTopologyAnalyzer</div>
+<div class="digit-main">→ 7 &nbsp; 3,3%</div>
+<div class="muted">segments=1</div>
+<div class="digit-row"><b>#1</b><span>7 (3,3%) <span class="digit-candidates">7:3,3% d=6,00 &#183; 2:3,2% d=6,01 &#183; 1:3,1% d=6,03</span></span></div>
+</div>
+<div class="name">Bravura-4.svg</div>
+<div class="meta">Category: Time-signature number / Bravura</div>
+<div class="meta">License: unknown</div>
+<div class="meta"><a href="#">Wikimedia source</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=1.000 x=0.014 y=0.038 size=0.858×1.000</div>
+<div>F1=-0.486-0.617i  F2=+0.532-0.103i</div>
+<div>F3=+0.137-0.213i  F4=+0.054-0.079i</div>
+<div class="muted">contours raw=1, unique=1, described=1</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>2.124</span><span class="kind">R</span><span>../RealMeterDigits/Real-4-accusation-016.svg</span></div>
+<div class="neighbor"><span>2.124</span><span class="kind">R</span><span>../RealMeterDigits/Real-4-accusation-001.svg</span></div>
+<div class="neighbor"><span>4.414</span><span class="kind">Other</span><span>noteheadHalf.svg</span></div>
+<div class="neighbor"><span>5.149</span><span class="kind">Other</span><span>accidentalNatural.svg</span></div>
+<div class="neighbor"><span>5.286</span><span class="kind">Other</span><span>noteheadDoubleWholeSquare.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>2.055</span><span class="kind">R</span><span>../RealMeterDigits/Real-4-accusation-016.svg</span></div>
+<div class="neighbor"><span>2.055</span><span class="kind">R</span><span>../RealMeterDigits/Real-4-accusation-001.svg</span></div>
+<div class="neighbor"><span>4.406</span><span class="kind">Other</span><span>noteheadHalf.svg</span></div>
+<div class="neighbor"><span>5.100</span><span class="kind">Other</span><span>accidentalNatural.svg</span></div>
+<div class="neighbor"><span>5.282</span><span class="kind">Other</span><span>noteheadDoubleWholeSquare.svg</span></div>
+</div>
+<label><input class="bad" type="checkbox" data-id="Rhythm:Bravura-4.svg"> мусор / не подходит</label>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Rhythm/Bravura-5.svg"></div>
+<div class="digit-verdict">
+<div class="label">DigitTopologyAnalyzer</div>
+<div class="digit-main">→ 3 &nbsp; 8,2%</div>
+<div class="muted">segments=1</div>
+<div class="digit-row"><b>#1</b><span>3 (8,2%) <span class="digit-candidates">3:8,2% d=5,40 &#183; 2:4,3% d=5,75 &#183; 8:1,5% d=6,33</span></span></div>
+</div>
+<div class="name">Bravura-5.svg</div>
+<div class="meta">Category: Time-signature number / Bravura</div>
+<div class="meta">License: unknown</div>
+<div class="meta"><a href="#">Wikimedia source</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=1.000 x=-0.041 y=-0.002 size=0.730×1.000</div>
+<div>F1=-0.369-0.707i  F2=-0.149+0.085i</div>
+<div>F3=+0.031-0.513i  F4=-0.219+0.059i</div>
+<div class="muted">contours raw=1, unique=1, described=1</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>4.657</span><span class="kind">R</span><span>Bravura-8.svg</span></div>
+<div class="neighbor"><span>5.348</span><span class="kind">R</span><span>Bravura-9.svg</span></div>
+<div class="neighbor"><span>5.399</span><span class="kind">R</span><span>Bravura-3.svg</span></div>
+<div class="neighbor"><span>5.695</span><span class="kind">R</span><span>../RealMeterDigits/Real-3-accusation-015.svg</span></div>
+<div class="neighbor"><span>5.695</span><span class="kind">R</span><span>../RealMeterDigits/Real-3-accusation-005.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>4.641</span><span class="kind">R</span><span>Bravura-8.svg</span></div>
+<div class="neighbor"><span>5.302</span><span class="kind">R</span><span>Bravura-9.svg</span></div>
+<div class="neighbor"><span>5.317</span><span class="kind">R</span><span>Bravura-3.svg</span></div>
+<div class="neighbor"><span>5.616</span><span class="kind">R</span><span>../RealMeterDigits/Real-3-accusation-015.svg</span></div>
+<div class="neighbor"><span>5.616</span><span class="kind">R</span><span>../RealMeterDigits/Real-3-accusation-005.svg</span></div>
+</div>
+<label><input class="bad" type="checkbox" data-id="Rhythm:Bravura-5.svg"> мусор / не подходит</label>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Rhythm/Bravura-6.svg"></div>
+<div class="digit-verdict">
+<div class="label">DigitTopologyAnalyzer</div>
+<div class="digit-main">→ 2 &nbsp; 4,9%</div>
+<div class="muted">segments=1</div>
+<div class="digit-row"><b>#1</b><span>2 (4,9%) <span class="digit-candidates">2:4,9% d=5,96 &#183; 4:3,0% d=6,24 &#183; 5:1,6% d=6,58</span></span></div>
+</div>
+<div class="name">Bravura-6.svg</div>
+<div class="meta">Category: Time-signature number / Bravura</div>
+<div class="meta">License: unknown</div>
+<div class="meta"><a href="#">Wikimedia source</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=0.795 x=0.012 y=-0.067 size=0.788×1.000</div>
+<div>F1=-0.528-0.584i  F2=+0.439-0.399i</div>
+<div>F3=+0.016-0.009i  F4=+0.025-0.136i</div>
+<div><b>C2</b> w=0.205 x=0.011 y=0.222 size=0.234×0.448</div>
+<div>F1=-0.003-0.997i  F2=-0.001+0.000i</div>
+<div>F3=-0.001-0.071i  F4=0.000+0.000i</div>
+<div class="muted">contours raw=2, unique=2, described=2</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>5.267</span><span class="kind">Other</span><span>noteheadWhole.svg</span></div>
+<div class="neighbor"><span>5.268</span><span class="kind">R</span><span>Bravura-0.svg</span></div>
+<div class="neighbor"><span>5.441</span><span class="kind">R</span><span>Bravura-9.svg</span></div>
+<div class="neighbor"><span>5.673</span><span class="kind">R</span><span>Bravura-8.svg</span></div>
+<div class="neighbor"><span>5.882</span><span class="kind">R</span><span>Bravura-2.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>5.242</span><span class="kind">Other</span><span>noteheadWhole.svg</span></div>
+<div class="neighbor"><span>5.242</span><span class="kind">R</span><span>Bravura-0.svg</span></div>
+<div class="neighbor"><span>5.380</span><span class="kind">R</span><span>Bravura-9.svg</span></div>
+<div class="neighbor"><span>5.640</span><span class="kind">R</span><span>Bravura-8.svg</span></div>
+<div class="neighbor"><span>5.811</span><span class="kind">R</span><span>Bravura-2.svg</span></div>
+</div>
+<label><input class="bad" type="checkbox" data-id="Rhythm:Bravura-6.svg"> мусор / не подходит</label>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Rhythm/Bravura-7.svg"></div>
+<div class="digit-verdict">
+<div class="label">DigitTopologyAnalyzer</div>
+<div class="digit-main">→ 1 &nbsp; 5,6%</div>
+<div class="muted">segments=1</div>
+<div class="digit-row"><b>#1</b><span>1 (5,6%) <span class="digit-candidates">1:5,6% d=5,87 &#183; 4:4,5% d=6,00 &#183; 2:3,0% d=6,22</span></span></div>
+</div>
+<div class="name">Bravura-7.svg</div>
+<div class="meta">Category: Time-signature number / Bravura</div>
+<div class="meta">License: unknown</div>
+<div class="meta"><a href="#">Wikimedia source</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=1.000 x=0.004 y=-0.087 size=0.805×1.000</div>
+<div>F1=+0.111-0.871i  F2=-0.349-0.256i</div>
+<div>F3=+0.170-0.023i  F4=-0.035-0.012i</div>
+<div class="muted">contours raw=1, unique=1, described=1</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>5.325</span><span class="kind">Other</span><span>noteheadWhole.svg</span></div>
+<div class="neighbor"><span>5.752</span><span class="kind">R</span><span>Bravura-0.svg</span></div>
+<div class="neighbor"><span>5.801</span><span class="kind">Other</span><span>rest8th.svg</span></div>
+<div class="neighbor"><span>5.852</span><span class="kind">R</span><span>Bravura-1.svg</span></div>
+<div class="neighbor"><span>5.981</span><span class="kind">F</span><span>valid/Clef Bass (F).svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>5.322</span><span class="kind">Other</span><span>noteheadWhole.svg</span></div>
+<div class="neighbor"><span>5.751</span><span class="kind">R</span><span>Bravura-0.svg</span></div>
+<div class="neighbor"><span>5.794</span><span class="kind">Other</span><span>rest8th.svg</span></div>
+<div class="neighbor"><span>5.848</span><span class="kind">R</span><span>Bravura-1.svg</span></div>
+<div class="neighbor"><span>5.927</span><span class="kind">R</span><span>Bravura-4.svg</span></div>
+</div>
+<label><input class="bad" type="checkbox" data-id="Rhythm:Bravura-7.svg"> мусор / не подходит</label>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Rhythm/Bravura-8.svg"></div>
+<div class="digit-verdict">
+<div class="label">DigitTopologyAnalyzer</div>
+<div class="digit-main">→ 2 &nbsp; 5,7%</div>
+<div class="muted">segments=1</div>
+<div class="digit-row"><b>#1</b><span>2 (5,7%) <span class="digit-candidates">2:5,7% d=5,71 &#183; 9:5,0% d=5,78 &#183; 5:1,9% d=6,33</span></span></div>
+</div>
+<div class="name">Bravura-8.svg</div>
+<div class="meta">Category: Time-signature number / Bravura</div>
+<div class="meta">License: unknown</div>
+<div class="meta"><a href="#">Wikimedia source</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=0.570 x=-0.010 y=0.003 size=0.764×1.000</div>
+<div>F1=+0.012-0.989i  F2=-0.029+0.009i</div>
+<div>F3=+0.025-0.125i  F4=+0.015-0.015i</div>
+<div><b>C2</b> w=0.222 x=-0.058 y=0.263 size=0.436×0.372</div>
+<div>F1=-0.268-0.963i  F2=+0.007+0.003i</div>
+<div>F3=+0.037+0.003i  F4=-0.002-0.012i</div>
+<div><b>C3</b> w=0.208 x=0.024 y=-0.290 size=0.421×0.330</div>
+<div>F1=-0.073-0.996i  F2=-0.008-0.010i</div>
+<div>F3=+0.035+0.035i  F4=-0.014+0.007i</div>
+<div class="muted">contours raw=3, unique=3, described=3</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>4.040</span><span class="kind">R</span><span>Bravura-2.svg</span></div>
+<div class="neighbor"><span>4.610</span><span class="kind">R</span><span>../RealMeterDigits/Real-3-accusation-005.svg</span></div>
+<div class="neighbor"><span>4.610</span><span class="kind">R</span><span>../RealMeterDigits/Real-3-accusation-015.svg</span></div>
+<div class="neighbor"><span>4.610</span><span class="kind">R</span><span>../RealMeterDigits/Real-2-accusation-019.svg</span></div>
+<div class="neighbor"><span>4.610</span><span class="kind">R</span><span>../RealMeterDigits/Real-2-accusation-021.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>4.027</span><span class="kind">R</span><span>Bravura-2.svg</span></div>
+<div class="neighbor"><span>4.580</span><span class="kind">R</span><span>../RealMeterDigits/Real-3-accusation-005.svg</span></div>
+<div class="neighbor"><span>4.580</span><span class="kind">R</span><span>../RealMeterDigits/Real-3-accusation-015.svg</span></div>
+<div class="neighbor"><span>4.598</span><span class="kind">R</span><span>../RealMeterDigits/Real-2-accusation-019.svg</span></div>
+<div class="neighbor"><span>4.598</span><span class="kind">R</span><span>../RealMeterDigits/Real-2-accusation-021.svg</span></div>
+</div>
+<label><input class="bad" type="checkbox" data-id="Rhythm:Bravura-8.svg"> мусор / не подходит</label>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Rhythm/Bravura-9.svg"></div>
+<div class="digit-verdict">
+<div class="label">DigitTopologyAnalyzer</div>
+<div class="digit-main">→ 0 &nbsp; 9,2%</div>
+<div class="muted">segments=1</div>
+<div class="digit-row"><b>#1</b><span>0 (9,2%) <span class="digit-candidates">0:9,2% d=5,25 &#183; 8:3,5% d=5,78 &#183; 2:2,8% d=5,89</span></span></div>
+</div>
+<div class="name">Bravura-9.svg</div>
+<div class="meta">Category: Time-signature number / Bravura</div>
+<div class="meta">License: unknown</div>
+<div class="meta"><a href="#">Wikimedia source</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=0.795 x=-0.012 y=0.067 size=0.788×1.000</div>
+<div>F1=+0.192-0.763i  F2=-0.201-0.558i</div>
+<div>F3=-0.014+0.012i  F4=+0.114-0.078i</div>
+<div><b>C2</b> w=0.205 x=-0.011 y=-0.222 size=0.234×0.448</div>
+<div>F1=-0.003-0.997i  F2=+0.001+0.000i</div>
+<div>F3=-0.001-0.071i  F4=0.000+0.000i</div>
+<div class="muted">contours raw=2, unique=2, described=2</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>4.461</span><span class="kind">R</span><span>Bravura-2.svg</span></div>
+<div class="neighbor"><span>4.972</span><span class="kind">R</span><span>../RealMeterDigits/Real-2-accusation-021.svg</span></div>
+<div class="neighbor"><span>4.972</span><span class="kind">R</span><span>../RealMeterDigits/Real-2-accusation-019.svg</span></div>
+<div class="neighbor"><span>5.238</span><span class="kind">Other</span><span>noteheadWhole.svg</span></div>
+<div class="neighbor"><span>5.245</span><span class="kind">R</span><span>Bravura-0.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>4.442</span><span class="kind">R</span><span>Bravura-2.svg</span></div>
+<div class="neighbor"><span>4.954</span><span class="kind">R</span><span>../RealMeterDigits/Real-2-accusation-021.svg</span></div>
+<div class="neighbor"><span>4.954</span><span class="kind">R</span><span>../RealMeterDigits/Real-2-accusation-019.svg</span></div>
+<div class="neighbor"><span>5.231</span><span class="kind">Other</span><span>noteheadWhole.svg</span></div>
+<div class="neighbor"><span>5.242</span><span class="kind">R</span><span>Bravura-0.svg</span></div>
+</div>
+<label><input class="bad" type="checkbox" data-id="Rhythm:Bravura-9.svg"> мусор / не подходит</label>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Rhythm/../RealMeterDigits/Real-2-accusation-019.svg"></div>
+<div class="digit-verdict">
+<div class="label">DigitTopologyAnalyzer</div>
+<div class="digit-main">→ 2 &nbsp; 39,0%</div>
+<div class="muted">segments=1</div>
+<div class="digit-row"><b>#1</b><span>2 (39,0%) <span class="digit-candidates">2:39,0% d=2,26 &#183; 3:7,9% d=3,14 &#183; 5:0,1% d=5,71</span></span></div>
+</div>
+<div class="name">../RealMeterDigits/Real-2-accusation-019.svg</div>
+<div class="meta">Category: Real score meter digit / expected 2</div>
+<div class="meta">License: unknown</div>
+<div class="meta"><a href="#">Wikimedia source</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=1.000 x=-0.012 y=-0.008 size=0.793×1.000</div>
+<div>F1=+0.333-0.744i  F2=-0.182-0.014i</div>
+<div>F3=+0.071-0.490i  F4=-0.153-0.150i</div>
+<div class="muted">contours raw=1, unique=1, described=1</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>0.000</span><span class="kind">R</span><span>../RealMeterDigits/Real-2-accusation-021.svg</span></div>
+<div class="neighbor"><span>2.262</span><span class="kind">R</span><span>Bravura-2.svg</span></div>
+<div class="neighbor"><span>3.142</span><span class="kind">R</span><span>Bravura-3.svg</span></div>
+<div class="neighbor"><span>3.184</span><span class="kind">R</span><span>../RealMeterDigits/Real-3-accusation-005.svg</span></div>
+<div class="neighbor"><span>3.184</span><span class="kind">R</span><span>../RealMeterDigits/Real-3-accusation-015.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>0.000</span><span class="kind">R</span><span>../RealMeterDigits/Real-2-accusation-021.svg</span></div>
+<div class="neighbor"><span>2.260</span><span class="kind">R</span><span>Bravura-2.svg</span></div>
+<div class="neighbor"><span>3.087</span><span class="kind">R</span><span>Bravura-3.svg</span></div>
+<div class="neighbor"><span>3.130</span><span class="kind">R</span><span>../RealMeterDigits/Real-3-accusation-005.svg</span></div>
+<div class="neighbor"><span>3.130</span><span class="kind">R</span><span>../RealMeterDigits/Real-3-accusation-015.svg</span></div>
+</div>
+<label><input class="bad" type="checkbox" data-id="Rhythm:../RealMeterDigits/Real-2-accusation-019.svg"> мусор / не подходит</label>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Rhythm/../RealMeterDigits/Real-2-accusation-021.svg"></div>
+<div class="digit-verdict">
+<div class="label">DigitTopologyAnalyzer</div>
+<div class="digit-main">→ 2 &nbsp; 39,0%</div>
+<div class="muted">segments=1</div>
+<div class="digit-row"><b>#1</b><span>2 (39,0%) <span class="digit-candidates">2:39,0% d=2,26 &#183; 3:7,9% d=3,14 &#183; 5:0,1% d=5,71</span></span></div>
+</div>
+<div class="name">../RealMeterDigits/Real-2-accusation-021.svg</div>
+<div class="meta">Category: Real score meter digit / expected 2</div>
+<div class="meta">License: unknown</div>
+<div class="meta"><a href="#">Wikimedia source</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=1.000 x=-0.012 y=-0.008 size=0.793×1.000</div>
+<div>F1=+0.333-0.744i  F2=-0.182-0.014i</div>
+<div>F3=+0.071-0.490i  F4=-0.153-0.150i</div>
+<div class="muted">contours raw=1, unique=1, described=1</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>0.000</span><span class="kind">R</span><span>../RealMeterDigits/Real-2-accusation-019.svg</span></div>
+<div class="neighbor"><span>2.262</span><span class="kind">R</span><span>Bravura-2.svg</span></div>
+<div class="neighbor"><span>3.142</span><span class="kind">R</span><span>Bravura-3.svg</span></div>
+<div class="neighbor"><span>3.184</span><span class="kind">R</span><span>../RealMeterDigits/Real-3-accusation-005.svg</span></div>
+<div class="neighbor"><span>3.184</span><span class="kind">R</span><span>../RealMeterDigits/Real-3-accusation-015.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>0.000</span><span class="kind">R</span><span>../RealMeterDigits/Real-2-accusation-019.svg</span></div>
+<div class="neighbor"><span>2.260</span><span class="kind">R</span><span>Bravura-2.svg</span></div>
+<div class="neighbor"><span>3.087</span><span class="kind">R</span><span>Bravura-3.svg</span></div>
+<div class="neighbor"><span>3.130</span><span class="kind">R</span><span>../RealMeterDigits/Real-3-accusation-005.svg</span></div>
+<div class="neighbor"><span>3.130</span><span class="kind">R</span><span>../RealMeterDigits/Real-3-accusation-015.svg</span></div>
+</div>
+<label><input class="bad" type="checkbox" data-id="Rhythm:../RealMeterDigits/Real-2-accusation-021.svg"> мусор / не подходит</label>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Rhythm/../RealMeterDigits/Real-3-accusation-005.svg"></div>
+<div class="digit-verdict">
+<div class="label">DigitTopologyAnalyzer</div>
+<div class="digit-main">→ 3 &nbsp; 28,1%</div>
+<div class="muted">segments=1</div>
+<div class="digit-row"><b>#1</b><span>3 (28,1%) <span class="digit-candidates">3:28,1% d=3,38 &#183; 2:3,7% d=4,50 &#183; 5:0,4% d=5,69</span></span></div>
+</div>
+<div class="name">../RealMeterDigits/Real-3-accusation-005.svg</div>
+<div class="meta">Category: Real score meter digit / expected 3</div>
+<div class="meta">License: unknown</div>
+<div class="meta"><a href="#">Wikimedia source</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=1.000 x=-0.014 y=0.002 size=0.756×1.000</div>
+<div>F1=+0.454-0.637i  F2=-0.143-0.420i</div>
+<div>F3=-0.267-0.050i  F4=+0.205-0.157i</div>
+<div class="muted">contours raw=1, unique=1, described=1</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>0.000</span><span class="kind">R</span><span>../RealMeterDigits/Real-3-accusation-015.svg</span></div>
+<div class="neighbor"><span>3.184</span><span class="kind">R</span><span>../RealMeterDigits/Real-2-accusation-019.svg</span></div>
+<div class="neighbor"><span>3.184</span><span class="kind">R</span><span>../RealMeterDigits/Real-2-accusation-021.svg</span></div>
+<div class="neighbor"><span>3.378</span><span class="kind">R</span><span>Bravura-3.svg</span></div>
+<div class="neighbor"><span>4.495</span><span class="kind">R</span><span>Bravura-2.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>0.000</span><span class="kind">R</span><span>../RealMeterDigits/Real-3-accusation-015.svg</span></div>
+<div class="neighbor"><span>3.130</span><span class="kind">R</span><span>../RealMeterDigits/Real-2-accusation-019.svg</span></div>
+<div class="neighbor"><span>3.130</span><span class="kind">R</span><span>../RealMeterDigits/Real-2-accusation-021.svg</span></div>
+<div class="neighbor"><span>3.377</span><span class="kind">R</span><span>Bravura-3.svg</span></div>
+<div class="neighbor"><span>4.458</span><span class="kind">R</span><span>Bravura-2.svg</span></div>
+</div>
+<label><input class="bad" type="checkbox" data-id="Rhythm:../RealMeterDigits/Real-3-accusation-005.svg"> мусор / не подходит</label>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Rhythm/../RealMeterDigits/Real-3-accusation-015.svg"></div>
+<div class="digit-verdict">
+<div class="label">DigitTopologyAnalyzer</div>
+<div class="digit-main">→ 3 &nbsp; 28,1%</div>
+<div class="muted">segments=1</div>
+<div class="digit-row"><b>#1</b><span>3 (28,1%) <span class="digit-candidates">3:28,1% d=3,38 &#183; 2:3,7% d=4,50 &#183; 5:0,4% d=5,69</span></span></div>
+</div>
+<div class="name">../RealMeterDigits/Real-3-accusation-015.svg</div>
+<div class="meta">Category: Real score meter digit / expected 3</div>
+<div class="meta">License: unknown</div>
+<div class="meta"><a href="#">Wikimedia source</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=1.000 x=-0.014 y=0.002 size=0.756×1.000</div>
+<div>F1=+0.454-0.637i  F2=-0.143-0.420i</div>
+<div>F3=-0.267-0.050i  F4=+0.205-0.157i</div>
+<div class="muted">contours raw=1, unique=1, described=1</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>0.000</span><span class="kind">R</span><span>../RealMeterDigits/Real-3-accusation-005.svg</span></div>
+<div class="neighbor"><span>3.184</span><span class="kind">R</span><span>../RealMeterDigits/Real-2-accusation-019.svg</span></div>
+<div class="neighbor"><span>3.184</span><span class="kind">R</span><span>../RealMeterDigits/Real-2-accusation-021.svg</span></div>
+<div class="neighbor"><span>3.378</span><span class="kind">R</span><span>Bravura-3.svg</span></div>
+<div class="neighbor"><span>4.495</span><span class="kind">R</span><span>Bravura-2.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>0.000</span><span class="kind">R</span><span>../RealMeterDigits/Real-3-accusation-005.svg</span></div>
+<div class="neighbor"><span>3.130</span><span class="kind">R</span><span>../RealMeterDigits/Real-2-accusation-019.svg</span></div>
+<div class="neighbor"><span>3.130</span><span class="kind">R</span><span>../RealMeterDigits/Real-2-accusation-021.svg</span></div>
+<div class="neighbor"><span>3.377</span><span class="kind">R</span><span>Bravura-3.svg</span></div>
+<div class="neighbor"><span>4.458</span><span class="kind">R</span><span>Bravura-2.svg</span></div>
+</div>
+<label><input class="bad" type="checkbox" data-id="Rhythm:../RealMeterDigits/Real-3-accusation-015.svg"> мусор / не подходит</label>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Rhythm/../RealMeterDigits/Real-4-accusation-001.svg"></div>
+<div class="digit-verdict">
+<div class="label">DigitTopologyAnalyzer</div>
+<div class="digit-main">→ 4 &nbsp; 49,1%</div>
+<div class="muted">segments=1</div>
+<div class="digit-row"><b>#1</b><span>4 (49,1%) <span class="digit-candidates">4:49,1% d=2,12 &#183; 2:0,1% d=5,77 &#183; 6:0,0% d=5,98</span></span></div>
+</div>
+<div class="name">../RealMeterDigits/Real-4-accusation-001.svg</div>
+<div class="meta">Category: Real score meter digit / expected 4</div>
+<div class="meta">License: unknown</div>
+<div class="meta"><a href="#">Wikimedia source</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=1.000 x=0.025 y=0.032 size=0.812×1.000</div>
+<div>F1=-0.641-0.346i  F2=+0.339-0.526i</div>
+<div>F3=-0.124-0.199i  F4=-0.041-0.054i</div>
+<div class="muted">contours raw=1, unique=1, described=1</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>0.000</span><span class="kind">R</span><span>../RealMeterDigits/Real-4-accusation-016.svg</span></div>
+<div class="neighbor"><span>2.124</span><span class="kind">R</span><span>Bravura-4.svg</span></div>
+<div class="neighbor"><span>4.720</span><span class="kind">Other</span><span>noteheadHalf.svg</span></div>
+<div class="neighbor"><span>5.418</span><span class="kind">Other</span><span>accidentalNatural.svg</span></div>
+<div class="neighbor"><span>5.557</span><span class="kind">Other</span><span>rest32nd.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>0.000</span><span class="kind">R</span><span>../RealMeterDigits/Real-4-accusation-016.svg</span></div>
+<div class="neighbor"><span>2.055</span><span class="kind">R</span><span>Bravura-4.svg</span></div>
+<div class="neighbor"><span>4.689</span><span class="kind">Other</span><span>noteheadHalf.svg</span></div>
+<div class="neighbor"><span>5.344</span><span class="kind">Other</span><span>accidentalNatural.svg</span></div>
+<div class="neighbor"><span>5.474</span><span class="kind">Other</span><span>rest32nd.svg</span></div>
+</div>
+<label><input class="bad" type="checkbox" data-id="Rhythm:../RealMeterDigits/Real-4-accusation-001.svg"> мусор / не подходит</label>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Rhythm/../RealMeterDigits/Real-4-accusation-016.svg"></div>
+<div class="digit-verdict">
+<div class="label">DigitTopologyAnalyzer</div>
+<div class="digit-main">→ 4 &nbsp; 49,1%</div>
+<div class="muted">segments=1</div>
+<div class="digit-row"><b>#1</b><span>4 (49,1%) <span class="digit-candidates">4:49,1% d=2,12 &#183; 2:0,1% d=5,77 &#183; 6:0,0% d=5,98</span></span></div>
+</div>
+<div class="name">../RealMeterDigits/Real-4-accusation-016.svg</div>
+<div class="meta">Category: Real score meter digit / expected 4</div>
+<div class="meta">License: unknown</div>
+<div class="meta"><a href="#">Wikimedia source</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=1.000 x=0.025 y=0.032 size=0.812×1.000</div>
+<div>F1=-0.641-0.346i  F2=+0.339-0.526i</div>
+<div>F3=-0.124-0.199i  F4=-0.041-0.054i</div>
+<div class="muted">contours raw=1, unique=1, described=1</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>0.000</span><span class="kind">R</span><span>../RealMeterDigits/Real-4-accusation-001.svg</span></div>
+<div class="neighbor"><span>2.124</span><span class="kind">R</span><span>Bravura-4.svg</span></div>
+<div class="neighbor"><span>4.720</span><span class="kind">Other</span><span>noteheadHalf.svg</span></div>
+<div class="neighbor"><span>5.418</span><span class="kind">Other</span><span>accidentalNatural.svg</span></div>
+<div class="neighbor"><span>5.557</span><span class="kind">Other</span><span>rest32nd.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>0.000</span><span class="kind">R</span><span>../RealMeterDigits/Real-4-accusation-001.svg</span></div>
+<div class="neighbor"><span>2.055</span><span class="kind">R</span><span>Bravura-4.svg</span></div>
+<div class="neighbor"><span>4.689</span><span class="kind">Other</span><span>noteheadHalf.svg</span></div>
+<div class="neighbor"><span>5.344</span><span class="kind">Other</span><span>accidentalNatural.svg</span></div>
+<div class="neighbor"><span>5.474</span><span class="kind">Other</span><span>rest32nd.svg</span></div>
+</div>
+<label><input class="bad" type="checkbox" data-id="Rhythm:../RealMeterDigits/Real-4-accusation-016.svg"> мусор / не подходит</label>
+</div>
+</div>
+<h2>Treble / G clef (8)</h2><div class="grid">
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Treble/valid/Chiave%20di%20violino%20piccola.svg"></div>
+<div class="name">valid/Chiave di violino piccola.svg</div>
+<div class="meta">Category: Curated valid</div>
+<div class="meta">License: unknown</div>
+<div class="meta"><a href="#">Wikimedia source</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=1.000 x=0.001 y=0.038 size=0.405×1.000</div>
+<div>F1=-0.127-0.043i  F2=-0.348-0.595i</div>
+<div>F3=+0.486-0.283i  F4=-0.262-0.119i</div>
+<div class="muted">contours raw=2, unique=1, described=1</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>4.479</span><span class="kind">G</span><span>valid/Lilypond Clef-G.svg</span></div>
+<div class="neighbor"><span>4.774</span><span class="kind">G</span><span>valid/GClef.svg</span></div>
+<div class="neighbor"><span>5.837</span><span class="kind">G</span><span>valid/Treble Clef without line.svg</span></div>
+<div class="neighbor"><span>5.990</span><span class="kind">G</span><span>valid/G-clef.svg</span></div>
+<div class="neighbor"><span>6.137</span><span class="kind">G</span><span>valid/Chiave-di-sol.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>4.458</span><span class="kind">G</span><span>valid/Lilypond Clef-G.svg</span></div>
+<div class="neighbor"><span>4.751</span><span class="kind">G</span><span>valid/GClef.svg</span></div>
+<div class="neighbor"><span>5.833</span><span class="kind">G</span><span>valid/Treble Clef without line.svg</span></div>
+<div class="neighbor"><span>5.990</span><span class="kind">G</span><span>valid/G-clef.svg</span></div>
+<div class="neighbor"><span>6.120</span><span class="kind">G</span><span>valid/Chiave-di-sol.svg</span></div>
+</div>
+<label><input class="bad" type="checkbox" data-id="Treble:valid/Chiave di violino piccola.svg"> мусор / не подходит</label>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Treble/valid/Chiave-di-sol.svg"></div>
+<div class="name">valid/Chiave-di-sol.svg</div>
+<div class="meta">Category: Curated valid</div>
+<div class="meta">License: unknown</div>
+<div class="meta"><a href="#">Wikimedia source</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=0.580 x=0.014 y=0.087 size=0.359×1.000</div>
+<div>F1=+0.023-0.954i  F2=-0.013-0.204i</div>
+<div>F3=+0.129+0.048i  F4=-0.029-0.108i</div>
+<div><b>C2</b> w=0.242 x=-0.034 y=0.103 size=0.181×0.332</div>
+<div>F1=-0.325-0.621i  F2=+0.382-0.566i</div>
+<div>F3=-0.001+0.125i  F4=+0.087-0.105i</div>
+<div><b>C3</b> w=0.093 x=0.037 y=-0.317 size=0.089×0.211</div>
+<div>F1=+0.258-0.962i  F2=+0.008-0.033i</div>
+<div>F3=+0.015-0.079i  F4=+0.001-0.001i</div>
+<div class="muted">contours raw=4, unique=4, described=3</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>4.485</span><span class="kind">G</span><span>valid/GClef.svg</span></div>
+<div class="neighbor"><span>4.954</span><span class="kind">G</span><span>valid/G-clef.svg</span></div>
+<div class="neighbor"><span>5.375</span><span class="kind">G</span><span>valid/Treble Clef without line.svg</span></div>
+<div class="neighbor"><span>5.845</span><span class="kind">G</span><span>valid/Lilypond Clef-G.svg</span></div>
+<div class="neighbor"><span>6.137</span><span class="kind">G</span><span>valid/Chiave di violino piccola.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>4.484</span><span class="kind">G</span><span>valid/GClef.svg</span></div>
+<div class="neighbor"><span>4.868</span><span class="kind">G</span><span>valid/G-clef.svg</span></div>
+<div class="neighbor"><span>5.360</span><span class="kind">G</span><span>valid/Treble Clef without line.svg</span></div>
+<div class="neighbor"><span>5.844</span><span class="kind">G</span><span>valid/Lilypond Clef-G.svg</span></div>
+<div class="neighbor"><span>6.120</span><span class="kind">G</span><span>valid/Chiave di violino piccola.svg</span></div>
+</div>
+<label><input class="bad" type="checkbox" data-id="Treble:valid/Chiave-di-sol.svg"> мусор / не подходит</label>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Treble/valid/G-clef.svg"></div>
+<div class="name">valid/G-clef.svg</div>
+<div class="meta">Category: Curated valid</div>
+<div class="meta">License: unknown</div>
+<div class="meta"><a href="#">Wikimedia source</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=0.960 x=0.013 y=0.036 size=0.366×1.000</div>
+<div>F1=-0.078-0.038i  F2=-0.322-0.663i</div>
+<div>F3=+0.485-0.265i  F4=-0.193-0.123i</div>
+<div><b>C2</b> w=0.040 x=-0.040 y=0.404 size=0.116×0.002</div>
+<div>F1=-0.993-0.019i  F2=0.000+0.000i</div>
+<div>F3=-0.110-0.002i  F4=0.000+0.000i</div>
+<div class="muted">contours raw=4, unique=2, described=2</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>4.954</span><span class="kind">G</span><span>valid/Chiave-di-sol.svg</span></div>
+<div class="neighbor"><span>5.242</span><span class="kind">G</span><span>valid/Treble Clef without line.svg</span></div>
+<div class="neighbor"><span>5.671</span><span class="kind">G</span><span>valid/GClef.svg</span></div>
+<div class="neighbor"><span>5.990</span><span class="kind">G</span><span>valid/Chiave di violino piccola.svg</span></div>
+<div class="neighbor"><span>7.992</span><span class="kind">G</span><span>valid/Lilypond Clef-G.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>4.868</span><span class="kind">G</span><span>valid/Chiave-di-sol.svg</span></div>
+<div class="neighbor"><span>5.239</span><span class="kind">G</span><span>valid/Treble Clef without line.svg</span></div>
+<div class="neighbor"><span>5.596</span><span class="kind">G</span><span>valid/GClef.svg</span></div>
+<div class="neighbor"><span>5.990</span><span class="kind">G</span><span>valid/Chiave di violino piccola.svg</span></div>
+<div class="neighbor"><span>7.940</span><span class="kind">G</span><span>valid/Lilypond Clef-G.svg</span></div>
+</div>
+<label><input class="bad" type="checkbox" data-id="Treble:valid/G-clef.svg"> мусор / не подходит</label>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Treble/valid/GClef.svg"></div>
+<div class="name">valid/GClef.svg</div>
+<div class="meta">Category: Curated valid</div>
+<div class="meta">License: unknown</div>
+<div class="meta"><a href="#">Wikimedia source</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=0.551 x=0.009 y=0.082 size=0.373×1.000</div>
+<div>F1=+0.048-0.957i  F2=+0.010-0.181i</div>
+<div>F3=+0.140+0.053i  F4=-0.004-0.097i</div>
+<div><b>C2</b> w=0.247 x=-0.042 y=0.088 size=0.186×0.372</div>
+<div>F1=-0.336-0.599i  F2=+0.446-0.540i</div>
+<div>F3=-0.034+0.110i  F4=+0.100-0.068i</div>
+<div><b>C3</b> w=0.104 x=0.047 y=-0.336 size=0.124×0.248</div>
+<div>F1=+0.336-0.938i  F2=-0.003-0.018i</div>
+<div>F3=+0.002-0.085i  F4=+0.003-0.001i</div>
+<div class="muted">contours raw=4, unique=4, described=3</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>3.744</span><span class="kind">G</span><span>valid/Treble Clef without line.svg</span></div>
+<div class="neighbor"><span>4.485</span><span class="kind">G</span><span>valid/Chiave-di-sol.svg</span></div>
+<div class="neighbor"><span>4.774</span><span class="kind">G</span><span>valid/Chiave di violino piccola.svg</span></div>
+<div class="neighbor"><span>5.671</span><span class="kind">G</span><span>valid/G-clef.svg</span></div>
+<div class="neighbor"><span>5.872</span><span class="kind">G</span><span>valid/Lilypond Clef-G.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>3.720</span><span class="kind">G</span><span>valid/Treble Clef without line.svg</span></div>
+<div class="neighbor"><span>4.484</span><span class="kind">G</span><span>valid/Chiave-di-sol.svg</span></div>
+<div class="neighbor"><span>4.751</span><span class="kind">G</span><span>valid/Chiave di violino piccola.svg</span></div>
+<div class="neighbor"><span>5.596</span><span class="kind">G</span><span>valid/G-clef.svg</span></div>
+<div class="neighbor"><span>5.871</span><span class="kind">G</span><span>valid/Lilypond Clef-G.svg</span></div>
+</div>
+<label><input class="bad" type="checkbox" data-id="Treble:valid/GClef.svg"> мусор / не подходит</label>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Treble/valid/IEC%2060417%20-%20Ref-No%205037.svg"></div>
+<div class="name">valid/IEC 60417 - Ref-No 5037.svg</div>
+<div class="meta">Category: Curated valid</div>
+<div class="meta">License: unknown</div>
+<div class="meta"><a href="#">Wikimedia source</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=0.482 x=-0.010 y=0.065 size=0.366×0.983</div>
+<div>F1=-0.070-0.967i  F2=+0.015-0.117i</div>
+<div>F3=+0.130-0.005i  F4=-0.072-0.132i</div>
+<div><b>C2</b> w=0.206 x=-0.060 y=0.125 size=0.200×0.348</div>
+<div>F1=-0.489-0.633i  F2=+0.518-0.274i</div>
+<div>F3=-0.062-0.082i  F4=0.000-0.007i</div>
+<div><b>C3</b> w=0.108 x=-0.010 y=-0.288 size=0.102×0.287</div>
+<div>F1=+0.206-0.975i  F2=-0.007-0.016i</div>
+<div>F3=+0.002-0.081i  F4=+0.001+0.001i</div>
+<div class="muted">contours raw=8, unique=8, described=3</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>10.364</span><span class="kind">R</span><span>Bravura-0.svg</span></div>
+<div class="neighbor"><span>10.643</span><span class="kind">Other</span><span>rest8th.svg</span></div>
+<div class="neighbor"><span>11.053</span><span class="kind">R</span><span>Bravura-6.svg</span></div>
+<div class="neighbor"><span>11.081</span><span class="kind">Other</span><span>rest32nd.svg</span></div>
+<div class="neighbor"><span>11.143</span><span class="kind">Other</span><span>noteheadWhole.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>10.362</span><span class="kind">R</span><span>Bravura-0.svg</span></div>
+<div class="neighbor"><span>10.637</span><span class="kind">Other</span><span>rest8th.svg</span></div>
+<div class="neighbor"><span>11.041</span><span class="kind">R</span><span>Bravura-6.svg</span></div>
+<div class="neighbor"><span>11.075</span><span class="kind">Other</span><span>rest32nd.svg</span></div>
+<div class="neighbor"><span>11.142</span><span class="kind">Other</span><span>noteheadWhole.svg</span></div>
+</div>
+<label><input class="bad" type="checkbox" data-id="Treble:valid/IEC 60417 - Ref-No 5037.svg"> мусор / не подходит</label>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Treble/valid/Lilypond%20Clef-G.svg"></div>
+<div class="name">valid/Lilypond Clef-G.svg</div>
+<div class="meta">Category: Curated valid</div>
+<div class="meta">License: unknown</div>
+<div class="meta"><a href="#">Wikimedia source</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=0.562 x=-0.007 y=0.095 size=0.351×1.000</div>
+<div>F1=+0.013-0.951i  F2=-0.046-0.214i</div>
+<div>F3=+0.131+0.041i  F4=-0.034-0.119i</div>
+<div><b>C2</b> w=0.245 x=-0.041 y=0.121 size=0.191×0.355</div>
+<div>F1=-0.336-0.604i  F2=+0.416-0.558i</div>
+<div>F3=-0.033+0.113i  F4=+0.095-0.084i</div>
+<div><b>C3</b> w=0.105 x=0.009 y=-0.298 size=0.100×0.251</div>
+<div>F1=+0.299-0.951i  F2=+0.015-0.013i</div>
+<div>F3=+0.029-0.065i  F4=-0.002+0.000i</div>
+<div class="muted">contours raw=4, unique=4, described=3</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>4.479</span><span class="kind">G</span><span>valid/Chiave di violino piccola.svg</span></div>
+<div class="neighbor"><span>5.845</span><span class="kind">G</span><span>valid/Chiave-di-sol.svg</span></div>
+<div class="neighbor"><span>5.872</span><span class="kind">G</span><span>valid/GClef.svg</span></div>
+<div class="neighbor"><span>7.633</span><span class="kind">G</span><span>valid/Treble Clef without line.svg</span></div>
+<div class="neighbor"><span>7.992</span><span class="kind">G</span><span>valid/G-clef.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>4.458</span><span class="kind">G</span><span>valid/Chiave di violino piccola.svg</span></div>
+<div class="neighbor"><span>5.844</span><span class="kind">G</span><span>valid/Chiave-di-sol.svg</span></div>
+<div class="neighbor"><span>5.871</span><span class="kind">G</span><span>valid/GClef.svg</span></div>
+<div class="neighbor"><span>7.622</span><span class="kind">G</span><span>valid/Treble Clef without line.svg</span></div>
+<div class="neighbor"><span>7.940</span><span class="kind">G</span><span>valid/G-clef.svg</span></div>
+</div>
+<label><input class="bad" type="checkbox" data-id="Treble:valid/Lilypond Clef-G.svg"> мусор / не подходит</label>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Treble/valid/Octaveclef%202.svg"></div>
+<div class="name">valid/Octaveclef 2.svg</div>
+<div class="meta">Category: Curated valid</div>
+<div class="meta">License: unknown</div>
+<div class="meta"><a href="#">Wikimedia source</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=0.502 x=0.013 y=0.015 size=0.306×0.880</div>
+<div>F1=-0.021-0.954i  F2=-0.025-0.205i</div>
+<div>F3=+0.136+0.032i  F4=-0.037-0.101i</div>
+<div><b>C2</b> w=0.217 x=-0.030 y=0.028 size=0.174×0.305</div>
+<div>F1=-0.331-0.635i  F2=+0.398-0.540i</div>
+<div>F3=-0.033+0.108i  F4=+0.095-0.085i</div>
+<div><b>C3</b> w=0.081 x=0.024 y=-0.339 size=0.085×0.182</div>
+<div>F1=+0.213-0.973i  F2=+0.002-0.036i</div>
+<div>F3=+0.004-0.081i  F4=+0.001-0.001i</div>
+<div class="muted">contours raw=7, unique=7, described=3</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>9.279</span><span class="kind">G</span><span>valid/G-clef.svg</span></div>
+<div class="neighbor"><span>9.331</span><span class="kind">G</span><span>valid/Chiave di violino piccola.svg</span></div>
+<div class="neighbor"><span>10.710</span><span class="kind">G</span><span>valid/GClef.svg</span></div>
+<div class="neighbor"><span>10.950</span><span class="kind">G</span><span>valid/Lilypond Clef-G.svg</span></div>
+<div class="neighbor"><span>10.952</span><span class="kind">G</span><span>valid/Chiave-di-sol.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>9.235</span><span class="kind">G</span><span>valid/G-clef.svg</span></div>
+<div class="neighbor"><span>9.322</span><span class="kind">G</span><span>valid/Chiave di violino piccola.svg</span></div>
+<div class="neighbor"><span>10.709</span><span class="kind">G</span><span>valid/GClef.svg</span></div>
+<div class="neighbor"><span>10.949</span><span class="kind">G</span><span>valid/Lilypond Clef-G.svg</span></div>
+<div class="neighbor"><span>10.952</span><span class="kind">G</span><span>valid/Chiave-di-sol.svg</span></div>
+</div>
+<label><input class="bad" type="checkbox" data-id="Treble:valid/Octaveclef 2.svg"> мусор / не подходит</label>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Treble/valid/Treble%20Clef%20without%20line.svg"></div>
+<div class="name">valid/Treble Clef without line.svg</div>
+<div class="meta">Category: Curated valid</div>
+<div class="meta">License: unknown</div>
+<div class="meta"><a href="#">Wikimedia source</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=1.000 x=0.014 y=0.051 size=0.351×1.000</div>
+<div>F1=-0.139-0.058i  F2=-0.215-0.725i</div>
+<div>F3=+0.446-0.136i  F4=-0.218-0.229i</div>
+<div class="muted">contours raw=1, unique=1, described=1</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>3.744</span><span class="kind">G</span><span>valid/GClef.svg</span></div>
+<div class="neighbor"><span>5.242</span><span class="kind">G</span><span>valid/G-clef.svg</span></div>
+<div class="neighbor"><span>5.375</span><span class="kind">G</span><span>valid/Chiave-di-sol.svg</span></div>
+<div class="neighbor"><span>5.837</span><span class="kind">G</span><span>valid/Chiave di violino piccola.svg</span></div>
+<div class="neighbor"><span>7.633</span><span class="kind">G</span><span>valid/Lilypond Clef-G.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>3.720</span><span class="kind">G</span><span>valid/GClef.svg</span></div>
+<div class="neighbor"><span>5.239</span><span class="kind">G</span><span>valid/G-clef.svg</span></div>
+<div class="neighbor"><span>5.360</span><span class="kind">G</span><span>valid/Chiave-di-sol.svg</span></div>
+<div class="neighbor"><span>5.833</span><span class="kind">G</span><span>valid/Chiave di violino piccola.svg</span></div>
+<div class="neighbor"><span>7.622</span><span class="kind">G</span><span>valid/Lilypond Clef-G.svg</span></div>
+</div>
+<label><input class="bad" type="checkbox" data-id="Treble:valid/Treble Clef without line.svg"> мусор / не подходит</label>
+</div>
+</div>
+<h2>Bass / F clef (4)</h2><div class="grid">
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Bass/valid/Chiave-di-fa.svg"></div>
+<div class="name">valid/Chiave-di-fa.svg</div>
+<div class="meta">Category: Curated valid</div>
+<div class="meta">License: unknown</div>
+<div class="meta"><a href="#">Wikimedia source</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=0.851 x=-0.086 y=-0.090 size=0.606×1.000</div>
+<div>F1=+0.532-0.538i  F2=-0.310-0.503i</div>
+<div>F3=-0.158-0.140i  F4=+0.063-0.128i</div>
+<div><b>C2</b> w=0.075 x=0.326 y=-0.068 size=0.111×0.118</div>
+<div>F1=+0.001-1.000i  F2=0.000+0.000i</div>
+<div>F3=0.000-0.007i  F4=0.000+0.000i</div>
+<div><b>C3</b> w=0.074 x=0.326 y=-0.354 size=0.111×0.117</div>
+<div>F1=-0.006-1.000i  F2=0.000+0.000i</div>
+<div>F3=0.000-0.006i  F4=0.000-0.001i</div>
+<div class="muted">contours raw=3, unique=3, described=3</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>1.657</span><span class="kind">F</span><span>valid/FClef.svg</span></div>
+<div class="neighbor"><span>4.009</span><span class="kind">F</span><span>valid/Clef Bass (F).svg</span></div>
+<div class="neighbor"><span>6.038</span><span class="kind">Other</span><span>accidentalFlat.svg</span></div>
+<div class="neighbor"><span>6.708</span><span class="kind">R</span><span>Bravura-7.svg</span></div>
+<div class="neighbor"><span>7.327</span><span class="kind">Other</span><span>noteheadXBlack.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>1.656</span><span class="kind">F</span><span>valid/FClef.svg</span></div>
+<div class="neighbor"><span>4.009</span><span class="kind">F</span><span>valid/Clef Bass (F).svg</span></div>
+<div class="neighbor"><span>5.992</span><span class="kind">Other</span><span>accidentalFlat.svg</span></div>
+<div class="neighbor"><span>6.686</span><span class="kind">R</span><span>Bravura-7.svg</span></div>
+<div class="neighbor"><span>7.326</span><span class="kind">Other</span><span>noteheadXBlack.svg</span></div>
+</div>
+<label><input class="bad" type="checkbox" data-id="Bass:valid/Chiave-di-fa.svg"> мусор / не подходит</label>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Bass/valid/Clef%20Bass%20%28F%29.svg"></div>
+<div class="name">valid/Clef Bass (F).svg</div>
+<div class="meta">Category: Curated valid</div>
+<div class="meta">License: unknown</div>
+<div class="meta"><a href="#">Wikimedia source</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=0.912 x=-0.099 y=-0.085 size=0.693×1.000</div>
+<div>F1=+0.477-0.542i  F2=-0.311-0.551i</div>
+<div>F3=-0.169-0.141i  F4=+0.069-0.118i</div>
+<div><b>C2</b> w=0.088 x=0.367 y=0.000 size=0.135×0.135</div>
+<div>F1=0.000-1.000i  F2=0.000+0.000i</div>
+<div>F3=0.000+0.000i  F4=0.000+0.000i</div>
+<div class="muted">contours raw=3, unique=2, described=2</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>3.675</span><span class="kind">F</span><span>valid/FClef.svg</span></div>
+<div class="neighbor"><span>3.838</span><span class="kind">Other</span><span>accidentalFlat.svg</span></div>
+<div class="neighbor"><span>4.009</span><span class="kind">F</span><span>valid/Chiave-di-fa.svg</span></div>
+<div class="neighbor"><span>5.936</span><span class="kind">Other</span><span>restQuarter.svg</span></div>
+<div class="neighbor"><span>5.981</span><span class="kind">R</span><span>Bravura-7.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>3.675</span><span class="kind">F</span><span>valid/FClef.svg</span></div>
+<div class="neighbor"><span>3.779</span><span class="kind">Other</span><span>accidentalFlat.svg</span></div>
+<div class="neighbor"><span>4.009</span><span class="kind">F</span><span>valid/Chiave-di-fa.svg</span></div>
+<div class="neighbor"><span>5.905</span><span class="kind">Other</span><span>restQuarter.svg</span></div>
+<div class="neighbor"><span>5.959</span><span class="kind">R</span><span>Bravura-7.svg</span></div>
+</div>
+<label><input class="bad" type="checkbox" data-id="Bass:valid/Clef Bass (F).svg"> мусор / не подходит</label>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Bass/valid/FClef.svg"></div>
+<div class="name">valid/FClef.svg</div>
+<div class="meta">Category: Curated valid</div>
+<div class="meta">License: unknown</div>
+<div class="meta"><a href="#">Wikimedia source</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=0.839 x=-0.107 y=-0.078 size=0.642×1.000</div>
+<div>F1=+0.516-0.549i  F2=-0.306-0.500i</div>
+<div>F3=-0.192-0.139i  F4=+0.054-0.123i</div>
+<div><b>C2</b> w=0.080 x=0.363 y=-0.343 size=0.130×0.130</div>
+<div>F1=0.000-1.000i  F2=0.000+0.000i</div>
+<div>F3=0.000+0.000i  F4=0.000+0.000i</div>
+<div><b>C3</b> w=0.080 x=0.363 y=-0.050 size=0.130×0.130</div>
+<div>F1=-0.004-1.000i  F2=0.000+0.000i</div>
+<div>F3=+0.001+0.000i  F4=+0.001-0.001i</div>
+<div class="muted">contours raw=3, unique=3, described=3</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>1.657</span><span class="kind">F</span><span>valid/Chiave-di-fa.svg</span></div>
+<div class="neighbor"><span>3.675</span><span class="kind">F</span><span>valid/Clef Bass (F).svg</span></div>
+<div class="neighbor"><span>5.765</span><span class="kind">Other</span><span>accidentalFlat.svg</span></div>
+<div class="neighbor"><span>6.933</span><span class="kind">R</span><span>Bravura-7.svg</span></div>
+<div class="neighbor"><span>7.454</span><span class="kind">R</span><span>Bravura-1.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>1.656</span><span class="kind">F</span><span>valid/Chiave-di-fa.svg</span></div>
+<div class="neighbor"><span>3.675</span><span class="kind">F</span><span>valid/Clef Bass (F).svg</span></div>
+<div class="neighbor"><span>5.720</span><span class="kind">Other</span><span>accidentalFlat.svg</span></div>
+<div class="neighbor"><span>6.912</span><span class="kind">R</span><span>Bravura-7.svg</span></div>
+<div class="neighbor"><span>7.434</span><span class="kind">R</span><span>Bravura-1.svg</span></div>
+</div>
+<label><input class="bad" type="checkbox" data-id="Bass:valid/FClef.svg"> мусор / не подходит</label>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Bass/valid/IEC%2060417%20-%20Ref-No%205038.svg"></div>
+<div class="name">valid/IEC 60417 - Ref-No 5038.svg</div>
+<div class="meta">Category: Curated valid</div>
+<div class="meta">License: unknown</div>
+<div class="meta"><a href="#">Wikimedia source</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=0.751 x=-0.063 y=-0.079 size=0.471×0.800</div>
+<div>F1=+0.440-0.698i  F2=-0.312-0.424i</div>
+<div>F3=-0.127-0.044i  F4=+0.014-0.115i</div>
+<div><b>C2</b> w=0.091 x=0.267 y=-0.044 size=0.117×0.117</div>
+<div>F1=0.000-1.000i  F2=0.000+0.000i</div>
+<div>F3=0.000+0.000i  F4=0.000+0.000i</div>
+<div><b>C3</b> w=0.040 x=-0.472 y=-0.472 size=0.080×0.080</div>
+<div>F1=-0.687-0.722i  F2=-0.029-0.032i</div>
+<div>F3=+0.028+0.033i  F4=-0.029-0.036i</div>
+<div class="muted">contours raw=7, unique=6, described=3</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>6.573</span><span class="kind">Other</span><span>accidentalFlat.svg</span></div>
+<div class="neighbor"><span>6.933</span><span class="kind">F</span><span>valid/Clef Bass (F).svg</span></div>
+<div class="neighbor"><span>7.148</span><span class="kind">Other</span><span>noteheadDiamondBlack.svg</span></div>
+<div class="neighbor"><span>7.223</span><span class="kind">R</span><span>Bravura-1.svg</span></div>
+<div class="neighbor"><span>7.448</span><span class="kind">Other</span><span>rest8th.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>6.542</span><span class="kind">Other</span><span>accidentalFlat.svg</span></div>
+<div class="neighbor"><span>6.931</span><span class="kind">F</span><span>valid/Clef Bass (F).svg</span></div>
+<div class="neighbor"><span>7.136</span><span class="kind">Other</span><span>noteheadDiamondBlack.svg</span></div>
+<div class="neighbor"><span>7.209</span><span class="kind">R</span><span>Bravura-1.svg</span></div>
+<div class="neighbor"><span>7.437</span><span class="kind">Other</span><span>rest8th.svg</span></div>
+</div>
+<label><input class="bad" type="checkbox" data-id="Bass:valid/IEC 60417 - Ref-No 5038.svg"> мусор / не подходит</label>
+</div>
+</div>
+<h2>Other musical symbols (negative/control corpus) (27)</h2><div class="grid">
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Other/accidentalDoubleFlat.svg"></div>
+<div class="name">accidentalDoubleFlat.svg</div>
+<div class="meta">Category: Accidental</div>
+<div class="meta">License: SIL OFL 1.1 (Bravura)</div>
+<div class="meta"><a href="../../References/glyphs/accidentalDoubleFlat.svg">Reference glyph</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=0.729 x=-0.087 y=0.003 size=0.672×1.000</div>
+<div>F1=-0.441-0.796i  F2=-0.315-0.150i</div>
+<div>F3=+0.117-0.072i  F4=+0.068+0.081i</div>
+<div><b>C2</b> w=0.136 x=-0.183 y=-0.204 size=0.185×0.320</div>
+<div>F1=-0.288-0.954i  F2=+0.002+0.033i</div>
+<div>F3=-0.022-0.059i  F4=-0.006-0.016i</div>
+<div><b>C3</b> w=0.136 x=0.117 y=-0.204 size=0.183×0.320</div>
+<div>F1=-0.283-0.956i  F2=+0.001+0.033i</div>
+<div>F3=-0.022-0.059i  F4=-0.006-0.016i</div>
+<div class="muted">contours raw=3, unique=3, described=3</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>6.079</span><span class="kind">Other</span><span>noteheadWhole.svg</span></div>
+<div class="neighbor"><span>6.187</span><span class="kind">Other</span><span>noteheadHalf.svg</span></div>
+<div class="neighbor"><span>6.453</span><span class="kind">R</span><span>Bravura-0.svg</span></div>
+<div class="neighbor"><span>6.612</span><span class="kind">Other</span><span>accidentalSharp.svg</span></div>
+<div class="neighbor"><span>6.691</span><span class="kind">Other</span><span>noteheadXBlack.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>6.056</span><span class="kind">Other</span><span>noteheadWhole.svg</span></div>
+<div class="neighbor"><span>6.181</span><span class="kind">Other</span><span>noteheadHalf.svg</span></div>
+<div class="neighbor"><span>6.437</span><span class="kind">R</span><span>Bravura-0.svg</span></div>
+<div class="neighbor"><span>6.611</span><span class="kind">Other</span><span>accidentalSharp.svg</span></div>
+<div class="neighbor"><span>6.631</span><span class="kind">Other</span><span>noteheadXBlack.svg</span></div>
+</div>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Other/accidentalDoubleSharp.svg"></div>
+<div class="name">accidentalDoubleSharp.svg</div>
+<div class="meta">Category: Accidental</div>
+<div class="meta">License: SIL OFL 1.1 (Bravura)</div>
+<div class="meta"><a href="../../References/glyphs/accidentalDoubleSharp.svg">Reference glyph</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=1.000 x=-0.002 y=0.003 size=0.980×1.000</div>
+<div>F1=-0.537-0.792i  F2=-0.002+0.003i</div>
+<div>F3=-0.042+0.010i  F4=-0.004+0.000i</div>
+<div class="muted">contours raw=1, unique=1, described=1</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>3.197</span><span class="kind">Other</span><span>noteheadXBlack.svg</span></div>
+<div class="neighbor"><span>5.395</span><span class="kind">R</span><span>Bravura-2.svg</span></div>
+<div class="neighbor"><span>5.438</span><span class="kind">Other</span><span>noteheadDoubleWholeSquare.svg</span></div>
+<div class="neighbor"><span>5.447</span><span class="kind">Other</span><span>noteheadHalf.svg</span></div>
+<div class="neighbor"><span>5.734</span><span class="kind">Other</span><span>noteheadWhole.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>3.044</span><span class="kind">Other</span><span>noteheadXBlack.svg</span></div>
+<div class="neighbor"><span>5.345</span><span class="kind">R</span><span>Bravura-2.svg</span></div>
+<div class="neighbor"><span>5.434</span><span class="kind">Other</span><span>noteheadDoubleWholeSquare.svg</span></div>
+<div class="neighbor"><span>5.441</span><span class="kind">Other</span><span>noteheadHalf.svg</span></div>
+<div class="neighbor"><span>5.717</span><span class="kind">Other</span><span>noteheadWhole.svg</span></div>
+</div>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Other/accidentalFlat.svg"></div>
+<div class="name">accidentalFlat.svg</div>
+<div class="meta">Category: Accidental</div>
+<div class="meta">License: SIL OFL 1.1 (Bravura)</div>
+<div class="meta"><a href="../../References/glyphs/accidentalFlat.svg">Reference glyph</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=0.754 x=-0.077 y=-0.013 size=0.368×1.000</div>
+<div>F1=-0.181-0.947i  F2=+0.038-0.183i</div>
+<div>F3=-0.172-0.009i  F4=+0.057-0.002i</div>
+<div><b>C2</b> w=0.246 x=-0.032 y=-0.205 size=0.184×0.319</div>
+<div>F1=-0.322-0.944i  F2=+0.005+0.033i</div>
+<div>F3=-0.028-0.057i  F4=-0.009-0.016i</div>
+<div class="muted">contours raw=2, unique=2, described=2</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>3.838</span><span class="kind">F</span><span>valid/Clef Bass (F).svg</span></div>
+<div class="neighbor"><span>5.362</span><span class="kind">R</span><span>Bravura-1.svg</span></div>
+<div class="neighbor"><span>5.422</span><span class="kind">Other</span><span>accidentalNatural.svg</span></div>
+<div class="neighbor"><span>5.591</span><span class="kind">R</span><span>Bravura-4.svg</span></div>
+<div class="neighbor"><span>5.651</span><span class="kind">Other</span><span>noteheadHalf.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>3.779</span><span class="kind">F</span><span>valid/Clef Bass (F).svg</span></div>
+<div class="neighbor"><span>5.349</span><span class="kind">R</span><span>Bravura-1.svg</span></div>
+<div class="neighbor"><span>5.405</span><span class="kind">Other</span><span>accidentalNatural.svg</span></div>
+<div class="neighbor"><span>5.566</span><span class="kind">R</span><span>Bravura-4.svg</span></div>
+<div class="neighbor"><span>5.645</span><span class="kind">Other</span><span>noteheadHalf.svg</span></div>
+</div>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Other/accidentalNatural.svg"></div>
+<div class="name">accidentalNatural.svg</div>
+<div class="meta">Category: Accidental</div>
+<div class="meta">License: SIL OFL 1.1 (Bravura)</div>
+<div class="meta"><a href="../../References/glyphs/accidentalNatural.svg">Reference glyph</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=0.802 x=-0.002 y=-0.002 size=0.249×1.000</div>
+<div>F1=+0.323-0.938i  F2=+0.007-0.004i</div>
+<div>F3=-0.059-0.031i  F4=+0.002+0.007i</div>
+<div><b>C2</b> w=0.198 x=0.000 y=0.002 size=0.139×0.220</div>
+<div>F1=-0.423-0.904i  F2=-0.002-0.003i</div>
+<div>F3=-0.042-0.022i  F4=-0.001+0.001i</div>
+<div class="muted">contours raw=2, unique=2, described=2</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>4.963</span><span class="kind">Other</span><span>noteheadWhole.svg</span></div>
+<div class="neighbor"><span>5.123</span><span class="kind">Other</span><span>noteheadHalf.svg</span></div>
+<div class="neighbor"><span>5.149</span><span class="kind">R</span><span>Bravura-4.svg</span></div>
+<div class="neighbor"><span>5.162</span><span class="kind">Other</span><span>noteheadDoubleWholeSquare.svg</span></div>
+<div class="neighbor"><span>5.281</span><span class="kind">Other</span><span>noteheadBlack.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>4.938</span><span class="kind">Other</span><span>noteheadWhole.svg</span></div>
+<div class="neighbor"><span>5.082</span><span class="kind">Other</span><span>noteheadDoubleWholeSquare.svg</span></div>
+<div class="neighbor"><span>5.097</span><span class="kind">Other</span><span>noteheadHalf.svg</span></div>
+<div class="neighbor"><span>5.100</span><span class="kind">R</span><span>Bravura-4.svg</span></div>
+<div class="neighbor"><span>5.258</span><span class="kind">Other</span><span>noteheadBlack.svg</span></div>
+</div>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Other/accidentalSharp.svg"></div>
+<div class="name">accidentalSharp.svg</div>
+<div class="meta">Category: Accidental</div>
+<div class="meta">License: SIL OFL 1.1 (Bravura)</div>
+<div class="meta"><a href="../../References/glyphs/accidentalSharp.svg">Reference glyph</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=0.848 x=-0.000 y=0.000 size=0.357×1.000</div>
+<div>F1=-0.428-0.890i  F2=+0.004+0.003i</div>
+<div>F3=+0.084-0.017i  F4=+0.002-0.001i</div>
+<div><b>C2</b> w=0.152 x=-0.001 y=-0.003 size=0.136×0.239</div>
+<div>F1=-0.325-0.943i  F2=-0.002+0.004i</div>
+<div>F3=-0.048-0.043i  F4=0.000-0.002i</div>
+<div class="muted">contours raw=2, unique=2, described=2</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>5.040</span><span class="kind">R</span><span>Bravura-0.svg</span></div>
+<div class="neighbor"><span>5.203</span><span class="kind">Other</span><span>noteheadHalf.svg</span></div>
+<div class="neighbor"><span>5.355</span><span class="kind">Other</span><span>noteheadXBlack.svg</span></div>
+<div class="neighbor"><span>5.458</span><span class="kind">Other</span><span>noteheadDoubleWholeSquare.svg</span></div>
+<div class="neighbor"><span>5.548</span><span class="kind">Other</span><span>noteheadWhole.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>5.021</span><span class="kind">R</span><span>Bravura-0.svg</span></div>
+<div class="neighbor"><span>5.199</span><span class="kind">Other</span><span>noteheadHalf.svg</span></div>
+<div class="neighbor"><span>5.280</span><span class="kind">Other</span><span>noteheadXBlack.svg</span></div>
+<div class="neighbor"><span>5.448</span><span class="kind">Other</span><span>noteheadDoubleWholeSquare.svg</span></div>
+<div class="neighbor"><span>5.526</span><span class="kind">Other</span><span>noteheadWhole.svg</span></div>
+</div>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Other/augmentationDot.svg"></div>
+<div class="name">augmentationDot.svg</div>
+<div class="meta">Category: Dot</div>
+<div class="meta">License: SIL OFL 1.1 (Bravura)</div>
+<div class="meta"><a href="../../References/glyphs/augmentationDot.svg">Reference glyph</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=1.000 x=0.000 y=0.000 size=1.000×1.000</div>
+<div>F1=0.000-1.000i  F2=0.000+0.000i</div>
+<div>F3=0.000+0.000i  F4=0.000+0.000i</div>
+<div class="muted">contours raw=1, unique=1, described=1</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>0.465</span><span class="kind">Other</span><span>noteheadBlack.svg</span></div>
+<div class="neighbor"><span>1.837</span><span class="kind">Other</span><span>restDoubleWhole.svg</span></div>
+<div class="neighbor"><span>1.857</span><span class="kind">Other</span><span>restLonga.svg</span></div>
+<div class="neighbor"><span>1.857</span><span class="kind">Other</span><span>restMaxima.svg</span></div>
+<div class="neighbor"><span>1.905</span><span class="kind">Other</span><span>restHalf.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>0.407</span><span class="kind">Other</span><span>noteheadBlack.svg</span></div>
+<div class="neighbor"><span>1.786</span><span class="kind">Other</span><span>restHalf.svg</span></div>
+<div class="neighbor"><span>1.786</span><span class="kind">Other</span><span>restWhole.svg</span></div>
+<div class="neighbor"><span>1.813</span><span class="kind">Other</span><span>restDoubleWhole.svg</span></div>
+<div class="neighbor"><span>1.847</span><span class="kind">Other</span><span>restLonga.svg</span></div>
+</div>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Other/noteheadBlack.svg"></div>
+<div class="name">noteheadBlack.svg</div>
+<div class="meta">Category: Notehead</div>
+<div class="meta">License: SIL OFL 1.1 (Bravura)</div>
+<div class="meta"><a href="../../References/glyphs/noteheadBlack.svg">Reference glyph</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=1.000 x=-0.003 y=0.004 size=1.000×0.848</div>
+<div>F1=-0.277-0.960i  F2=+0.001+0.000i</div>
+<div>F3=+0.042-0.016i  F4=-0.001-0.003i</div>
+<div class="muted">contours raw=1, unique=1, described=1</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>0.465</span><span class="kind">Other</span><span>augmentationDot.svg</span></div>
+<div class="neighbor"><span>2.063</span><span class="kind">Other</span><span>restDoubleWhole.svg</span></div>
+<div class="neighbor"><span>2.072</span><span class="kind">Other</span><span>restHalf.svg</span></div>
+<div class="neighbor"><span>2.072</span><span class="kind">Other</span><span>restWhole.svg</span></div>
+<div class="neighbor"><span>2.092</span><span class="kind">Other</span><span>restLonga.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>0.407</span><span class="kind">Other</span><span>augmentationDot.svg</span></div>
+<div class="neighbor"><span>2.022</span><span class="kind">Other</span><span>restHalf.svg</span></div>
+<div class="neighbor"><span>2.022</span><span class="kind">Other</span><span>restWhole.svg</span></div>
+<div class="neighbor"><span>2.060</span><span class="kind">Other</span><span>restDoubleWhole.svg</span></div>
+<div class="neighbor"><span>2.089</span><span class="kind">Other</span><span>restLonga.svg</span></div>
+</div>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Other/noteheadDiamondBlack.svg"></div>
+<div class="name">noteheadDiamondBlack.svg</div>
+<div class="meta">Category: Notehead</div>
+<div class="meta">License: SIL OFL 1.1 (Bravura)</div>
+<div class="meta"><a href="../../References/glyphs/noteheadDiamondBlack.svg">Reference glyph</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=1.000 x=-0.000 y=-0.000 size=1.000×1.000</div>
+<div>F1=-0.003-0.977i  F2=0.000+0.000i</div>
+<div>F3=0.000+0.000i  F4=-0.001+0.000i</div>
+<div class="muted">contours raw=1, unique=1, described=1</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>5.490</span><span class="kind">Other</span><span>noteheadBlack.svg</span></div>
+<div class="neighbor"><span>5.800</span><span class="kind">Other</span><span>rest8th.svg</span></div>
+<div class="neighbor"><span>5.833</span><span class="kind">Other</span><span>augmentationDot.svg</span></div>
+<div class="neighbor"><span>5.861</span><span class="kind">R</span><span>Bravura-1.svg</span></div>
+<div class="neighbor"><span>6.597</span><span class="kind">Other</span><span>accidentalNatural.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>5.485</span><span class="kind">Other</span><span>noteheadBlack.svg</span></div>
+<div class="neighbor"><span>5.797</span><span class="kind">Other</span><span>rest8th.svg</span></div>
+<div class="neighbor"><span>5.833</span><span class="kind">Other</span><span>augmentationDot.svg</span></div>
+<div class="neighbor"><span>5.859</span><span class="kind">R</span><span>Bravura-1.svg</span></div>
+<div class="neighbor"><span>6.592</span><span class="kind">Other</span><span>accidentalNatural.svg</span></div>
+</div>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Other/noteheadDoubleWhole.svg"></div>
+<div class="name">noteheadDoubleWhole.svg</div>
+<div class="meta">Category: Notehead</div>
+<div class="meta">License: SIL OFL 1.1 (Bravura)</div>
+<div class="meta"><a href="../../References/glyphs/noteheadDoubleWhole.svg">Reference glyph</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=0.245 x=-0.001 y=-0.004 size=0.699×0.417</div>
+<div>F1=-0.033-0.998i  F2=+0.001+0.002i</div>
+<div>F3=+0.005+0.061i  F4=+0.001+0.003i</div>
+<div><b>C2</b> w=0.152 x=0.472 y=-0.000 size=0.055×0.518</div>
+<div>F1=-0.035-0.989i  F2=0.000+0.000i</div>
+<div>F3=-0.014-0.131i  F4=0.000+0.000i</div>
+<div><b>C3</b> w=0.152 x=0.377 y=-0.000 size=0.055×0.518</div>
+<div>F1=-0.037-0.989i  F2=0.000+0.000i</div>
+<div>F3=-0.015-0.131i  F4=0.000+0.000i</div>
+<div class="muted">contours raw=6, unique=6, described=3</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>16.311</span><span class="kind">Other</span><span>accidentalDoubleFlat.svg</span></div>
+<div class="neighbor"><span>18.180</span><span class="kind">R</span><span>Bravura-0.svg</span></div>
+<div class="neighbor"><span>18.308</span><span class="kind">Other</span><span>noteheadWhole.svg</span></div>
+<div class="neighbor"><span>18.785</span><span class="kind">Other</span><span>accidentalSharp.svg</span></div>
+<div class="neighbor"><span>19.423</span><span class="kind">R</span><span>Bravura-9.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>16.304</span><span class="kind">Other</span><span>accidentalDoubleFlat.svg</span></div>
+<div class="neighbor"><span>18.180</span><span class="kind">R</span><span>Bravura-0.svg</span></div>
+<div class="neighbor"><span>18.307</span><span class="kind">Other</span><span>noteheadWhole.svg</span></div>
+<div class="neighbor"><span>18.780</span><span class="kind">Other</span><span>accidentalSharp.svg</span></div>
+<div class="neighbor"><span>19.422</span><span class="kind">R</span><span>Bravura-9.svg</span></div>
+</div>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Other/noteheadDoubleWholeSquare.svg"></div>
+<div class="name">noteheadDoubleWholeSquare.svg</div>
+<div class="meta">Category: Notehead</div>
+<div class="meta">License: SIL OFL 1.1 (Bravura)</div>
+<div class="meta"><a href="../../References/glyphs/noteheadDoubleWholeSquare.svg">Reference glyph</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=0.676 x=-0.000 y=-0.001 size=1.000×0.931</div>
+<div>F1=-0.743-0.664i  F2=-0.014+0.002i</div>
+<div>F3=+0.043-0.062i  F4=-0.001-0.003i</div>
+<div><b>C2</b> w=0.324 x=0.000 y=-0.007 size=0.880×0.231</div>
+<div>F1=-0.770-0.624i  F2=-0.001+0.000i</div>
+<div>F3=+0.059-0.116i  F4=0.000+0.000i</div>
+<div class="muted">contours raw=2, unique=2, described=2</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>4.622</span><span class="kind">Other</span><span>noteheadHalf.svg</span></div>
+<div class="neighbor"><span>4.942</span><span class="kind">Other</span><span>noteheadWhole.svg</span></div>
+<div class="neighbor"><span>5.162</span><span class="kind">Other</span><span>accidentalNatural.svg</span></div>
+<div class="neighbor"><span>5.197</span><span class="kind">Other</span><span>noteheadXBlack.svg</span></div>
+<div class="neighbor"><span>5.286</span><span class="kind">R</span><span>Bravura-4.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>4.594</span><span class="kind">Other</span><span>noteheadHalf.svg</span></div>
+<div class="neighbor"><span>4.878</span><span class="kind">Other</span><span>noteheadWhole.svg</span></div>
+<div class="neighbor"><span>5.082</span><span class="kind">Other</span><span>accidentalNatural.svg</span></div>
+<div class="neighbor"><span>5.085</span><span class="kind">Other</span><span>noteheadXBlack.svg</span></div>
+<div class="neighbor"><span>5.282</span><span class="kind">R</span><span>Bravura-4.svg</span></div>
+</div>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Other/noteheadHalf.svg"></div>
+<div class="name">noteheadHalf.svg</div>
+<div class="meta">Category: Notehead</div>
+<div class="meta">License: SIL OFL 1.1 (Bravura)</div>
+<div class="meta"><a href="../../References/glyphs/noteheadHalf.svg">Reference glyph</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=0.584 x=-0.001 y=0.000 size=1.000×0.848</div>
+<div>F1=-0.287-0.957i  F2=0.000+0.000i</div>
+<div>F3=+0.036-0.014i  F4=0.000+0.000i</div>
+<div><b>C2</b> w=0.416 x=-0.005 y=-0.003 size=0.797×0.580</div>
+<div>F1=-0.529-0.843i  F2=0.000-0.003i</div>
+<div>F3=+0.036-0.089i  F4=-0.001+0.001i</div>
+<div class="muted">contours raw=2, unique=2, described=2</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>3.615</span><span class="kind">Other</span><span>noteheadWhole.svg</span></div>
+<div class="neighbor"><span>4.235</span><span class="kind">R</span><span>Bravura-0.svg</span></div>
+<div class="neighbor"><span>4.414</span><span class="kind">R</span><span>Bravura-4.svg</span></div>
+<div class="neighbor"><span>4.622</span><span class="kind">Other</span><span>noteheadDoubleWholeSquare.svg</span></div>
+<div class="neighbor"><span>4.720</span><span class="kind">R</span><span>../RealMeterDigits/Real-4-accusation-016.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>3.564</span><span class="kind">Other</span><span>noteheadWhole.svg</span></div>
+<div class="neighbor"><span>4.205</span><span class="kind">R</span><span>Bravura-0.svg</span></div>
+<div class="neighbor"><span>4.406</span><span class="kind">R</span><span>Bravura-4.svg</span></div>
+<div class="neighbor"><span>4.594</span><span class="kind">Other</span><span>noteheadDoubleWholeSquare.svg</span></div>
+<div class="neighbor"><span>4.689</span><span class="kind">R</span><span>../RealMeterDigits/Real-4-accusation-016.svg</span></div>
+</div>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Other/noteheadWhole.svg"></div>
+<div class="name">noteheadWhole.svg</div>
+<div class="meta">Category: Notehead</div>
+<div class="meta">License: SIL OFL 1.1 (Bravura)</div>
+<div class="meta"><a href="../../References/glyphs/noteheadWhole.svg">Reference glyph</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=0.626 x=-0.001 y=-0.005 size=1.000×0.593</div>
+<div>F1=-0.035-0.997i  F2=+0.001+0.002i</div>
+<div>F3=+0.005+0.062i  F4=+0.001+0.003i</div>
+<div><b>C2</b> w=0.374 x=0.001 y=0.004 size=0.488×0.486</div>
+<div>F1=+0.172-0.984i  F2=-0.001+0.000i</div>
+<div>F3=-0.031-0.020i  F4=0.000-0.003i</div>
+<div class="muted">contours raw=2, unique=2, described=2</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>2.280</span><span class="kind">R</span><span>Bravura-0.svg</span></div>
+<div class="neighbor"><span>3.615</span><span class="kind">Other</span><span>noteheadHalf.svg</span></div>
+<div class="neighbor"><span>4.942</span><span class="kind">Other</span><span>noteheadDoubleWholeSquare.svg</span></div>
+<div class="neighbor"><span>4.963</span><span class="kind">Other</span><span>accidentalNatural.svg</span></div>
+<div class="neighbor"><span>5.238</span><span class="kind">R</span><span>Bravura-9.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>2.274</span><span class="kind">R</span><span>Bravura-0.svg</span></div>
+<div class="neighbor"><span>3.564</span><span class="kind">Other</span><span>noteheadHalf.svg</span></div>
+<div class="neighbor"><span>4.878</span><span class="kind">Other</span><span>noteheadDoubleWholeSquare.svg</span></div>
+<div class="neighbor"><span>4.938</span><span class="kind">Other</span><span>accidentalNatural.svg</span></div>
+<div class="neighbor"><span>5.231</span><span class="kind">R</span><span>Bravura-9.svg</span></div>
+</div>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Other/noteheadXBlack.svg"></div>
+<div class="name">noteheadXBlack.svg</div>
+<div class="meta">Category: Notehead</div>
+<div class="meta">License: SIL OFL 1.1 (Bravura)</div>
+<div class="meta"><a href="../../References/glyphs/noteheadXBlack.svg">Reference glyph</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=1.000 x=-0.001 y=0.001 size=1.000×0.863</div>
+<div>F1=+0.664-0.713i  F2=-0.001-0.001i</div>
+<div>F3=+0.030+0.024i  F4=+0.001-0.001i</div>
+<div class="muted">contours raw=1, unique=1, described=1</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>3.197</span><span class="kind">Other</span><span>accidentalDoubleSharp.svg</span></div>
+<div class="neighbor"><span>5.197</span><span class="kind">Other</span><span>noteheadDoubleWholeSquare.svg</span></div>
+<div class="neighbor"><span>5.291</span><span class="kind">Other</span><span>noteheadHalf.svg</span></div>
+<div class="neighbor"><span>5.355</span><span class="kind">Other</span><span>accidentalSharp.svg</span></div>
+<div class="neighbor"><span>5.645</span><span class="kind">Other</span><span>noteheadWhole.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>3.044</span><span class="kind">Other</span><span>accidentalDoubleSharp.svg</span></div>
+<div class="neighbor"><span>5.085</span><span class="kind">Other</span><span>noteheadDoubleWholeSquare.svg</span></div>
+<div class="neighbor"><span>5.231</span><span class="kind">Other</span><span>noteheadHalf.svg</span></div>
+<div class="neighbor"><span>5.280</span><span class="kind">Other</span><span>accidentalSharp.svg</span></div>
+<div class="neighbor"><span>5.612</span><span class="kind">Other</span><span>noteheadWhole.svg</span></div>
+</div>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Other/rest1024th.svg"></div>
+<div class="name">rest1024th.svg</div>
+<div class="meta">Category: Rest</div>
+<div class="meta">License: SIL OFL 1.1 (Bravura)</div>
+<div class="meta"><a href="../../References/glyphs/rest1024th.svg">Reference glyph</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=1.000 x=-0.000 y=0.028 size=0.299×1.000</div>
+<div>F1=+0.357-0.870i  F2=-0.164-0.277i</div>
+<div>F3=-0.073-0.016i  F4=+0.023-0.029i</div>
+<div class="muted">contours raw=1, unique=1, described=1</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>3.737</span><span class="kind">Other</span><span>rest512th.svg</span></div>
+<div class="neighbor"><span>3.760</span><span class="kind">Other</span><span>rest256th.svg</span></div>
+<div class="neighbor"><span>3.830</span><span class="kind">Other</span><span>rest128th.svg</span></div>
+<div class="neighbor"><span>5.346</span><span class="kind">Other</span><span>rest64th.svg</span></div>
+<div class="neighbor"><span>6.029</span><span class="kind">Other</span><span>rest32nd.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>3.737</span><span class="kind">Other</span><span>rest512th.svg</span></div>
+<div class="neighbor"><span>3.760</span><span class="kind">Other</span><span>rest256th.svg</span></div>
+<div class="neighbor"><span>3.829</span><span class="kind">Other</span><span>rest128th.svg</span></div>
+<div class="neighbor"><span>5.345</span><span class="kind">Other</span><span>rest64th.svg</span></div>
+<div class="neighbor"><span>6.027</span><span class="kind">Other</span><span>rest32nd.svg</span></div>
+</div>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Other/rest128th.svg"></div>
+<div class="name">rest128th.svg</div>
+<div class="meta">Category: Rest</div>
+<div class="meta">License: SIL OFL 1.1 (Bravura)</div>
+<div class="meta"><a href="../../References/glyphs/rest128th.svg">Reference glyph</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=1.000 x=0.004 y=0.040 size=0.334×1.000</div>
+<div>F1=+0.312-0.878i  F2=-0.185-0.277i</div>
+<div>F3=-0.072-0.012i  F4=+0.027-0.041i</div>
+<div class="muted">contours raw=1, unique=1, described=1</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>3.504</span><span class="kind">Other</span><span>rest512th.svg</span></div>
+<div class="neighbor"><span>3.830</span><span class="kind">Other</span><span>rest1024th.svg</span></div>
+<div class="neighbor"><span>4.122</span><span class="kind">Other</span><span>rest256th.svg</span></div>
+<div class="neighbor"><span>4.595</span><span class="kind">Other</span><span>rest64th.svg</span></div>
+<div class="neighbor"><span>5.129</span><span class="kind">Other</span><span>rest32nd.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>3.504</span><span class="kind">Other</span><span>rest512th.svg</span></div>
+<div class="neighbor"><span>3.829</span><span class="kind">Other</span><span>rest1024th.svg</span></div>
+<div class="neighbor"><span>4.121</span><span class="kind">Other</span><span>rest256th.svg</span></div>
+<div class="neighbor"><span>4.593</span><span class="kind">Other</span><span>rest64th.svg</span></div>
+<div class="neighbor"><span>5.128</span><span class="kind">Other</span><span>rest32nd.svg</span></div>
+</div>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Other/rest16th.svg"></div>
+<div class="name">rest16th.svg</div>
+<div class="meta">Category: Rest</div>
+<div class="meta">License: SIL OFL 1.1 (Bravura)</div>
+<div class="meta"><a href="../../References/glyphs/rest16th.svg">Reference glyph</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=1.000 x=0.005 y=0.071 size=0.468×1.000</div>
+<div>F1=+0.165-0.905i  F2=-0.222-0.252i</div>
+<div>F3=+0.027+0.061i  F4=-0.077-0.096i</div>
+<div class="muted">contours raw=1, unique=1, described=1</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>4.331</span><span class="kind">Other</span><span>rest32nd.svg</span></div>
+<div class="neighbor"><span>4.623</span><span class="kind">Other</span><span>rest8th.svg</span></div>
+<div class="neighbor"><span>4.878</span><span class="kind">Other</span><span>rest64th.svg</span></div>
+<div class="neighbor"><span>5.382</span><span class="kind">R</span><span>Bravura-4.svg</span></div>
+<div class="neighbor"><span>5.608</span><span class="kind">Other</span><span>accidentalNatural.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>4.326</span><span class="kind">Other</span><span>rest32nd.svg</span></div>
+<div class="neighbor"><span>4.614</span><span class="kind">Other</span><span>rest8th.svg</span></div>
+<div class="neighbor"><span>4.872</span><span class="kind">Other</span><span>rest64th.svg</span></div>
+<div class="neighbor"><span>5.313</span><span class="kind">R</span><span>Bravura-4.svg</span></div>
+<div class="neighbor"><span>5.604</span><span class="kind">Other</span><span>accidentalNatural.svg</span></div>
+</div>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Other/rest256th.svg"></div>
+<div class="name">rest256th.svg</div>
+<div class="meta">Category: Rest</div>
+<div class="meta">License: SIL OFL 1.1 (Bravura)</div>
+<div class="meta"><a href="../../References/glyphs/rest256th.svg">Reference glyph</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=1.000 x=0.003 y=0.035 size=0.319×1.000</div>
+<div>F1=+0.356-0.865i  F2=-0.158-0.290i</div>
+<div>F3=-0.071-0.020i  F4=+0.030-0.032i</div>
+<div class="muted">contours raw=1, unique=1, described=1</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>3.760</span><span class="kind">Other</span><span>rest1024th.svg</span></div>
+<div class="neighbor"><span>4.122</span><span class="kind">Other</span><span>rest128th.svg</span></div>
+<div class="neighbor"><span>4.160</span><span class="kind">Other</span><span>rest512th.svg</span></div>
+<div class="neighbor"><span>4.601</span><span class="kind">Other</span><span>rest64th.svg</span></div>
+<div class="neighbor"><span>4.837</span><span class="kind">Other</span><span>rest32nd.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>3.760</span><span class="kind">Other</span><span>rest1024th.svg</span></div>
+<div class="neighbor"><span>4.121</span><span class="kind">Other</span><span>rest128th.svg</span></div>
+<div class="neighbor"><span>4.160</span><span class="kind">Other</span><span>rest512th.svg</span></div>
+<div class="neighbor"><span>4.600</span><span class="kind">Other</span><span>rest64th.svg</span></div>
+<div class="neighbor"><span>4.835</span><span class="kind">Other</span><span>rest32nd.svg</span></div>
+</div>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Other/rest32nd.svg"></div>
+<div class="name">rest32nd.svg</div>
+<div class="meta">Category: Rest</div>
+<div class="meta">License: SIL OFL 1.1 (Bravura)</div>
+<div class="meta"><a href="../../References/glyphs/rest32nd.svg">Reference glyph</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=1.000 x=0.009 y=0.056 size=0.390×1.000</div>
+<div>F1=+0.263-0.888i  F2=-0.205-0.268i</div>
+<div>F3=-0.053-0.004i  F4=+0.082-0.064i</div>
+<div class="muted">contours raw=1, unique=1, described=1</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>4.331</span><span class="kind">Other</span><span>rest16th.svg</span></div>
+<div class="neighbor"><span>4.837</span><span class="kind">Other</span><span>rest256th.svg</span></div>
+<div class="neighbor"><span>4.846</span><span class="kind">Other</span><span>rest64th.svg</span></div>
+<div class="neighbor"><span>5.129</span><span class="kind">Other</span><span>rest128th.svg</span></div>
+<div class="neighbor"><span>5.250</span><span class="kind">Other</span><span>rest512th.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>4.326</span><span class="kind">Other</span><span>rest16th.svg</span></div>
+<div class="neighbor"><span>4.835</span><span class="kind">Other</span><span>rest256th.svg</span></div>
+<div class="neighbor"><span>4.844</span><span class="kind">Other</span><span>rest64th.svg</span></div>
+<div class="neighbor"><span>5.128</span><span class="kind">Other</span><span>rest128th.svg</span></div>
+<div class="neighbor"><span>5.248</span><span class="kind">Other</span><span>rest512th.svg</span></div>
+</div>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Other/rest512th.svg"></div>
+<div class="name">rest512th.svg</div>
+<div class="meta">Category: Rest</div>
+<div class="meta">License: SIL OFL 1.1 (Bravura)</div>
+<div class="meta"><a href="../../References/glyphs/rest512th.svg">Reference glyph</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=1.000 x=0.004 y=0.031 size=0.306×1.000</div>
+<div>F1=+0.348-0.871i  F2=-0.169-0.281i</div>
+<div>F3=-0.072-0.014i  F4=+0.024-0.031i</div>
+<div class="muted">contours raw=1, unique=1, described=1</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>3.504</span><span class="kind">Other</span><span>rest128th.svg</span></div>
+<div class="neighbor"><span>3.737</span><span class="kind">Other</span><span>rest1024th.svg</span></div>
+<div class="neighbor"><span>4.160</span><span class="kind">Other</span><span>rest256th.svg</span></div>
+<div class="neighbor"><span>4.509</span><span class="kind">Other</span><span>rest64th.svg</span></div>
+<div class="neighbor"><span>5.250</span><span class="kind">Other</span><span>rest32nd.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>3.504</span><span class="kind">Other</span><span>rest128th.svg</span></div>
+<div class="neighbor"><span>3.737</span><span class="kind">Other</span><span>rest1024th.svg</span></div>
+<div class="neighbor"><span>4.160</span><span class="kind">Other</span><span>rest256th.svg</span></div>
+<div class="neighbor"><span>4.509</span><span class="kind">Other</span><span>rest64th.svg</span></div>
+<div class="neighbor"><span>5.248</span><span class="kind">Other</span><span>rest32nd.svg</span></div>
+</div>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Other/rest64th.svg"></div>
+<div class="name">rest64th.svg</div>
+<div class="meta">Category: Rest</div>
+<div class="meta">License: SIL OFL 1.1 (Bravura)</div>
+<div class="meta"><a href="../../References/glyphs/rest64th.svg">Reference glyph</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=1.000 x=0.005 y=0.050 size=0.355×1.000</div>
+<div>F1=+0.291-0.882i  F2=-0.189-0.277i</div>
+<div>F3=-0.063-0.014i  F4=+0.039-0.049i</div>
+<div class="muted">contours raw=1, unique=1, described=1</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>4.509</span><span class="kind">Other</span><span>rest512th.svg</span></div>
+<div class="neighbor"><span>4.595</span><span class="kind">Other</span><span>rest128th.svg</span></div>
+<div class="neighbor"><span>4.601</span><span class="kind">Other</span><span>rest256th.svg</span></div>
+<div class="neighbor"><span>4.846</span><span class="kind">Other</span><span>rest32nd.svg</span></div>
+<div class="neighbor"><span>4.878</span><span class="kind">Other</span><span>rest16th.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>4.509</span><span class="kind">Other</span><span>rest512th.svg</span></div>
+<div class="neighbor"><span>4.593</span><span class="kind">Other</span><span>rest128th.svg</span></div>
+<div class="neighbor"><span>4.600</span><span class="kind">Other</span><span>rest256th.svg</span></div>
+<div class="neighbor"><span>4.844</span><span class="kind">Other</span><span>rest32nd.svg</span></div>
+<div class="neighbor"><span>4.872</span><span class="kind">Other</span><span>rest16th.svg</span></div>
+</div>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Other/rest8th.svg"></div>
+<div class="name">rest8th.svg</div>
+<div class="meta">Category: Rest</div>
+<div class="meta">License: SIL OFL 1.1 (Bravura)</div>
+<div class="meta"><a href="../../References/glyphs/rest8th.svg">Reference glyph</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=1.000 x=0.024 y=0.090 size=0.579×1.000</div>
+<div>F1=+0.144-0.928i  F2=-0.247-0.068i</div>
+<div>F3=-0.013-0.176i  F4=+0.098+0.002i</div>
+<div class="muted">contours raw=1, unique=1, described=1</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>4.623</span><span class="kind">Other</span><span>rest16th.svg</span></div>
+<div class="neighbor"><span>5.261</span><span class="kind">Other</span><span>noteheadBlack.svg</span></div>
+<div class="neighbor"><span>5.463</span><span class="kind">Other</span><span>augmentationDot.svg</span></div>
+<div class="neighbor"><span>5.473</span><span class="kind">R</span><span>Bravura-1.svg</span></div>
+<div class="neighbor"><span>5.800</span><span class="kind">Other</span><span>noteheadDiamondBlack.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>4.614</span><span class="kind">Other</span><span>rest16th.svg</span></div>
+<div class="neighbor"><span>5.250</span><span class="kind">Other</span><span>noteheadBlack.svg</span></div>
+<div class="neighbor"><span>5.461</span><span class="kind">Other</span><span>augmentationDot.svg</span></div>
+<div class="neighbor"><span>5.471</span><span class="kind">R</span><span>Bravura-1.svg</span></div>
+<div class="neighbor"><span>5.794</span><span class="kind">R</span><span>Bravura-7.svg</span></div>
+</div>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Other/restDoubleWhole.svg"></div>
+<div class="name">restDoubleWhole.svg</div>
+<div class="meta">Category: Rest</div>
+<div class="meta">License: SIL OFL 1.1 (Bravura)</div>
+<div class="meta"><a href="../../References/glyphs/restDoubleWhole.svg">Reference glyph</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=1.000 x=-0.000 y=0.000 size=0.500×1.000</div>
+<div>F1=-0.357-0.930i  F2=0.000+0.000i</div>
+<div>F3=-0.078-0.040i  F4=0.000+0.000i</div>
+<div class="muted">contours raw=1, unique=1, described=1</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>0.182</span><span class="kind">Other</span><span>restLonga.svg</span></div>
+<div class="neighbor"><span>0.182</span><span class="kind">Other</span><span>restMaxima.svg</span></div>
+<div class="neighbor"><span>0.567</span><span class="kind">Other</span><span>restHalf.svg</span></div>
+<div class="neighbor"><span>0.567</span><span class="kind">Other</span><span>restWhole.svg</span></div>
+<div class="neighbor"><span>1.837</span><span class="kind">Other</span><span>augmentationDot.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>0.148</span><span class="kind">Other</span><span>restLonga.svg</span></div>
+<div class="neighbor"><span>0.148</span><span class="kind">Other</span><span>restMaxima.svg</span></div>
+<div class="neighbor"><span>0.403</span><span class="kind">Other</span><span>restHalf.svg</span></div>
+<div class="neighbor"><span>0.403</span><span class="kind">Other</span><span>restWhole.svg</span></div>
+<div class="neighbor"><span>1.813</span><span class="kind">Other</span><span>augmentationDot.svg</span></div>
+</div>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Other/restHalf.svg"></div>
+<div class="name">restHalf.svg</div>
+<div class="meta">Category: Rest</div>
+<div class="meta">License: SIL OFL 1.1 (Bravura)</div>
+<div class="meta"><a href="../../References/glyphs/restHalf.svg">Reference glyph</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=1.000 x=-0.000 y=0.000 size=1.000×0.511</div>
+<div>F1=-0.748-0.658i  F2=0.000+0.000i</div>
+<div>F3=+0.049-0.072i  F4=0.000+0.000i</div>
+<div class="muted">contours raw=1, unique=1, described=1</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>0.000</span><span class="kind">Other</span><span>restWhole.svg</span></div>
+<div class="neighbor"><span>0.567</span><span class="kind">Other</span><span>restDoubleWhole.svg</span></div>
+<div class="neighbor"><span>0.709</span><span class="kind">Other</span><span>restLonga.svg</span></div>
+<div class="neighbor"><span>0.709</span><span class="kind">Other</span><span>restMaxima.svg</span></div>
+<div class="neighbor"><span>1.905</span><span class="kind">Other</span><span>augmentationDot.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>0.000</span><span class="kind">Other</span><span>restWhole.svg</span></div>
+<div class="neighbor"><span>0.403</span><span class="kind">Other</span><span>restDoubleWhole.svg</span></div>
+<div class="neighbor"><span>0.515</span><span class="kind">Other</span><span>restLonga.svg</span></div>
+<div class="neighbor"><span>0.515</span><span class="kind">Other</span><span>restMaxima.svg</span></div>
+<div class="neighbor"><span>1.786</span><span class="kind">Other</span><span>augmentationDot.svg</span></div>
+</div>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Other/restLonga.svg"></div>
+<div class="name">restLonga.svg</div>
+<div class="meta">Category: Rest</div>
+<div class="meta">License: SIL OFL 1.1 (Bravura)</div>
+<div class="meta"><a href="../../References/glyphs/restLonga.svg">Reference glyph</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=1.000 x=-0.000 y=-0.000 size=0.251×1.000</div>
+<div>F1=-0.242-0.961i  F2=0.000+0.000i</div>
+<div>F3=-0.085-0.093i  F4=0.000+0.000i</div>
+<div class="muted">contours raw=1, unique=1, described=1</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>0.000</span><span class="kind">Other</span><span>restMaxima.svg</span></div>
+<div class="neighbor"><span>0.182</span><span class="kind">Other</span><span>restDoubleWhole.svg</span></div>
+<div class="neighbor"><span>0.709</span><span class="kind">Other</span><span>restHalf.svg</span></div>
+<div class="neighbor"><span>0.709</span><span class="kind">Other</span><span>restWhole.svg</span></div>
+<div class="neighbor"><span>1.857</span><span class="kind">Other</span><span>augmentationDot.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>0.000</span><span class="kind">Other</span><span>restMaxima.svg</span></div>
+<div class="neighbor"><span>0.148</span><span class="kind">Other</span><span>restDoubleWhole.svg</span></div>
+<div class="neighbor"><span>0.515</span><span class="kind">Other</span><span>restHalf.svg</span></div>
+<div class="neighbor"><span>0.515</span><span class="kind">Other</span><span>restWhole.svg</span></div>
+<div class="neighbor"><span>1.847</span><span class="kind">Other</span><span>augmentationDot.svg</span></div>
+</div>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Other/restMaxima.svg"></div>
+<div class="name">restMaxima.svg</div>
+<div class="meta">Category: Rest</div>
+<div class="meta">License: SIL OFL 1.1 (Bravura)</div>
+<div class="meta"><a href="../../References/glyphs/restMaxima.svg">Reference glyph</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=1.000 x=-0.000 y=-0.000 size=0.251×1.000</div>
+<div>F1=-0.242-0.961i  F2=0.000+0.000i</div>
+<div>F3=-0.085-0.093i  F4=0.000+0.000i</div>
+<div class="muted">contours raw=2, unique=1, described=1</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>0.000</span><span class="kind">Other</span><span>restLonga.svg</span></div>
+<div class="neighbor"><span>0.182</span><span class="kind">Other</span><span>restDoubleWhole.svg</span></div>
+<div class="neighbor"><span>0.709</span><span class="kind">Other</span><span>restHalf.svg</span></div>
+<div class="neighbor"><span>0.709</span><span class="kind">Other</span><span>restWhole.svg</span></div>
+<div class="neighbor"><span>1.857</span><span class="kind">Other</span><span>augmentationDot.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>0.000</span><span class="kind">Other</span><span>restLonga.svg</span></div>
+<div class="neighbor"><span>0.148</span><span class="kind">Other</span><span>restDoubleWhole.svg</span></div>
+<div class="neighbor"><span>0.515</span><span class="kind">Other</span><span>restHalf.svg</span></div>
+<div class="neighbor"><span>0.515</span><span class="kind">Other</span><span>restWhole.svg</span></div>
+<div class="neighbor"><span>1.847</span><span class="kind">Other</span><span>augmentationDot.svg</span></div>
+</div>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Other/restQuarter.svg"></div>
+<div class="name">restQuarter.svg</div>
+<div class="meta">Category: Rest</div>
+<div class="meta">License: SIL OFL 1.1 (Bravura)</div>
+<div class="meta"><a href="../../References/glyphs/restQuarter.svg">Reference glyph</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=1.000 x=-0.022 y=-0.029 size=0.359×1.000</div>
+<div>F1=-0.042-0.979i  F2=-0.055+0.054i</div>
+<div>F3=+0.014-0.139i  F4=+0.018-0.012i</div>
+<div class="muted">contours raw=1, unique=1, described=1</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>5.624</span><span class="kind">Other</span><span>rest16th.svg</span></div>
+<div class="neighbor"><span>5.936</span><span class="kind">F</span><span>valid/Clef Bass (F).svg</span></div>
+<div class="neighbor"><span>6.046</span><span class="kind">Other</span><span>noteheadHalf.svg</span></div>
+<div class="neighbor"><span>6.068</span><span class="kind">R</span><span>Bravura-1.svg</span></div>
+<div class="neighbor"><span>6.185</span><span class="kind">Other</span><span>accidentalFlat.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>5.614</span><span class="kind">Other</span><span>rest16th.svg</span></div>
+<div class="neighbor"><span>5.905</span><span class="kind">F</span><span>valid/Clef Bass (F).svg</span></div>
+<div class="neighbor"><span>6.043</span><span class="kind">Other</span><span>noteheadHalf.svg</span></div>
+<div class="neighbor"><span>6.066</span><span class="kind">R</span><span>Bravura-1.svg</span></div>
+<div class="neighbor"><span>6.178</span><span class="kind">Other</span><span>accidentalFlat.svg</span></div>
+</div>
+</div>
+<div class="card">
+<div class="preview"><img loading="lazy" src="Samples/Other/restWhole.svg"></div>
+<div class="name">restWhole.svg</div>
+<div class="meta">Category: Rest</div>
+<div class="meta">License: SIL OFL 1.1 (Bravura)</div>
+<div class="meta"><a href="../../References/glyphs/restWhole.svg">Reference glyph</a></div>
+<div class="fourier">
+<div class="label">Complex vector Fourier</div>
+<div><b>C1</b> w=1.000 x=-0.000 y=0.000 size=1.000×0.511</div>
+<div>F1=-0.748-0.658i  F2=0.000+0.000i</div>
+<div>F3=+0.049-0.072i  F4=0.000+0.000i</div>
+<div class="muted">contours raw=1, unique=1, described=1</div>
+</div>
+<div class="nearest complex">
+<div class="label">Top 5 — complex/phase-aware</div>
+<div class="neighbor"><span>0.000</span><span class="kind">Other</span><span>restHalf.svg</span></div>
+<div class="neighbor"><span>0.567</span><span class="kind">Other</span><span>restDoubleWhole.svg</span></div>
+<div class="neighbor"><span>0.709</span><span class="kind">Other</span><span>restLonga.svg</span></div>
+<div class="neighbor"><span>0.709</span><span class="kind">Other</span><span>restMaxima.svg</span></div>
+<div class="neighbor"><span>1.905</span><span class="kind">Other</span><span>augmentationDot.svg</span></div>
+</div>
+<div class="nearest magnitude">
+<div class="label">Top 5 — magnitude-only baseline</div>
+<div class="neighbor"><span>0.000</span><span class="kind">Other</span><span>restHalf.svg</span></div>
+<div class="neighbor"><span>0.403</span><span class="kind">Other</span><span>restDoubleWhole.svg</span></div>
+<div class="neighbor"><span>0.515</span><span class="kind">Other</span><span>restLonga.svg</span></div>
+<div class="neighbor"><span>0.515</span><span class="kind">Other</span><span>restMaxima.svg</span></div>
+<div class="neighbor"><span>1.786</span><span class="kind">Other</span><span>augmentationDot.svg</span></div>
 </div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Treble%20clef%20with%20note.svg"></div>
-<div class="name">Treble clef with note.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: Public domain</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Treble_clef_with_note.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Treble clef with note.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Treble%20clef%20with%20ref.svg"></div>
-<div class="name">Treble clef with ref.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: Public domain</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Treble_clef_with_ref.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Treble clef with ref.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Treble%20Clef%20without%20line.svg"></div>
-<div class="name">Treble Clef without line.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: Public domain</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Treble_Clef_without_line.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Treble Clef without line.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Treble%20clef.svg"></div>
-<div class="name">Treble clef.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: Public domain</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Treble_clef.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Treble clef.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Violinschluessel.svg"></div>
-<div class="name">Violinschluessel.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: CC BY-SA 2.5</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Violinschluessel.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Violinschluessel.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/Wikimusic%20Treble%20Clef.svg"></div>
-<div class="name">Wikimusic Treble Clef.svg</div>
-<div class="meta">Category: G clef in art</div>
-<div class="meta">License: CC BY-SA 3.0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Wikimusic_Treble_Clef.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Wikimusic Treble Clef.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/WikiProject%20Australian%20Music.svg"></div>
-<div class="name">WikiProject Australian Music.svg</div>
-<div class="meta">Category: G clef in art</div>
-<div class="meta">License: Public domain</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:WikiProject_Australian_Music.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:WikiProject Australian Music.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/%D0%A1%D0%BA%D1%80%D0%B8%D0%BF%D0%B8%D1%87%D0%BD%D1%8B%D0%B9%20%D0%BA%D0%BB%D1%8E%D1%87%2B15.svg"></div>
-<div class="name">Скрипичный ключ+15.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: CC BY-SA 3.0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:%D0%A1%D0%BA%D1%80%D0%B8%D0%BF%D0%B8%D1%87%D0%BD%D1%8B%D0%B9_%D0%BA%D0%BB%D1%8E%D1%87%2B15.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Скрипичный ключ+15.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/%D0%A1%D0%BA%D1%80%D0%B8%D0%BF%D0%B8%D1%87%D0%BD%D1%8B%D0%B9%20%D0%BA%D0%BB%D1%8E%D1%87%2B8.svg"></div>
-<div class="name">Скрипичный ключ+8.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: CC BY-SA 3.0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:%D0%A1%D0%BA%D1%80%D0%B8%D0%BF%D0%B8%D1%87%D0%BD%D1%8B%D0%B9_%D0%BA%D0%BB%D1%8E%D1%87%2B8.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Скрипичный ключ+8.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/%D0%A1%D0%BA%D1%80%D0%B8%D0%BF%D0%B8%D1%87%D0%BD%D1%8B%D0%B9%20%D0%BA%D0%BB%D1%8E%D1%87-8.svg"></div>
-<div class="name">Скрипичный ключ-8.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: CC BY-SA 3.0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:%D0%A1%D0%BA%D1%80%D0%B8%D0%BF%D0%B8%D1%87%D0%BD%D1%8B%D0%B9_%D0%BA%D0%BB%D1%8E%D1%87-8.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Скрипичный ключ-8.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/%D0%A1%D0%BA%D1%80%D0%B8%D0%BF%D0%B8%D1%87%D0%BD%D1%8B%D0%B9%20%D0%BA%D0%BB%D1%8E%D1%87.svg"></div>
-<div class="name">Скрипичный ключ.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: CC BY-SA 3.0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:%D0%A1%D0%BA%D1%80%D0%B8%D0%BF%D0%B8%D1%87%D0%BD%D1%8B%D0%B9_%D0%BA%D0%BB%D1%8E%D1%87.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Скрипичный ключ.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Treble/%D0%A1%D1%82%D0%B0%D1%80%D0%BE%D1%84%D1%80%D0%B0%D0%BD%D1%86%D1%83%D0%B7%D1%81%D0%BA%D0%B8%D0%B9%20%D0%BA%D0%BB%D1%8E%D1%87.svg"></div>
-<div class="name">Старофранцузский ключ.svg</div>
-<div class="meta">Category: G clef</div>
-<div class="meta">License: CC BY-SA 3.0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:%D0%A1%D1%82%D0%B0%D1%80%D0%BE%D1%84%D1%80%D0%B0%D0%BD%D1%86%D1%83%D0%B7%D1%81%D0%BA%D0%B8%D0%B9_%D0%BA%D0%BB%D1%8E%D1%87.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Treble:Старофранцузский ключ.svg"> мусор / не подходит</label>
-</div>
-</div>
-<h2>Bass / F clef (42)</h2><div class="grid">
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/Baritone%20clef%20with%20ref.svg"></div>
-<div class="name">Baritone clef with ref.svg</div>
-<div class="meta">Category: F clef</div>
-<div class="meta">License: Public domain</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Baritone_clef_with_ref.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:Baritone clef with ref.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/Baritone%20clef.svg"></div>
-<div class="name">Baritone clef.svg</div>
-<div class="meta">Category: F clef</div>
-<div class="meta">License: Public domain</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Baritone_clef.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:Baritone clef.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/Bass%20clef%2001.svg"></div>
-<div class="name">Bass clef 01.svg</div>
-<div class="meta">Category: F clef</div>
-<div class="meta">License: Public domain</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Bass_clef_01.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:Bass clef 01.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/Bass%20clef%201.svg"></div>
-<div class="name">Bass clef 1.svg</div>
-<div class="meta">Category: F clef</div>
-<div class="meta">License: CC BY-SA 3.0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Bass_clef_1.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:Bass clef 1.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/Bass%20clef%20draw.svg"></div>
-<div class="name">Bass clef draw.svg</div>
-<div class="meta">Category: F clef</div>
-<div class="meta">License: CC BY-SA 4.0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Bass_clef_draw.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:Bass clef draw.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/Bass%20Clef%20old%20style.svg"></div>
-<div class="name">Bass Clef old style.svg</div>
-<div class="meta">Category: Spiral-shaped F clef</div>
-<div class="meta">License: CC0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Bass_Clef_old_style.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:Bass Clef old style.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/Bass%20clef%20with%20note.svg"></div>
-<div class="name">Bass clef with note.svg</div>
-<div class="meta">Category: F clef</div>
-<div class="meta">License: Public domain</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Bass_clef_with_note.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:Bass clef with note.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/Bass%20clef%20with%20ref.svg"></div>
-<div class="name">Bass clef with ref.svg</div>
-<div class="meta">Category: F clef</div>
-<div class="meta">License: Public domain</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Bass_clef_with_ref.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:Bass clef with ref.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/Bass%20clef.svg"></div>
-<div class="name">Bass clef.svg</div>
-<div class="meta">Category: F clef</div>
-<div class="meta">License: Public domain</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Bass_clef.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:Bass clef.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/Chiave-di-fa.svg"></div>
-<div class="name">Chiave-di-fa.svg</div>
-<div class="meta">Category: F clef</div>
-<div class="meta">License: CC BY-SA 4.0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Chiave-di-fa.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:Chiave-di-fa.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/Clef%20Bass%20%28F%29.svg"></div>
-<div class="name">Clef Bass (F).svg</div>
-<div class="meta">Category: F clef</div>
-<div class="meta">License: CC0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Clef_Bass_(F).svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:Clef Bass (F).svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/Clefs.svg"></div>
-<div class="name">Clefs.svg</div>
-<div class="meta">Category: F clef</div>
-<div class="meta">License: Public domain</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Clefs.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:Clefs.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/Correspondance%20do%20dans%20trois%20clef.svg"></div>
-<div class="name">Correspondance do dans trois clef.svg</div>
-<div class="meta">Category: F clef</div>
-<div class="meta">License: CC0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Correspondance_do_dans_trois_clef.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:Correspondance do dans trois clef.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/FClef-Old.svg"></div>
-<div class="name">FClef-Old.svg</div>
-<div class="meta">Category: Spiral-shaped F clef</div>
-<div class="meta">License: CC BY-SA 3.0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:FClef-Old.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:FClef-Old.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/FClef.svg"></div>
-<div class="name">FClef.svg</div>
-<div class="meta">Category: F clef</div>
-<div class="meta">License: CC BY 2.5</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:FClef.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:FClef.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/Fschluessel.svg"></div>
-<div class="name">Fschluessel.svg</div>
-<div class="meta">Category: F clef</div>
-<div class="meta">License: Public domain</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Fschluessel.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:Fschluessel.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/Gamme%20clef%20fa%20vers%20clef%20sol.svg"></div>
-<div class="name">Gamme clef fa vers clef sol.svg</div>
-<div class="meta">Category: F clef</div>
-<div class="meta">License: CC0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Gamme_clef_fa_vers_clef_sol.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:Gamme clef fa vers clef sol.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/GNU%20Unifont%20-%20U%2B1D122.svg"></div>
-<div class="name">GNU Unifont - U+1D122.svg</div>
-<div class="meta">Category: F clef</div>
-<div class="meta">License: OFL</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:GNU_Unifont_-_U%2B1D122.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:GNU Unifont - U+1D122.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/GNU%20Unifont%20-%20U%2B1D123.svg"></div>
-<div class="name">GNU Unifont - U+1D123.svg</div>
-<div class="meta">Category: &#119075;</div>
-<div class="meta">License: OFL</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:GNU_Unifont_-_U%2B1D123.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:GNU Unifont - U+1D123.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/GNU%20Unifont%20-%20U%2B1D124.svg"></div>
-<div class="name">GNU Unifont - U+1D124.svg</div>
-<div class="meta">Category: &#119076;</div>
-<div class="meta">License: OFL</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:GNU_Unifont_-_U%2B1D124.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:GNU Unifont - U+1D124.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/IEC%2060417%20-%20Ref-No%205038.svg"></div>
-<div class="name">IEC 60417 - Ref-No 5038.svg</div>
-<div class="meta">Category: F clef</div>
-<div class="meta">License: Public domain</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:IEC_60417_-_Ref-No_5038.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:IEC 60417 - Ref-No 5038.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/Klucz%20f.svg"></div>
-<div class="name">Klucz f.svg</div>
-<div class="meta">Category: F clef</div>
-<div class="meta">License: CC BY 3.0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Klucz_f.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:Klucz f.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/Ledger%20line.svg"></div>
-<div class="name">Ledger line.svg</div>
-<div class="meta">Category: F clef</div>
-<div class="meta">License: CC BY-SA 4.0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Ledger_line.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:Ledger line.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/Mensural%20f%20clef%2001.svg"></div>
-<div class="name">Mensural f clef 01.svg</div>
-<div class="meta">Category: Mensural F clef</div>
-<div class="meta">License: CC0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Mensural_f_clef_01.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:Mensural f clef 01.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/Mensural%20f%20clef%2002.svg"></div>
-<div class="name">Mensural f clef 02.svg</div>
-<div class="meta">Category: Mensural F clef</div>
-<div class="meta">License: CC0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Mensural_f_clef_02.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:Mensural f clef 02.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/Mensural%20f%20clef%2004.svg"></div>
-<div class="name">Mensural f clef 04.svg</div>
-<div class="meta">Category: Mensural F clef</div>
-<div class="meta">License: CC0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Mensural_f_clef_04.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:Mensural f clef 04.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/Mensural%20f%20clef%2005.svg"></div>
-<div class="name">Mensural f clef 05.svg</div>
-<div class="meta">Category: Mensural F clef</div>
-<div class="meta">License: CC0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Mensural_f_clef_05.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:Mensural f clef 05.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/Mensural%20f%20clef%2006.svg"></div>
-<div class="name">Mensural f clef 06.svg</div>
-<div class="meta">Category: Mensural F clef</div>
-<div class="meta">License: CC0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Mensural_f_clef_06.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:Mensural f clef 06.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/Mensural%20f%20clef%2007.svg"></div>
-<div class="name">Mensural f clef 07.svg</div>
-<div class="meta">Category: Mensural F clef</div>
-<div class="meta">License: CC0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Mensural_f_clef_07.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:Mensural f clef 07.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/Mensural%20f%20clef%2008.svg"></div>
-<div class="name">Mensural f clef 08.svg</div>
-<div class="meta">Category: Mensural F clef</div>
-<div class="meta">License: CC0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Mensural_f_clef_08.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:Mensural f clef 08.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/Muine.svg"></div>
-<div class="name">Muine.svg</div>
-<div class="meta">Category: F clef</div>
-<div class="meta">License: GPL</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Muine.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:Muine.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/Music-Fclef.svg"></div>
-<div class="name">Music-Fclef.svg</div>
-<div class="meta">Category: F clef</div>
-<div class="meta">License: Public domain</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Music-Fclef.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:Music-Fclef.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/Oldbassclef.svg"></div>
-<div class="name">Oldbassclef.svg</div>
-<div class="meta">Category: Spiral-shaped F clef</div>
-<div class="meta">License: CC BY-SA 3.0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Oldbassclef.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:Oldbassclef.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/Percussion%20clef%20with%20note.svg"></div>
-<div class="name">Percussion clef with note.svg</div>
-<div class="meta">Category: F clef</div>
-<div class="meta">License: Public domain</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Percussion_clef_with_note.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:Percussion clef with note.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/Positions%20of%20%E2%99%AF%20and%20%E2%99%AD%20in%20Key%20Signatures%20in%204%20Clefs.svg"></div>
-<div class="name">Positions of ♯ and ♭ in Key Signatures in 4 Clefs.svg</div>
-<div class="meta">Category: F clef</div>
-<div class="meta">License: CC BY-SA 4.0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Positions_of_%E2%99%AF_and_%E2%99%AD_in_Key_Signatures_in_4_Clefs.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:Positions of ♯ and ♭ in Key Signatures in 4 Clefs.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/Subbass%20clef%20with%20note.svg"></div>
-<div class="name">Subbass clef with note.svg</div>
-<div class="meta">Category: F clef</div>
-<div class="meta">License: Public domain</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Subbass_clef_with_note.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:Subbass clef with note.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/Subbass%20clef%20with%20ref.svg"></div>
-<div class="name">Subbass clef with ref.svg</div>
-<div class="meta">Category: F clef</div>
-<div class="meta">License: Public domain</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:Subbass_clef_with_ref.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:Subbass clef with ref.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/%D0%91%D0%B0%D1%80%D0%B8%D1%82%D0%BE%D0%BD%D0%BE%D0%B2%D1%8B%D0%B9%20%28%D0%B1%D0%B0%D1%81%29%20%D0%BA%D0%BB%D1%8E%D1%87.svg"></div>
-<div class="name">Баритоновый (бас) ключ.svg</div>
-<div class="meta">Category: F clef</div>
-<div class="meta">License: CC BY-SA 3.0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:%D0%91%D0%B0%D1%80%D0%B8%D1%82%D0%BE%D0%BD%D0%BE%D0%B2%D1%8B%D0%B9_(%D0%B1%D0%B0%D1%81)_%D0%BA%D0%BB%D1%8E%D1%87.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:Баритоновый (бас) ключ.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/%D0%91%D0%B0%D1%81%D0%BE%D0%B2%D1%8B%D0%B9%20%D0%BA%D0%BB%D1%8E%D1%87%2B8.svg"></div>
-<div class="name">Басовый ключ+8.svg</div>
-<div class="meta">Category: F clef</div>
-<div class="meta">License: CC BY-SA 3.0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:%D0%91%D0%B0%D1%81%D0%BE%D0%B2%D1%8B%D0%B9_%D0%BA%D0%BB%D1%8E%D1%87%2B8.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:Басовый ключ+8.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/%D0%91%D0%B0%D1%81%D0%BE%D0%B2%D1%8B%D0%B9%20%D0%BA%D0%BB%D1%8E%D1%87-8.svg"></div>
-<div class="name">Басовый ключ-8.svg</div>
-<div class="meta">Category: F clef</div>
-<div class="meta">License: CC BY-SA 3.0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:%D0%91%D0%B0%D1%81%D0%BE%D0%B2%D1%8B%D0%B9_%D0%BA%D0%BB%D1%8E%D1%87-8.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:Басовый ключ-8.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/%D0%91%D0%B0%D1%81%D0%BE%D0%B2%D1%8B%D0%B9%20%D0%BA%D0%BB%D1%8E%D1%87.svg"></div>
-<div class="name">Басовый ключ.svg</div>
-<div class="meta">Category: F clef</div>
-<div class="meta">License: CC BY-SA 3.0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:%D0%91%D0%B0%D1%81%D0%BE%D0%B2%D1%8B%D0%B9_%D0%BA%D0%BB%D1%8E%D1%87.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:Басовый ключ.svg"> мусор / не подходит</label>
-</div>
-<div class="card">
-<div class="preview"><img loading="lazy" src="Samples/Bass/%D0%91%D0%B0%D1%81%D0%BE%D0%BF%D1%80%D0%BE%D1%84%D1%83%D0%BD%D0%B4%D0%BE%D0%B2%D1%8B%D0%B9%20%D0%BA%D0%BB%D1%8E%D1%87.svg"></div>
-<div class="name">Басопрофундовый ключ.svg</div>
-<div class="meta">Category: F clef</div>
-<div class="meta">License: CC BY-SA 3.0</div>
-<div class="meta"><a href="https://commons.wikimedia.org/wiki/File:%D0%91%D0%B0%D1%81%D0%BE%D0%BF%D1%80%D0%BE%D1%84%D1%83%D0%BD%D0%B4%D0%BE%D0%B2%D1%8B%D0%B9_%D0%BA%D0%BB%D1%8E%D1%87.svg">Wikimedia source</a></div>
-<label><input class="bad" type="checkbox" data-id="Bass:Басопрофундовый ключ.svg"> мусор / не подходит</label>
 </div>
 </div>
 <script>
