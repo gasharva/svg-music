@@ -16,10 +16,12 @@ public readonly record struct RectD(double Left, double Top, double Right, doubl
 }
 
 /// <summary>
-/// Stable provenance captured while walking the retained SVG scene on step 2.
-/// Anchor is always populated: Svg.Skia source address/id when available, otherwise a deterministic
-/// scene-command path such as scene/picture[3]/path[17]. GroupAnchor identifies the nearest retained
-/// picture instance, which is normally the unit produced by an SVG &lt;use&gt; expansion.
+/// Stable provenance captured on step 2.
+/// Anchor points to the concrete source/render element that produced this contour.
+/// GroupAnchor is populated only when the contour is mapped to a real SVG &lt;use&gt; instance from
+/// SKSvg.SourceDocument (for example use:0/17). ReferenceAnchor is that instance's href (#f, #glyph42...).
+/// Un-grouped shapes deliberately keep GroupAnchor null; sharing a referenced source path is not the
+/// same thing as belonging to the same visual instance.
 /// </summary>
 public sealed record PrimitiveSourceRef(
     string Anchor,
@@ -27,7 +29,10 @@ public sealed record PrimitiveSourceRef(
     string? ElementType,
     string? ElementId,
     string? ElementAddress,
-    bool IsExplicitUse);
+    bool IsExplicitUse,
+    string? ReferenceAnchor = null,
+    double? InstanceX = null,
+    double? InstanceY = null);
 
 public sealed record RawPrimitive(
     int Id,
