@@ -15,11 +15,25 @@ public readonly record struct RectD(double Left, double Top, double Right, doubl
         Right >= left && Left <= right;
 }
 
+/// <summary>
+/// Stable provenance captured while walking the retained SVG scene on step 2.
+/// Anchor is always populated: Svg.Skia source address/id when available, otherwise a deterministic
+/// scene-command path such as scene/picture[3]/path[17]. GroupAnchor identifies the nearest retained
+/// picture instance, which is normally the unit produced by an SVG &lt;use&gt; expansion.
+/// </summary>
+public sealed record PrimitiveSourceRef(
+    string Anchor,
+    string? GroupAnchor,
+    string? ElementType,
+    string? ElementId,
+    string? ElementAddress,
+    bool IsExplicitUse);
+
 public sealed record RawPrimitive(
     int Id,
     RectD Bounds,
     PrimitiveContour Contour,
-    string? SourceUseKey = null);
+    PrimitiveSourceRef Source);
 
 /// <summary>
 /// One visual staff inside one measure: e.g. P2-M5.
