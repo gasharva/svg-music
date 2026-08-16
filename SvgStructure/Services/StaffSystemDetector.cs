@@ -9,7 +9,12 @@ public sealed class StaffSystemDetector
     private const double MinStaffLineWidthFraction = 0.35;
     private const double CoordinateToleranceFraction = 0.001;
     private const double StaffSpacingTolerance = 0.30;
-    private const double MaxGapBetweenStaffsInSystemFraction = 0.09;
+
+    // A grand-staff pair is normally noticeably tighter than the vertical gap to the next system.
+    // Keep this page-relative: ~5% of page height separates the two staves in our supported layouts,
+    // while system-to-system gaps are larger. 0.09 was too permissive and merged several systems
+    // into one giant group, after which no barline could span the whole thing.
+    private const double MaxGapBetweenStaffsInSystemFraction = 0.05;
 
     public IReadOnlyList<StaffSystem> Detect(IReadOnlyList<LineSegment> lines, RectD pageBounds)
     {
