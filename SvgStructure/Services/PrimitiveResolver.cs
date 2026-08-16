@@ -30,7 +30,18 @@ public sealed class PrimitiveResolver
         SplitContours(workingModel);
 
         var raw = new List<RawPrimitive>();
-        CollectPrimitives(workingModel, Shim.SKMatrix.Identity, raw);
+        CollectPrimitives(workingModel, Shim.SKMatrix.Identity, raw, currentUseKey: null);
+
+        // Keep the complete geometry of every <use> before staff-line/garbage filtering. If one
+        // surviving primitive belongs to a use, diagnostics can export that use exactly once with
+        // all of its contours rather than exporting an arbitrary contour fragment.
+        var sourceUseContours = raw
+            .Where(x => !string.IsNullOrWhiteSpace(x.SourceUseKey))
+            .GroupBy(x => x.SourceUseKey!, StringComparer.Ordinal)
+            .ToDictionary(
+                x => x.Key,
+                x => (IReadOnlyList<PrimitiveContour>)x.Select(p => p.Contour).ToArray(),
+                StringComparer.Ordinal);
 
         var regions = structure.Map.Blocks
             .Select(x => new StaffMeasureRegion(
@@ -45,7 +56,7 @@ public sealed class PrimitiveResolver
         var claims = _classifier.Classify(cleanup.Primitives, regions, structure.Map.PageBounds);
 
         var resolved = cleanup.Primitives
-            .Select(primitive => ResolvePrimitive(primitive, structure, claims))
+            .Select(primitive => ResolvePrimitive(primitive, structure, claims, sourceUseContours))
             .ToArray();
 
         return new PrimitiveResolution(structure, resolved);
@@ -54,14 +65,21 @@ public sealed class PrimitiveResolver
     private static ResolvedPrimitive ResolvePrimitive(
         RawPrimitive primitive,
         PartMeasureResolution structure,
-        IReadOnlyDictionary<int, HashSet<StaffMeasureKey>> claims)
+        IReadOnlyDictionary<int, HashSet<StaffMeasureKey>> claims,
+        IReadOnlyDictionary<string, IReadOnlyList<PrimitiveContour>> sourceUseContours)
     {
+        var allUseContours = primitive.SourceUseKey is not null &&
+                             sourceUseContours.TryGetValue(primitive.SourceUseKey, out var useContours)
+            ? useContours
+            : null;
+
         if (claims.TryGetValue(primitive.Id, out var keys) && keys.Count == 1)
         {
             var key = keys.Single();
             return new ResolvedPrimitive(
                 primitive.Id, primitive.Bounds, primitive.Contour,
-                PrimitiveLogicalScope.PartMeasure, key.PartIndex + 1, key.MeasureNumber);
+                PrimitiveLogicalScope.PartMeasure, key.PartIndex + 1, key.MeasureNumber,
+                primitive.SourceUseKey, allUseContours);
         }
 
         var measureNumber = ResolveNearestMeasure(primitive.Bounds, structure.Map);
@@ -69,12 +87,14 @@ public sealed class PrimitiveResolver
         {
             return new ResolvedPrimitive(
                 primitive.Id, primitive.Bounds, primitive.Contour,
-                PrimitiveLogicalScope.Measure, null, measureNumber);
+                PrimitiveLogicalScope.Measure, null, measureNumber,
+                primitive.SourceUseKey, allUseContours);
         }
 
         return new ResolvedPrimitive(
             primitive.Id, primitive.Bounds, primitive.Contour,
-            PrimitiveLogicalScope.PhysicalOnly, null, null);
+            PrimitiveLogicalScope.PhysicalOnly, null, null,
+            primitive.SourceUseKey, allUseContours);
     }
 
     private static int? ResolveNearestMeasure(RectD bounds, PartMeasureMap map)
@@ -139,7 +159,8 @@ public sealed class PrimitiveResolver
     private void CollectPrimitives(
         Shim.SKPicture picture,
         Shim.SKMatrix parentMatrix,
-        ICollection<RawPrimitive> primitives)
+        ICollection<RawPrimitive> primitives,
+        string? currentUseKey)
     {
         if (picture.Commands is null) return;
         var matrix = parentMatrix;
@@ -164,16 +185,38 @@ public sealed class PrimitiveResolver
                     var mappedBounds = matrix.MapRect(drawPath.Path.Bounds);
                     var points = _contourExtractor.Extract(drawPath.Path, matrix);
                     if (points.Count < 2) break;
+                    var sourceUseKey = currentUseKey ?? GetUseKey(drawPath);
                     primitives.Add(new RawPrimitive(
                         primitives.Count,
                         new RectD(mappedBounds.Left, mappedBounds.Top, mappedBounds.Right, mappedBounds.Bottom),
-                        new PrimitiveContour(points)));
+                        new PrimitiveContour(points),
+                        sourceUseKey));
                     break;
                 }
                 case Shim.DrawPictureCanvasCommand drawPicture when drawPicture.Picture is not null:
-                    CollectPrimitives(drawPicture.Picture, matrix, primitives);
+                {
+                    var nestedUseKey = GetUseKey(drawPicture) ?? currentUseKey;
+                    CollectPrimitives(drawPicture.Picture, matrix, primitives, nestedUseKey);
                     break;
+                }
             }
         }
+    }
+
+    private static string? GetUseKey(Shim.CanvasCommand command)
+    {
+        var typeName = command.SourceElementTypeName;
+        var address = command.SourceElementAddress;
+        var isUse = string.Equals(typeName, "use", StringComparison.OrdinalIgnoreCase) ||
+                    (!string.IsNullOrWhiteSpace(address) &&
+                     address.Contains("use", StringComparison.OrdinalIgnoreCase));
+        if (!isUse)
+            return null;
+
+        if (!string.IsNullOrWhiteSpace(address))
+            return address;
+        if (!string.IsNullOrWhiteSpace(command.SourceElementId))
+            return "use#" + command.SourceElementId;
+        return null;
     }
 }
