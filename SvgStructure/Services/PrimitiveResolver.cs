@@ -30,14 +30,22 @@ public sealed class PrimitiveResolver
         SplitContours(workingModel);
 
         var raw = new List<RawPrimitive>();
-        CollectPrimitives(workingModel, Shim.SKMatrix.Identity, raw, currentUseKey: null);
+        CollectPrimitives(
+            workingModel,
+            Shim.SKMatrix.Identity,
+            raw,
+            scenePath: "scene",
+            currentGroupAnchor: null,
+            inheritedExplicitUse: false);
 
-        // Keep the complete geometry of every <use> before staff-line/garbage filtering. If one
-        // surviving primitive belongs to a use, diagnostics can export that use exactly once with
-        // all of its contours rather than exporting an arbitrary contour fragment.
-        var sourceUseContours = raw
-            .Where(x => !string.IsNullOrWhiteSpace(x.SourceUseKey))
-            .GroupBy(x => x.SourceUseKey!, StringComparer.Ordinal)
+        // Capture complete geometry for every retained picture/source group before any filtering.
+        // Svg.Skia frequently expands an SVG <use> into a DrawPicture whose children are DrawPath
+        // commands and no longer labels those child paths as "use". Grouping by the nearest picture
+        // instance therefore preserves the original glyph instance even when the explicit <use>
+        // marker was lost during SVG parsing.
+        var sourceGroupContours = raw
+            .Where(x => !string.IsNullOrWhiteSpace(x.Source.GroupAnchor))
+            .GroupBy(x => x.Source.GroupAnchor!, StringComparer.Ordinal)
             .ToDictionary(
                 x => x.Key,
                 x => (IReadOnlyList<PrimitiveContour>)x.Select(p => p.Contour).ToArray(),
@@ -56,7 +64,7 @@ public sealed class PrimitiveResolver
         var claims = _classifier.Classify(cleanup.Primitives, regions, structure.Map.PageBounds);
 
         var resolved = cleanup.Primitives
-            .Select(primitive => ResolvePrimitive(primitive, structure, claims, sourceUseContours))
+            .Select(primitive => ResolvePrimitive(primitive, structure, claims, sourceGroupContours))
             .ToArray();
 
         return new PrimitiveResolution(structure, resolved);
@@ -66,11 +74,11 @@ public sealed class PrimitiveResolver
         RawPrimitive primitive,
         PartMeasureResolution structure,
         IReadOnlyDictionary<int, HashSet<StaffMeasureKey>> claims,
-        IReadOnlyDictionary<string, IReadOnlyList<PrimitiveContour>> sourceUseContours)
+        IReadOnlyDictionary<string, IReadOnlyList<PrimitiveContour>> sourceGroupContours)
     {
-        var allUseContours = primitive.SourceUseKey is not null &&
-                             sourceUseContours.TryGetValue(primitive.SourceUseKey, out var useContours)
-            ? useContours
+        var allGroupContours = primitive.Source.GroupAnchor is not null &&
+                               sourceGroupContours.TryGetValue(primitive.Source.GroupAnchor, out var groupContours)
+            ? groupContours
             : null;
 
         if (claims.TryGetValue(primitive.Id, out var keys) && keys.Count == 1)
@@ -79,7 +87,7 @@ public sealed class PrimitiveResolver
             return new ResolvedPrimitive(
                 primitive.Id, primitive.Bounds, primitive.Contour,
                 PrimitiveLogicalScope.PartMeasure, key.PartIndex + 1, key.MeasureNumber,
-                primitive.SourceUseKey, allUseContours);
+                primitive.Source, allGroupContours);
         }
 
         var measureNumber = ResolveNearestMeasure(primitive.Bounds, structure.Map);
@@ -88,13 +96,13 @@ public sealed class PrimitiveResolver
             return new ResolvedPrimitive(
                 primitive.Id, primitive.Bounds, primitive.Contour,
                 PrimitiveLogicalScope.Measure, null, measureNumber,
-                primitive.SourceUseKey, allUseContours);
+                primitive.Source, allGroupContours);
         }
 
         return new ResolvedPrimitive(
             primitive.Id, primitive.Bounds, primitive.Contour,
             PrimitiveLogicalScope.PhysicalOnly, null, null,
-            primitive.SourceUseKey, allUseContours);
+            primitive.Source, allGroupContours);
     }
 
     private static int? ResolveNearestMeasure(RectD bounds, PartMeasureMap map)
@@ -160,14 +168,19 @@ public sealed class PrimitiveResolver
         Shim.SKPicture picture,
         Shim.SKMatrix parentMatrix,
         ICollection<RawPrimitive> primitives,
-        string? currentUseKey)
+        string scenePath,
+        string? currentGroupAnchor,
+        bool inheritedExplicitUse)
     {
         if (picture.Commands is null) return;
         var matrix = parentMatrix;
         var stack = new Stack<Shim.SKMatrix>();
 
-        foreach (var command in picture.Commands)
+        for (var commandIndex = 0; commandIndex < picture.Commands.Count; commandIndex++)
         {
+            var command = picture.Commands[commandIndex];
+            var commandPath = $"{scenePath}/command[{commandIndex}]";
+
             switch (command)
             {
                 case Shim.SaveCanvasCommand:
@@ -185,38 +198,58 @@ public sealed class PrimitiveResolver
                     var mappedBounds = matrix.MapRect(drawPath.Path.Bounds);
                     var points = _contourExtractor.Extract(drawPath.Path, matrix);
                     if (points.Count < 2) break;
-                    var sourceUseKey = currentUseKey ?? GetUseKey(drawPath);
+
+                    var anchor = SourceAnchor(drawPath, commandPath + "/path");
+                    var explicitUse = inheritedExplicitUse || IsExplicitUse(drawPath);
+                    var source = new PrimitiveSourceRef(
+                        anchor,
+                        currentGroupAnchor,
+                        drawPath.SourceElementTypeName,
+                        drawPath.SourceElementId,
+                        drawPath.SourceElementAddress,
+                        explicitUse);
+
                     primitives.Add(new RawPrimitive(
                         primitives.Count,
                         new RectD(mappedBounds.Left, mappedBounds.Top, mappedBounds.Right, mappedBounds.Bottom),
                         new PrimitiveContour(points),
-                        sourceUseKey));
+                        source));
                     break;
                 }
                 case Shim.DrawPictureCanvasCommand drawPicture when drawPicture.Picture is not null:
                 {
-                    var nestedUseKey = GetUseKey(drawPicture) ?? currentUseKey;
-                    CollectPrimitives(drawPicture.Picture, matrix, primitives, nestedUseKey);
+                    // A retained picture is the strongest surviving instance boundary in Svg.Skia.
+                    // Prefer the original XML-ish address/id when exposed; otherwise the deterministic
+                    // scene path remains a stable anchor for this exact SVG and parser version.
+                    var pictureAnchor = SourceAnchor(drawPicture, commandPath + "/picture");
+                    var explicitUse = inheritedExplicitUse || IsExplicitUse(drawPicture);
+                    CollectPrimitives(
+                        drawPicture.Picture,
+                        matrix,
+                        primitives,
+                        scenePath: pictureAnchor,
+                        currentGroupAnchor: pictureAnchor,
+                        inheritedExplicitUse: explicitUse);
                     break;
                 }
             }
         }
     }
 
-    private static string? GetUseKey(Shim.CanvasCommand command)
+    private static string SourceAnchor(Shim.CanvasCommand command, string fallback)
     {
-        var typeName = command.SourceElementTypeName;
-        var address = command.SourceElementAddress;
-        var isUse = string.Equals(typeName, "use", StringComparison.OrdinalIgnoreCase) ||
-                    (!string.IsNullOrWhiteSpace(address) &&
-                     address.Contains("use", StringComparison.OrdinalIgnoreCase));
-        if (!isUse)
-            return null;
-
-        if (!string.IsNullOrWhiteSpace(address))
-            return address;
+        if (!string.IsNullOrWhiteSpace(command.SourceElementAddress))
+            return "xml:" + command.SourceElementAddress;
         if (!string.IsNullOrWhiteSpace(command.SourceElementId))
-            return "use#" + command.SourceElementId;
-        return null;
+            return "id:" + command.SourceElementId;
+        return fallback;
+    }
+
+    private static bool IsExplicitUse(Shim.CanvasCommand command)
+    {
+        if (string.Equals(command.SourceElementTypeName, "use", StringComparison.OrdinalIgnoreCase))
+            return true;
+        return !string.IsNullOrWhiteSpace(command.SourceElementAddress) &&
+               command.SourceElementAddress.Contains("use", StringComparison.OrdinalIgnoreCase);
     }
 }
