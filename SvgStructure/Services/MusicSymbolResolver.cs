@@ -20,7 +20,7 @@ namespace SvgStructure.Services;
 public sealed class MusicSymbolResolver
 {
     private const double PolygonScale = 10000.0;
-    private const double InkAreaEpsilon = 1e-5;
+    private const double InkOverlapRatioThreshold = 0.01;
 
     public MusicSymbolResolution Resolve(PrimitiveResolution primitives)
     {
@@ -150,7 +150,7 @@ public sealed class MusicSymbolResolver
                     !HasPositiveAreaOverlap(members[i].PhysicalBounds, members[j].PhysicalBounds))
                     continue;
 
-                if (!HasPositiveInkOverlap(paths[i]!, paths[j]!))
+                if (!HasSignificantInkOverlap(paths[i]!, paths[j]!))
                     continue;
 
                 adjacency[i].Add(j);
@@ -204,8 +204,14 @@ public sealed class MusicSymbolResolver
         return path;
     }
 
-    private static bool HasPositiveInkOverlap(Path64 a, Path64 b)
+    private static bool HasSignificantInkOverlap(Path64 a, Path64 b)
     {
+        var areaA = Math.Abs(Clipper.Area(a));
+        var areaB = Math.Abs(Clipper.Area(b));
+        var smallerArea = Math.Min(areaA, areaB);
+        if (smallerArea <= 0)
+            return false;
+
         var intersection = Clipper.Intersect(
             new Paths64 { a },
             new Paths64 { b },
@@ -213,9 +219,9 @@ public sealed class MusicSymbolResolver
         if (intersection.Count == 0)
             return false;
 
-        var scaledArea = Math.Abs(Clipper.Area(intersection));
-        var area = scaledArea / (PolygonScale * PolygonScale);
-        return area > InkAreaEpsilon;
+        var intersectionArea = Math.Abs(Clipper.Area(intersection));
+        var overlapRatio = intersectionArea / smallerArea;
+        return overlapRatio > InkOverlapRatioThreshold;
     }
 
     private static IEnumerable<SmoothSvgPath> ResolveSmoothPaths(SKSvg svg, ResolvedPrimitive primitive)
@@ -233,10 +239,6 @@ public sealed class MusicSymbolResolver
         foreach (var node in DescendantsAndSelf(root))
         {
             var sourceAddress = node.ElementAddressKey ?? address;
-
-            // Important: node.Element may be a compiled/derived scene element whose PathData has already
-            // been flattened to line segments. Resolve the element again from SvgSceneDocument.SourceDocument
-            // by its stable address so we read the original SVG path commands (C/Q/A etc.).
             object? sourceElement = node.Element;
             if (scene.TryGetElement(sourceAddress, out var originalElement) && originalElement is not null)
                 sourceElement = originalElement;
