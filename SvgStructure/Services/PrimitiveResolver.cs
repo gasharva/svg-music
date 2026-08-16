@@ -13,11 +13,11 @@ public sealed class PrimitiveResolver
     private readonly GarbageCleaner _garbageCleaner = new();
     private readonly StaffLinePrimitiveDetector _staffLineDetector = new();
 
-    public PrimitiveResolver(double proximityPercentOfMeasureHeight = 0.25)
+    public PrimitiveResolver(double proximityInStaffSpaces = 2.0)
     {
         _classifier = new CompetitivePrimitiveClassifier
         {
-            ProximityPercentOfMeasureHeight = proximityPercentOfMeasureHeight
+            ProximityInStaffSpaces = proximityInStaffSpaces
         };
     }
 
@@ -44,9 +44,12 @@ public sealed class PrimitiveResolver
 
         // Group geometry only by a real <use> instance. Never fall back to SourceElementAddress:
         // several visual instances can legitimately share the same referenced source element.
-        var sourceGroupContours = raw
+        var groupedByUse = raw
             .Where(x => !string.IsNullOrWhiteSpace(x.Source.GroupAnchor))
             .GroupBy(x => x.Source.GroupAnchor!, StringComparer.Ordinal)
+            .ToArray();
+
+        var sourceGroupContours = groupedByUse
             .ToDictionary(
                 x => x.Key,
                 x => (IReadOnlyList<PrimitiveContour>)x.Select(p => p.Contour).ToArray(),
@@ -60,7 +63,11 @@ public sealed class PrimitiveResolver
             .ToArray();
 
         var staffLineIds = _staffLineDetector.Detect(raw, regions);
-        var content = raw.Where(x => !staffLineIds.Contains(x.Id)).ToArray();
+
+        var content = raw
+            .Where(x => !staffLineIds.Contains(x.Id))
+            .ToArray();
+
         var cleanup = _garbageCleaner.Clean(content, regions);
         var claims = _classifier.Classify(cleanup.Primitives, regions, structure.Map.PageBounds);
 
@@ -110,34 +117,63 @@ public sealed class PrimitiveResolver
 
     private static int? ResolveNearestMeasure(RectD bounds, PartMeasureMap map)
     {
-        if (map.Blocks.Count == 0) return null;
-        var measureBounds = map.Blocks.GroupBy(x => x.MeasureNumber).Select(group => new
-        {
-            MeasureNumber = group.Key,
-            Bounds = new RectD(
-                group.Min(x => x.PhysicalBounds.Left), group.Min(x => x.PhysicalBounds.Top),
-                group.Max(x => x.PhysicalBounds.Right), group.Max(x => x.PhysicalBounds.Bottom))
-        }).ToArray();
+        if (map.Blocks.Count == 0)
+            return null;
 
-        var horizontal = measureBounds
+        var measureGroups = map.Blocks
+            .GroupBy(x => x.MeasureNumber)
+            .ToArray();
+
+        var measureBounds = measureGroups
+            .Select(group => new
+            {
+                MeasureNumber = group.Key,
+                Bounds = new RectD(
+                    group.Min(x => x.PhysicalBounds.Left),
+                    group.Min(x => x.PhysicalBounds.Top),
+                    group.Max(x => x.PhysicalBounds.Right),
+                    group.Max(x => x.PhysicalBounds.Bottom))
+            })
+            .ToArray();
+
+        var horizontallyContaining = measureBounds
             .Where(x => bounds.CenterX >= x.Bounds.Left && bounds.CenterX <= x.Bounds.Right)
             .ToArray();
-        var candidates = horizontal.Length > 0 ? horizontal : measureBounds;
-        return candidates.OrderBy(x => RectangleDistance(bounds, x.Bounds))
+
+        var candidates = horizontallyContaining.Length > 0
+            ? horizontallyContaining
+            : measureBounds;
+
+        var nearest = candidates
+            .OrderBy(x => RectangleDistance(bounds, x.Bounds))
             .ThenBy(x => Math.Abs(bounds.CenterX - x.Bounds.CenterX))
-            .Select(x => (int?)x.MeasureNumber).FirstOrDefault();
+            .FirstOrDefault();
+
+        return nearest?.MeasureNumber;
     }
 
     private static double RectangleDistance(RectD a, RectD b)
     {
-        var dx = a.Right < b.Left ? b.Left - a.Right : b.Right < a.Left ? a.Left - b.Right : 0;
-        var dy = a.Bottom < b.Top ? b.Top - a.Bottom : b.Bottom < a.Top ? a.Top - b.Bottom : 0;
+        var dx = a.Right < b.Left
+            ? b.Left - a.Right
+            : b.Right < a.Left
+                ? a.Left - b.Right
+                : 0;
+
+        var dy = a.Bottom < b.Top
+            ? b.Top - a.Bottom
+            : b.Bottom < a.Top
+                ? a.Top - b.Bottom
+                : 0;
+
         return Math.Sqrt(dx * dx + dy * dy);
     }
 
     private void SplitContours(Shim.SKPicture picture)
     {
-        if (picture.Commands is null) return;
+        if (picture.Commands is null)
+            return;
+
         var rebuilt = new List<Shim.CanvasCommand>();
         foreach (var command in picture.Commands)
         {
@@ -154,17 +190,21 @@ public sealed class PrimitiveResolver
                         });
                     }
                     break;
+
                 case Shim.DrawPictureCanvasCommand drawPicture when drawPicture.Picture is not null:
                     SplitContours(drawPicture.Picture);
                     rebuilt.Add(command);
                     break;
+
                 default:
                     rebuilt.Add(command);
                     break;
             }
         }
+
         picture.Commands.Clear();
-        foreach (var command in rebuilt) picture.Commands.Add(command);
+        foreach (var command in rebuilt)
+            picture.Commands.Add(command);
     }
 
     private void CollectPrimitives(
@@ -173,7 +213,9 @@ public sealed class PrimitiveResolver
         ICollection<RawPrimitive> primitives,
         string scenePath)
     {
-        if (picture.Commands is null) return;
+        if (picture.Commands is null)
+            return;
+
         var matrix = parentMatrix;
         var stack = new Stack<Shim.SKMatrix>();
 
@@ -188,17 +230,22 @@ public sealed class PrimitiveResolver
                 case Shim.SaveLayerCanvasCommand:
                     stack.Push(matrix);
                     break;
+
                 case Shim.RestoreCanvasCommand:
-                    if (stack.Count > 0) matrix = stack.Pop();
+                    if (stack.Count > 0)
+                        matrix = stack.Pop();
                     break;
+
                 case Shim.SetMatrixCanvasCommand setMatrix:
                     matrix = parentMatrix.PreConcat(setMatrix.TotalMatrix);
                     break;
+
                 case Shim.DrawPathCanvasCommand drawPath when drawPath.Path is not null:
                 {
                     var mappedBounds = matrix.MapRect(drawPath.Path.Bounds);
                     var points = _contourExtractor.Extract(drawPath.Path, matrix);
-                    if (points.Count < 2) break;
+                    if (points.Count < 2)
+                        break;
 
                     var source = new PrimitiveSourceRef(
                         SourceAnchor(drawPath, commandPath + "/path"),
@@ -215,6 +262,7 @@ public sealed class PrimitiveResolver
                         source));
                     break;
                 }
+
                 case Shim.DrawPictureCanvasCommand drawPicture when drawPicture.Picture is not null:
                 {
                     var pictureAnchor = SourceAnchor(drawPicture, commandPath + "/picture");
@@ -233,8 +281,10 @@ public sealed class PrimitiveResolver
     {
         if (!string.IsNullOrWhiteSpace(command.SourceElementAddress))
             return "xml:" + command.SourceElementAddress;
+
         if (!string.IsNullOrWhiteSpace(command.SourceElementId))
             return "id:" + command.SourceElementId;
+
         return fallback;
     }
 }
