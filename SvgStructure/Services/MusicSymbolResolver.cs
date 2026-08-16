@@ -1,4 +1,5 @@
 using System.Reflection;
+using Clipper2Lib;
 using Svg.Skia;
 using SvgStructure.Models;
 using Shim = ShimSkiaSharp;
@@ -10,22 +11,29 @@ namespace SvgStructure.Services;
 /// PrimitiveResolver geometry is used only as a spatial grouping scaffold. Smooth recognition
 /// geometry comes from Svg.Skia's retained scene graph, which already contains the complete SVG
 /// transform chain and keeps the original Bezier PathData on its source elements.
+///
+/// The broad bbox grouping is intentionally preserved. If such a group contains several disconnected
+/// ink components, additional child candidates are emitted. Children keep ParentCandidateId so a
+/// confidently recognized parent can suppress them later.
 /// </summary>
 public sealed class MusicSymbolResolver
 {
+    private const double PolygonScale = 10000.0;
+    private const double InkAreaEpsilon = 1e-5;
+
     public MusicSymbolResolution Resolve(PrimitiveResolution primitives)
     {
         using var svg = SKSvg.CreateFromFile(primitives.Structure.SvgPath);
         _ = svg.RetainedSceneGraph; // force compilation once; subsequent lookups are cached by Svg.Skia
-
-        var candidates = new List<MusicSymbolCandidate>();
-        var nextId = 0;
 
         var usable = primitives.Primitives
             .Where(x => x.Scope is PrimitiveLogicalScope.PartMeasure or PrimitiveLogicalScope.Measure)
             .Where(x => x.MeasureNumber is not null)
             .ToArray();
 
+        // First build only the existing broad bbox candidates. Keep their member primitives around;
+        // after reading-order sorting we can assign stable ids and derive children from them.
+        var roots = new List<RootDraft>();
         foreach (var bucket in usable
                      .GroupBy(x => new BucketKey(x.Scope, x.PartNumber, x.MeasureNumber!.Value))
                      .OrderBy(x => x.Key.MeasureNumber)
@@ -51,39 +59,172 @@ public sealed class MusicSymbolResolver
                     remaining.RemoveAt(i);
                 }
 
-                var bounds = Union(members.Select(x => x.PhysicalBounds));
-                var sources = members
-                    .Select(x => x.Source)
-                    .DistinctBy(SourceIdentity, StringComparer.Ordinal)
-                    .ToArray();
-
-                var smoothPaths = members
-                    .SelectMany(member => ResolveSmoothPaths(svg, member))
-                    .DistinctBy(x => $"{x.SourceAddress}\n{x.PathData}\n{x.Transform}", StringComparer.Ordinal)
-                    .ToArray();
-
-                candidates.Add(new MusicSymbolCandidate(
-                    nextId++,
-                    bucket.Key.Scope,
-                    bucket.Key.PartNumber,
-                    bucket.Key.MeasureNumber,
-                    bounds,
-                    members.Select(x => x.Id).OrderBy(x => x).ToArray(),
-                    members.Select(x => x.PhysicalBounds).ToArray(),
-                    sources,
-                    smoothPaths));
+                roots.Add(new RootDraft(bucket.Key, members));
             }
         }
 
-        var ordered = candidates
-            .OrderBy(x => x.MeasureNumber)
-            .ThenBy(x => x.PartNumber ?? int.MaxValue)
-            .ThenBy(x => x.PhysicalBounds.Left)
-            .ThenBy(x => x.PhysicalBounds.Top)
-            .Select((x, i) => x with { Id = i })
+        var orderedRoots = roots
+            .OrderBy(x => x.Key.MeasureNumber)
+            .ThenBy(x => x.Key.PartNumber ?? int.MaxValue)
+            .ThenBy(x => Union(x.Members.Select(m => m.PhysicalBounds)).Left)
+            .ThenBy(x => Union(x.Members.Select(m => m.PhysicalBounds)).Top)
             .ToArray();
 
-        return new MusicSymbolResolution(primitives, ordered);
+        var result = new List<MusicSymbolCandidate>();
+        var nextId = 0;
+
+        foreach (var root in orderedRoots)
+        {
+            var parent = BuildCandidate(svg, nextId++, root.Key, root.Members, parentCandidateId: null);
+            result.Add(parent);
+
+            var components = SplitByInkConnectivity(root.Members);
+            if (components.Count <= 1)
+                continue;
+
+            // Preserve the original bbox candidate and add each ink-connected component as an
+            // alternative interpretation. Even one-primitive components are useful (e.g. touching
+            // noteheads whose bboxes overlap but whose filled areas do not).
+            foreach (var component in components
+                         .OrderBy(x => Union(x.Select(m => m.PhysicalBounds)).Left)
+                         .ThenBy(x => Union(x.Select(m => m.PhysicalBounds)).Top))
+            {
+                result.Add(BuildCandidate(
+                    svg,
+                    nextId++,
+                    root.Key,
+                    component,
+                    parentCandidateId: parent.Id));
+            }
+        }
+
+        return new MusicSymbolResolution(primitives, result);
+    }
+
+    private static MusicSymbolCandidate BuildCandidate(
+        SKSvg svg,
+        int id,
+        BucketKey key,
+        IReadOnlyList<ResolvedPrimitive> members,
+        int? parentCandidateId)
+    {
+        var bounds = Union(members.Select(x => x.PhysicalBounds));
+        var sources = members
+            .Select(x => x.Source)
+            .DistinctBy(SourceIdentity, StringComparer.Ordinal)
+            .ToArray();
+
+        var smoothPaths = members
+            .SelectMany(member => ResolveSmoothPaths(svg, member))
+            .DistinctBy(x => $"{x.SourceAddress}\n{x.PathData}\n{x.Transform}", StringComparer.Ordinal)
+            .ToArray();
+
+        return new MusicSymbolCandidate(
+            id,
+            key.Scope,
+            key.PartNumber,
+            key.MeasureNumber,
+            bounds,
+            members.Select(x => x.Id).OrderBy(x => x).ToArray(),
+            members.Select(x => x.PhysicalBounds).ToArray(),
+            sources,
+            smoothPaths,
+            parentCandidateId);
+    }
+
+    /// <summary>
+    /// Builds a graph where two primitives are adjacent only when their actual filled polygon areas
+    /// overlap. Bounding-box overlap is used only as a cheap prefilter. Boundary touching gives zero
+    /// intersection area and therefore does not connect components.
+    /// </summary>
+    private static IReadOnlyList<IReadOnlyList<ResolvedPrimitive>> SplitByInkConnectivity(
+        IReadOnlyList<ResolvedPrimitive> members)
+    {
+        if (members.Count <= 1)
+            return new[] { members };
+
+        var paths = members.Select(x => ToClipperPath(x.Contour)).ToArray();
+        var adjacency = Enumerable.Range(0, members.Count)
+            .Select(_ => new List<int>())
+            .ToArray();
+
+        for (var i = 0; i < members.Count; i++)
+        {
+            if (paths[i] is null)
+                continue;
+
+            for (var j = i + 1; j < members.Count; j++)
+            {
+                if (paths[j] is null ||
+                    !HasPositiveAreaOverlap(members[i].PhysicalBounds, members[j].PhysicalBounds))
+                    continue;
+
+                if (!HasPositiveInkOverlap(paths[i]!, paths[j]!))
+                    continue;
+
+                adjacency[i].Add(j);
+                adjacency[j].Add(i);
+            }
+        }
+
+        var visited = new bool[members.Count];
+        var components = new List<IReadOnlyList<ResolvedPrimitive>>();
+        for (var start = 0; start < members.Count; start++)
+        {
+            if (visited[start])
+                continue;
+
+            var queue = new Queue<int>();
+            var component = new List<ResolvedPrimitive>();
+            visited[start] = true;
+            queue.Enqueue(start);
+
+            while (queue.Count > 0)
+            {
+                var current = queue.Dequeue();
+                component.Add(members[current]);
+                foreach (var next in adjacency[current])
+                {
+                    if (visited[next])
+                        continue;
+                    visited[next] = true;
+                    queue.Enqueue(next);
+                }
+            }
+
+            components.Add(component);
+        }
+
+        return components;
+    }
+
+    private static Path64? ToClipperPath(PrimitiveContour contour)
+    {
+        if (contour.Points.Count < 3)
+            return null;
+
+        var path = new Path64(contour.Points.Count);
+        foreach (var point in contour.Points)
+        {
+            path.Add(new Point64(
+                (long)Math.Round(point.X * PolygonScale),
+                (long)Math.Round(point.Y * PolygonScale)));
+        }
+        return path;
+    }
+
+    private static bool HasPositiveInkOverlap(Path64 a, Path64 b)
+    {
+        var intersection = Clipper.Intersect(
+            new Paths64 { a },
+            new Paths64 { b },
+            FillRule.EvenOdd);
+        if (intersection.Count == 0)
+            return false;
+
+        var scaledArea = Math.Abs(Clipper.Area(intersection));
+        var area = scaledArea / (PolygonScale * PolygonScale);
+        return area > InkAreaEpsilon;
     }
 
     private static IEnumerable<SmoothSvgPath> ResolveSmoothPaths(SKSvg svg, ResolvedPrimitive primitive)
@@ -196,4 +337,6 @@ public sealed class MusicSymbolResolver
         PrimitiveLogicalScope Scope,
         int? PartNumber,
         int MeasureNumber);
+
+    private sealed record RootDraft(BucketKey Key, IReadOnlyList<ResolvedPrimitive> Members);
 }
