@@ -8,6 +8,7 @@ public sealed class PrimitiveResolver
 {
     private readonly PathContourSplitter _contourSplitter = new();
     private readonly PrimitiveContourExtractor _contourExtractor = new();
+    private readonly SvgUseInstanceMapper _useInstanceMapper = new();
     private readonly CompetitivePrimitiveClassifier _classifier;
     private readonly GarbageCleaner _garbageCleaner = new();
     private readonly StaffLinePrimitiveDetector _staffLineDetector = new();
@@ -29,22 +30,23 @@ public sealed class PrimitiveResolver
         var workingModel = model.DeepClone();
         SplitContours(workingModel);
 
-        var raw = new List<RawPrimitive>();
+        var collected = new List<RawPrimitive>();
         CollectPrimitives(
             workingModel,
             Shim.SKMatrix.Identity,
-            raw,
-            scenePath: "scene",
-            currentGroupAnchor: null,
-            inheritedExplicitUse: false);
+            collected,
+            scenePath: "scene");
 
-        // Important: Svg.Skia usually preserves SourceElementAddress on DrawPath commands even when
-        // the retained scene no longer has a DrawPicture boundary for the original <use>/<path>.
-        // After SplitContours all contours from one original SVG element retain the same XML address.
-        // Therefore the effective source group is Source.GroupAnchor when a retained picture survived,
-        // otherwise the stable source Anchor itself. This is what lets a multi-contour glyph be rebuilt.
+        // The retained model is flattened and its SourceElementAddress normally points at the
+        // referenced definition, not at a concrete <use>. Reattach instance identity from the
+        // semantic SourceDocument before any filtering so all later steps keep true provenance.
+        var raw = _useInstanceMapper.Map(svg, collected).ToArray();
+
+        // Group geometry only by a real <use> instance. Never fall back to SourceElementAddress:
+        // several visual instances can legitimately share the same referenced source element.
         var sourceGroupContours = raw
-            .GroupBy(x => EffectiveGroupAnchor(x.Source), StringComparer.Ordinal)
+            .Where(x => !string.IsNullOrWhiteSpace(x.Source.GroupAnchor))
+            .GroupBy(x => x.Source.GroupAnchor!, StringComparer.Ordinal)
             .ToDictionary(
                 x => x.Key,
                 x => (IReadOnlyList<PrimitiveContour>)x.Select(p => p.Contour).ToArray(),
@@ -75,11 +77,12 @@ public sealed class PrimitiveResolver
         IReadOnlyDictionary<int, HashSet<StaffMeasureKey>> claims,
         IReadOnlyDictionary<string, IReadOnlyList<PrimitiveContour>> sourceGroupContours)
     {
-        var groupAnchor = EffectiveGroupAnchor(primitive.Source);
-        var allGroupContours = sourceGroupContours.TryGetValue(groupAnchor, out var groupContours)
-            ? groupContours
-            : null;
-        var source = primitive.Source with { GroupAnchor = groupAnchor };
+        IReadOnlyList<PrimitiveContour>? allGroupContours = null;
+        if (!string.IsNullOrWhiteSpace(primitive.Source.GroupAnchor) &&
+            sourceGroupContours.TryGetValue(primitive.Source.GroupAnchor!, out var groupContours))
+        {
+            allGroupContours = groupContours;
+        }
 
         if (claims.TryGetValue(primitive.Id, out var keys) && keys.Count == 1)
         {
@@ -87,7 +90,7 @@ public sealed class PrimitiveResolver
             return new ResolvedPrimitive(
                 primitive.Id, primitive.Bounds, primitive.Contour,
                 PrimitiveLogicalScope.PartMeasure, key.PartIndex + 1, key.MeasureNumber,
-                source, allGroupContours);
+                primitive.Source, allGroupContours);
         }
 
         var measureNumber = ResolveNearestMeasure(primitive.Bounds, structure.Map);
@@ -96,19 +99,14 @@ public sealed class PrimitiveResolver
             return new ResolvedPrimitive(
                 primitive.Id, primitive.Bounds, primitive.Contour,
                 PrimitiveLogicalScope.Measure, null, measureNumber,
-                source, allGroupContours);
+                primitive.Source, allGroupContours);
         }
 
         return new ResolvedPrimitive(
             primitive.Id, primitive.Bounds, primitive.Contour,
             PrimitiveLogicalScope.PhysicalOnly, null, null,
-            source, allGroupContours);
+            primitive.Source, allGroupContours);
     }
-
-    private static string EffectiveGroupAnchor(PrimitiveSourceRef source) =>
-        !string.IsNullOrWhiteSpace(source.GroupAnchor)
-            ? source.GroupAnchor!
-            : source.Anchor;
 
     private static int? ResolveNearestMeasure(RectD bounds, PartMeasureMap map)
     {
@@ -173,9 +171,7 @@ public sealed class PrimitiveResolver
         Shim.SKPicture picture,
         Shim.SKMatrix parentMatrix,
         ICollection<RawPrimitive> primitives,
-        string scenePath,
-        string? currentGroupAnchor,
-        bool inheritedExplicitUse)
+        string scenePath)
     {
         if (picture.Commands is null) return;
         var matrix = parentMatrix;
@@ -204,15 +200,13 @@ public sealed class PrimitiveResolver
                     var points = _contourExtractor.Extract(drawPath.Path, matrix);
                     if (points.Count < 2) break;
 
-                    var anchor = SourceAnchor(drawPath, commandPath + "/path");
-                    var explicitUse = inheritedExplicitUse || IsExplicitUse(drawPath);
                     var source = new PrimitiveSourceRef(
-                        anchor,
-                        currentGroupAnchor,
+                        SourceAnchor(drawPath, commandPath + "/path"),
+                        GroupAnchor: null,
                         drawPath.SourceElementTypeName,
                         drawPath.SourceElementId,
                         drawPath.SourceElementAddress,
-                        explicitUse);
+                        IsExplicitUse: false);
 
                     primitives.Add(new RawPrimitive(
                         primitives.Count,
@@ -224,14 +218,11 @@ public sealed class PrimitiveResolver
                 case Shim.DrawPictureCanvasCommand drawPicture when drawPicture.Picture is not null:
                 {
                     var pictureAnchor = SourceAnchor(drawPicture, commandPath + "/picture");
-                    var explicitUse = inheritedExplicitUse || IsExplicitUse(drawPicture);
                     CollectPrimitives(
                         drawPicture.Picture,
                         matrix,
                         primitives,
-                        scenePath: pictureAnchor,
-                        currentGroupAnchor: pictureAnchor,
-                        inheritedExplicitUse: explicitUse);
+                        scenePath: pictureAnchor);
                     break;
                 }
             }
@@ -245,13 +236,5 @@ public sealed class PrimitiveResolver
         if (!string.IsNullOrWhiteSpace(command.SourceElementId))
             return "id:" + command.SourceElementId;
         return fallback;
-    }
-
-    private static bool IsExplicitUse(Shim.CanvasCommand command)
-    {
-        if (string.Equals(command.SourceElementTypeName, "use", StringComparison.OrdinalIgnoreCase))
-            return true;
-        return !string.IsNullOrWhiteSpace(command.SourceElementAddress) &&
-               command.SourceElementAddress.Contains("use", StringComparison.OrdinalIgnoreCase);
     }
 }
