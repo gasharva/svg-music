@@ -14,6 +14,7 @@ public sealed class MeterOverlayRenderer
         IReadOnlyList<MeterResolution> meters,
         IReadOnlyList<ClefResolution> clefs,
         IReadOnlyList<LedgerLineResolution> ledgerLines,
+        IReadOnlyList<NoteHeadResolution> noteHeads,
         LogicalGridResolution logicalGrid,
         string outputPath)
     {
@@ -56,12 +57,73 @@ public sealed class MeterOverlayRenderer
         foreach (var ledger in ledgerLines)
             DrawLedgerLadder(canvas, ledger, logicalGrid);
 
+        foreach (var noteHead in noteHeads)
+        {
+            RedrawRegion(canvas, picture, noteHead.PhysicalBounds);
+            using var border = Border(SKColors.ForestGreen);
+            canvas.DrawOval(ToRect(noteHead.PhysicalBounds), border);
+        }
+
+        DrawFirstMeasureNoteSummaries(canvas, noteHeads, logicalGrid, bounds);
+
         Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
         using var image = SKImage.FromBitmap(bitmap);
         using var data = image.Encode(SKEncodedImageFormat.Png, 100);
         using var stream = File.Create(outputPath);
         data.SaveTo(stream);
         return outputPath;
+    }
+
+    private static void DrawFirstMeasureNoteSummaries(
+        SKCanvas canvas,
+        IReadOnlyList<NoteHeadResolution> noteHeads,
+        LogicalGridResolution logicalGrid,
+        SKRect page)
+    {
+        var firstMeasure = noteHeads
+            .Where(x => x.MeasureNumber == 1)
+            .GroupBy(x => x.PartNumber)
+            .OrderBy(x => x.Key)
+            .ToArray();
+
+        foreach (var partNotes in firstMeasure)
+        {
+            if (!logicalGrid.TryGetBlock(partNotes.Key, 1, out var block))
+                continue;
+
+            var ordered = partNotes
+                .OrderBy(x => x.LogicalBounds.Left ?? double.MinValue)
+                .ThenBy(x => x.LogicalBounds.Top)
+                .ToArray();
+
+            var labels = ordered
+                .Select(x => x.IsFilled
+                    ? x.Pitch.ToLowerInvariant()
+                    : x.Pitch.ToUpperInvariant())
+                .ToArray();
+
+            if (labels.Length == 0)
+                continue;
+
+            var text = string.Join(" ", labels);
+            var textSize = (float)Math.Clamp(block.PhysicalBounds.Height * 0.28, 7, 12);
+            var x = (float)Math.Max(page.Left + 2, block.PhysicalBounds.Left);
+            var preferredY = (float)(block.PhysicalBounds.Bottom + textSize + 4);
+            var y = Math.Min(page.Bottom - 2, preferredY);
+
+            using var paint = new SKPaint
+            {
+                Color = SKColors.ForestGreen,
+                TextSize = textSize,
+                Typeface = SKTypeface.Default,
+                IsAntialias = true
+            };
+
+            var textWidth = paint.MeasureText(text);
+            using var background = new SKPaint { Color = new SKColor(255, 255, 255, 232) };
+            canvas.DrawRect(new SKRect(x - 2, y - textSize - 2, x + textWidth + 2, y + 2), background);
+            canvas.DrawText(text, x, y, paint);
+        }
     }
 
     private static void DrawLedgerLadder(
