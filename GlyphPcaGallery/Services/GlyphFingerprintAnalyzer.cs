@@ -40,23 +40,70 @@ public sealed class GlyphFingerprintAnalyzer
             }).OrderBy(x => x.Distance).Take(5).ToArray();
 
             var d1 = classMatches[0].Distance;
-            var d2 = classMatches.Length > 1 ? classMatches[1].Distance : d1;
+            var d2 = classMatches.Length > 1 ? classMatches[1].Distance : double.PositiveInfinity;
             var margin = Math.Max(0, d2 - d1);
-            var relativeMargin = d2 > 1e-12 ? Math.Clamp(margin / d2, 0, 1) : 0;
-            var absoluteConfidence = AbsoluteConfidence(d1);
-            var confidence = Math.Sqrt(Math.Clamp(absoluteConfidence * relativeMargin, 0, 1));
+            var ratio = double.IsFinite(d2) && d2 > 1e-12 ? d1 / d2 : 0;
+
+            var classThreshold = GetClassThreshold(classMatches[0].Class);
+            var normalizedDistance = classThreshold > 1e-12
+                ? d1 / classThreshold
+                : double.PositiveInfinity;
+
+            var ratioThreshold = _model.Calibration.RatioThreshold > 1e-12
+                ? _model.Calibration.RatioThreshold
+                : 0.50;
+
+            var absoluteRisk = normalizedDistance;
+            var relativeRisk = ratio / ratioThreshold;
+            var risk = Math.Max(absoluteRisk, relativeRisk);
+            var accepted = risk <= 1.0;
 
             sw.Stop();
-            return new GlyphAnalysis(fileName, assetName, classMatches, confidence, d1, margin,
-                relativeMargin, absoluteConfidence,
+            return new GlyphAnalysis(
+                fileName,
+                assetName,
+                classMatches,
+                d1,
+                d2,
+                margin,
+                ratio,
+                classThreshold,
+                normalizedDistance,
+                ratioThreshold,
+                risk,
+                accepted,
                 sw.ElapsedTicks * 1_000_000L / Stopwatch.Frequency);
         }
         catch (Exception ex)
         {
             sw.Stop();
-            return new GlyphAnalysis(fileName, assetName, [], 0, double.PositiveInfinity, 0, 0, 0,
-                sw.ElapsedTicks * 1_000_000L / Stopwatch.Frequency, ex.Message);
+            return new GlyphAnalysis(
+                fileName,
+                assetName,
+                [],
+                double.PositiveInfinity,
+                double.PositiveInfinity,
+                0,
+                double.PositiveInfinity,
+                0,
+                double.PositiveInfinity,
+                _model.Calibration.RatioThreshold,
+                double.PositiveInfinity,
+                false,
+                sw.ElapsedTicks * 1_000_000L / Stopwatch.Frequency,
+                ex.Message);
         }
+    }
+
+    private double GetClassThreshold(string className)
+    {
+        if (_model.Calibration.Classes.TryGetValue(className, out var calibration) &&
+            calibration.DistanceThreshold > 1e-12)
+            return calibration.DistanceThreshold;
+
+        // Backward-compatible fallback for old model files.
+        var fallback = _model.Calibration.NearestSameP95;
+        return fallback > 1e-12 ? fallback : 1.0;
     }
 
     private Affine2D BuildCanonicalTransform(SKPath path)
@@ -166,14 +213,6 @@ public sealed class GlyphFingerprintAnalyzer
             result[component] = value;
         }
         return result;
-    }
-
-    private double AbsoluteConfidence(double distance)
-    {
-        var good = _model.Calibration.NearestSameP95;
-        var bad = _model.Calibration.NearestWrongP05;
-        if (bad <= good + 1e-12) return distance <= good ? 1 : 0;
-        return Math.Clamp((bad - distance) / (bad - good), 0, 1);
     }
 
     private static double Distance(double[] a, double[] b)
