@@ -106,23 +106,18 @@ public sealed class MeterOverlayRenderer
                 continue;
 
             var text = string.Join(" ", labels);
-            var textSize = (float)Math.Clamp(block.PhysicalBounds.Height * 0.28, 7, 12);
-            var x = (float)Math.Max(page.Left + 2, block.PhysicalBounds.Left);
-            var preferredY = (float)(block.PhysicalBounds.Bottom + textSize + 4);
-            var y = Math.Min(page.Bottom - 2, preferredY);
+            var height = (float)Math.Clamp(block.PhysicalBounds.Height * 0.20, 6, 10);
+            var top = block.PhysicalBounds.Bottom + 3;
 
-            using var paint = new SKPaint
-            {
-                Color = SKColors.ForestGreen,
-                TextSize = textSize,
-                Typeface = SKTypeface.Default,
-                IsAntialias = true
-            };
-
-            var textWidth = paint.MeasureText(text);
-            using var background = new SKPaint { Color = new SKColor(255, 255, 255, 232) };
-            canvas.DrawRect(new SKRect(x - 2, y - textSize - 2, x + textWidth + 2, y + 2), background);
-            canvas.DrawText(text, x, y, paint);
+            DrawVectorLabel(
+                canvas,
+                text,
+                block.PhysicalBounds.Left,
+                top,
+                top + height,
+                height,
+                SKColors.ForestGreen,
+                page);
         }
     }
 
@@ -291,6 +286,26 @@ public sealed class MeterOverlayRenderer
                 canvas.DrawLine(x, y, x + w * .5f, y + h * .5f, paint);
                 canvas.DrawLine(x + w, y, x + w * .5f, y + h * .5f, paint);
                 canvas.DrawLine(x + w * .5f, y + h * .5f, x + w * .5f, y + h, paint);
+                break;
+            case 'A':
+                canvas.DrawLine(x, y + h, x + w * .5f, y, paint);
+                canvas.DrawLine(x + w * .5f, y, x + w, y + h, paint);
+                canvas.DrawLine(x + w * .22f, y + h * .58f, x + w * .78f, y + h * .58f, paint);
+                break;
+            case 'B':
+                canvas.DrawLine(x, y, x, y + h, paint);
+                canvas.DrawArc(new SKRect(x, y, x + w, y + h * .52f), -90, 180, false, paint);
+                canvas.DrawArc(new SKRect(x, y + h * .48f, x + w, y + h), -90, 180, false, paint);
+                break;
+            case 'D':
+                canvas.DrawLine(x, y, x, y + h, paint);
+                canvas.DrawArc(new SKRect(x - w * .25f, y, x + w, y + h), -90, 180, false, paint);
+                break;
+            case 'E':
+                canvas.DrawLine(x, y, x, y + h, paint);
+                canvas.DrawLine(x, y, x + w, y, paint);
+                canvas.DrawLine(x, y + h * .5f, x + w * .75f, y + h * .5f, paint);
+                canvas.DrawLine(x, y + h, x + w, y + h, paint);
                 break;
         }
     }
