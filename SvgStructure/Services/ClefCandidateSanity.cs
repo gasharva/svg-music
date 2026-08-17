@@ -11,8 +11,9 @@ namespace SvgStructure.Services;
 public sealed class ClefCandidateSanity
 {
     // F clefs are substantially shorter than G clefs. In our real samples an F clef is about
-    // 6.6 logical Y units high, while a G clef is around 14.8.
-    public double MinimumLogicalHeight { get; init; } = 5.5;
+    // 6.6 logical Y units high, while a G clef is around 14.8. Keep the lower bound close enough
+    // to real F clefs, but reject smaller accidental conglomerates before PCA recognition.
+    public double MinimumLogicalHeight { get; init; } = 6.0;
     public double MaximumLogicalHeight { get; init; } = 22.0;
 
     // Width is normalized by physical staff height, not by logical X.
