@@ -21,12 +21,13 @@ public sealed class GlyphFingerprintAnalyzer
             throw new InvalidDataException($"PCA mean has {model.Pca.Mean.Length} values, expected {expected}.");
     }
 
-    public GlyphAnalysis Analyze(string fileName, string assetName)
+    public GlyphAnalysis? Analyze(string fileName, string assetName)
     {
         var sw = Stopwatch.StartNew();
         try
         {
             using var path = SvgGlyphLoader.LoadFilledPath(fileName);
+            if (path == null) return null;
             var canonical = BuildCanonicalTransform(path);
             var sdf = BuildSdf(path, canonical);
             var fingerprint = Project(sdf);

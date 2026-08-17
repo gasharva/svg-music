@@ -29,7 +29,9 @@ Parallel.ForEach(svgFiles, new ParallelOptions { MaxDegreeOfParallelism = option
 {
     var id = Interlocked.Increment(ref counter);
     var asset = $"{id:D5}-{Sanitize(Path.GetFileName(file))}";
-    results.Add(analyzer.Analyze(file, asset));
+    var res = analyzer.Analyze(file, asset);
+    if (res == null) return;
+    results.Add(res);
     if (id % 50 == 0 || id == svgFiles.Length) Console.WriteLine($"{id}/{svgFiles.Length}");
 });
 

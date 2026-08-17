@@ -9,13 +9,13 @@ public static class SvgGlyphLoader
 {
     private static readonly Regex TransformRegex = new(@"([a-zA-Z]+)\s*\(([^)]*)\)", RegexOptions.Compiled);
 
-    public static SKPath LoadFilledPath(string fileName)
+    public static SKPath? LoadFilledPath(string fileName)
     {
         var document = XDocument.Load(fileName, LoadOptions.PreserveWhitespace);
         var combined = new SKPath { FillType = SKPathFillType.EvenOdd };
         if (document.Root is null) throw new InvalidDataException("SVG has no root element.");
         Visit(document.Root, Affine2D.Identity, combined);
-        if (combined.IsEmpty) throw new InvalidDataException("SVG contains no filled <path> geometry.");
+        if (combined.IsEmpty) return null; //throw new InvalidDataException("SVG contains no filled <path> geometry.");
         return combined;
     }
 
