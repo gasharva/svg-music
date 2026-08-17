@@ -24,6 +24,7 @@ public sealed record StepByStepItemResult(
     int MusicSymbolCount = 0,
     int MeterCount = 0,
     int ClefCount = 0,
+    int LedgerLineCount = 0,
     int ExportedPrimitiveCount = 0,
     int SourceElementCount = 0,
     int SourceUseCount = 0,
@@ -41,6 +42,7 @@ public sealed class StepByStepBatchRunner
     private readonly MusicSymbolSvgExporter _musicSymbolSvgExporter = new();
     private readonly SvgSourceModelDumper _sourceModelDumper = new();
     private readonly LogicalGridResolver _logicalGridResolver = new(DefaultSubdivisionsPerBeat);
+    private readonly LedgerLineResolver _ledgerLineResolver = new();
     private readonly PartMeasureOverlayRenderer _partMeasureOverlayRenderer = new();
     private readonly PrimitiveOverlayRenderer _primitiveOverlayRenderer = new();
     private readonly MeterOverlayRenderer _meterOverlayRenderer = new();
@@ -153,6 +155,8 @@ public sealed class StepByStepBatchRunner
                 .SelectMany(block => clefResolver.Resolve(block, musicSymbols, logicalGrid))
                 .ToArray();
 
+            var ledgerLines = _ledgerLineResolver.Resolve(primitives, logicalGrid);
+
             _partMeasureOverlayRenderer.Render(
                 structure,
                 Path.Combine(itemDirectory, "measures.png"));
@@ -163,6 +167,8 @@ public sealed class StepByStepBatchRunner
                 structure,
                 meters,
                 clefs,
+                ledgerLines,
+                logicalGrid,
                 Path.Combine(itemDirectory, "meters.png"));
 
             WriteResolutionJson(
@@ -173,7 +179,8 @@ public sealed class StepByStepBatchRunner
                 musicSymbols,
                 meters,
                 logicalGrid,
-                clefs);
+                clefs,
+                ledgerLines);
 
             return new StepByStepItemResult(
                 fileName,
@@ -188,6 +195,7 @@ public sealed class StepByStepBatchRunner
                 musicSymbols.Candidates.Count,
                 meters.Length,
                 clefs.Length,
+                ledgerLines.Count,
                 primitiveExport.Items.Count,
                 sourceModel.ElementCount,
                 sourceModel.UseCount);
@@ -209,7 +217,8 @@ public sealed class StepByStepBatchRunner
         MusicSymbolResolution musicSymbols,
         IReadOnlyList<MeterResolution> meters,
         LogicalGridResolution logicalGrid,
-        IReadOnlyList<ClefResolution> clefs)
+        IReadOnlyList<ClefResolution> clefs,
+        IReadOnlyList<LedgerLineResolution> ledgerLines)
     {
         var payload = new
         {
@@ -274,7 +283,8 @@ public sealed class StepByStepBatchRunner
                     x.PhysicalBounds
                 })
             },
-            clefs
+            clefs,
+            ledgerLines
         };
 
         File.WriteAllText(
