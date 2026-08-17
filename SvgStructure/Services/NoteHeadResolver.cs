@@ -23,8 +23,6 @@ public sealed class NoteHeadResolver
         IReadOnlyList<ClefResolution> clefs,
         IReadOnlyList<LedgerLineResolution> ledgerLines)
     {
-        var primitiveById = primitives.Primitives.ToDictionary(x => x.Id);
-
         var ovalCandidates = new List<OvalCandidate>();
         foreach (var primitive in primitives.Primitives)
         {
@@ -139,7 +137,6 @@ public sealed class NoteHeadResolver
         if (position >= 0 && position <= 8)
             return true;
 
-        // The immediately adjacent spaces (-1 / 9) need no ledger line in normal notation.
         if (position is -1 or 9)
             return true;
 
@@ -179,8 +176,6 @@ public sealed class NoteHeadResolver
 
     private static string PitchFor(ClefKind clef, int staffPosition)
     {
-        // Logical Y advances by one diatonic step downwards.
-        // G-clef top line = F5; F-clef top line = A3.
         var reference = clef switch
         {
             ClefKind.G => DiatonicIndex('F', 5),
@@ -211,7 +206,7 @@ public sealed class NoteHeadResolver
         return $"{letter}{octave}";
     }
 
-    private static double RadialVariation(IReadOnlyList<PointD> points, RectD bounds)
+    private static double RadialVariation(IReadOnlyList<System.Numerics.Vector2> points, RectD bounds)
     {
         var rx = Math.Max(1e-9, bounds.Width / 2.0);
         var ry = Math.Max(1e-9, bounds.Height / 2.0);
