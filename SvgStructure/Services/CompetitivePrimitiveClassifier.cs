@@ -6,20 +6,19 @@ namespace SvgStructure.Services;
 /// Propagates staff-measure ownership competitively.
 ///
 /// Only primitives that already belong to exactly one staff-measure may propagate that color.
-/// Physical touching/overlap is stronger evidence than ordinary proximity: if a pending primitive
-/// touches exactly one color, that color wins even when another color is merely nearby.
-/// If evidence of the same strength points to several colors, the primitive becomes ambiguous.
+/// Physical touching is stronger than ordinary proximity. If an unassigned primitive touches one
+/// color, that color wins before the broader proximity pass is considered.
 /// </summary>
 public sealed class CompetitivePrimitiveClassifier
 {
     public double ProximityInStaffSpaces { get; init; } = 1.5;
+    public double MinimumDirectVerticalOverlapRatio { get; init; } = 0.40;
 
     public IReadOnlyDictionary<int, HashSet<StaffMeasureKey>> Classify(
         IReadOnlyList<RawPrimitive> primitives,
         IReadOnlyList<StaffMeasureRegion> regions,
         RectD pageBounds)
     {
-        var regionByKey = regions.ToDictionary(x => x.Key);
         var limitsByKey = regions.ToDictionary(
             x => x.Key,
             x => GetVerticalLimits(x, regions, pageBounds));
@@ -28,15 +27,21 @@ public sealed class CompetitivePrimitiveClassifier
         var ambiguous = new HashSet<int>();
         var pending = primitives.Select(x => x.Id).ToHashSet();
 
-        // Initial real anchors: physical intersection with exactly one staff-measure.
-        // Intersections with several regions are ambiguous immediately and never propagate.
+        // A mere edge intersection with a staff is not enough to make a primitive a strong seed.
+        // Long stems and other objects between the two staves may just graze the neighbouring staff.
+        // Direct ownership is granted only when the primitive's vertical center lies in the staff,
+        // or a substantial fraction of its own height overlaps that staff.
         foreach (var primitive in primitives)
         {
-            var directRegions = regions
+            var intersectingRegions = regions
                 .Where(x => primitive.Bounds.Intersects(x.Bounds))
                 .ToArray();
 
-            var directKeys = directRegions
+            var substantialRegions = intersectingRegions
+                .Where(region => IsSubstantialDirectOverlap(primitive.Bounds, region))
+                .ToArray();
+
+            var directKeys = substantialRegions
                 .Select(x => x.Key)
                 .Distinct()
                 .ToArray();
@@ -92,11 +97,13 @@ public sealed class CompetitivePrimitiveClassifier
                     if (!insideVerticalLimits)
                         continue;
 
-                    var realSeeds = realSeedsByKey.GetValueOrDefault(region.Key);
+                    var staffSpace = region.Height <= 0 ? 0 : region.Height / 4.0;
+                    var maxGap = staffSpace * ProximityInStaffSpaces;
+
                     var touchesColor = TouchesColor(
                         primitive.Bounds,
                         virtualSeeds[region.Key],
-                        realSeeds);
+                        realSeedsByKey.GetValueOrDefault(region.Key));
 
                     if (touchesColor)
                     {
@@ -104,20 +111,16 @@ public sealed class CompetitivePrimitiveClassifier
                         continue;
                     }
 
-                    var staffSpace = region.Height <= 0 ? 0 : region.Height / 4.0;
-                    var maxGap = staffSpace * ProximityInStaffSpaces;
                     var closeToColor = IsCloseToColor(
                         primitive.Bounds,
                         virtualSeeds[region.Key],
-                        realSeeds,
+                        realSeedsByKey.GetValueOrDefault(region.Key),
                         maxGap);
 
                     if (closeToColor)
                         nearbyColors.Add(region.Key);
                 }
 
-                // Strong evidence first. A primitive touching red geometry is not made ambiguous
-                // merely because orange geometry happens to be within the wider proximity radius.
                 if (touchingColors.Count == 1)
                 {
                     newlyAssigned[primitiveId] = touchingColors.Single();
@@ -167,6 +170,21 @@ public sealed class CompetitivePrimitiveClassifier
             result[id] = new HashSet<StaffMeasureKey>(FindRelevantKeys(primitiveById[id], regions));
 
         return result;
+    }
+
+    private bool IsSubstantialDirectOverlap(RectD primitive, StaffMeasureRegion region)
+    {
+        var primitiveHeight = Math.Max(1e-9, primitive.Height);
+        var overlapTop = Math.Max(primitive.Top, region.Top);
+        var overlapBottom = Math.Min(primitive.Bottom, region.Bottom);
+        var overlapHeight = Math.Max(0, overlapBottom - overlapTop);
+        var overlapRatio = overlapHeight / primitiveHeight;
+
+        var centerInside =
+            primitive.CenterY >= region.Top &&
+            primitive.CenterY <= region.Bottom;
+
+        return centerInside || overlapRatio >= MinimumDirectVerticalOverlapRatio;
     }
 
     private static bool TouchesColor(
