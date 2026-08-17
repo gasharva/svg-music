@@ -43,6 +43,7 @@ public sealed class StepByStepBatchRunner
     private readonly SvgSourceModelDumper _sourceModelDumper = new();
     private readonly LogicalGridResolver _logicalGridResolver = new(DefaultSubdivisionsPerBeat);
     private readonly LedgerLineResolver _ledgerLineResolver = new();
+    private readonly NoteHeadResolver _noteHeadResolver = new();
     private readonly PartMeasureOverlayRenderer _partMeasureOverlayRenderer = new();
     private readonly PrimitiveOverlayRenderer _primitiveOverlayRenderer = new();
     private readonly MeterOverlayRenderer _meterOverlayRenderer = new();
@@ -156,6 +157,7 @@ public sealed class StepByStepBatchRunner
                 .ToArray();
 
             var ledgerLines = _ledgerLineResolver.Resolve(primitives, logicalGrid);
+            var noteHeads = _noteHeadResolver.Resolve(primitives, logicalGrid, clefs, ledgerLines);
 
             _partMeasureOverlayRenderer.Render(
                 structure,
@@ -168,6 +170,7 @@ public sealed class StepByStepBatchRunner
                 meters,
                 clefs,
                 ledgerLines,
+                noteHeads,
                 logicalGrid,
                 Path.Combine(itemDirectory, "meters.png"));
 
@@ -180,7 +183,8 @@ public sealed class StepByStepBatchRunner
                 meters,
                 logicalGrid,
                 clefs,
-                ledgerLines);
+                ledgerLines,
+                noteHeads);
 
             return new StepByStepItemResult(
                 fileName,
@@ -218,7 +222,8 @@ public sealed class StepByStepBatchRunner
         IReadOnlyList<MeterResolution> meters,
         LogicalGridResolution logicalGrid,
         IReadOnlyList<ClefResolution> clefs,
-        IReadOnlyList<LedgerLineResolution> ledgerLines)
+        IReadOnlyList<LedgerLineResolution> ledgerLines,
+        IReadOnlyList<NoteHeadResolution> noteHeads)
     {
         var payload = new
         {
@@ -284,7 +289,8 @@ public sealed class StepByStepBatchRunner
                 })
             },
             clefs,
-            ledgerLines
+            ledgerLines,
+            noteHeads
         };
 
         File.WriteAllText(
