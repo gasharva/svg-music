@@ -1,8 +1,5 @@
 contours: 5
 points: 525
-value: 8
-confidence: 0.0264
+value: null
+confidence: 0.0000
 candidates:
-  8: 0.0264
-  9: 0.0081
-  0: 0.0034

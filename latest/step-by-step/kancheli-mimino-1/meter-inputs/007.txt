@@ -1,8 +1,5 @@
 contours: 2
 points: 403
-value: 0
-confidence: 0.1740
+value: null
+confidence: 0.0000
 candidates:
-  0: 0.1740
-  4: 0.0331
-  8: 0.0151

@@ -44901,98 +44901,17 @@
       ]
     }
   ],
-  "meters": [
-    {
-      "partNumber": 1,
-      "measureNumber": 1,
-      "beatNumber": 3,
-      "beatValue": 4,
-      "side": 0,
-      "confidence": 0.9987892868972406,
-      "physicalBounds": {
-        "left": 72.65773010253906,
-        "top": 163.45919799804688,
-        "right": 85.3719711303711,
-        "bottom": 193.02508544921875,
-        "width": 12.714241027832031,
-        "height": 29.565887451171875,
-        "centerX": 79.01485061645508,
-        "centerY": 178.2421417236328
-      },
-      "numeratorBounds": {
-        "left": 73.37853240966797,
-        "top": 163.45919799804688,
-        "right": 84.64672088623047,
-        "bottom": 178.24322509765625,
-        "width": 11.2681884765625,
-        "height": 14.784027099609375,
-        "centerX": 79.01262664794922,
-        "centerY": 170.85121154785156
-      },
-      "denominatorBounds": {
-        "left": 72.65773010253906,
-        "top": 178.21334838867188,
-        "right": 85.3719711303711,
-        "bottom": 193.02508544921875,
-        "width": 12.714241027832031,
-        "height": 14.811737060546875,
-        "centerX": 79.01485061645508,
-        "centerY": 185.6192169189453
-      },
-      "label": "3-4",
-      "logicalLabel": "P1-M1"
-    },
-    {
-      "partNumber": 2,
-      "measureNumber": 1,
-      "beatNumber": 3,
-      "beatValue": 4,
-      "side": 0,
-      "confidence": 0.9987894872871749,
-      "physicalBounds": {
-        "left": 72.65773010253906,
-        "top": 237.85972595214844,
-        "right": 85.3719711303711,
-        "bottom": 267.42535400390625,
-        "width": 12.714241027832031,
-        "height": 29.565628051757812,
-        "centerX": 79.01485061645508,
-        "centerY": 252.64253997802734
-      },
-      "numeratorBounds": {
-        "left": 73.37853240966797,
-        "top": 237.85972595214844,
-        "right": 84.64672088623047,
-        "bottom": 252.6437530517578,
-        "width": 11.2681884765625,
-        "height": 14.784027099609375,
-        "centerX": 79.01262664794922,
-        "centerY": 245.25173950195312
-      },
-      "denominatorBounds": {
-        "left": 72.65773010253906,
-        "top": 252.61361694335938,
-        "right": 85.3719711303711,
-        "bottom": 267.42535400390625,
-        "width": 12.714241027832031,
-        "height": 14.811737060546875,
-        "centerX": 79.01485061645508,
-        "centerY": 260.0194854736328
-      },
-      "label": "3-4",
-      "logicalLabel": "P2-M1"
-    }
-  ],
+  "meters": [],
   "logicalGrid": {
     "subdivisionsPerBeat": 8,
     "blocks": [
       {
         "partNumber": 1,
         "measureNumber": 1,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.6960010528564453,
         "physicalBounds": {
           "left": 38.37571471078055,
@@ -45008,10 +44927,10 @@
       {
         "partNumber": 1,
         "measureNumber": 2,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.6960010528564453,
         "physicalBounds": {
           "left": 238.4824651082357,
@@ -45027,10 +44946,10 @@
       {
         "partNumber": 1,
         "measureNumber": 3,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.6960010528564453,
         "physicalBounds": {
           "left": 381.49022674560547,
@@ -45046,10 +44965,10 @@
       {
         "partNumber": 1,
         "measureNumber": 4,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.6960010528564453,
         "physicalBounds": {
           "left": 537.1271158854166,
@@ -45065,10 +44984,10 @@
       {
         "partNumber": 1,
         "measureNumber": 5,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.696002960205078,
         "physicalBounds": {
           "left": 38.37571471078055,
@@ -45084,10 +45003,10 @@
       {
         "partNumber": 1,
         "measureNumber": 6,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.696002960205078,
         "physicalBounds": {
           "left": 230.5183868408203,
@@ -45103,10 +45022,10 @@
       {
         "partNumber": 1,
         "measureNumber": 7,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.696002960205078,
         "physicalBounds": {
           "left": 393.2667808532715,
@@ -45122,10 +45041,10 @@
       {
         "partNumber": 1,
         "measureNumber": 8,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.696002960205078,
         "physicalBounds": {
           "left": 557.1952718098959,
@@ -45141,10 +45060,10 @@
       {
         "partNumber": 1,
         "measureNumber": 9,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.6959991455078125,
         "physicalBounds": {
           "left": 38.37571471078055,
@@ -45160,10 +45079,10 @@
       {
         "partNumber": 1,
         "measureNumber": 10,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.6959991455078125,
         "physicalBounds": {
           "left": 220.13038635253906,
@@ -45179,10 +45098,10 @@
       {
         "partNumber": 1,
         "measureNumber": 11,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.6959991455078125,
         "physicalBounds": {
           "left": 368.11865234375,
@@ -45198,10 +45117,10 @@
       {
         "partNumber": 1,
         "measureNumber": 12,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.6959991455078125,
         "physicalBounds": {
           "left": 528.6106770833334,
@@ -45217,10 +45136,10 @@
       {
         "partNumber": 1,
         "measureNumber": 13,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.6960067749023438,
         "physicalBounds": {
           "left": 38.37571471078055,
@@ -45236,10 +45155,10 @@
       {
         "partNumber": 1,
         "measureNumber": 14,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.6960067749023438,
         "physicalBounds": {
           "left": 235.70371627807617,
@@ -45255,10 +45174,10 @@
       {
         "partNumber": 1,
         "measureNumber": 15,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.6960067749023438,
         "physicalBounds": {
           "left": 387.31548394097223,
@@ -45274,10 +45193,10 @@
       {
         "partNumber": 1,
         "measureNumber": 16,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.6960067749023438,
         "physicalBounds": {
           "left": 551.1826782226562,
@@ -45293,10 +45212,10 @@
       {
         "partNumber": 1,
         "measureNumber": 17,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.6959991455078125,
         "physicalBounds": {
           "left": 38.37571471078055,
@@ -45312,10 +45231,10 @@
       {
         "partNumber": 1,
         "measureNumber": 18,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.6959991455078125,
         "physicalBounds": {
           "left": 246.6128356933594,
@@ -45331,10 +45250,10 @@
       {
         "partNumber": 1,
         "measureNumber": 19,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.6959991455078125,
         "physicalBounds": {
           "left": 421.73199462890625,
@@ -45350,10 +45269,10 @@
       {
         "partNumber": 1,
         "measureNumber": 20,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.6959991455078125,
         "physicalBounds": {
           "left": 598.2186279296875,
@@ -45369,10 +45288,10 @@
       {
         "partNumber": 2,
         "measureNumber": 1,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.6958656311035156,
         "physicalBounds": {
           "left": 38.37571471078055,
@@ -45388,10 +45307,10 @@
       {
         "partNumber": 2,
         "measureNumber": 2,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.6958656311035156,
         "physicalBounds": {
           "left": 238.4824651082357,
@@ -45407,10 +45326,10 @@
       {
         "partNumber": 2,
         "measureNumber": 3,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.6958656311035156,
         "physicalBounds": {
           "left": 381.49022674560547,
@@ -45426,10 +45345,10 @@
       {
         "partNumber": 2,
         "measureNumber": 4,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.6958656311035156,
         "physicalBounds": {
           "left": 537.1271158854166,
@@ -45445,10 +45364,10 @@
       {
         "partNumber": 2,
         "measureNumber": 5,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.696002960205078,
         "physicalBounds": {
           "left": 38.37571471078055,
@@ -45464,10 +45383,10 @@
       {
         "partNumber": 2,
         "measureNumber": 6,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.696002960205078,
         "physicalBounds": {
           "left": 230.5183868408203,
@@ -45483,10 +45402,10 @@
       {
         "partNumber": 2,
         "measureNumber": 7,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.696002960205078,
         "physicalBounds": {
           "left": 393.2667808532715,
@@ -45502,10 +45421,10 @@
       {
         "partNumber": 2,
         "measureNumber": 8,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.696002960205078,
         "physicalBounds": {
           "left": 557.1952718098959,
@@ -45521,10 +45440,10 @@
       {
         "partNumber": 2,
         "measureNumber": 9,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.6960067749023438,
         "physicalBounds": {
           "left": 38.37571471078055,
@@ -45540,10 +45459,10 @@
       {
         "partNumber": 2,
         "measureNumber": 10,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.6960067749023438,
         "physicalBounds": {
           "left": 220.13038635253906,
@@ -45559,10 +45478,10 @@
       {
         "partNumber": 2,
         "measureNumber": 11,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.6960067749023438,
         "physicalBounds": {
           "left": 368.11865234375,
@@ -45578,10 +45497,10 @@
       {
         "partNumber": 2,
         "measureNumber": 12,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.6960067749023438,
         "physicalBounds": {
           "left": 528.6106770833334,
@@ -45597,10 +45516,10 @@
       {
         "partNumber": 2,
         "measureNumber": 13,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.6959991455078125,
         "physicalBounds": {
           "left": 38.37571471078055,
@@ -45616,10 +45535,10 @@
       {
         "partNumber": 2,
         "measureNumber": 14,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.6959991455078125,
         "physicalBounds": {
           "left": 235.70371627807617,
@@ -45635,10 +45554,10 @@
       {
         "partNumber": 2,
         "measureNumber": 15,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.6959991455078125,
         "physicalBounds": {
           "left": 387.31548394097223,
@@ -45654,10 +45573,10 @@
       {
         "partNumber": 2,
         "measureNumber": 16,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.6959991455078125,
         "physicalBounds": {
           "left": 551.1826782226562,
@@ -45673,10 +45592,10 @@
       {
         "partNumber": 2,
         "measureNumber": 17,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.6959915161132812,
         "physicalBounds": {
           "left": 38.37571471078055,
@@ -45692,10 +45611,10 @@
       {
         "partNumber": 2,
         "measureNumber": 18,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.6959915161132812,
         "physicalBounds": {
           "left": 246.6128356933594,
@@ -45711,10 +45630,10 @@
       {
         "partNumber": 2,
         "measureNumber": 19,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.6959915161132812,
         "physicalBounds": {
           "left": 421.73199462890625,
@@ -45730,10 +45649,10 @@
       {
         "partNumber": 2,
         "measureNumber": 20,
-        "beatNumber": 3,
-        "beatValue": 4,
+        "beatNumber": null,
+        "beatValue": null,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 24,
+        "horizontalUnits": null,
         "halfStaffSpace": 3.6959915161132812,
         "physicalBounds": {
           "left": 598.2186279296875,
