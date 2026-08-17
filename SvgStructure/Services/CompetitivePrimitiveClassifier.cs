@@ -6,13 +6,19 @@ namespace SvgStructure.Services;
 /// Propagates staff-measure ownership competitively.
 ///
 /// Only primitives that already belong to exactly one staff-measure may propagate that color.
-/// Physical touching is stronger than ordinary proximity. If an unassigned primitive touches one
-/// color, that color wins before the broader proximity pass is considered.
+/// Thin vertical primitives are a special case: they may span a large empty area between staves,
+/// so ordinary proximity is unsafe for them. They are expected to inherit ownership primarily
+/// from geometry they actually touch or intersect.
 /// </summary>
 public sealed class CompetitivePrimitiveClassifier
 {
     public double ProximityInStaffSpaces { get; init; } = 1.5;
-    public double MinimumDirectVerticalOverlapRatio { get; init; } = 0.40;
+
+    // A very thin/tall primitive is typically a stem or another vertical connector. Its nearest
+    // endpoint may be close to the wrong staff even though the primitive logically belongs to a
+    // cluster at the opposite end. Do not let such geometry propagate over normal staff-space gaps.
+    public double ThinVerticalMaxWidthToHeightRatio { get; init; } = 0.12;
+    public double ThinVerticalProximityInStaffSpaces { get; init; } = 0.05;
 
     public IReadOnlyDictionary<int, HashSet<StaffMeasureKey>> Classify(
         IReadOnlyList<RawPrimitive> primitives,
@@ -27,21 +33,15 @@ public sealed class CompetitivePrimitiveClassifier
         var ambiguous = new HashSet<int>();
         var pending = primitives.Select(x => x.Id).ToHashSet();
 
-        // A mere edge intersection with a staff is not enough to make a primitive a strong seed.
-        // Long stems and other objects between the two staves may just graze the neighbouring staff.
-        // Direct ownership is granted only when the primitive's vertical center lies in the staff,
-        // or a substantial fraction of its own height overlaps that staff.
+        // Initial real anchors: physical intersection with exactly one staff-measure.
+        // Intersections with several regions are ambiguous immediately and never propagate.
         foreach (var primitive in primitives)
         {
-            var intersectingRegions = regions
+            var directRegions = regions
                 .Where(x => primitive.Bounds.Intersects(x.Bounds))
                 .ToArray();
 
-            var substantialRegions = intersectingRegions
-                .Where(region => IsSubstantialDirectOverlap(primitive.Bounds, region))
-                .ToArray();
-
-            var directKeys = substantialRegions
+            var directKeys = directRegions
                 .Select(x => x.Key)
                 .Distinct()
                 .ToArray();
@@ -81,8 +81,8 @@ public sealed class CompetitivePrimitiveClassifier
             foreach (var primitiveId in pending)
             {
                 var primitive = primitiveById[primitiveId];
-                var touchingColors = new HashSet<StaffMeasureKey>();
                 var nearbyColors = new HashSet<StaffMeasureKey>();
+                var thinVertical = IsThinVertical(primitive.Bounds);
 
                 foreach (var region in regions)
                 {
@@ -98,18 +98,10 @@ public sealed class CompetitivePrimitiveClassifier
                         continue;
 
                     var staffSpace = region.Height <= 0 ? 0 : region.Height / 4.0;
-                    var maxGap = staffSpace * ProximityInStaffSpaces;
-
-                    var touchesColor = TouchesColor(
-                        primitive.Bounds,
-                        virtualSeeds[region.Key],
-                        realSeedsByKey.GetValueOrDefault(region.Key));
-
-                    if (touchesColor)
-                    {
-                        touchingColors.Add(region.Key);
-                        continue;
-                    }
+                    var proximityInStaffSpaces = thinVertical
+                        ? ThinVerticalProximityInStaffSpaces
+                        : ProximityInStaffSpaces;
+                    var maxGap = staffSpace * proximityInStaffSpaces;
 
                     var closeToColor = IsCloseToColor(
                         primitive.Bounds,
@@ -119,18 +111,6 @@ public sealed class CompetitivePrimitiveClassifier
 
                     if (closeToColor)
                         nearbyColors.Add(region.Key);
-                }
-
-                if (touchingColors.Count == 1)
-                {
-                    newlyAssigned[primitiveId] = touchingColors.Single();
-                    continue;
-                }
-
-                if (touchingColors.Count > 1)
-                {
-                    newlyAmbiguous.Add(primitiveId);
-                    continue;
                 }
 
                 if (nearbyColors.Count == 1)
@@ -172,35 +152,16 @@ public sealed class CompetitivePrimitiveClassifier
         return result;
     }
 
-    private bool IsSubstantialDirectOverlap(RectD primitive, StaffMeasureRegion region)
+    private bool IsThinVertical(RectD bounds)
     {
-        var primitiveHeight = Math.Max(1e-9, primitive.Height);
-        var overlapTop = Math.Max(primitive.Top, region.Top);
-        var overlapBottom = Math.Min(primitive.Bottom, region.Bottom);
-        var overlapHeight = Math.Max(0, overlapBottom - overlapTop);
-        var overlapRatio = overlapHeight / primitiveHeight;
-
-        var centerInside =
-            primitive.CenterY >= region.Top &&
-            primitive.CenterY <= region.Bottom;
-
-        return centerInside || overlapRatio >= MinimumDirectVerticalOverlapRatio;
-    }
-
-    private static bool TouchesColor(
-        RectD candidate,
-        IReadOnlyList<RectD> virtualSeeds,
-        IReadOnlyList<RawPrimitive>? realSeeds)
-    {
-        var touchesVirtualSeed = virtualSeeds
-            .Any(x => RectangleDistance(candidate, x) <= 1e-9);
-        if (touchesVirtualSeed)
-            return true;
-
-        if (realSeeds is null)
+        if (bounds.Height <= 1e-9)
             return false;
 
-        return realSeeds.Any(x => RectangleDistance(candidate, x.Bounds) <= 1e-9);
+        if (bounds.Height <= bounds.Width)
+            return false;
+
+        var widthToHeightRatio = bounds.Width / bounds.Height;
+        return widthToHeightRatio <= ThinVerticalMaxWidthToHeightRatio;
     }
 
     private static bool IsCloseToColor(
