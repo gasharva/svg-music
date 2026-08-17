@@ -17,8 +17,9 @@ public sealed class ClefCandidateSanity
     public double MaximumLogicalHeight { get; init; } = 22.0;
 
     // Width is normalized by physical staff height, not by logical X.
-    // This rejects thin arpeggiation waves while remaining independent of measure width/meter.
-    public double MinimumWidthPerStaffHeight { get; init; } = 0.28;
+    // Real G/F clefs are visibly broad symbols; the higher lower bound rejects narrow stems,
+    // note fragments and similar vertical conglomerates before PCA recognition.
+    public double MinimumWidthPerStaffHeight { get; init; } = 0.40;
     public double MaximumWidthPerStaffHeight { get; init; } = 1.80;
 
     public bool Accept(LogicalRectD logicalBounds, RectD physicalBounds, double staffHeight)
