@@ -53870,86 +53870,6 @@
       },
       "label": "3-4",
       "logicalLabel": "P2-M10"
-    },
-    {
-      "partNumber": 1,
-      "measureNumber": 12,
-      "beatNumber": 4,
-      "beatValue": 4,
-      "side": 0,
-      "confidence": 0.3698221357626881,
-      "physicalBounds": {
-        "left": 96.46031188964844,
-        "top": 932.494140625,
-        "right": 106.53076171875,
-        "bottom": 957.452880859375,
-        "width": 10.070449829101562,
-        "height": 24.958740234375,
-        "centerX": 101.49553680419922,
-        "centerY": 944.9735107421875
-      },
-      "numeratorBounds": {
-        "left": 96.71373748779297,
-        "top": 932.494140625,
-        "right": 106.53076171875,
-        "bottom": 944.87353515625,
-        "width": 9.817024230957031,
-        "height": 12.37939453125,
-        "centerX": 101.62224960327148,
-        "centerY": 938.683837890625
-      },
-      "denominatorBounds": {
-        "left": 96.46031188964844,
-        "top": 945.1348876953125,
-        "right": 106.5280990600586,
-        "bottom": 957.452880859375,
-        "width": 10.067787170410156,
-        "height": 12.3179931640625,
-        "centerX": 101.49420547485352,
-        "centerY": 951.2938842773438
-      },
-      "label": "4-4",
-      "logicalLabel": "P1-M12"
-    },
-    {
-      "partNumber": 2,
-      "measureNumber": 12,
-      "beatNumber": 4,
-      "beatValue": 4,
-      "side": 0,
-      "confidence": 0.36984492494478544,
-      "physicalBounds": {
-        "left": 96.46031188964844,
-        "top": 1007.146240234375,
-        "right": 106.53076171875,
-        "bottom": 1032.103759765625,
-        "width": 10.070449829101562,
-        "height": 24.95751953125,
-        "centerX": 101.49553680419922,
-        "centerY": 1019.625
-      },
-      "numeratorBounds": {
-        "left": 96.71373748779297,
-        "top": 1007.146240234375,
-        "right": 106.53076171875,
-        "bottom": 1019.525634765625,
-        "width": 9.817024230957031,
-        "height": 12.37939453125,
-        "centerX": 101.62224960327148,
-        "centerY": 1013.3359375
-      },
-      "denominatorBounds": {
-        "left": 96.46031188964844,
-        "top": 1019.7857666015625,
-        "right": 106.5280990600586,
-        "bottom": 1032.103759765625,
-        "width": 10.067787170410156,
-        "height": 12.3179931640625,
-        "centerX": 101.49420547485352,
-        "centerY": 1025.9447631835938
-      },
-      "label": "4-4",
-      "logicalLabel": "P2-M12"
     }
   ],
   "logicalGrid": {
@@ -54167,10 +54087,10 @@
       {
         "partNumber": 1,
         "measureNumber": 12,
-        "beatNumber": 4,
+        "beatNumber": 3,
         "beatValue": 4,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 32,
+        "horizontalUnits": 24,
         "halfStaffSpace": 3.1653213500976562,
         "physicalBounds": {
           "left": 65.0931396484375,
@@ -54395,10 +54315,10 @@
       {
         "partNumber": 2,
         "measureNumber": 12,
-        "beatNumber": 4,
+        "beatNumber": 3,
         "beatValue": 4,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 32,
+        "horizontalUnits": 24,
         "halfStaffSpace": 3.1652984619140625,
         "physicalBounds": {
           "left": 65.0931396484375,

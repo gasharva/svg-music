@@ -44981,46 +44981,6 @@
       },
       "label": "3-4",
       "logicalLabel": "P2-M1"
-    },
-    {
-      "partNumber": 1,
-      "measureNumber": 19,
-      "beatNumber": 4,
-      "beatValue": 4,
-      "side": 0,
-      "confidence": 0.13263813992249185,
-      "physicalBounds": {
-        "left": 435.1893005371094,
-        "top": 844.0818481445312,
-        "right": 453.7590637207031,
-        "bottom": 874.5369262695312,
-        "width": 18.56976318359375,
-        "height": 30.455078125,
-        "centerX": 444.47418212890625,
-        "centerY": 859.3093872070312
-      },
-      "numeratorBounds": {
-        "left": 435.1893005371094,
-        "top": 844.0818481445312,
-        "right": 453.7590637207031,
-        "bottom": 859.7529296875,
-        "width": 18.56976318359375,
-        "height": 15.67108154296875,
-        "centerX": 444.47418212890625,
-        "centerY": 851.9173889160156
-      },
-      "denominatorBounds": {
-        "left": 444.0293273925781,
-        "top": 866.2578735351562,
-        "right": 453.7590637207031,
-        "bottom": 874.5369262695312,
-        "width": 9.729736328125,
-        "height": 8.279052734375,
-        "centerX": 448.8941955566406,
-        "centerY": 870.3973999023438
-      },
-      "label": "4-4",
-      "logicalLabel": "P1-M19"
     }
   ],
   "logicalGrid": {
@@ -45371,10 +45331,10 @@
       {
         "partNumber": 1,
         "measureNumber": 19,
-        "beatNumber": 4,
+        "beatNumber": 3,
         "beatValue": 4,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 32,
+        "horizontalUnits": 24,
         "halfStaffSpace": 3.6959991455078125,
         "physicalBounds": {
           "left": 421.73199462890625,
@@ -45390,10 +45350,10 @@
       {
         "partNumber": 1,
         "measureNumber": 20,
-        "beatNumber": 4,
+        "beatNumber": 3,
         "beatValue": 4,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 32,
+        "horizontalUnits": 24,
         "halfStaffSpace": 3.6959991455078125,
         "physicalBounds": {
           "left": 598.2186279296875,

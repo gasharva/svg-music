@@ -45306,126 +45306,6 @@
       },
       "label": "3-4",
       "logicalLabel": "P2-M1"
-    },
-    {
-      "partNumber": 2,
-      "measureNumber": 5,
-      "beatNumber": 3,
-      "beatValue": 4,
-      "side": 0,
-      "confidence": 0.1376559737312533,
-      "physicalBounds": {
-        "left": 86.69784545898438,
-        "top": 409.20587158203125,
-        "right": 96.9865951538086,
-        "bottom": 432.1488342285156,
-        "width": 10.288749694824219,
-        "height": 22.942962646484375,
-        "centerX": 91.84222030639648,
-        "centerY": 420.67735290527344
-      },
-      "numeratorBounds": {
-        "left": 86.69784545898438,
-        "top": 409.20587158203125,
-        "right": 96.9865951538086,
-        "bottom": 417.36480712890625,
-        "width": 10.288749694824219,
-        "height": 8.158935546875,
-        "centerX": 91.84222030639648,
-        "centerY": 413.28533935546875
-      },
-      "denominatorBounds": {
-        "left": 86.69784545898438,
-        "top": 423.9898986816406,
-        "right": 96.9865951538086,
-        "bottom": 432.1488342285156,
-        "width": 10.288749694824219,
-        "height": 8.158935546875,
-        "centerX": 91.84222030639648,
-        "centerY": 428.0693664550781
-      },
-      "label": "3-4",
-      "logicalLabel": "P2-M5"
-    },
-    {
-      "partNumber": 2,
-      "measureNumber": 13,
-      "beatNumber": 3,
-      "beatValue": 4,
-      "side": 0,
-      "confidence": 0.13765637624700708,
-      "physicalBounds": {
-        "left": 86.69784545898438,
-        "top": 744.6085815429688,
-        "right": 96.9865951538086,
-        "bottom": 767.551513671875,
-        "width": 10.288749694824219,
-        "height": 22.94293212890625,
-        "centerX": 91.84222030639648,
-        "centerY": 756.0800476074219
-      },
-      "numeratorBounds": {
-        "left": 86.69784545898438,
-        "top": 744.6085815429688,
-        "right": 96.9865951538086,
-        "bottom": 752.7675170898438,
-        "width": 10.288749694824219,
-        "height": 8.158935546875,
-        "centerX": 91.84222030639648,
-        "centerY": 748.6880493164062
-      },
-      "denominatorBounds": {
-        "left": 86.69784545898438,
-        "top": 759.392578125,
-        "right": 96.9865951538086,
-        "bottom": 767.551513671875,
-        "width": 10.288749694824219,
-        "height": 8.158935546875,
-        "centerX": 91.84222030639648,
-        "centerY": 763.4720458984375
-      },
-      "label": "3-4",
-      "logicalLabel": "P2-M13"
-    },
-    {
-      "partNumber": 1,
-      "measureNumber": 19,
-      "beatNumber": 4,
-      "beatValue": 4,
-      "side": 0,
-      "confidence": 0.15614083167973514,
-      "physicalBounds": {
-        "left": 435.14935302734375,
-        "top": 843.4619140625,
-        "right": 454.7660827636719,
-        "bottom": 873.7968139648438,
-        "width": 19.616729736328125,
-        "height": 30.33489990234375,
-        "centerX": 444.9577178955078,
-        "centerY": 858.6293640136719
-      },
-      "numeratorBounds": {
-        "left": 435.14935302734375,
-        "top": 843.4619140625,
-        "right": 454.7660827636719,
-        "bottom": 859.0128173828125,
-        "width": 19.616729736328125,
-        "height": 15.5509033203125,
-        "centerX": 444.9577178955078,
-        "centerY": 851.2373657226562
-      },
-      "denominatorBounds": {
-        "left": 444.4773254394531,
-        "top": 865.6378784179688,
-        "right": 454.7660827636719,
-        "bottom": 873.7968139648438,
-        "width": 10.28875732421875,
-        "height": 8.158935546875,
-        "centerX": 449.6217041015625,
-        "centerY": 869.7173461914062
-      },
-      "label": "4-4",
-      "logicalLabel": "P1-M19"
     }
   ],
   "logicalGrid": {
@@ -45776,10 +45656,10 @@
       {
         "partNumber": 1,
         "measureNumber": 19,
-        "beatNumber": 4,
+        "beatNumber": 3,
         "beatValue": 4,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 32,
+        "horizontalUnits": 24,
         "halfStaffSpace": 3.6960067749023438,
         "physicalBounds": {
           "left": 422.18798828125,
@@ -45795,10 +45675,10 @@
       {
         "partNumber": 1,
         "measureNumber": 20,
-        "beatNumber": 4,
+        "beatNumber": 3,
         "beatValue": 4,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 32,
+        "horizontalUnits": 24,
         "halfStaffSpace": 3.6960067749023438,
         "physicalBounds": {
           "left": 598.4453125,
