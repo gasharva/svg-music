@@ -52,6 +52,13 @@ public sealed class GlyphPcaNumberRecognizer : ISvgNumberRecognizer
             if (analysis.Error is not null)
                 return new SvgNumberRecognition(null, 0, Array.Empty<SvgNumberCandidate>(), analysis.Error);
 
+            // Rejected open-set classifications must stay rejected. In particular, do not expose
+            // weak nearest-class alternatives to MeterResolver: its musical whitelist is allowed to
+            // disambiguate accepted digit hypotheses, but must never resurrect geometry that the PCA
+            // model has explicitly classified as out-of-distribution / too risky.
+            if (!analysis.Accepted)
+                return new SvgNumberRecognition(null, 0, Array.Empty<SvgNumberCandidate>());
+
             var candidates = analysis.Matches
                 .Select(ToNumberCandidate)
                 .Where(x => x is not null)
@@ -62,8 +69,8 @@ public sealed class GlyphPcaNumberRecognizer : ISvgNumberRecognizer
                 .ToArray();
 
             var best = candidates.FirstOrDefault();
-            if (!analysis.Accepted || best is null)
-                return new SvgNumberRecognition(null, 0, candidates);
+            if (best is null)
+                return new SvgNumberRecognition(null, 0, Array.Empty<SvgNumberCandidate>());
 
             return new SvgNumberRecognition(best.Value, best.Confidence, candidates);
         }
