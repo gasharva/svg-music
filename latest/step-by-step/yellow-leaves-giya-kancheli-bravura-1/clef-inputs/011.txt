@@ -1,5 +1,5 @@
 block: P2-M9
-logical bbox: X ?..?, Y -0.1..7.08
+logical bbox: X 0.86..2.95, Y -0.1..7.08
 contours: 3
 points: 443
 skeleton points: 249
