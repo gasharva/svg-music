@@ -55,16 +55,6 @@ public sealed class NoteHeadResolver
             if (containingOuter)
                 continue;
 
-            var innerContour = ovalCandidates
-                .Where(x => x.Id != outer.Id)
-                .Where(x => x.PartNumber == outer.PartNumber && x.MeasureNumber == outer.MeasureNumber)
-                .Where(x => Contains(outer.PhysicalBounds, x.PhysicalBounds))
-                .Where(x => CenterDistance(outer.PhysicalBounds, x.PhysicalBounds) <= outer.PhysicalBounds.Height * 0.35)
-                .Where(x => WidthRatio(x.PhysicalBounds, outer.PhysicalBounds) >= HollowInnerMinWidthRatio)
-                .Where(x => WidthRatio(x.PhysicalBounds, outer.PhysicalBounds) <= HollowInnerMaxWidthRatio)
-                .OrderByDescending(x => Area(x.PhysicalBounds))
-                .FirstOrDefault();
-
             var clef = FindNearestClefToLeft(outer, clefs);
             if (clef is null || clef.Kind == ClefKind.C)
                 continue;
@@ -72,13 +62,14 @@ public sealed class NoteHeadResolver
             var logicalCenterY = (outer.LogicalBounds.Top + outer.LogicalBounds.Bottom) / 2.0;
             var staffPosition = (int)Math.Round(logicalCenterY);
             var pitch = PitchFor(clef.Kind, staffPosition);
+            var isFilled = !HasHollowSourceContour(outer);
 
             result.Add(new NoteHeadResolution(
                 outer.PartNumber,
                 outer.MeasureNumber,
                 outer.LogicalBounds,
                 outer.PhysicalBounds,
-                IsFilled: innerContour is null,
+                isFilled,
                 pitch));
         }
 
@@ -124,7 +115,39 @@ public sealed class NoteHeadResolver
             primitive.PartNumber!.Value,
             primitive.MeasureNumber!.Value,
             bounds,
-            logical);
+            logical,
+            primitive.SourceGroupContours);
+    }
+
+    private bool HasHollowSourceContour(OvalCandidate outer)
+    {
+        if (outer.SourceGroupContours is null || outer.SourceGroupContours.Count < 2)
+            return false;
+
+        var innerBounds = outer.SourceGroupContours
+            .Select(TryGetBounds)
+            .Where(x => x is not null)
+            .Select(x => x!)
+            .Where(x => Area(x) < Area(outer.PhysicalBounds) * 0.95)
+            .Where(x => Contains(outer.PhysicalBounds, x))
+            .Where(x => CenterDistance(outer.PhysicalBounds, x) <= outer.PhysicalBounds.Height * 0.35)
+            .Where(x => WidthRatio(x, outer.PhysicalBounds) >= HollowInnerMinWidthRatio)
+            .Where(x => WidthRatio(x, outer.PhysicalBounds) <= HollowInnerMaxWidthRatio)
+            .ToArray();
+
+        return innerBounds.Length > 0;
+    }
+
+    private static RectD? TryGetBounds(PrimitiveContour contour)
+    {
+        if (contour.Points.Count == 0)
+            return null;
+
+        var left = contour.Points.Min(x => (double)x.X);
+        var top = contour.Points.Min(x => (double)x.Y);
+        var right = contour.Points.Max(x => (double)x.X);
+        var bottom = contour.Points.Max(x => (double)x.Y);
+        return new RectD(left, top, right, bottom);
     }
 
     private static bool IsOnLegalStaffPosition(
@@ -258,5 +281,6 @@ public sealed class NoteHeadResolver
         int PartNumber,
         int MeasureNumber,
         RectD PhysicalBounds,
-        LogicalRectD LogicalBounds);
+        LogicalRectD LogicalBounds,
+        IReadOnlyList<PrimitiveContour>? SourceGroupContours);
 }
