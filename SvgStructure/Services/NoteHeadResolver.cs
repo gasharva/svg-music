@@ -126,8 +126,8 @@ public sealed class NoteHeadResolver
 
         var innerBounds = outer.SourceGroupContours
             .Select(TryGetBounds)
-            .Where(x => x is not null)
-            .Select(x => x!)
+            .Where(x => x.HasValue)
+            .Select(x => x.Value)
             .Where(x => Area(x) < Area(outer.PhysicalBounds) * 0.95)
             .Where(x => Contains(outer.PhysicalBounds, x))
             .Where(x => CenterDistance(outer.PhysicalBounds, x) <= outer.PhysicalBounds.Height * 0.35)
