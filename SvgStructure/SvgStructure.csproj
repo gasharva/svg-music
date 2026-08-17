@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SvgSymbols\SvgSymbols.csproj" />
+    <ProjectReference Include="..\GlyphPcaGallery\GlyphPcaGallery.csproj" />
   </ItemGroup>
 
   <ItemGroup>
