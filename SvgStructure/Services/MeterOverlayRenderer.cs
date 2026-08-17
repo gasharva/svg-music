@@ -1,4 +1,3 @@
-using System.Globalization;
 using SkiaSharp;
 using Svg.Skia;
 using SvgStructure.Models;
@@ -98,14 +97,16 @@ public sealed class MeterOverlayRenderer
     private static void DrawClefLabel(SKCanvas canvas, ClefResolution clef, SKRect page)
     {
         var b = clef.PhysicalBounds;
-        var logical = clef.LogicalBounds;
-        var left = logical.Left?.ToString("0.0", CultureInfo.InvariantCulture) ?? "?";
-        var right = logical.Right?.ToString("0.0", CultureInfo.InvariantCulture) ?? "?";
-        var top = logical.Top.ToString("0.0", CultureInfo.InvariantCulture);
-        var bottom = logical.Bottom.ToString("0.0", CultureInfo.InvariantCulture);
-        var text = $"{clef.Kind} X{left}-{right} Y{top}-{bottom}";
-        var height = (float)Math.Max(7, Math.Min(12, b.Height * 0.18));
-        DrawVectorLabel(canvas, text, b.Left, b.Top, b.Bottom, height, SKColors.DodgerBlue, page);
+        var height = (float)Math.Max(8, Math.Min(14, b.Height * 0.20));
+        DrawVectorLabel(
+            canvas,
+            clef.Kind.ToString(),
+            b.Left,
+            b.Top,
+            b.Bottom,
+            height,
+            SKColors.DodgerBlue,
+            page);
     }
 
     private static void DrawVectorLabel(
