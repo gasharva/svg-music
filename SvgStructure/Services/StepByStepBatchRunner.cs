@@ -35,7 +35,7 @@ public sealed class StepByStepBatchRunner
     public const int DefaultSubdivisionsPerBeat = 8;
 
     private readonly PartMeasureResolver _partMeasureResolver = new();
-    private readonly PrimitiveResolver _primitiveResolver = new(0.25);
+    private readonly PrimitiveResolver _primitiveResolver = new(1.5);
     private readonly PrimitiveSvgExporter _primitiveSvgExporter = new();
     private readonly MusicSymbolResolver _musicSymbolResolver = new();
     private readonly MusicSymbolSvgExporter _musicSymbolSvgExporter = new();
