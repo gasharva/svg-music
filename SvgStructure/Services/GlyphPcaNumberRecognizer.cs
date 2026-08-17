@@ -76,13 +76,35 @@ public sealed class GlyphPcaNumberRecognizer : ISvgNumberRecognizer
 
     private static SvgNumberCandidate? ToNumberCandidate(ClassMatch match)
     {
-        if (!int.TryParse(match.Class, NumberStyles.None, CultureInfo.InvariantCulture, out var value))
+        var value = ParseDigitClass(match.Class);
+        if (value is null)
             return null;
 
         // The PCA gallery exposes distance/risk rather than a probability. MeterResolver only
         // needs a monotonic confidence for ranking candidate pairs, so use a bounded inverse distance.
         var confidence = 1.0 / (1.0 + Math.Max(0, match.Distance));
-        return new SvgNumberCandidate(value, confidence);
+        return new SvgNumberCandidate(value.Value, confidence);
+    }
+
+    private static int? ParseDigitClass(string className)
+    {
+        if (int.TryParse(className, NumberStyles.None, CultureInfo.InvariantCulture, out var plainDigit))
+            return plainDigit;
+
+        // The trained glyph model uses semantic class labels (currently dgt3, dgt4, ...), not
+        // bare numeric strings. Keep the adapter responsible for translating model vocabulary into
+        // ISvgNumberRecognizer's numeric vocabulary; the PCA project itself remains glyph-agnostic.
+        foreach (var prefix in new[] { "dgt", "digit", "timesig" })
+        {
+            if (!className.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            var suffix = className[prefix.Length..];
+            if (int.TryParse(suffix, NumberStyles.None, CultureInfo.InvariantCulture, out var digit))
+                return digit;
+        }
+
+        return null;
     }
 
     private static void WriteContoursSvg(
