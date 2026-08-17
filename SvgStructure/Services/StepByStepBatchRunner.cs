@@ -58,10 +58,11 @@ public sealed class StepByStepBatchRunner
         var repositoryRoot = FindRepositoryRoot(inputFolder);
         var recognizerWork = Path.Combine(Path.GetTempPath(), $"svg-music-recognizers-{Guid.NewGuid():N}");
         var glyphs = Path.Combine(repositoryRoot, "References", "glyphs");
+        var glyphPcaModel = Path.Combine(repositoryRoot, "GlyphPcaGallery", "glyph-model.json");
 
-        var baseNumberRecognizer = new BravuraNumberRecognizer(
-            glyphs,
-            Path.Combine(recognizerWork, "meter"));
+        var baseNumberRecognizer = new GlyphPcaNumberRecognizer(
+            glyphPcaModel,
+            Path.Combine(recognizerWork, "meter-pca"));
         var diagnosticNumberRecognizer = new DiagnosticNumberRecognizer(baseNumberRecognizer);
         var meterResolver = new MeterResolver(diagnosticNumberRecognizer);
 
