@@ -6,12 +6,12 @@ skeleton points: 226
 skeleton segments: 222
 skeleton polylines: 5
 skeleton simplified points: 26
-vector result: none (Open-set rejection: nearest/ref=0.918 (max 0.72), margin/ref=0.541 (min 0.2).)
+vector result: G 42.8 %
 legacy IoU result: G 24.3 %
 
 vector candidates:
-F: confidence=5.45 %, distance=17.445
-G: confidence=0.01 %, distance=27.719
+G: confidence=42.85 %, distance=1.334
+F: confidence=12.58 %, distance=6.952
 
 legacy IoU candidates:
 G: maskIoU=21.95 %, vectorIoU=28.66 %, score=24.30 %
