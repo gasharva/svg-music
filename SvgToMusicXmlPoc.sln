@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SvgStructure", "SvgStructur
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SvgSymbols", "SvgSymbols\SvgSymbols.csproj", "{B8E89E83-4E55-4CB5-9800-8FB1F21D2A29}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlyphPcaGallery", "GlyphPcaGallery\GlyphPcaGallery.csproj", "{D1A9DAF1-1D42-4A2D-A61A-9A5F7248F071}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{B8E89E83-4E55-4CB5-9800-8FB1F21D2A29}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B8E89E83-4E55-4CB5-9800-8FB1F21D2A29}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B8E89E83-4E55-4CB5-9800-8FB1F21D2A29}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D1A9DAF1-1D42-4A2D-A61A-9A5F7248F071}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D1A9DAF1-1D42-4A2D-A61A-9A5F7248F071}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D1A9DAF1-1D42-4A2D-A61A-9A5F7248F071}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D1A9DAF1-1D42-4A2D-A61A-9A5F7248F071}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
