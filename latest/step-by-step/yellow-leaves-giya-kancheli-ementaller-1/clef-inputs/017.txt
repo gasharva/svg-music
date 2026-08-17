@@ -2,16 +2,6 @@ block: P1-M18
 logical bbox: X 9.94..12.1, Y -4.5..3.1
 contours: 3
 points: 549
-skeleton points: 221
-skeleton segments: 215
-skeleton polylines: 10
-skeleton simplified points: 32
-vector result: none (no result)
-legacy IoU result: G 28.0 %
-
-vector candidates:
-
-
-legacy IoU candidates:
-G: maskIoU=25.25 %, vectorIoU=33.21 %, score=28.04 %
-F: maskIoU=23.35 %, vectorIoU=30.94 %, score=26.00 %
+value: null
+confidence: 0.0000
+candidates:

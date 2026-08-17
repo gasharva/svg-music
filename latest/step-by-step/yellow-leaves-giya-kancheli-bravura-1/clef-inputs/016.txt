@@ -2,17 +2,8 @@ block: P2-M17
 logical bbox: X 0.75..2.58, Y -0.1..7.08
 contours: 3
 points: 443
-skeleton points: 249
-skeleton segments: 241
-skeleton polylines: 11
-skeleton simplified points: 41
-vector result: F 98.4 %
-legacy IoU result: F 99.8 %
-
-vector candidates:
-F: confidence=98.39 %, distance=0.016
-G: confidence=12.48 %, distance=7.013
-
-legacy IoU candidates:
-F: maskIoU=99.66 %, vectorIoU=100.00 %, score=99.78 %
-G: maskIoU=22.27 %, vectorIoU=28.74 %, score=24.53 %
+value: F
+confidence: 0.9839
+candidates:
+  F: confidence=0.9839, distance=0.0163
+  G: confidence=0.1248, distance=7.0128

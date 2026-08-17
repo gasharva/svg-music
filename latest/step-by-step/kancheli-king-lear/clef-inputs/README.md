@@ -1,22 +1,16 @@
 # Clef recognizer inputs
 
-These are the exact post-sanity-filter vector candidates sent to `IClefRecognizer`.
+Exact post-sanity-filter glyph candidates sent to the current `IClefRecognizer`.
 
-`Legacy IoU` is the old shape-matching baseline: bbox-normalized 64x64 binary-mask IoU plus Clipper2 vector IoU. No size or staff-position prior is used.
-
-`Skeleton` is the raw scanline-midpoint graph. `lines` traces that graph into chains and simplifies each chain with Ramer-Douglas-Peucker; no smoothing yet.
-
-| Candidate | P+M | Logical bbox | Vector recognizer | Legacy IoU | Shape | Skeleton |
-|---|---|---|---|---|---|---|
-| [001](001.txt) | P1-M1 | `X 0.99..3.42, Y -3.27..11.5` | G 88.7 % | G 85.8 % | ![001](001.png) | [raw](001.skeleton.svg) · [lines](001.skeleton-lines.svg) |
-| [002](002.txt) | P2-M1 | `X 1.02..3.01, Y 0.01..6.66` | F 89.4 % | F 77.1 % | ![002](002.png) | [raw](002.skeleton.svg) · [lines](002.skeleton-lines.svg) |
-| [003](003.txt) | P2-M1 | `X 11.44..15.43, Y -7.64..0.02` | none (no result) | F 0.8 % | ![003](003.png) | [raw](003.skeleton.svg) · [lines](003.skeleton-lines.svg) |
-| [004](004.txt) | P2-M1 | `X 12.45..15.43, Y -7.64..-1.39` | none (no result) | F 0.6 % | ![004](004.png) | [raw](004.skeleton.svg) · [lines](004.skeleton-lines.svg) |
-| [005](005.txt) | P1-M2 | `X 13.54..15.57, Y -0.64..7.02` | none (no result) | G 19.3 % | ![005](005.png) | [raw](005.skeleton.svg) · [lines](005.skeleton-lines.svg) |
-| [006](006.txt) | P1-M5 | `X 0.9..3.1, Y -3.27..11.5` | G 88.7 % | G 85.8 % | ![006](006.png) | [raw](006.skeleton.svg) · [lines](006.skeleton-lines.svg) |
-| [007](007.txt) | P2-M5 | `X 0.92..2.73, Y 0.01..6.66` | F 89.4 % | F 77.1 % | ![007](007.png) | [raw](007.skeleton.svg) · [lines](007.skeleton-lines.svg) |
-| [008](008.txt) | P1-M7 | `X 3.39..4.69, Y -3.69..2.07` | none (no result) | F 34.5 % | ![008](008.png) | [raw](008.skeleton.svg) · [lines](008.skeleton-lines.svg) |
-| [009](009.txt) | P1-M7 | `X 5.84..7.97, Y -7.63..0.02` | none (no result) | G 19.3 % | ![009](009.png) | [raw](009.skeleton.svg) · [lines](009.skeleton-lines.svg) |
-| [010](010.txt) | P1-M9 | `X 0.99..3.41, Y -3.27..11.5` | G 88.7 % | G 85.8 % | ![010](010.png) | [raw](010.skeleton.svg) · [lines](010.skeleton-lines.svg) |
-| [011](011.txt) | P2-M9 | `X 1.01..3, Y 0.01..6.66` | F 89.4 % | F 77.1 % | ![011](011.png) | [raw](011.skeleton.svg) · [lines](011.skeleton-lines.svg) |
-| [012](012.txt) | P1-M11 | `X 13.58..15.16, Y -0.64..7.02` | none (no result) | G 19.5 % | ![012](012.png) | [raw](012.skeleton.svg) · [lines](012.skeleton-lines.svg) |
+- [001](001.txt) → **G** (0.887) · [svg](001.svg) · [png](001.png)
+- [002](002.txt) → **F** (0.894) · [svg](002.svg) · [png](002.png)
+- [003](003.txt) → **null** (0.000) · [svg](003.svg) · [png](003.png)
+- [004](004.txt) → **null** (0.000) · [svg](004.svg) · [png](004.png)
+- [005](005.txt) → **null** (0.000) · [svg](005.svg) · [png](005.png)
+- [006](006.txt) → **G** (0.887) · [svg](006.svg) · [png](006.png)
+- [007](007.txt) → **F** (0.894) · [svg](007.svg) · [png](007.png)
+- [008](008.txt) → **null** (0.000) · [svg](008.svg) · [png](008.png)
+- [009](009.txt) → **null** (0.000) · [svg](009.svg) · [png](009.png)
+- [010](010.txt) → **G** (0.887) · [svg](010.svg) · [png](010.png)
+- [011](011.txt) → **F** (0.894) · [svg](011.svg) · [png](011.png)
+- [012](012.txt) → **null** (0.000) · [svg](012.svg) · [png](012.png)
