@@ -44,6 +44,30 @@ public sealed record LogicalGridBlock(
         var bottomRight = ToLogical(new PointD(physical.Right, physical.Bottom));
         return new LogicalRectD(topLeft.X, topLeft.Y, bottomRight.X, bottomRight.Y);
     }
+
+    public PointD ToPhysical(LogicalPoint logical)
+    {
+        var x = logical.X is { } logicalX && HorizontalUnits is { } units && units > 0
+            ? PhysicalBounds.Left + logicalX / units * PhysicalBounds.Width
+            : PhysicalBounds.Left;
+
+        var y = PhysicalBounds.Top + logical.Y * HalfStaffSpace;
+        return new PointD(x, y);
+    }
+
+    public RectD ToPhysical(LogicalRectD logical)
+    {
+        var left = logical.Left is { } logicalLeft
+            ? ToPhysical(new LogicalPoint(logicalLeft, logical.Top)).X
+            : PhysicalBounds.Left;
+        var right = logical.Right is { } logicalRight
+            ? ToPhysical(new LogicalPoint(logicalRight, logical.Bottom)).X
+            : PhysicalBounds.Right;
+        var top = PhysicalBounds.Top + logical.Top * HalfStaffSpace;
+        var bottom = PhysicalBounds.Top + logical.Bottom * HalfStaffSpace;
+
+        return new RectD(left, top, right, bottom);
+    }
 }
 
 public sealed class LogicalGridResolution
