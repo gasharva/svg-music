@@ -62,13 +62,14 @@ public sealed class StepByStepBatchRunner
 
         var baseNumberRecognizer = new GlyphPcaNumberRecognizer(
             glyphPcaModel,
-            Path.Combine(recognizerWork, "meter-pca"));
+            Path.Combine(recognizerWork, "meter-pca"),
+            minimumConfidence: 0.20);
         var diagnosticNumberRecognizer = new DiagnosticNumberRecognizer(baseNumberRecognizer);
         var meterResolver = new MeterResolver(diagnosticNumberRecognizer);
 
-        var baseClefRecognizer = new BravuraClefRecognizer(
-            glyphs,
-            Path.Combine(recognizerWork, "clef"));
+        var baseClefRecognizer = new GlyphPcaClefRecognizer(
+            glyphPcaModel,
+            Path.Combine(recognizerWork, "clef-pca"));
         var legacyIoUClefAnalyzer = new LegacyIoUClefAnalyzer(glyphs);
         var diagnosticClefRecognizer = new DiagnosticClefRecognizer(baseClefRecognizer, legacyIoUClefAnalyzer);
         var clefResolver = new ClefResolver(diagnosticClefRecognizer);
