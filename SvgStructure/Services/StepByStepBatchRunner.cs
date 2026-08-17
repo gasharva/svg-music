@@ -72,7 +72,9 @@ public sealed class StepByStepBatchRunner
             Path.Combine(recognizerWork, "clef-pca"));
         var legacyIoUClefAnalyzer = new LegacyIoUClefAnalyzer(glyphs);
         var diagnosticClefRecognizer = new DiagnosticClefRecognizer(baseClefRecognizer, legacyIoUClefAnalyzer);
-        var clefResolver = new ClefResolver(diagnosticClefRecognizer);
+        var clefResolver = new ClefResolver(
+            diagnosticClefRecognizer,
+            minimumConfidence: 0.70);
 
         try
         {
