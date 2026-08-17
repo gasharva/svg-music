@@ -6,8 +6,9 @@ namespace SvgStructure.Services;
 /// Propagates staff-measure ownership competitively.
 ///
 /// Only primitives that already belong to exactly one staff-measure may propagate that color.
-/// If an unassigned primitive is close to two or more different colors in the same iteration,
-/// it becomes permanently ambiguous and never participates in further propagation.
+/// Physical touching/overlap is stronger evidence than ordinary proximity: if a pending primitive
+/// touches exactly one color, that color wins even when another color is merely nearby.
+/// If evidence of the same strength points to several colors, the primitive becomes ambiguous.
 /// </summary>
 public sealed class CompetitivePrimitiveClassifier
 {
@@ -75,6 +76,7 @@ public sealed class CompetitivePrimitiveClassifier
             foreach (var primitiveId in pending)
             {
                 var primitive = primitiveById[primitiveId];
+                var touchingColors = new HashSet<StaffMeasureKey>();
                 var nearbyColors = new HashSet<StaffMeasureKey>();
 
                 foreach (var region in regions)
@@ -90,17 +92,42 @@ public sealed class CompetitivePrimitiveClassifier
                     if (!insideVerticalLimits)
                         continue;
 
+                    var realSeeds = realSeedsByKey.GetValueOrDefault(region.Key);
+                    var touchesColor = TouchesColor(
+                        primitive.Bounds,
+                        virtualSeeds[region.Key],
+                        realSeeds);
+
+                    if (touchesColor)
+                    {
+                        touchingColors.Add(region.Key);
+                        continue;
+                    }
+
                     var staffSpace = region.Height <= 0 ? 0 : region.Height / 4.0;
                     var maxGap = staffSpace * ProximityInStaffSpaces;
-
                     var closeToColor = IsCloseToColor(
                         primitive.Bounds,
                         virtualSeeds[region.Key],
-                        realSeedsByKey.GetValueOrDefault(region.Key),
+                        realSeeds,
                         maxGap);
 
                     if (closeToColor)
                         nearbyColors.Add(region.Key);
+                }
+
+                // Strong evidence first. A primitive touching red geometry is not made ambiguous
+                // merely because orange geometry happens to be within the wider proximity radius.
+                if (touchingColors.Count == 1)
+                {
+                    newlyAssigned[primitiveId] = touchingColors.Single();
+                    continue;
+                }
+
+                if (touchingColors.Count > 1)
+                {
+                    newlyAmbiguous.Add(primitiveId);
+                    continue;
                 }
 
                 if (nearbyColors.Count == 1)
@@ -140,6 +167,22 @@ public sealed class CompetitivePrimitiveClassifier
             result[id] = new HashSet<StaffMeasureKey>(FindRelevantKeys(primitiveById[id], regions));
 
         return result;
+    }
+
+    private static bool TouchesColor(
+        RectD candidate,
+        IReadOnlyList<RectD> virtualSeeds,
+        IReadOnlyList<RawPrimitive>? realSeeds)
+    {
+        var touchesVirtualSeed = virtualSeeds
+            .Any(x => RectangleDistance(candidate, x) <= 1e-9);
+        if (touchesVirtualSeed)
+            return true;
+
+        if (realSeeds is null)
+            return false;
+
+        return realSeeds.Any(x => RectangleDistance(candidate, x.Bounds) <= 1e-9);
     }
 
     private static bool IsCloseToColor(
