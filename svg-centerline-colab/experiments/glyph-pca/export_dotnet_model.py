@@ -18,6 +18,8 @@ def export_dotnet_model(
     sdf_grid_extent=1.0,
     sdf_clip=0.30,
     sdf_boundary_samples=1024,
+    class_threshold_multiplier=1.25,
+    ratio_threshold=0.50,
 ):
     X = np.asarray(X, dtype=np.float64)
     labels = np.asarray(labels)
@@ -36,20 +38,25 @@ def export_dotnet_model(
     nearest_same = []
     nearest_wrong = []
     margins = []
+    class_same_distances = {}
 
     for i in range(len(labels)):
         same = np.where((labels == labels[i]) & (np.arange(len(labels)) != i))[0]
         wrong = np.where(labels != labels[i])[0]
+
         if len(same):
             ds = float(np.min(distances[i, same]))
             nearest_same.append(ds)
+            class_same_distances.setdefault(str(labels[i]), []).append(ds)
         else:
             ds = None
+
         if len(wrong):
             dw = float(np.min(distances[i, wrong]))
             nearest_wrong.append(dw)
         else:
             dw = None
+
         if ds is not None and dw is not None:
             margins.append(dw - ds)
 
@@ -58,8 +65,31 @@ def export_dotnet_model(
     wrong_p05 = float(np.percentile(nearest_wrong, 5)) if nearest_wrong else same_p95 * 2
     wrong_p01 = float(np.percentile(nearest_wrong, 1)) if nearest_wrong else wrong_p05
 
+    class_calibration = {}
+    for cls in sorted(set(str(x) for x in labels)):
+        values = class_same_distances.get(cls, [])
+        if values:
+            median = float(np.median(values))
+            maximum = float(np.max(values))
+            p95 = float(np.percentile(values, 95))
+            threshold = maximum * float(class_threshold_multiplier)
+        else:
+            # A class with a single prototype cannot estimate its own spread.
+            # Fall back to the global same-class p95 so inference still works.
+            median = same_p95
+            maximum = same_p95
+            p95 = same_p95
+            threshold = same_p95 * float(class_threshold_multiplier)
+
+        class_calibration[cls] = {
+            "nearestSameMedian": median,
+            "nearestSameP95": p95,
+            "nearestSameMax": maximum,
+            "distanceThreshold": threshold,
+        }
+
     model = {
-        "version": 1,
+        "version": 2,
         "normalization": {
             "mode": normalization_mode,
             "boundarySamples": int(boundary_samples),
@@ -83,6 +113,9 @@ def export_dotnet_model(
             "nearestWrongP05": wrong_p05,
             "nearestWrongP01": wrong_p01,
             "marginP05": float(np.percentile(margins, 5)) if margins else 0.0,
+            "classThresholdMultiplier": float(class_threshold_multiplier),
+            "ratioThreshold": float(ratio_threshold),
+            "classes": class_calibration,
         },
         "references": [
             {
@@ -102,6 +135,6 @@ def export_dotnet_model(
     print(f"Explained variance: {pca.explained_variance_ratio_.sum():.2%}")
     print(f"References: {len(model['references'])}")
     print("Calibration:")
-    print(json.dumps(model["calibration"], indent=2))
+    print(json.dumps(model["calibration"], indent=2, ensure_ascii=False))
 
     return model, pca, fingerprints

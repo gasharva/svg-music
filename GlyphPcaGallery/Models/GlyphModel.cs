@@ -40,6 +40,17 @@ public sealed class Calibration
     public double NearestWrongP05 { get; set; }
     public double NearestWrongP01 { get; set; }
     public double MarginP05 { get; set; }
+    public double ClassThresholdMultiplier { get; set; } = 1.25;
+    public double RatioThreshold { get; set; } = 0.50;
+    public Dictionary<string, ClassCalibration> Classes { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+}
+
+public sealed class ClassCalibration
+{
+    public double NearestSameMedian { get; set; }
+    public double NearestSameP95 { get; set; }
+    public double NearestSameMax { get; set; }
+    public double DistanceThreshold { get; set; }
 }
 
 public sealed class GlyphReference
@@ -55,10 +66,14 @@ public sealed record GlyphAnalysis(
     string SourcePath,
     string AssetName,
     IReadOnlyList<ClassMatch> Matches,
-    double Confidence,
     double BestDistance,
+    double SecondDistance,
     double Margin,
-    double RelativeMargin,
-    double AbsoluteConfidence,
+    double DistanceRatio,
+    double ClassDistanceThreshold,
+    double NormalizedDistance,
+    double RatioThreshold,
+    double Risk,
+    bool Accepted,
     long ElapsedMicroseconds,
     string? Error = null);
