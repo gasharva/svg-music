@@ -2,7 +2,7 @@
   "profiles": {
     "GlyphPcaGallery": {
       "commandName": "Project",
-      "commandLineArgs": "--model d:\\musica\\glyph-model.json \r\n--input d:\\Repos\\svg-music\\References\\glyphs\r\n--output d:\\musica\\glyph-results\r\n--parallelism 8"
+      "commandLineArgs": "--model d:\\musica\\glyph-model.json \r\n--input d:\\Repos\\svg-music\\Samples\\step-by-step\\_artifacts\\kancheli-mimino-1\\music-symbols\r\n--output d:\\musica\\glyph-results\r\n--parallelism 8"
     }
   }
 }
