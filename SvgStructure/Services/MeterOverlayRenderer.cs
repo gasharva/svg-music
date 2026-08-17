@@ -4,7 +4,7 @@ using SvgStructure.Models;
 
 namespace SvgStructure.Services;
 
-/// <summary>Diagnostic only. Dims the score and redraws recognized meters and clefs at full intensity.</summary>
+/// <summary>Diagnostic only. Dims the score and redraws recognized semantic objects at full intensity.</summary>
 public sealed class MeterOverlayRenderer
 {
     private const float RenderScale = 2f;
@@ -13,6 +13,8 @@ public sealed class MeterOverlayRenderer
         PartMeasureResolution structure,
         IReadOnlyList<MeterResolution> meters,
         IReadOnlyList<ClefResolution> clefs,
+        IReadOnlyList<LedgerLineResolution> ledgerLines,
+        LogicalGridResolution logicalGrid,
         string outputPath)
     {
         using var svg = SKSvg.CreateFromFile(structure.SvgPath);
@@ -51,12 +53,52 @@ public sealed class MeterOverlayRenderer
             DrawClefLabel(canvas, clef, bounds);
         }
 
+        foreach (var ledger in ledgerLines)
+            DrawLedgerLadder(canvas, ledger, logicalGrid);
+
         Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
         using var image = SKImage.FromBitmap(bitmap);
         using var data = image.Encode(SKEncodedImageFormat.Png, 100);
         using var stream = File.Create(outputPath);
         data.SaveTo(stream);
         return outputPath;
+    }
+
+    private static void DrawLedgerLadder(
+        SKCanvas canvas,
+        LedgerLineResolution ledger,
+        LogicalGridResolution logicalGrid)
+    {
+        if (!logicalGrid.TryGetBlock(ledger.PartNumber, ledger.MeasureNumber, out var block))
+            return;
+
+        if (ledger.LogicalBounds.Left is not { } logicalLeft ||
+            ledger.LogicalBounds.Right is not { } logicalRight)
+            return;
+
+        var left = block.ToPhysical(new LogicalPoint(logicalLeft, 0)).X;
+        var right = block.ToPhysical(new LogicalPoint(logicalRight, 0)).X;
+        var staffSpace = block.PhysicalBounds.Height / 4.0;
+
+        using var paint = new SKPaint
+        {
+            Color = SKColors.Black,
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = (float)Math.Max(0.8, staffSpace * 0.08),
+            StrokeCap = SKStrokeCap.Square,
+            IsAntialias = true
+        };
+
+        var count = Math.Abs(ledger.Depth);
+        var firstLevel = ledger.Depth < 0 ? -2 : 10;
+        var step = ledger.Depth < 0 ? -2 : 2;
+
+        for (var i = 0; i < count; i++)
+        {
+            var logicalY = firstLevel + step * i;
+            var y = block.ToPhysical(new LogicalPoint(logicalLeft, logicalY)).Y;
+            canvas.DrawLine((float)left, (float)y, (float)right, (float)y, paint);
+        }
     }
 
     private static void RedrawRegion(SKCanvas canvas, SKPicture picture, RectD region)
