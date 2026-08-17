@@ -55,6 +55,7 @@ public sealed class PrimitiveOverlayRenderer
         canvas.Scale(RenderScale);
         canvas.Translate(-bounds.Left, -bounds.Top);
         canvas.DrawPicture(picture);
+        DrawPrimitiveBounds(canvas, resolution.Primitives);
         DrawBlockBorders(canvas, resolution.Structure.Map.Blocks);
 
         Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
@@ -85,6 +86,27 @@ public sealed class PrimitiveOverlayRenderer
 
             command.Paint.Color = new Shim.SKColor(color.R, color.G, color.B, 255);
             command.Paint.Shader = null;
+        }
+    }
+
+    private static void DrawPrimitiveBounds(
+        SKCanvas canvas,
+        IReadOnlyList<ResolvedPrimitive> primitives)
+    {
+        using var paint = new SKPaint
+        {
+            Color = new SKColor(120, 120, 120, 150),
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = 0.6f,
+            IsAntialias = true
+        };
+
+        foreach (var primitive in primitives)
+        {
+            var b = primitive.PhysicalBounds;
+            canvas.DrawRect(
+                new SKRect((float)b.Left, (float)b.Top, (float)b.Right, (float)b.Bottom),
+                paint);
         }
     }
 
