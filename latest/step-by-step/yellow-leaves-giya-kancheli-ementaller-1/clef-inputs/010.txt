@@ -1,7 +1,9 @@
-block: P1-M9
-logical bbox: X 13.19..16.16, Y 0..7.02
+block: P2-M9
+logical bbox: X 0.86..2.96, Y -0.1..6.1
 contours: 3
-points: 429
-value: null
-confidence: 0.0000
+points: 843
+value: F
+confidence: 0.9916
 candidates:
+  F: confidence=0.9916, distance=0.0085
+  G: confidence=0.1194, distance=7.3733
