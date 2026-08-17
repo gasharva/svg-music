@@ -3624,8 +3624,8 @@
     },
     {
       "id": 120,
-      "scope": 0,
-      "partNumber": 1,
+      "scope": 1,
+      "partNumber": null,
       "measureNumber": 8,
       "physicalBounds": {
         "left": 294.3667297363281,
@@ -21546,8 +21546,8 @@
     },
     {
       "id": 779,
-      "scope": 0,
-      "partNumber": 2,
+      "scope": 1,
+      "partNumber": null,
       "measureNumber": 5,
       "physicalBounds": {
         "left": 320.1668701171875,
@@ -40639,8 +40639,8 @@
       "id": 385,
       "parentCandidateId": null,
       "isDerived": false,
-      "scope": 0,
-      "partNumber": 2,
+      "scope": 1,
+      "partNumber": null,
       "measureNumber": 5,
       "physicalBounds": {
         "left": 320.1668701171875,
@@ -44212,18 +44212,17 @@
         "left": 294.3667297363281,
         "top": 585.4462890625,
         "right": 297.7213134765625,
-        "bottom": 613.4034423828125,
+        "bottom": 607.0730590820312,
         "width": 3.354583740234375,
-        "height": 27.9571533203125,
+        "height": 21.62677001953125,
         "centerX": 296.0440216064453,
-        "centerY": 599.4248657226562
+        "centerY": 596.2596740722656
       },
       "primitiveIds": [
         118,
-        119,
-        120
+        119
       ],
-      "smoothPathCount": 3,
+      "smoothPathCount": 2,
       "sourceAddresses": [
         "0/11/0"
       ]
@@ -45578,18 +45577,19 @@
       "measureNumber": 8,
       "physicalBounds": {
         "left": 294.3667297363281,
-        "top": 604.4374389648438,
+        "top": 598.1070556640625,
         "right": 297.7213134765625,
         "bottom": 619.7338256835938,
         "width": 3.354583740234375,
-        "height": 15.29638671875,
+        "height": 21.62677001953125,
         "centerX": 296.0440216064453,
-        "centerY": 612.0856323242188
+        "centerY": 608.9204406738281
       },
       "primitiveIds": [
+        120,
         121
       ],
-      "smoothPathCount": 1,
+      "smoothPathCount": 2,
       "sourceAddresses": [
         "0/11/0"
       ]

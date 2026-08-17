@@ -3651,8 +3651,8 @@
     },
     {
       "id": 150,
-      "scope": 1,
-      "partNumber": null,
+      "scope": 0,
+      "partNumber": 1,
       "measureNumber": 11,
       "physicalBounds": {
         "left": 367.3066711425781,
@@ -3709,8 +3709,8 @@
     },
     {
       "id": 152,
-      "scope": 1,
-      "partNumber": null,
+      "scope": 0,
+      "partNumber": 1,
       "measureNumber": 12,
       "physicalBounds": {
         "left": 527.9066162109375,
@@ -3738,8 +3738,8 @@
     },
     {
       "id": 153,
-      "scope": 1,
-      "partNumber": null,
+      "scope": 0,
+      "partNumber": 1,
       "measureNumber": 12,
       "physicalBounds": {
         "left": 777.6134033203125,
@@ -3941,8 +3941,8 @@
     },
     {
       "id": 160,
-      "scope": 1,
-      "partNumber": null,
+      "scope": 0,
+      "partNumber": 1,
       "measureNumber": 9,
       "physicalBounds": {
         "left": 38.38663864135742,
@@ -18818,8 +18818,8 @@
     },
     {
       "id": 673,
-      "scope": 1,
-      "partNumber": null,
+      "scope": 0,
+      "partNumber": 2,
       "measureNumber": 20,
       "physicalBounds": {
         "left": 613.5999755859375,
@@ -34801,6 +34801,31 @@
       "partNumber": 1,
       "measureNumber": 9,
       "physicalBounds": {
+        "left": 38.38663864135742,
+        "top": 507.8027038574219,
+        "right": 38.38663864135742,
+        "bottom": 574.3679809570312,
+        "width": 0,
+        "height": 66.56527709960938,
+        "centerX": 38.38663864135742,
+        "centerY": 541.0853424072266
+      },
+      "primitiveIds": [
+        160
+      ],
+      "smoothPathCount": 0,
+      "sourceAddresses": [
+        "88"
+      ]
+    },
+    {
+      "id": 314,
+      "parentCandidateId": null,
+      "isDerived": false,
+      "scope": 0,
+      "partNumber": 1,
+      "measureNumber": 9,
+      "physicalBounds": {
         "left": 39.31196975708008,
         "top": 481.63470458984375,
         "right": 47.50371170043945,
@@ -34820,7 +34845,7 @@
       ]
     },
     {
-      "id": 314,
+      "id": 315,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -34848,7 +34873,7 @@
       ]
     },
     {
-      "id": 315,
+      "id": 316,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -34873,7 +34898,7 @@
       ]
     },
     {
-      "id": 316,
+      "id": 317,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -34898,7 +34923,7 @@
       ]
     },
     {
-      "id": 317,
+      "id": 318,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -34924,7 +34949,7 @@
       ]
     },
     {
-      "id": 318,
+      "id": 319,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -34949,7 +34974,7 @@
       ]
     },
     {
-      "id": 319,
+      "id": 320,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -34974,7 +34999,7 @@
       ]
     },
     {
-      "id": 320,
+      "id": 321,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -35005,8 +35030,8 @@
       ]
     },
     {
-      "id": 321,
-      "parentCandidateId": 320,
+      "id": 322,
+      "parentCandidateId": 321,
       "isDerived": true,
       "scope": 0,
       "partNumber": 1,
@@ -35030,8 +35055,8 @@
       ]
     },
     {
-      "id": 322,
-      "parentCandidateId": 320,
+      "id": 323,
+      "parentCandidateId": 321,
       "isDerived": true,
       "scope": 0,
       "partNumber": 1,
@@ -35059,7 +35084,7 @@
       ]
     },
     {
-      "id": 323,
+      "id": 324,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -35084,7 +35109,7 @@
       ]
     },
     {
-      "id": 324,
+      "id": 325,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -35112,7 +35137,7 @@
       ]
     },
     {
-      "id": 325,
+      "id": 326,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -35137,7 +35162,7 @@
       ]
     },
     {
-      "id": 326,
+      "id": 327,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -35162,7 +35187,7 @@
       ]
     },
     {
-      "id": 327,
+      "id": 328,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -35187,7 +35212,7 @@
       ]
     },
     {
-      "id": 328,
+      "id": 329,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -35212,7 +35237,7 @@
       ]
     },
     {
-      "id": 329,
+      "id": 330,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -35237,7 +35262,7 @@
       ]
     },
     {
-      "id": 330,
+      "id": 331,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -35262,7 +35287,7 @@
       ]
     },
     {
-      "id": 331,
+      "id": 332,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -35292,7 +35317,7 @@
       ]
     },
     {
-      "id": 332,
+      "id": 333,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -35317,7 +35342,7 @@
       ]
     },
     {
-      "id": 333,
+      "id": 334,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -35342,7 +35367,7 @@
       ]
     },
     {
-      "id": 334,
+      "id": 335,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -35367,7 +35392,7 @@
       ]
     },
     {
-      "id": 335,
+      "id": 336,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -35392,7 +35417,7 @@
       ]
     },
     {
-      "id": 336,
+      "id": 337,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -35417,7 +35442,7 @@
       ]
     },
     {
-      "id": 337,
+      "id": 338,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -35442,7 +35467,7 @@
       ]
     },
     {
-      "id": 338,
+      "id": 339,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 1,
@@ -35464,31 +35489,6 @@
       "smoothPathCount": 1,
       "sourceAddresses": [
         "583"
-      ]
-    },
-    {
-      "id": 339,
-      "parentCandidateId": null,
-      "isDerived": false,
-      "scope": 1,
-      "partNumber": null,
-      "measureNumber": 9,
-      "physicalBounds": {
-        "left": 38.38663864135742,
-        "top": 507.8027038574219,
-        "right": 38.38663864135742,
-        "bottom": 574.3679809570312,
-        "width": 0,
-        "height": 66.56527709960938,
-        "centerX": 38.38663864135742,
-        "centerY": 541.0853424072266
-      },
-      "primitiveIds": [
-        160
-      ],
-      "smoothPathCount": 0,
-      "sourceAddresses": [
-        "88"
       ]
     },
     {
@@ -36083,6 +36083,31 @@
       "partNumber": 1,
       "measureNumber": 11,
       "physicalBounds": {
+        "left": 367.3066711425781,
+        "top": 507.8027038574219,
+        "right": 367.3066711425781,
+        "bottom": 574.3679809570312,
+        "width": 0,
+        "height": 66.56527709960938,
+        "centerX": 367.3066711425781,
+        "centerY": 541.0853424072266
+      },
+      "primitiveIds": [
+        150
+      ],
+      "smoothPathCount": 0,
+      "sourceAddresses": [
+        "78"
+      ]
+    },
+    {
+      "id": 364,
+      "parentCandidateId": null,
+      "isDerived": false,
+      "scope": 0,
+      "partNumber": 1,
+      "measureNumber": 11,
+      "physicalBounds": {
         "left": 372.7039794921875,
         "top": 534.125,
         "right": 379.6802062988281,
@@ -36102,7 +36127,7 @@
       ]
     },
     {
-      "id": 364,
+      "id": 365,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -36128,7 +36153,7 @@
       ]
     },
     {
-      "id": 365,
+      "id": 366,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -36153,7 +36178,7 @@
       ]
     },
     {
-      "id": 366,
+      "id": 367,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -36180,7 +36205,7 @@
       ]
     },
     {
-      "id": 367,
+      "id": 368,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -36206,7 +36231,7 @@
       ]
     },
     {
-      "id": 368,
+      "id": 369,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -36231,7 +36256,7 @@
       ]
     },
     {
-      "id": 369,
+      "id": 370,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -36257,7 +36282,7 @@
       ]
     },
     {
-      "id": 370,
+      "id": 371,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -36282,7 +36307,7 @@
       ]
     },
     {
-      "id": 371,
+      "id": 372,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -36307,7 +36332,7 @@
       ]
     },
     {
-      "id": 372,
+      "id": 373,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -36332,7 +36357,7 @@
       ]
     },
     {
-      "id": 373,
+      "id": 374,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -36357,7 +36382,7 @@
       ]
     },
     {
-      "id": 374,
+      "id": 375,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -36382,7 +36407,7 @@
       ]
     },
     {
-      "id": 375,
+      "id": 376,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -36407,7 +36432,7 @@
       ]
     },
     {
-      "id": 376,
+      "id": 377,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -36433,7 +36458,7 @@
       ]
     },
     {
-      "id": 377,
+      "id": 378,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -36459,7 +36484,7 @@
       ]
     },
     {
-      "id": 378,
+      "id": 379,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -36484,7 +36509,7 @@
       ]
     },
     {
-      "id": 379,
+      "id": 380,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -36509,7 +36534,7 @@
       ]
     },
     {
-      "id": 380,
+      "id": 381,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -36531,31 +36556,6 @@
       "smoothPathCount": 1,
       "sourceAddresses": [
         "549"
-      ]
-    },
-    {
-      "id": 381,
-      "parentCandidateId": null,
-      "isDerived": false,
-      "scope": 1,
-      "partNumber": null,
-      "measureNumber": 11,
-      "physicalBounds": {
-        "left": 367.3066711425781,
-        "top": 507.8027038574219,
-        "right": 367.3066711425781,
-        "bottom": 574.3679809570312,
-        "width": 0,
-        "height": 66.56527709960938,
-        "centerX": 367.3066711425781,
-        "centerY": 541.0853424072266
-      },
-      "primitiveIds": [
-        150
-      ],
-      "smoothPathCount": 0,
-      "sourceAddresses": [
-        "78"
       ]
     },
     {
@@ -36591,6 +36591,31 @@
       "partNumber": 1,
       "measureNumber": 12,
       "physicalBounds": {
+        "left": 527.9066162109375,
+        "top": 507.8027038574219,
+        "right": 527.9066162109375,
+        "bottom": 574.3679809570312,
+        "width": 0,
+        "height": 66.56527709960938,
+        "centerX": 527.9066162109375,
+        "centerY": 541.0853424072266
+      },
+      "primitiveIds": [
+        152
+      ],
+      "smoothPathCount": 0,
+      "sourceAddresses": [
+        "80"
+      ]
+    },
+    {
+      "id": 384,
+      "parentCandidateId": null,
+      "isDerived": false,
+      "scope": 0,
+      "partNumber": 1,
+      "measureNumber": 12,
+      "physicalBounds": {
         "left": 538.106689453125,
         "top": 530.1656494140625,
         "right": 555.9089965820312,
@@ -36612,8 +36637,8 @@
       ]
     },
     {
-      "id": 384,
-      "parentCandidateId": 383,
+      "id": 385,
+      "parentCandidateId": 384,
       "isDerived": true,
       "scope": 0,
       "partNumber": 1,
@@ -36638,8 +36663,8 @@
       ]
     },
     {
-      "id": 385,
-      "parentCandidateId": 383,
+      "id": 386,
+      "parentCandidateId": 384,
       "isDerived": true,
       "scope": 0,
       "partNumber": 1,
@@ -36663,7 +36688,7 @@
       ]
     },
     {
-      "id": 386,
+      "id": 387,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -36688,7 +36713,7 @@
       ]
     },
     {
-      "id": 387,
+      "id": 388,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -36713,7 +36738,7 @@
       ]
     },
     {
-      "id": 388,
+      "id": 389,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -36738,7 +36763,7 @@
       ]
     },
     {
-      "id": 389,
+      "id": 390,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -36763,7 +36788,7 @@
       ]
     },
     {
-      "id": 390,
+      "id": 391,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -36788,7 +36813,7 @@
       ]
     },
     {
-      "id": 391,
+      "id": 392,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -36813,7 +36838,7 @@
       ]
     },
     {
-      "id": 392,
+      "id": 393,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -36838,7 +36863,7 @@
       ]
     },
     {
-      "id": 393,
+      "id": 394,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -36863,7 +36888,32 @@
       ]
     },
     {
-      "id": 394,
+      "id": 395,
+      "parentCandidateId": null,
+      "isDerived": false,
+      "scope": 0,
+      "partNumber": 1,
+      "measureNumber": 12,
+      "physicalBounds": {
+        "left": 777.6134033203125,
+        "top": 507.8027038574219,
+        "right": 777.6134033203125,
+        "bottom": 574.3679809570312,
+        "width": 0,
+        "height": 66.56527709960938,
+        "centerX": 777.6134033203125,
+        "centerY": 541.0853424072266
+      },
+      "primitiveIds": [
+        153
+      ],
+      "smoothPathCount": 0,
+      "sourceAddresses": [
+        "81"
+      ]
+    },
+    {
+      "id": 396,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -36888,7 +36938,7 @@
       ]
     },
     {
-      "id": 395,
+      "id": 397,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -36915,7 +36965,7 @@
       ]
     },
     {
-      "id": 396,
+      "id": 398,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -36940,7 +36990,7 @@
       ]
     },
     {
-      "id": 397,
+      "id": 399,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -36967,8 +37017,8 @@
       ]
     },
     {
-      "id": 398,
-      "parentCandidateId": 397,
+      "id": 400,
+      "parentCandidateId": 399,
       "isDerived": true,
       "scope": 0,
       "partNumber": 2,
@@ -36992,8 +37042,8 @@
       ]
     },
     {
-      "id": 399,
-      "parentCandidateId": 397,
+      "id": 401,
+      "parentCandidateId": 399,
       "isDerived": true,
       "scope": 0,
       "partNumber": 2,
@@ -37017,7 +37067,7 @@
       ]
     },
     {
-      "id": 400,
+      "id": 402,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -37042,7 +37092,7 @@
       ]
     },
     {
-      "id": 401,
+      "id": 403,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -37067,7 +37117,7 @@
       ]
     },
     {
-      "id": 402,
+      "id": 404,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -37092,7 +37142,7 @@
       ]
     },
     {
-      "id": 403,
+      "id": 405,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -37117,7 +37167,7 @@
       ]
     },
     {
-      "id": 404,
+      "id": 406,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -37142,7 +37192,7 @@
       ]
     },
     {
-      "id": 405,
+      "id": 407,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -37167,7 +37217,7 @@
       ]
     },
     {
-      "id": 406,
+      "id": 408,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -37192,7 +37242,7 @@
       ]
     },
     {
-      "id": 407,
+      "id": 409,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -37217,7 +37267,7 @@
       ]
     },
     {
-      "id": 408,
+      "id": 410,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -37242,7 +37292,7 @@
       ]
     },
     {
-      "id": 409,
+      "id": 411,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -37267,7 +37317,7 @@
       ]
     },
     {
-      "id": 410,
+      "id": 412,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -37292,7 +37342,7 @@
       ]
     },
     {
-      "id": 411,
+      "id": 413,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -37317,7 +37367,7 @@
       ]
     },
     {
-      "id": 412,
+      "id": 414,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -37342,7 +37392,7 @@
       ]
     },
     {
-      "id": 413,
+      "id": 415,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -37367,32 +37417,7 @@
       ]
     },
     {
-      "id": 414,
-      "parentCandidateId": null,
-      "isDerived": false,
-      "scope": 1,
-      "partNumber": null,
-      "measureNumber": 12,
-      "physicalBounds": {
-        "left": 527.9066162109375,
-        "top": 507.8027038574219,
-        "right": 527.9066162109375,
-        "bottom": 574.3679809570312,
-        "width": 0,
-        "height": 66.56527709960938,
-        "centerX": 527.9066162109375,
-        "centerY": 541.0853424072266
-      },
-      "primitiveIds": [
-        152
-      ],
-      "smoothPathCount": 0,
-      "sourceAddresses": [
-        "80"
-      ]
-    },
-    {
-      "id": 415,
+      "id": 416,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 1,
@@ -37414,31 +37439,6 @@
       "smoothPathCount": 1,
       "sourceAddresses": [
         "462"
-      ]
-    },
-    {
-      "id": 416,
-      "parentCandidateId": null,
-      "isDerived": false,
-      "scope": 1,
-      "partNumber": null,
-      "measureNumber": 12,
-      "physicalBounds": {
-        "left": 777.6134033203125,
-        "top": 507.8027038574219,
-        "right": 777.6134033203125,
-        "bottom": 574.3679809570312,
-        "width": 0,
-        "height": 66.56527709960938,
-        "centerX": 777.6134033203125,
-        "centerY": 541.0853424072266
-      },
-      "primitiveIds": [
-        153
-      ],
-      "smoothPathCount": 0,
-      "sourceAddresses": [
-        "81"
       ]
     },
     {
@@ -44643,6 +44643,31 @@
       "measureNumber": 20,
       "physicalBounds": {
         "left": 613.5999755859375,
+        "top": 907.62109375,
+        "right": 620.1649780273438,
+        "bottom": 929.1456298828125,
+        "width": 6.56500244140625,
+        "height": 21.5245361328125,
+        "centerX": 616.8824768066406,
+        "centerY": 918.3833618164062
+      },
+      "primitiveIds": [
+        673
+      ],
+      "smoothPathCount": 1,
+      "sourceAddresses": [
+        "457"
+      ]
+    },
+    {
+      "id": 701,
+      "parentCandidateId": null,
+      "isDerived": false,
+      "scope": 0,
+      "partNumber": 2,
+      "measureNumber": 20,
+      "physicalBounds": {
+        "left": 613.5999755859375,
         "top": 932.9017333984375,
         "right": 622.9462280273438,
         "bottom": 940.8851318359375,
@@ -44661,7 +44686,7 @@
       ]
     },
     {
-      "id": 701,
+      "id": 702,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -44687,7 +44712,7 @@
       ]
     },
     {
-      "id": 702,
+      "id": 703,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -44712,7 +44737,7 @@
       ]
     },
     {
-      "id": 703,
+      "id": 704,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -44737,7 +44762,7 @@
       ]
     },
     {
-      "id": 704,
+      "id": 705,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -44762,7 +44787,7 @@
       ]
     },
     {
-      "id": 705,
+      "id": 706,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -44788,7 +44813,7 @@
       ]
     },
     {
-      "id": 706,
+      "id": 707,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -44813,7 +44838,7 @@
       ]
     },
     {
-      "id": 707,
+      "id": 708,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -44838,7 +44863,7 @@
       ]
     },
     {
-      "id": 708,
+      "id": 709,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -44863,7 +44888,7 @@
       ]
     },
     {
-      "id": 709,
+      "id": 710,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -44888,7 +44913,7 @@
       ]
     },
     {
-      "id": 710,
+      "id": 711,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 0,
@@ -44913,7 +44938,7 @@
       ]
     },
     {
-      "id": 711,
+      "id": 712,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 1,
@@ -44938,7 +44963,7 @@
       ]
     },
     {
-      "id": 712,
+      "id": 713,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 1,
@@ -44963,7 +44988,7 @@
       ]
     },
     {
-      "id": 713,
+      "id": 714,
       "parentCandidateId": null,
       "isDerived": false,
       "scope": 1,
@@ -44985,31 +45010,6 @@
       "smoothPathCount": 1,
       "sourceAddresses": [
         "582"
-      ]
-    },
-    {
-      "id": 714,
-      "parentCandidateId": null,
-      "isDerived": false,
-      "scope": 1,
-      "partNumber": null,
-      "measureNumber": 20,
-      "physicalBounds": {
-        "left": 613.5999755859375,
-        "top": 907.62109375,
-        "right": 620.1649780273438,
-        "bottom": 929.1456298828125,
-        "width": 6.56500244140625,
-        "height": 21.5245361328125,
-        "centerX": 616.8824768066406,
-        "centerY": 918.3833618164062
-      },
-      "primitiveIds": [
-        673
-      ],
-      "smoothPathCount": 1,
-      "sourceAddresses": [
-        "457"
       ]
     },
     {
