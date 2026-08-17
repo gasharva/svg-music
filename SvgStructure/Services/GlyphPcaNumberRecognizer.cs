@@ -18,13 +18,18 @@ public sealed class GlyphPcaNumberRecognizer : ISvgNumberRecognizer
 {
     private readonly GlyphFingerprintAnalyzer _analyzer;
     private readonly string _workDirectory;
+    private readonly double _minimumConfidence;
 
-    public GlyphPcaNumberRecognizer(string modelPath, string workDirectory)
+    public GlyphPcaNumberRecognizer(
+        string modelPath,
+        string workDirectory,
+        double minimumConfidence = 0.20)
     {
         if (!File.Exists(modelPath))
             throw new FileNotFoundException("Glyph PCA model not found.", modelPath);
 
         _workDirectory = workDirectory;
+        _minimumConfidence = minimumConfidence;
         Directory.CreateDirectory(_workDirectory);
 
         var json = File.ReadAllText(modelPath);
@@ -52,11 +57,11 @@ public sealed class GlyphPcaNumberRecognizer : ISvgNumberRecognizer
             if (analysis.Error is not null)
                 return new SvgNumberRecognition(null, 0, Array.Empty<SvgNumberCandidate>(), analysis.Error);
 
-            // Rejected open-set classifications must stay rejected. In particular, do not expose
-            // weak nearest-class alternatives to MeterResolver: its musical whitelist is allowed to
-            // disambiguate accepted digit hypotheses, but must never resurrect geometry that the PCA
-            // model has explicitly classified as out-of-distribution / too risky.
-            if (!analysis.Accepted)
+            // Acceptance belongs to the global glyph classifier. Do not take a lower-ranked numeric
+            // match when the model actually classified the shape as another glyph class (flat, note, ...).
+            var globalBest = analysis.Matches.FirstOrDefault();
+            var globalBestDigit = globalBest is null ? null : ParseDigitClass(globalBest.Class);
+            if (!analysis.Accepted || globalBestDigit is null)
                 return new SvgNumberRecognition(null, 0, Array.Empty<SvgNumberCandidate>());
 
             var candidates = analysis.Matches
@@ -69,7 +74,7 @@ public sealed class GlyphPcaNumberRecognizer : ISvgNumberRecognizer
                 .ToArray();
 
             var best = candidates.FirstOrDefault();
-            if (best is null)
+            if (best is null || best.Confidence < _minimumConfidence)
                 return new SvgNumberRecognition(null, 0, Array.Empty<SvgNumberCandidate>());
 
             return new SvgNumberRecognition(best.Value, best.Confidence, candidates);
