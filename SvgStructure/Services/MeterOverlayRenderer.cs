@@ -15,6 +15,7 @@ public sealed class MeterOverlayRenderer
         IReadOnlyList<ClefResolution> clefs,
         IReadOnlyList<LedgerLineResolution> ledgerLines,
         IReadOnlyList<NoteHeadResolution> noteHeads,
+        IReadOnlyList<AccidentalResolution> accidentals,
         LogicalGridResolution logicalGrid,
         string outputPath)
     {
@@ -60,6 +61,9 @@ public sealed class MeterOverlayRenderer
         foreach (var noteHead in noteHeads)
             DrawNoteHead(canvas, picture, noteHead);
 
+        foreach (var accidental in accidentals)
+            DrawAccidental(canvas, picture, accidental);
+
         DrawFirstMeasureNoteSummaries(canvas, noteHeads, logicalGrid, bounds);
 
         Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
@@ -68,6 +72,36 @@ public sealed class MeterOverlayRenderer
         using var stream = File.Create(outputPath);
         data.SaveTo(stream);
         return outputPath;
+    }
+
+    private static void DrawAccidental(SKCanvas canvas, SKPicture picture, AccidentalResolution accidental)
+    {
+        RedrawRegion(canvas, picture, accidental.PhysicalBounds);
+
+        using (var fill = new SKPaint
+        {
+            Color = new SKColor(255, 165, 0, 95),
+            Style = SKPaintStyle.Fill,
+            IsAntialias = true
+        })
+        {
+            canvas.DrawRect(ToRect(accidental.PhysicalBounds), fill);
+        }
+
+        using (var border = Border(SKColors.DarkOrange))
+            canvas.DrawRect(ToRect(accidental.PhysicalBounds), border);
+
+        if (accidental.Note is null)
+            return;
+
+        var noteRect = ToRect(accidental.Note.PhysicalBounds);
+        using var noteFill = new SKPaint
+        {
+            Color = new SKColor(255, 235, 59, 95),
+            Style = SKPaintStyle.Fill,
+            IsAntialias = true
+        };
+        canvas.DrawOval(noteRect, noteFill);
     }
 
     private static void DrawNoteHead(SKCanvas canvas, SKPicture picture, NoteHeadResolution noteHead)
@@ -201,81 +235,33 @@ public sealed class MeterOverlayRenderer
     {
         var b = meter.PhysicalBounds;
         var height = (float)Math.Max(8, Math.Min(18, b.Height * 0.34));
-        DrawReadableLabel(
-            canvas,
-            $"{meter.BeatNumber}-{meter.BeatValue}",
-            b.Left,
-            b.Top,
-            b.Bottom,
-            height,
-            SKColors.DeepPink,
-            page);
+        DrawReadableLabel(canvas, $"{meter.BeatNumber}-{meter.BeatValue}", b.Left, b.Top, b.Bottom, height, SKColors.DeepPink, page);
     }
 
     private static void DrawClefLabel(SKCanvas canvas, ClefResolution clef, SKRect page)
     {
         var b = clef.PhysicalBounds;
         var height = (float)Math.Max(8, Math.Min(14, b.Height * 0.20));
-        DrawReadableLabel(
-            canvas,
-            clef.Kind.ToString(),
-            b.Left,
-            b.Top,
-            b.Bottom,
-            height,
-            SKColors.DodgerBlue,
-            page);
+        DrawReadableLabel(canvas, clef.Kind.ToString(), b.Left, b.Top, b.Bottom, height, SKColors.DodgerBlue, page);
     }
 
-    private static void DrawReadableLabel(
-        SKCanvas canvas,
-        string text,
-        double left,
-        double top,
-        double bottom,
-        float height,
-        SKColor color,
-        SKRect page)
+    private static void DrawReadableLabel(SKCanvas canvas, string text, double left, double top, double bottom, float height, SKColor color, SKRect page)
     {
         var charWidth = height * 0.58f;
         var charSpacing = charWidth * 0.18f;
         var wordSpacing = charWidth * 0.85f;
         var totalWidth = MeasureVectorText(text, charWidth, charSpacing, wordSpacing);
-
-        var x = (float)Math.Clamp(
-            left,
-            page.Left + 2,
-            Math.Max(page.Left + 2, page.Right - totalWidth - 4));
-
+        var x = (float)Math.Clamp(left, page.Left + 2, Math.Max(page.Left + 2, page.Right - totalWidth - 4));
         var preferredTop = (float)(top - height - 4);
-        var y = preferredTop >= page.Top
-            ? preferredTop
-            : (float)Math.Min(page.Bottom - height - 3, bottom + 4);
+        var y = preferredTop >= page.Top ? preferredTop : (float)Math.Min(page.Bottom - height - 3, bottom + 4);
 
         using var background = new SKPaint { Color = new SKColor(255, 255, 255, 238) };
-        canvas.DrawRoundRect(
-            new SKRect(x - 3, y - 3, x + totalWidth + 3, y + height + 3),
-            2,
-            2,
-            background);
-
-        using var paint = new SKPaint
-        {
-            Color = color,
-            Style = SKPaintStyle.Stroke,
-            StrokeWidth = Math.Max(0.9f, height * 0.075f),
-            StrokeCap = SKStrokeCap.Round,
-            IsAntialias = true
-        };
+        canvas.DrawRoundRect(new SKRect(x - 3, y - 3, x + totalWidth + 3, y + height + 3), 2, 2, background);
+        using var paint = new SKPaint { Color = color, Style = SKPaintStyle.Stroke, StrokeWidth = Math.Max(0.9f, height * 0.075f), StrokeCap = SKStrokeCap.Round, IsAntialias = true };
 
         foreach (var ch in text)
         {
-            if (ch == ' ')
-            {
-                x += wordSpacing;
-                continue;
-            }
-
+            if (ch == ' ') { x += wordSpacing; continue; }
             DrawChar(canvas, ch, x, y, charWidth, height, paint);
             x += charWidth + charSpacing;
         }
@@ -291,77 +277,28 @@ public sealed class MeterOverlayRenderer
 
     private static void DrawChar(SKCanvas canvas, char ch, float x, float y, float w, float h, SKPaint paint)
     {
-        if (char.IsDigit(ch))
-        {
-            DrawDigit(canvas, ch - '0', x, y, w, h, paint);
-            return;
-        }
-
+        if (char.IsDigit(ch)) { DrawDigit(canvas, ch - '0', x, y, w, h, paint); return; }
         var upper = char.ToUpperInvariant(ch);
         switch (upper)
         {
             case '-': canvas.DrawLine(x, y + h * .5f, x + w * .75f, y + h * .5f, paint); break;
             case '.': canvas.DrawPoint(x + w * .35f, y + h, paint); break;
-            case 'G':
-                canvas.DrawOval(new SKRect(x, y, x + w, y + h), paint);
-                canvas.DrawLine(x + w * .52f, y + h * .55f, x + w, y + h * .55f, paint);
-                canvas.DrawLine(x + w, y + h * .55f, x + w, y + h * .82f, paint);
-                break;
-            case 'F':
-                canvas.DrawLine(x, y, x, y + h, paint);
-                canvas.DrawLine(x, y, x + w, y, paint);
-                canvas.DrawLine(x, y + h * .48f, x + w * .75f, y + h * .48f, paint);
-                break;
-            case 'C':
-                canvas.DrawArc(new SKRect(x, y, x + w, y + h), 45, 270, false, paint);
-                break;
-            case 'A':
-                canvas.DrawLine(x, y + h, x + w * .5f, y, paint);
-                canvas.DrawLine(x + w * .5f, y, x + w, y + h, paint);
-                canvas.DrawLine(x + w * .22f, y + h * .58f, x + w * .78f, y + h * .58f, paint);
-                break;
-            case 'B':
-                canvas.DrawLine(x, y, x, y + h, paint);
-                canvas.DrawArc(new SKRect(x, y, x + w, y + h * .52f), -90, 180, false, paint);
-                canvas.DrawArc(new SKRect(x, y + h * .48f, x + w, y + h), -90, 180, false, paint);
-                break;
-            case 'D':
-                canvas.DrawLine(x, y, x, y + h, paint);
-                canvas.DrawArc(new SKRect(x - w * .25f, y, x + w, y + h), -90, 180, false, paint);
-                break;
-            case 'E':
-                canvas.DrawLine(x, y, x, y + h, paint);
-                canvas.DrawLine(x, y, x + w, y, paint);
-                canvas.DrawLine(x, y + h * .5f, x + w * .75f, y + h * .5f, paint);
-                canvas.DrawLine(x, y + h, x + w, y + h, paint);
-                break;
-            default:
-                canvas.DrawRect(new SKRect(x, y, x + w, y + h), paint);
-                break;
+            case 'G': canvas.DrawOval(new SKRect(x, y, x + w, y + h), paint); canvas.DrawLine(x + w * .52f, y + h * .55f, x + w, y + h * .55f, paint); canvas.DrawLine(x + w, y + h * .55f, x + w, y + h * .82f, paint); break;
+            case 'F': canvas.DrawLine(x, y, x, y + h, paint); canvas.DrawLine(x, y, x + w, y, paint); canvas.DrawLine(x, y + h * .48f, x + w * .75f, y + h * .48f, paint); break;
+            case 'C': canvas.DrawArc(new SKRect(x, y, x + w, y + h), 45, 270, false, paint); break;
+            case 'A': canvas.DrawLine(x, y + h, x + w * .5f, y, paint); canvas.DrawLine(x + w * .5f, y, x + w, y + h, paint); canvas.DrawLine(x + w * .22f, y + h * .58f, x + w * .78f, y + h * .58f, paint); break;
+            case 'B': canvas.DrawLine(x, y, x, y + h, paint); canvas.DrawArc(new SKRect(x, y, x + w, y + h * .52f), -90, 180, false, paint); canvas.DrawArc(new SKRect(x, y + h * .48f, x + w, y + h), -90, 180, false, paint); break;
+            case 'D': canvas.DrawLine(x, y, x, y + h, paint); canvas.DrawArc(new SKRect(x - w * .25f, y, x + w, y + h), -90, 180, false, paint); break;
+            case 'E': canvas.DrawLine(x, y, x, y + h, paint); canvas.DrawLine(x, y, x + w, y, paint); canvas.DrawLine(x, y + h * .5f, x + w * .75f, y + h * .5f, paint); canvas.DrawLine(x, y + h, x + w, y + h, paint); break;
+            default: canvas.DrawRect(new SKRect(x, y, x + w, y + h), paint); break;
         }
-
-        // Preserve filled/hollow diagnostics even though the vector alphabet itself is uppercase-only.
         if (char.IsLetter(ch) && char.IsLower(ch))
             canvas.DrawLine(x, y + h + 1.5f, x + w, y + h + 1.5f, paint);
     }
 
     private static void DrawDigit(SKCanvas canvas, int digit, float x, float y, float w, float h, SKPaint paint)
     {
-        var segments = digit switch
-        {
-            0 => "abcdef",
-            1 => "bc",
-            2 => "abdeg",
-            3 => "abcdg",
-            4 => "bcfg",
-            5 => "acdfg",
-            6 => "acdefg",
-            7 => "abc",
-            8 => "abcdefg",
-            9 => "abcdfg",
-            _ => string.Empty
-        };
-
+        var segments = digit switch { 0 => "abcdef", 1 => "bc", 2 => "abdeg", 3 => "abcdg", 4 => "bcfg", 5 => "acdfg", 6 => "acdefg", 7 => "abc", 8 => "abcdefg", 9 => "abcdfg", _ => string.Empty };
         foreach (var segment in segments)
         {
             switch (segment)
