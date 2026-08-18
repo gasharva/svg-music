@@ -5,6 +5,8 @@ namespace SvgStructure.Services;
 
 public sealed class StepByStepReportBuilder
 {
+    private const string PagesRoot = "https://gasharva.github.io/svg-music/latest/step-by-step";
+
     public void WriteHtml(string outputPath, IReadOnlyList<StepByStepItemResult> items)
     {
         var html = new StringBuilder();
@@ -30,7 +32,7 @@ public sealed class StepByStepReportBuilder
             html.Append($"<td><a href=\"{dir}/measures.png\"><img class=\"preview\" src=\"{dir}/measures.png\"></a></td>");
             html.Append($"<td><a href=\"{dir}/classified.png\"><img class=\"preview\" src=\"{dir}/classified.png\"></a><br><a href=\"{dir}/primitives.html\"><b>primitive SVG gallery ({item.ExportedPrimitiveCount})</b></a></td>");
             html.Append($"<td><a href=\"{dir}/music-symbols.html\"><b>MusicSymbol candidates ({item.MusicSymbolCount})</b></a><br>strict overlap grouping<br>original Bezier paths</td>");
-            html.Append($"<td><a href=\"{dir}/meters.png\"><img class=\"preview\" src=\"{dir}/meters.png\"></a><br><b>meters: {item.MeterCount}</b><br><b>clefs: {item.ClefCount}</b><br><b>ledger ladders: {item.LedgerLineCount}</b><br><b>note heads: {item.NoteHeadCount}</b><br><a href=\"{dir}/meter-inputs/index.html\"><b>meter inputs</b></a><br><a href=\"{dir}/clef-inputs/README.md\"><b>clef inputs</b></a><br><a href=\"{dir}/notehead-inputs/index.html\"><b>note-head inputs ({item.NoteHeadCandidateCount})</b></a></td>");
+            html.Append($"<td><a href=\"{dir}/meters.png\"><img class=\"preview\" src=\"{dir}/meters.png\"></a><br><b>meters: {item.MeterCount}</b><br><b>clefs: {item.ClefCount}</b><br><b>ledger ladders: {item.LedgerLineCount}</b><br><b>note heads: {item.NoteHeadCount}</b><br><a href=\"{dir}/meter-inputs/index.html\"><b>meter inputs</b></a><br><a href=\"{dir}/clef-inputs/index.html\"><b>clef inputs</b></a><br><a href=\"{dir}/notehead-inputs/index.html\"><b>note-head inputs ({item.NoteHeadCandidateCount})</b></a></td>");
             html.Append("<td class=\"mono\">" +
                         $"source elements: {item.SourceElementCount}<br>source uses: {item.SourceUseCount}<br>lines: {item.LineCount}<br>systems: {item.SystemCount}<br>parts: {item.PartCount}<br>measures: {item.MeasureCount}<br>" +
                         $"P+M primitives: {item.PartMeasurePrimitiveCount}<br>exported SVGs: {item.ExportedPrimitiveCount}<br>M-only: {item.MeasurePrimitiveCount}<br>physical-only: {item.PhysicalOnlyPrimitiveCount}<br>music symbols: {item.MusicSymbolCount}<br>meters: {item.MeterCount}<br>clefs: {item.ClefCount}<br>ledger ladders: {item.LedgerLineCount}<br>note heads: {item.NoteHeadCount}<br>note-head candidates: {item.NoteHeadCandidateCount}<br>" +
@@ -47,6 +49,8 @@ public sealed class StepByStepReportBuilder
         var md = new StringBuilder();
         md.AppendLine("# SvgStructure step-by-step");
         md.AppendLine();
+        md.AppendLine($"**[Open the rendered HTML report on GitHub Pages]({PagesRoot}/)**");
+        md.AppendLine();
         md.AppendLine("Latest results: PartMeasureResolver → PrimitiveResolver → MusicSymbolResolver → MeterResolver → logical grid → ClefResolver → LedgerLineResolver → NoteHeadResolver.");
         md.AppendLine();
         md.AppendLine("| SVG | P+M blocks | Primitives | Music symbols | Semantic symbols | State |");
@@ -55,23 +59,24 @@ public sealed class StepByStepReportBuilder
         foreach (var item in items)
         {
             var dir = item.ArtifactDirectoryName.Replace(" ", "%20", StringComparison.Ordinal);
+            var pageDir = $"{PagesRoot}/{dir}";
             if (item.Error is not null)
             {
-                md.AppendLine($"| **{item.FileName}** | FAILED | FAILED | FAILED | FAILED | [error]({dir}/error.txt) |");
+                md.AppendLine($"| **{item.FileName}** | FAILED | FAILED | FAILED | FAILED | [error]({pageDir}/error.txt) |");
                 continue;
             }
 
             md.AppendLine(
-                $"| **[{item.FileName}]({dir}/source.svg)**<br>[source tree]({dir}/source-tree.txt)<br>[uses={item.SourceUseCount}]({dir}/source-uses.json) | " +
-                $"[![blocks]({dir}/measures.png)]({dir}/measures.png) | " +
-                $"[![primitives]({dir}/classified.png)]({dir}/classified.png)<br>[primitive SVG gallery]({dir}/primitives.html) ({item.ExportedPrimitiveCount}) | " +
-                $"[MusicSymbol gallery]({dir}/music-symbols.html) ({item.MusicSymbolCount}) | " +
-                $"[![symbols]({dir}/meters.png)]({dir}/meters.png)<br>meters={item.MeterCount}<br>clefs={item.ClefCount}<br>ledgerLadders={item.LedgerLineCount}<br>noteHeads={item.NoteHeadCount}<br>[meter inputs]({dir}/meter-inputs/index.html)<br>[clef inputs]({dir}/clef-inputs/README.md)<br>[note-head inputs]({dir}/notehead-inputs/index.html) ({item.NoteHeadCandidateCount}) | " +
-                $"sourceElements={item.SourceElementCount}<br>sourceUses={item.SourceUseCount}<br>parts={item.PartCount}<br>measures={item.MeasureCount}<br>P+M={item.PartMeasurePrimitiveCount}<br>exported={item.ExportedPrimitiveCount}<br>M-only={item.MeasurePrimitiveCount}<br>physical={item.PhysicalOnlyPrimitiveCount}<br>musicSymbols={item.MusicSymbolCount}<br>[json]({dir}/structure.json) |");
+                $"| **[{item.FileName}]({pageDir}/source.svg)**<br>[source tree]({pageDir}/source-tree.txt)<br>[uses={item.SourceUseCount}]({pageDir}/source-uses.json) | " +
+                $"[![blocks]({dir}/measures.png)]({pageDir}/measures.png) | " +
+                $"[![primitives]({dir}/classified.png)]({pageDir}/classified.png)<br>[primitive SVG gallery]({pageDir}/primitives.html) ({item.ExportedPrimitiveCount}) | " +
+                $"[MusicSymbol gallery]({pageDir}/music-symbols.html) ({item.MusicSymbolCount}) | " +
+                $"[![symbols]({dir}/meters.png)]({pageDir}/meters.png)<br>meters={item.MeterCount}<br>clefs={item.ClefCount}<br>ledgerLadders={item.LedgerLineCount}<br>noteHeads={item.NoteHeadCount}<br>[meter inputs]({pageDir}/meter-inputs/)<br>[clef inputs]({pageDir}/clef-inputs/)<br>[note-head inputs]({pageDir}/notehead-inputs/) ({item.NoteHeadCandidateCount}) | " +
+                $"sourceElements={item.SourceElementCount}<br>sourceUses={item.SourceUseCount}<br>parts={item.PartCount}<br>measures={item.MeasureCount}<br>P+M={item.PartMeasurePrimitiveCount}<br>exported={item.ExportedPrimitiveCount}<br>M-only={item.MeasurePrimitiveCount}<br>physical={item.PhysicalOnlyPrimitiveCount}<br>musicSymbols={item.MusicSymbolCount}<br>[json]({pageDir}/structure.json) |");
         }
 
         md.AppendLine();
-        md.AppendLine("A standalone browser report is also available as [index.html](index.html).");
+        md.AppendLine($"Rendered browser report: [{PagesRoot}/]({PagesRoot}/)");
         File.WriteAllText(outputPath, md.ToString());
     }
 }
