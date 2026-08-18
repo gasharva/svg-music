@@ -62,7 +62,7 @@ public sealed class MeterOverlayRenderer
             DrawNoteHead(canvas, picture, noteHead);
 
         foreach (var accidental in accidentals)
-            DrawAccidental(canvas, picture, accidental);
+            DrawAccidental(canvas, picture, accidental, bounds);
 
         DrawFirstMeasureNoteSummaries(canvas, noteHeads, logicalGrid, bounds);
 
@@ -74,7 +74,11 @@ public sealed class MeterOverlayRenderer
         return outputPath;
     }
 
-    private static void DrawAccidental(SKCanvas canvas, SKPicture picture, AccidentalResolution accidental)
+    private static void DrawAccidental(
+        SKCanvas canvas,
+        SKPicture picture,
+        AccidentalResolution accidental,
+        SKRect page)
     {
         RedrawRegion(canvas, picture, accidental.PhysicalBounds);
 
@@ -90,6 +94,22 @@ public sealed class MeterOverlayRenderer
 
         using (var border = Border(SKColors.DarkOrange))
             canvas.DrawRect(ToRect(accidental.PhysicalBounds), border);
+
+        var prefix = accidental.Kind switch
+        {
+            AccidentalKind.Flat => "b",
+            AccidentalKind.Sharp => "s",
+            AccidentalKind.Natural => "n",
+            AccidentalKind.DoubleFlat => "bb",
+            AccidentalKind.DoubleSharp => "ss",
+            _ => "?"
+        };
+        var label = accidental.Note is null
+            ? prefix
+            : prefix + accidental.Note.Pitch;
+        var b = accidental.PhysicalBounds;
+        var labelHeight = (float)Math.Max(7, Math.Min(11, b.Height * 0.28));
+        DrawReadableLabel(canvas, label, b.Left, b.Top, b.Bottom, labelHeight, SKColors.DarkOrange, page);
 
         if (accidental.Note is null)
             return;
@@ -290,6 +310,8 @@ public sealed class MeterOverlayRenderer
             case 'B': canvas.DrawLine(x, y, x, y + h, paint); canvas.DrawArc(new SKRect(x, y, x + w, y + h * .52f), -90, 180, false, paint); canvas.DrawArc(new SKRect(x, y + h * .48f, x + w, y + h), -90, 180, false, paint); break;
             case 'D': canvas.DrawLine(x, y, x, y + h, paint); canvas.DrawArc(new SKRect(x - w * .25f, y, x + w, y + h), -90, 180, false, paint); break;
             case 'E': canvas.DrawLine(x, y, x, y + h, paint); canvas.DrawLine(x, y, x + w, y, paint); canvas.DrawLine(x, y + h * .5f, x + w * .75f, y + h * .5f, paint); canvas.DrawLine(x, y + h, x + w, y + h, paint); break;
+            case 'S': canvas.DrawArc(new SKRect(x, y, x + w, y + h * .55f), 210, 250, false, paint); canvas.DrawArc(new SKRect(x, y + h * .45f, x + w, y + h), 30, 250, false, paint); break;
+            case 'N': canvas.DrawLine(x, y + h, x, y, paint); canvas.DrawLine(x, y, x + w, y + h, paint); canvas.DrawLine(x + w, y + h, x + w, y, paint); break;
             default: canvas.DrawRect(new SKRect(x, y, x + w, y + h), paint); break;
         }
         if (char.IsLetter(ch) && char.IsLower(ch))
