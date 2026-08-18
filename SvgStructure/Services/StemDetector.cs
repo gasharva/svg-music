@@ -5,6 +5,8 @@ namespace SvgStructure.Services;
 /// <summary>
 /// Finds thin vertical primitives that touch at least one recognized note head with one endpoint.
 /// This is deliberately geometry-only: no PCA/glyph recognition is involved.
+/// Cross-staff stems are often classified by PrimitiveResolver as measure-scoped rather than P+M,
+/// so both scopes are intentionally considered here.
 /// </summary>
 public sealed class StemDetector
 {
@@ -22,14 +24,17 @@ public sealed class StemDetector
 
         foreach (var primitive in primitives.Primitives)
         {
-            if (primitive.Scope != PrimitiveLogicalScope.PartMeasure ||
-                primitive.PartNumber is null ||
-                primitive.MeasureNumber is null)
+            if (primitive.MeasureNumber is null)
                 continue;
 
-            var partNumber = primitive.PartNumber.Value;
+            if (primitive.Scope is not (PrimitiveLogicalScope.PartMeasure or PrimitiveLogicalScope.Measure))
+                continue;
+
             var measureNumber = primitive.MeasureNumber.Value;
-            if (!grid.TryGetBlock(partNumber, measureNumber, out var block))
+            var measureBlocks = grid.Blocks
+                .Where(x => x.MeasureNumber == measureNumber)
+                .ToArray();
+            if (measureBlocks.Length == 0)
                 continue;
 
             var bounds = primitive.PhysicalBounds;
@@ -40,7 +45,9 @@ public sealed class StemDetector
             if (widthToHeight > MaxWidthToHeightRatio)
                 continue;
 
-            var staffSpace = block.PhysicalBounds.Height / 4.0;
+            // Both staves in a grand staff use the same spacing. Average the available blocks so
+            // measure-scoped cross-staff primitives do not need an artificial owning part yet.
+            var staffSpace = measureBlocks.Average(x => x.PhysicalBounds.Height / 4.0);
             if (staffSpace <= 1e-9)
                 continue;
 
@@ -94,8 +101,22 @@ public sealed class StemDetector
                 }
             }
 
+            // A measure-scoped stem gets its logical owner from the note at the attached endpoint.
+            // For a normal P+M primitive keep its original part where possible.
+            var partNumber = primitive.PartNumber
+                             ?? attached
+                                 .OrderBy(x => EndpointDistance(
+                                     bounds.CenterX,
+                                     direction == StemDirection.Up ? bounds.Bottom : bounds.Top,
+                                     x.PhysicalBounds))
+                                 .Select(x => x.PartNumber)
+                                 .First();
+
+            if (!grid.TryGetBlock(partNumber, measureNumber, out var logicalBlock))
+                continue;
+
             var crossStaff = IsCrossStaff(bounds, measureNumber, grid);
-            var logicalBounds = block.ToLogical(bounds);
+            var logicalBounds = logicalBlock.ToLogical(bounds);
 
             result.Add(new StemResolution(
                 partNumber,
