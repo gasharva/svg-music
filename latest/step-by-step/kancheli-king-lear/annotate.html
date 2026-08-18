@@ -1,5 +1,6 @@
 <!doctype html><html><head><meta charset="utf-8"><title>Music symbol candidates</title>
 <style>body{font-family:system-ui,Arial,sans-serif;margin:24px;background:#fafafa;color:#222}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}.card{background:#fff;border:1px solid #ddd;border-radius:8px;padding:10px}.shape{height:150px;display:flex;align-items:center;justify-content:center;background:#f6f6f6}.shape img{max-width:100%;max-height:140px}.name{font:12px ui-monospace,Consolas,monospace;margin-top:8px}.meta{font-size:12px;color:#666;margin-top:4px}.src{font:10px ui-monospace,Consolas,monospace;color:#888;margin-top:5px;word-break:break-all}.bad{color:#a00}.split{border-color:#9ab6d8}h2{margin-top:36px}</style>
+<style>.annotator-bar{position:sticky;top:0;z-index:1000;background:#fff;border:1px solid #ccc;border-radius:10px;padding:12px 14px;margin:0 0 18px;box-shadow:0 2px 12px #0002;display:flex;gap:10px;align-items:center;flex-wrap:wrap}.annotator-bar label{font-weight:600}.annotator-bar input[type=text]{padding:7px 9px;border:1px solid #bbb;border-radius:6px;min-width:180px}.annotator-bar button{padding:8px 12px;border:1px solid #999;border-radius:6px;background:#f4f4f4;cursor:pointer}.annotator-bar button.primary{background:#222;color:white;border-color:#222}.annotator-status{font-size:12px;color:#666}.class-input{box-sizing:border-box;width:100%;margin-top:9px;padding:7px 8px;border:1px solid #bbb;border-radius:6px;font:13px system-ui,Arial,sans-serif}.card.is-labeled{outline:2px solid #8bb98b;outline-offset:1px}.annotator-count{font-weight:600}</style>
 </head><body>
 <h1>MusicSymbolResolver</h1><p>582 candidates total: 509 resolved bbox roots, 73 ink-split alternatives, 0 unresolved. Primitive bbox drawing in exported SVGs is OFF.</p>
 <h2>Original bbox candidates</h2><div class="grid">
@@ -3571,4 +3572,134 @@
 <div class="src">primitive ids: 533<br>315</div>
 </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script>
+(() => {
+  const pageKey = 'svg-annotator:' + location.pathname;
+  let selectedFiles = new Map();
+
+  function safePart(s) {
+    return (s || '').trim().replace(/[\\/:*?"<>|]+/g, '-').replace(/\s+/g, '-').replace(/^-+|-+$/g, '');
+  }
+
+  function state() {
+    try { return JSON.parse(localStorage.getItem(pageKey) || '{}'); } catch { return {}; }
+  }
+
+  function saveState() {
+    const labels = {};
+    document.querySelectorAll('.card').forEach((card, i) => {
+      const v = card.querySelector('.class-input')?.value.trim();
+      if (v) labels[i] = v;
+    });
+    localStorage.setItem(pageKey, JSON.stringify({ id: document.querySelector('#dataset-id').value, labels }));
+    refresh();
+  }
+
+  function refresh() {
+    let n = 0;
+    document.querySelectorAll('.card').forEach(card => {
+      const on = !!card.querySelector('.class-input')?.value.trim();
+      card.classList.toggle('is-labeled', on);
+      if (on) n++;
+    });
+    document.querySelector('#annotator-count').textContent = n;
+  }
+
+  const old = state();
+  const bar = document.createElement('div');
+  bar.className = 'annotator-bar';
+  bar.innerHTML = `
+    <label>ID набора: <input id="dataset-id" type="text" placeholder="например, id1"></label>
+    <button id="export-zip" class="primary">Скачать ZIP</button>
+    <span>Размечено: <span id="annotator-count" class="annotator-count">0</span></span>
+    <span id="annotator-status" class="annotator-status">ZIP содержит только карточки с классом</span>
+    <input id="svg-folder" type="file" webkitdirectory directory multiple accept="image/svg+xml,.svg" hidden>
+    <datalist id="known-classes"></datalist>`;
+  document.body.insertBefore(bar, document.body.firstChild);
+  document.querySelector('#dataset-id').value = old.id || '';
+  document.querySelector('#dataset-id').addEventListener('input', saveState);
+
+  const datalist = document.querySelector('#known-classes');
+  function updateKnownClasses() {
+    const values = [...new Set([...document.querySelectorAll('.class-input')].map(x => x.value.trim()).filter(Boolean))].sort();
+    datalist.innerHTML = values.map(v => `<option value="${v.replace(/&/g,'&amp;').replace(/"/g,'&quot;')}"></option>`).join('');
+  }
+
+  document.querySelectorAll('.card').forEach((card, i) => {
+    const input = document.createElement('input');
+    input.className = 'class-input';
+    input.type = 'text';
+    input.placeholder = 'класс (пусто = пропустить)';
+    input.setAttribute('list', 'known-classes');
+    input.value = old.labels?.[i] || '';
+    input.addEventListener('input', () => { saveState(); updateKnownClasses(); });
+    card.appendChild(input);
+  });
+  updateKnownClasses();
+  refresh();
+
+  const picker = document.querySelector('#svg-folder');
+  function pickFolder() {
+    return new Promise((resolve) => {
+      const onChange = () => { picker.removeEventListener('change', onChange); resolve([...picker.files]); };
+      picker.addEventListener('change', onChange, {once:true});
+      picker.click();
+    });
+  }
+
+  document.querySelector('#export-zip').addEventListener('click', async () => {
+    const id = safePart(document.querySelector('#dataset-id').value);
+    const status = document.querySelector('#annotator-status');
+    if (!id) { alert('Сначала введи ID набора сверху.'); return; }
+
+    const chosen = [...document.querySelectorAll('.card')].map(card => {
+      const clsRaw = card.querySelector('.class-input')?.value.trim();
+      const src = card.querySelector('img')?.getAttribute('src');
+      return clsRaw && src ? { cls: safePart(clsRaw), src, base: src.split('/').pop() } : null;
+    }).filter(Boolean);
+    if (!chosen.length) { alert('Не размечено ни одного SVG.'); return; }
+
+    if (!selectedFiles.size) {
+      status.textContent = 'Выбери папку с SVG…';
+      const files = await pickFolder();
+      if (!files.length) { status.textContent = 'Папка не выбрана'; return; }
+      selectedFiles = new Map();
+      for (const f of files) {
+        selectedFiles.set(f.name, f);
+        if (f.webkitRelativePath) selectedFiles.set(f.webkitRelativePath.replace(/\\/g,'/'), f);
+      }
+    }
+
+    const zip = new JSZip();
+    const counters = new Map();
+    const missing = [];
+    for (const item of chosen) {
+      const file = selectedFiles.get(item.base) || selectedFiles.get(item.src);
+      if (!file) { missing.push(item.base); continue; }
+      const num = (counters.get(item.cls) || 0) + 1;
+      counters.set(item.cls, num);
+      const suffix = num === 1 ? '' : '-' + num;
+      zip.folder(item.cls).file(`${item.cls}-${id}${suffix}.svg`, file);
+    }
+
+    if (missing.length) {
+      alert('Не нашёл в выбранной папке SVG:\n' + missing.slice(0, 20).join('\n') + (missing.length > 20 ? `\n… ещё ${missing.length}` : ''));
+      status.textContent = `Не найдено файлов: ${missing.length}`;
+      return;
+    }
+
+    status.textContent = 'Собираю ZIP…';
+    const blob = await zip.generateAsync({type:'blob'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `symbols-${id}.zip`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    status.textContent = `Готово: ${chosen.length} SVG`;
+  });
+})();
+</script>
 </body></html>
