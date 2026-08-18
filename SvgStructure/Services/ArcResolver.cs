@@ -18,6 +18,9 @@ public sealed class ArcResolver
     /// <summary>Maximum distance from an arc endpoint to its attached note head or stem end.</summary>
     public double EndpointContactDistanceInStaffSpaces { get; init; } = 2.0;
 
+    /// <summary>Minimum straight-line distance between the two arc endpoints, measured in staff spaces.</summary>
+    public double MinArcLengthInStaffSpaces { get; init; } = 2.0;
+
     // These shape thresholds were heuristic guesses. Keep their measurements in diagnostics,
     // but disable rejection by them while we inspect real score data.
     public bool FilterByMinimumWidth { get; init; } = false;
@@ -62,6 +65,17 @@ public sealed class ArcResolver
                 continue;
 
             var candidate = analysis.Candidate;
+            var arcLengthInStaffSpaces = Distance(candidate.LeftEndpoint, candidate.RightEndpoint) / staffSpace;
+            if (arcLengthInStaffSpaces < MinArcLengthInStaffSpaces)
+            {
+                diagnostics.Add(analysis.Diagnostic with
+                {
+                    Stage = "length",
+                    Verdict = $"rejected: arc length {arcLengthInStaffSpaces:F2} < {MinArcLengthInStaffSpaces:F2} staff spaces"
+                });
+                continue;
+            }
+
             var contactDistance = staffSpace * EndpointContactDistanceInStaffSpaces;
 
             var leftNoteContacts = FindNoteContacts(candidate.LeftEndpoint, contactDistance, noteHeads);
@@ -121,7 +135,7 @@ public sealed class ArcResolver
             diagnostics.Add(analysis.Diagnostic with
             {
                 Stage = "accepted",
-                Verdict = $"accepted: {acceptedKind}",
+                Verdict = $"accepted: {acceptedKind}; length={arcLengthInStaffSpaces:F2} staff spaces",
                 LeftNearestContactDistanceInStaffSpaces = leftNearest / staffSpace,
                 RightNearestContactDistanceInStaffSpaces = rightNearest / staffSpace,
                 LeftContactCount = leftNoteContacts.Count + leftStemContacts.Count,
@@ -282,7 +296,7 @@ public sealed class ArcResolver
             contour.Points.Count,
             staffSpace,
             "geometry",
-            "geometry measured; checking strict note-note / stem-end-stem-end attachment",
+            "geometry measured; checking minimum length and strict note-note / stem-end-stem-end attachment",
             widthInStaffSpaces,
             leftThicknessInStaffSpaces,
             rightThicknessInStaffSpaces,
