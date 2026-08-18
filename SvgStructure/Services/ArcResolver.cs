@@ -15,12 +15,9 @@ public sealed class ArcResolver
     public double MaxEndpointThicknessInStaffSpaces { get; init; } = 0.55;
     public double EndpointBandFraction { get; init; } = 0.12;
     public double MidBandFraction { get; init; } = 0.12;
-
-    /// <summary>
-    /// Slur/tie ends are commonly offset from the note head or stem rather than touching it.
-    /// Keep this deliberately generous; geometry/curvature is the primary filter.
-    /// </summary>
     public double EndpointContactDistanceInStaffSpaces { get; init; } = 2.0;
+
+    public IReadOnlyList<ArcDiagnosticEntry> LastDiagnostics { get; private set; } = Array.Empty<ArcDiagnosticEntry>();
 
     public IReadOnlyList<ArcResolution> Resolve(
         PrimitiveResolution primitives,
@@ -29,26 +26,59 @@ public sealed class ArcResolver
         IReadOnlyList<StemResolution> stems)
     {
         var result = new List<ArcResolution>();
+        var diagnostics = new List<ArcDiagnosticEntry>();
 
         foreach (var primitive in primitives.Primitives)
         {
             var staffSpace = StaffSpaceFor(primitive, grid);
             if (staffSpace <= 1e-9)
+            {
+                diagnostics.Add(new ArcDiagnosticEntry(
+                    primitive.Id,
+                    primitive.PhysicalBounds,
+                    primitive.Contour.Points.Count,
+                    staffSpace,
+                    "staff-space",
+                    "rejected: no usable staff-space"));
+                continue;
+            }
+
+            var analysis = AnalyzeArcCandidate(
+                primitive.Id,
+                primitive.Contour,
+                primitive.PhysicalBounds,
+                staffSpace);
+            diagnostics.Add(analysis.Diagnostic);
+
+            if (analysis.Candidate is null)
                 continue;
 
-            var candidate = TryBuildArcCandidate(primitive.Contour, primitive.PhysicalBounds, staffSpace);
-            if (candidate is null)
-                continue;
-
+            var candidate = analysis.Candidate;
             var contactDistance = staffSpace * EndpointContactDistanceInStaffSpaces;
 
             var leftContacts = FindEndpointContacts(candidate.LeftEndpoint, contactDistance, noteHeads, stems);
-            if (leftContacts.Count == 0)
-                continue;
-
             var rightContacts = FindEndpointContacts(candidate.RightEndpoint, contactDistance, noteHeads, stems);
-            if (rightContacts.Count == 0)
+
+            var leftNearest = FindNearestDistance(candidate.LeftEndpoint, noteHeads, stems);
+            var rightNearest = FindNearestDistance(candidate.RightEndpoint, noteHeads, stems);
+
+            if (leftContacts.Count == 0 || rightContacts.Count == 0)
+            {
+                diagnostics.Add(analysis.Diagnostic with
+                {
+                    Stage = "contacts",
+                    Verdict = leftContacts.Count == 0 && rightContacts.Count == 0
+                        ? "rejected: no endpoint contacts on either side"
+                        : leftContacts.Count == 0
+                            ? "rejected: no left endpoint contact"
+                            : "rejected: no right endpoint contact",
+                    LeftNearestContactDistanceInStaffSpaces = leftNearest / staffSpace,
+                    RightNearestContactDistanceInStaffSpaces = rightNearest / staffSpace,
+                    LeftContactCount = leftContacts.Count,
+                    RightContactCount = rightContacts.Count
+                });
                 continue;
+            }
 
             var notes = leftContacts
                 .Concat(rightContacts)
@@ -67,7 +97,18 @@ public sealed class ArcResolver
                 .ToArray();
 
             if (notes.Length + contactedStems.Length == 0)
+            {
+                diagnostics.Add(analysis.Diagnostic with
+                {
+                    Stage = "contacts",
+                    Verdict = "rejected: endpoint contacts resolved to no notes/stems",
+                    LeftNearestContactDistanceInStaffSpaces = leftNearest / staffSpace,
+                    RightNearestContactDistanceInStaffSpaces = rightNearest / staffSpace,
+                    LeftContactCount = leftContacts.Count,
+                    RightContactCount = rightContacts.Count
+                });
                 continue;
+            }
 
             result.Add(new ArcResolution(
                 primitive.PhysicalBounds,
@@ -76,7 +117,20 @@ public sealed class ArcResolver
                 candidate.RightEndpoint,
                 notes,
                 contactedStems));
+
+            diagnostics.Add(analysis.Diagnostic with
+            {
+                Stage = "accepted",
+                Verdict = $"accepted: notes={notes.Length}, stems={contactedStems.Length}",
+                LeftNearestContactDistanceInStaffSpaces = leftNearest / staffSpace,
+                RightNearestContactDistanceInStaffSpaces = rightNearest / staffSpace,
+                LeftContactCount = leftContacts.Count,
+                RightContactCount = rightContacts.Count,
+                Accepted = true
+            });
         }
+
+        LastDiagnostics = diagnostics;
 
         return result
             .GroupBy(x => (
@@ -90,16 +144,37 @@ public sealed class ArcResolver
             .ToArray();
     }
 
-    private ArcCandidate? TryBuildArcCandidate(
+    private ArcCandidateAnalysis AnalyzeArcCandidate(
+        int primitiveId,
         PrimitiveContour contour,
         RectD bounds,
         double staffSpace)
     {
-        if (contour.Points.Count < 6 || bounds.Width <= 1e-9 || bounds.Height <= 1e-9)
-            return null;
+        var widthInStaffSpaces = bounds.Width / staffSpace;
 
-        if (bounds.Width / staffSpace < MinWidthInStaffSpaces)
-            return null;
+        if (contour.Points.Count < 6 || bounds.Width <= 1e-9 || bounds.Height <= 1e-9)
+        {
+            return Reject(
+                primitiveId,
+                bounds,
+                contour.Points.Count,
+                staffSpace,
+                "shape",
+                "rejected: too few contour points or empty bounds",
+                widthInStaffSpaces);
+        }
+
+        if (widthInStaffSpaces < MinWidthInStaffSpaces)
+        {
+            return Reject(
+                primitiveId,
+                bounds,
+                contour.Points.Count,
+                staffSpace,
+                "width",
+                $"rejected: width {widthInStaffSpaces:F2} < {MinWidthInStaffSpaces:F2}",
+                widthInStaffSpaces);
+        }
 
         var endpointBandWidth = Math.Max(bounds.Width * EndpointBandFraction, staffSpace * 0.06);
         var midBandHalfWidth = Math.Max(bounds.Width * MidBandFraction / 2.0, staffSpace * 0.05);
@@ -116,7 +191,16 @@ public sealed class ArcResolver
             .ToArray();
 
         if (leftPoints.Length < 2 || rightPoints.Length < 2 || midPoints.Length < 2)
-            return null;
+        {
+            return Reject(
+                primitiveId,
+                bounds,
+                contour.Points.Count,
+                staffSpace,
+                "bands",
+                $"rejected: insufficient band points L={leftPoints.Length}, M={midPoints.Length}, R={rightPoints.Length}",
+                widthInStaffSpaces);
+        }
 
         var leftMinY = leftPoints.Min(p => (double)p.Y);
         var leftMaxY = leftPoints.Max(p => (double)p.Y);
@@ -125,27 +209,120 @@ public sealed class ArcResolver
         var midMinY = midPoints.Min(p => (double)p.Y);
         var midMaxY = midPoints.Max(p => (double)p.Y);
 
-        var leftThickness = leftMaxY - leftMinY;
-        var rightThickness = rightMaxY - rightMinY;
-        if (leftThickness / staffSpace > MaxEndpointThicknessInStaffSpaces ||
-            rightThickness / staffSpace > MaxEndpointThicknessInStaffSpaces)
-            return null;
+        var leftThicknessInStaffSpaces = (leftMaxY - leftMinY) / staffSpace;
+        var rightThicknessInStaffSpaces = (rightMaxY - rightMinY) / staffSpace;
+
+        if (leftThicknessInStaffSpaces > MaxEndpointThicknessInStaffSpaces ||
+            rightThicknessInStaffSpaces > MaxEndpointThicknessInStaffSpaces)
+        {
+            return Reject(
+                primitiveId,
+                bounds,
+                contour.Points.Count,
+                staffSpace,
+                "thickness",
+                $"rejected: endpoint thickness L={leftThicknessInStaffSpaces:F2}, R={rightThicknessInStaffSpaces:F2} > {MaxEndpointThicknessInStaffSpaces:F2}",
+                widthInStaffSpaces,
+                leftThicknessInStaffSpaces,
+                rightThicknessInStaffSpaces);
+        }
 
         var left = new PointD(bounds.Left, (leftMinY + leftMaxY) / 2.0);
         var right = new PointD(bounds.Right, (rightMinY + rightMaxY) / 2.0);
         var middle = new PointD(centerX, (midMinY + midMaxY) / 2.0);
 
         var straightMidY = (left.Y + right.Y) / 2.0;
-        var curvature = Math.Abs(middle.Y - straightMidY) / staffSpace;
-        if (curvature < MinCurvatureInStaffSpaces)
-            return null;
+        var curvatureInStaffSpaces = Math.Abs(middle.Y - straightMidY) / staffSpace;
 
-        var minThickness = Math.Max(1e-9, Math.Min(leftThickness, rightThickness));
-        var maxThickness = Math.Max(leftThickness, rightThickness);
-        if (maxThickness / minThickness > 3.0)
-            return null;
+        if (curvatureInStaffSpaces < MinCurvatureInStaffSpaces)
+        {
+            return Reject(
+                primitiveId,
+                bounds,
+                contour.Points.Count,
+                staffSpace,
+                "curvature",
+                $"rejected: curvature {curvatureInStaffSpaces:F2} < {MinCurvatureInStaffSpaces:F2}",
+                widthInStaffSpaces,
+                leftThicknessInStaffSpaces,
+                rightThicknessInStaffSpaces,
+                curvatureInStaffSpaces,
+                left,
+                middle,
+                right);
+        }
 
-        return new ArcCandidate(left, middle, right);
+        var minThickness = Math.Max(1e-9, Math.Min(leftMaxY - leftMinY, rightMaxY - rightMinY));
+        var maxThickness = Math.Max(leftMaxY - leftMinY, rightMaxY - rightMinY);
+        var thicknessRatio = maxThickness / minThickness;
+
+        if (thicknessRatio > 3.0)
+        {
+            return Reject(
+                primitiveId,
+                bounds,
+                contour.Points.Count,
+                staffSpace,
+                "symmetry",
+                $"rejected: endpoint thickness ratio {thicknessRatio:F2} > 3.00",
+                widthInStaffSpaces,
+                leftThicknessInStaffSpaces,
+                rightThicknessInStaffSpaces,
+                curvatureInStaffSpaces,
+                left,
+                middle,
+                right);
+        }
+
+        var diagnostic = new ArcDiagnosticEntry(
+            primitiveId,
+            bounds,
+            contour.Points.Count,
+            staffSpace,
+            "geometry",
+            "geometry accepted; checking endpoint contacts",
+            widthInStaffSpaces,
+            leftThicknessInStaffSpaces,
+            rightThicknessInStaffSpaces,
+            curvatureInStaffSpaces,
+            left,
+            middle,
+            right);
+
+        return new ArcCandidateAnalysis(new ArcCandidate(left, middle, right), diagnostic);
+    }
+
+    private static ArcCandidateAnalysis Reject(
+        int primitiveId,
+        RectD bounds,
+        int contourPointCount,
+        double staffSpace,
+        string stage,
+        string verdict,
+        double? widthInStaffSpaces = null,
+        double? leftThicknessInStaffSpaces = null,
+        double? rightThicknessInStaffSpaces = null,
+        double? curvatureInStaffSpaces = null,
+        PointD? left = null,
+        PointD? middle = null,
+        PointD? right = null)
+    {
+        var diagnostic = new ArcDiagnosticEntry(
+            primitiveId,
+            bounds,
+            contourPointCount,
+            staffSpace,
+            stage,
+            verdict,
+            widthInStaffSpaces,
+            leftThicknessInStaffSpaces,
+            rightThicknessInStaffSpaces,
+            curvatureInStaffSpaces,
+            left,
+            middle,
+            right);
+
+        return new ArcCandidateAnalysis(null, diagnostic);
     }
 
     private static IReadOnlyList<EndpointContact> FindEndpointContacts(
@@ -158,7 +335,6 @@ public sealed class ArcResolver
 
         foreach (var note in noteHeads)
         {
-            // Measure to the actual note-head bbox, not its center. Slurs often end beside the head.
             var distance = DistanceToRect(endpoint, note.PhysicalBounds);
             if (distance <= maxDistance)
                 contacts.Add(new EndpointContact(note, null, distance));
@@ -166,19 +342,39 @@ public sealed class ArcResolver
 
         foreach (var stem in stems)
         {
-            // A slur/tie endpoint may sit beside any point of a stem; requiring the free end was far
-            // too strict (especially for chord stems and arcs approaching the note-head end).
             var distance = DistanceToRect(endpoint, stem.PhysicalBounds);
             if (distance <= maxDistance)
                 contacts.Add(new EndpointContact(null, stem, distance));
         }
 
-        var nearest = contacts.Count == 0 ? double.PositiveInfinity : contacts.Min(x => x.Distance);
+        if (contacts.Count == 0)
+            return Array.Empty<EndpointContact>();
+
+        var nearest = contacts.Min(x => x.Distance);
         var keepWithin = Math.Max(0.01, maxDistance * 0.18);
-        return contacts
+
+        var localContacts = contacts
             .Where(x => x.Distance <= nearest + keepWithin)
             .OrderBy(x => x.Distance)
             .ToArray();
+
+        return localContacts;
+    }
+
+    private static double FindNearestDistance(
+        PointD endpoint,
+        IReadOnlyList<NoteHeadResolution> noteHeads,
+        IReadOnlyList<StemResolution> stems)
+    {
+        var nearest = double.PositiveInfinity;
+
+        foreach (var note in noteHeads)
+            nearest = Math.Min(nearest, DistanceToRect(endpoint, note.PhysicalBounds));
+
+        foreach (var stem in stems)
+            nearest = Math.Min(nearest, DistanceToRect(endpoint, stem.PhysicalBounds));
+
+        return nearest;
     }
 
     private static double StaffSpaceFor(ResolvedPrimitive primitive, LogicalGridResolution grid)
@@ -220,9 +416,6 @@ public sealed class ArcResolver
     }
 
     private sealed record ArcCandidate(PointD LeftEndpoint, PointD Midpoint, PointD RightEndpoint);
-
-    private sealed record EndpointContact(
-        NoteHeadResolution? Note,
-        StemResolution? Stem,
-        double Distance);
+    private sealed record ArcCandidateAnalysis(ArcCandidate? Candidate, ArcDiagnosticEntry Diagnostic);
+    private sealed record EndpointContact(NoteHeadResolution? Note, StemResolution? Stem, double Distance);
 }
