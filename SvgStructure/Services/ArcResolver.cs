@@ -3,7 +3,7 @@ using SvgStructure.Models;
 namespace SvgStructure.Services;
 
 /// <summary>
-/// Finds curved filled strips that terminate near recognized note heads or free stem ends.
+/// Finds curved filled strips that terminate near recognized note heads or stems.
 /// Unlike beams, arcs are identified by curvature and endpoint proximity rather than physical contact.
 /// Arcs are deliberately allowed to be PhysicalOnly because slurs/ties often cross barlines and
 /// therefore cannot always belong to one P+M or measure scope.
@@ -15,7 +15,12 @@ public sealed class ArcResolver
     public double MaxEndpointThicknessInStaffSpaces { get; init; } = 0.55;
     public double EndpointBandFraction { get; init; } = 0.12;
     public double MidBandFraction { get; init; } = 0.12;
-    public double EndpointContactDistanceInStaffSpaces { get; init; } = 1.15;
+
+    /// <summary>
+    /// Slur/tie ends are commonly offset from the note head or stem rather than touching it.
+    /// Keep this deliberately generous; geometry/curvature is the primary filter.
+    /// </summary>
+    public double EndpointContactDistanceInStaffSpaces { get; init; } = 2.0;
 
     public IReadOnlyList<ArcResolution> Resolve(
         PrimitiveResolution primitives,
@@ -153,6 +158,7 @@ public sealed class ArcResolver
 
         foreach (var note in noteHeads)
         {
+            // Measure to the actual note-head bbox, not its center. Slurs often end beside the head.
             var distance = DistanceToRect(endpoint, note.PhysicalBounds);
             if (distance <= maxDistance)
                 contacts.Add(new EndpointContact(note, null, distance));
@@ -160,11 +166,9 @@ public sealed class ArcResolver
 
         foreach (var stem in stems)
         {
-            var freeEnd = stem.Direction == StemDirection.Up
-                ? new PointD(stem.PhysicalBounds.CenterX, stem.PhysicalBounds.Top)
-                : new PointD(stem.PhysicalBounds.CenterX, stem.PhysicalBounds.Bottom);
-
-            var distance = Distance(endpoint, freeEnd);
+            // A slur/tie endpoint may sit beside any point of a stem; requiring the free end was far
+            // too strict (especially for chord stems and arcs approaching the note-head end).
+            var distance = DistanceToRect(endpoint, stem.PhysicalBounds);
             if (distance <= maxDistance)
                 contacts.Add(new EndpointContact(null, stem, distance));
         }
@@ -212,13 +216,6 @@ public sealed class ArcResolver
                 ? point.Y - rect.Bottom
                 : 0.0;
 
-        return Math.Sqrt(dx * dx + dy * dy);
-    }
-
-    private static double Distance(PointD a, PointD b)
-    {
-        var dx = a.X - b.X;
-        var dy = a.Y - b.Y;
         return Math.Sqrt(dx * dx + dy * dy);
     }
 
