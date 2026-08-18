@@ -20,6 +20,7 @@ public sealed class MeterOverlayRenderer
         IReadOnlyList<NoteHeadResolution> noteHeads,
         IReadOnlyList<AccidentalResolution> accidentals,
         IReadOnlyList<StemResolution> stems,
+        IReadOnlyList<BeamResolution> beams,
         LogicalGridResolution logicalGrid,
         string outputPath)
     {
@@ -72,6 +73,9 @@ public sealed class MeterOverlayRenderer
 
         foreach (var stem in stems)
             DrawStem(canvas, stem);
+
+        foreach (var beam in beams)
+            DrawBeam(canvas, beam);
 
         if (DrawDiagnosticLabels)
             DrawFirstMeasureNoteSummaries(canvas, noteHeads, logicalGrid, bounds);
@@ -191,6 +195,25 @@ public sealed class MeterOverlayRenderer
             canvas.DrawLine(x, bottom, x - arrowSize, bottom - arrowSize, paint);
             canvas.DrawLine(x, bottom, x + arrowSize, bottom - arrowSize, paint);
         }
+    }
+
+    private static void DrawBeam(SKCanvas canvas, BeamResolution beam)
+    {
+        using var paint = new SKPaint
+        {
+            Color = SKColors.ForestGreen,
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = (float)Math.Clamp(beam.PhysicalBounds.Height * 0.55, 1.8, 4.5),
+            StrokeCap = SKStrokeCap.Square,
+            IsAntialias = true
+        };
+
+        canvas.DrawLine(
+            (float)beam.LeftEndpoint.X,
+            (float)beam.LeftEndpoint.Y,
+            (float)beam.RightEndpoint.X,
+            (float)beam.RightEndpoint.Y,
+            paint);
     }
 
     private static void DrawNoteHead(SKCanvas canvas, SKPicture picture, NoteHeadResolution noteHead)
