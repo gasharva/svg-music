@@ -113,8 +113,13 @@ public sealed class ArcDiagnosticExporter
     private static string FormatRect(RectD rect) =>
         $"[{F(rect.Left)},{F(rect.Top)}]-[{F(rect.Right)},{F(rect.Bottom)}]";
 
-    private static string FormatPoint(PointD? point) =>
-        point is null ? "-" : $"({F(point.X)},{F(point.Y)})";
+    private static string FormatPoint(PointD? point)
+    {
+        if (point is not { } p)
+            return "-";
+
+        return $"({F(p.X)},{F(p.Y)})";
+    }
 
     private static string F(double? value) =>
         value is null || double.IsInfinity(value.Value)
