@@ -5,6 +5,8 @@ namespace SvgStructure.Services;
 /// <summary>
 /// Finds curved filled strips that terminate near recognized note heads or free stem ends.
 /// Unlike beams, arcs are identified by curvature and endpoint proximity rather than physical contact.
+/// Arcs are deliberately allowed to be PhysicalOnly because slurs/ties often cross barlines and
+/// therefore cannot always belong to one P+M or measure scope.
 /// </summary>
 public sealed class ArcResolver
 {
@@ -25,9 +27,6 @@ public sealed class ArcResolver
 
         foreach (var primitive in primitives.Primitives)
         {
-            if (primitive.Scope is not (PrimitiveLogicalScope.PartMeasure or PrimitiveLogicalScope.Measure))
-                continue;
-
             var staffSpace = StaffSpaceFor(primitive, grid);
             if (staffSpace <= 1e-9)
                 continue;
@@ -136,8 +135,6 @@ public sealed class ArcResolver
         if (curvature < MinCurvatureInStaffSpaces)
             return null;
 
-        // Reject highly asymmetric blobs. A proper arc can taper, but both ends should still look
-        // like ends of the same thin curved strip.
         var minThickness = Math.Max(1e-9, Math.Min(leftThickness, rightThickness));
         var maxThickness = Math.Max(leftThickness, rightThickness);
         if (maxThickness / minThickness > 3.0)
@@ -172,9 +169,6 @@ public sealed class ArcResolver
                 contacts.Add(new EndpointContact(null, stem, distance));
         }
 
-        // Keep only the local neighborhood of the endpoint. This avoids an arc endpoint collecting
-        // several unrelated nearby chord heads/stems while still allowing a chord endpoint to expose
-        // more than one legitimate contact if their distances are effectively tied.
         var nearest = contacts.Count == 0 ? double.PositiveInfinity : contacts.Min(x => x.Distance);
         var keepWithin = Math.Max(0.01, maxDistance * 0.18);
         return contacts
