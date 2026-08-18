@@ -27,6 +27,7 @@ public sealed record StepByStepItemResult(
     int LedgerLineCount = 0,
     int NoteHeadCount = 0,
     int NoteHeadCandidateCount = 0,
+    int AccidentalCount = 0,
     int ExportedPrimitiveCount = 0,
     int SourceElementCount = 0,
     int SourceUseCount = 0,
@@ -78,9 +79,12 @@ public sealed class StepByStepBatchRunner
             Path.Combine(recognizerWork, "clef-pca"));
         var legacyIoUClefAnalyzer = new LegacyIoUClefAnalyzer(glyphs);
         var diagnosticClefRecognizer = new DiagnosticClefRecognizer(baseClefRecognizer, legacyIoUClefAnalyzer);
-        var clefResolver = new ClefResolver(
-            diagnosticClefRecognizer,
-            minimumConfidence: 0.70);
+        var clefResolver = new ClefResolver(diagnosticClefRecognizer, minimumConfidence: 0.70);
+
+        var accidentalRecognizer = new GlyphPcaAccidentalRecognizer(
+            glyphPcaModel,
+            Path.Combine(recognizerWork, "accidental-pca"));
+        var accidentalResolver = new AccidentalResolver(accidentalRecognizer);
 
         try
         {
@@ -91,25 +95,15 @@ public sealed class StepByStepBatchRunner
 
             var items = new List<StepByStepItemResult>();
             foreach (var svgPath in svgFiles)
-                items.Add(Process(
-                    svgPath,
-                    artifactsFolder,
-                    meterResolver,
-                    clefResolver,
-                    diagnosticNumberRecognizer,
-                    diagnosticClefRecognizer));
+                items.Add(Process(svgPath, artifactsFolder, meterResolver, clefResolver, accidentalResolver,
+                    diagnosticNumberRecognizer, diagnosticClefRecognizer));
 
             var htmlReportPath = Path.Combine(artifactsFolder, "index.html");
             var markdownReportPath = Path.Combine(artifactsFolder, "README.md");
             _reportBuilder.WriteHtml(htmlReportPath, items);
             _reportBuilder.WriteMarkdown(markdownReportPath, items);
 
-            return new StepByStepBatchResult(
-                inputFolder,
-                artifactsFolder,
-                htmlReportPath,
-                markdownReportPath,
-                items);
+            return new StepByStepBatchResult(inputFolder, artifactsFolder, htmlReportPath, markdownReportPath, items);
         }
         finally
         {
@@ -123,6 +117,7 @@ public sealed class StepByStepBatchRunner
         string artifactsFolder,
         MeterResolver meterResolver,
         ClefResolver clefResolver,
+        AccidentalResolver accidentalResolver,
         DiagnosticNumberRecognizer diagnosticNumberRecognizer,
         DiagnosticClefRecognizer diagnosticClefRecognizer)
     {
@@ -134,18 +129,14 @@ public sealed class StepByStepBatchRunner
         try
         {
             File.Copy(svgPath, Path.Combine(itemDirectory, "source.svg"), overwrite: true);
-
             var sourceModel = _sourceModelDumper.Dump(svgPath, itemDirectory);
-
             var structure = _partMeasureResolver.Resolve(svgPath);
             var primitives = _primitiveResolver.Resolve(structure);
             var primitiveExport = _primitiveSvgExporter.Export(primitives, itemDirectory);
-
             var musicSymbols = _musicSymbolResolver.Resolve(primitives);
             _musicSymbolSvgExporter.Export(musicSymbols, itemDirectory);
 
             diagnosticNumberRecognizer.BeginDocument(Path.Combine(itemDirectory, "meter-inputs"));
-
             var meters = structure.Map.Blocks
                 .Select(block => meterResolver.Resolve(block, musicSymbols))
                 .Where(x => x is not null)
@@ -162,37 +153,24 @@ public sealed class StepByStepBatchRunner
             var ledgerLines = _ledgerLineResolver.Resolve(primitives, logicalGrid);
             var noteHeads = _noteHeadResolver.Resolve(primitives, logicalGrid, clefs, ledgerLines);
             var noteHeadDiagnostics = _noteHeadResolver.LastDiagnostics;
+            _noteHeadDiagnosticExporter.Export(noteHeadDiagnostics, Path.Combine(itemDirectory, "notehead-inputs"));
 
-            _noteHeadDiagnosticExporter.Export(
-                noteHeadDiagnostics,
-                Path.Combine(itemDirectory, "notehead-inputs"));
-
-            _partMeasureOverlayRenderer.Render(
-                structure,
-                Path.Combine(itemDirectory, "measures.png"));
-            _primitiveOverlayRenderer.Render(
-                primitives,
-                Path.Combine(itemDirectory, "classified.png"));
-            _meterOverlayRenderer.Render(
-                structure,
-                meters,
-                clefs,
-                ledgerLines,
-                noteHeads,
+            var accidentals = accidentalResolver.Resolve(
+                musicSymbols,
                 logicalGrid,
+                noteHeads,
+                clefs,
+                meters);
+
+            _partMeasureOverlayRenderer.Render(structure, Path.Combine(itemDirectory, "measures.png"));
+            _primitiveOverlayRenderer.Render(primitives, Path.Combine(itemDirectory, "classified.png"));
+            _meterOverlayRenderer.Render(
+                structure, meters, clefs, ledgerLines, noteHeads, logicalGrid,
                 Path.Combine(itemDirectory, "meters.png"));
 
             WriteResolutionJson(
-                Path.Combine(itemDirectory, "structure.json"),
-                fileName,
-                structure,
-                primitives,
-                musicSymbols,
-                meters,
-                logicalGrid,
-                clefs,
-                ledgerLines,
-                noteHeads);
+                Path.Combine(itemDirectory, "structure.json"), fileName, structure, primitives,
+                musicSymbols, meters, logicalGrid, clefs, ledgerLines, noteHeads, accidentals);
 
             return new StepByStepItemResult(
                 fileName,
@@ -210,6 +188,7 @@ public sealed class StepByStepBatchRunner
                 ledgerLines.Count,
                 noteHeads.Count,
                 noteHeadDiagnostics.Count,
+                accidentals.Count,
                 primitiveExport.Items.Count,
                 sourceModel.ElementCount,
                 sourceModel.UseCount);
@@ -217,9 +196,7 @@ public sealed class StepByStepBatchRunner
         catch (Exception ex)
         {
             File.WriteAllText(Path.Combine(itemDirectory, "error.txt"), ex.ToString());
-            return new StepByStepItemResult(
-                fileName, stem, 0, 0, 0, 0,
-                Error: ex.Message);
+            return new StepByStepItemResult(fileName, stem, 0, 0, 0, 0, Error: ex.Message);
         }
     }
 
@@ -233,7 +210,8 @@ public sealed class StepByStepBatchRunner
         LogicalGridResolution logicalGrid,
         IReadOnlyList<ClefResolution> clefs,
         IReadOnlyList<LedgerLineResolution> ledgerLines,
-        IReadOnlyList<NoteHeadResolution> noteHeads)
+        IReadOnlyList<NoteHeadResolution> noteHeads,
+        IReadOnlyList<AccidentalResolution> accidentals)
     {
         var payload = new
         {
@@ -249,37 +227,20 @@ public sealed class StepByStepBatchRunner
             },
             primitives = primitives.Primitives.Select(x => new
             {
-                x.Id,
-                x.Scope,
-                x.PartNumber,
-                x.MeasureNumber,
-                x.PhysicalBounds,
+                x.Id, x.Scope, x.PartNumber, x.MeasureNumber, x.PhysicalBounds,
                 source = new
                 {
-                    x.Source.Anchor,
-                    x.Source.GroupAnchor,
-                    x.Source.ReferenceAnchor,
-                    x.Source.InstanceX,
-                    x.Source.InstanceY,
-                    x.Source.ElementType,
-                    x.Source.ElementId,
-                    x.Source.ElementAddress,
-                    x.Source.IsExplicitUse,
+                    x.Source.Anchor, x.Source.GroupAnchor, x.Source.ReferenceAnchor,
+                    x.Source.InstanceX, x.Source.InstanceY, x.Source.ElementType,
+                    x.Source.ElementId, x.Source.ElementAddress, x.Source.IsExplicitUse,
                     groupContourCount = x.SourceGroupContours?.Count
                 },
                 contourPointCount = x.Contour.Points.Count
             }),
             musicSymbols = musicSymbols.Candidates.Select(x => new
             {
-                x.Id,
-                x.ParentCandidateId,
-                x.IsDerived,
-                x.Scope,
-                x.PartNumber,
-                x.MeasureNumber,
-                x.PhysicalBounds,
-                x.PrimitiveIds,
-                smoothPathCount = x.SmoothPaths.Count,
+                x.Id, x.ParentCandidateId, x.IsDerived, x.Scope, x.PartNumber, x.MeasureNumber,
+                x.PhysicalBounds, x.PrimitiveIds, smoothPathCount = x.SmoothPaths.Count,
                 sourceAddresses = x.Sources.Select(s => s.ElementAddress ?? s.Anchor).ToArray()
             }),
             meters,
@@ -288,28 +249,21 @@ public sealed class StepByStepBatchRunner
                 subdivisionsPerBeat = DefaultSubdivisionsPerBeat,
                 blocks = logicalGrid.Blocks.Select(x => new
                 {
-                    x.PartNumber,
-                    x.MeasureNumber,
-                    x.BeatNumber,
-                    x.BeatValue,
-                    x.SubdivisionsPerBeat,
-                    x.HorizontalUnits,
-                    x.HalfStaffSpace,
-                    x.PhysicalBounds
+                    x.PartNumber, x.MeasureNumber, x.BeatNumber, x.BeatValue,
+                    x.SubdivisionsPerBeat, x.HorizontalUnits, x.HalfStaffSpace, x.PhysicalBounds
                 })
             },
             clefs,
             ledgerLines,
-            noteHeads
+            noteHeads,
+            accidentals
         };
 
-        File.WriteAllText(
-            path,
-            JsonSerializer.Serialize(payload, new JsonSerializerOptions
-            {
-                WriteIndented = true,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            }));
+        File.WriteAllText(path, JsonSerializer.Serialize(payload, new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        }));
     }
 
     private static string FindRepositoryRoot(string start)
@@ -321,7 +275,6 @@ public sealed class StepByStepBatchRunner
                 return current.FullName;
             current = current.Parent;
         }
-
         throw new DirectoryNotFoundException("Could not find repository root above input folder.");
     }
 }
