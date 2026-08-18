@@ -11,7 +11,7 @@ public sealed class StepByStepReportBuilder
         html.AppendLine("<!doctype html><html><head><meta charset=\"utf-8\"><title>SvgStructure step-by-step</title>");
         html.AppendLine("<style>body{font-family:Segoe UI,Arial,sans-serif;margin:24px;background:#f5f5f5;color:#222}table{border-collapse:collapse;width:100%;background:#fff}th,td{border:1px solid #ddd;padding:8px;vertical-align:top}th{background:#eceff2}.preview{width:240px;max-height:340px;object-fit:contain;background:#fff}.good{background:#edf8ed}.bad{background:#fff0f0}.mono{font-family:Consolas,monospace}a{color:#0757a6}</style></head><body>");
         html.AppendLine("<h1>SvgStructure — step-by-step</h1>");
-        html.AppendLine("<p>PartMeasureResolver → PrimitiveResolver → MusicSymbolResolver → MeterResolver → logical grid → ClefResolver → LedgerLineResolver. Overlays are diagnostics only.</p>");
+        html.AppendLine("<p>PartMeasureResolver → PrimitiveResolver → MusicSymbolResolver → MeterResolver → logical grid → ClefResolver → LedgerLineResolver → NoteHeadResolver. Overlays are diagnostics only.</p>");
         html.AppendLine("<table><thead><tr><th>Source</th><th>P+M blocks</th><th>Primitives</th><th>Music symbols</th><th>Semantic symbols</th><th>State</th></tr></thead><tbody>");
 
         foreach (var item in items)
@@ -30,10 +30,10 @@ public sealed class StepByStepReportBuilder
             html.Append($"<td><a href=\"{dir}/measures.png\"><img class=\"preview\" src=\"{dir}/measures.png\"></a></td>");
             html.Append($"<td><a href=\"{dir}/classified.png\"><img class=\"preview\" src=\"{dir}/classified.png\"></a><br><a href=\"{dir}/primitives.html\"><b>primitive SVG gallery ({item.ExportedPrimitiveCount})</b></a></td>");
             html.Append($"<td><a href=\"{dir}/music-symbols.html\"><b>MusicSymbol candidates ({item.MusicSymbolCount})</b></a><br>strict overlap grouping<br>original Bezier paths</td>");
-            html.Append($"<td><a href=\"{dir}/meters.png\"><img class=\"preview\" src=\"{dir}/meters.png\"></a><br><b>meters: {item.MeterCount}</b><br><b>clefs: {item.ClefCount}</b><br><b>ledger ladders: {item.LedgerLineCount}</b><br><a href=\"{dir}/meter-inputs/index.html\"><b>meter inputs</b></a><br><a href=\"{dir}/clef-inputs/README.md\"><b>clef inputs</b></a></td>");
+            html.Append($"<td><a href=\"{dir}/meters.png\"><img class=\"preview\" src=\"{dir}/meters.png\"></a><br><b>meters: {item.MeterCount}</b><br><b>clefs: {item.ClefCount}</b><br><b>ledger ladders: {item.LedgerLineCount}</b><br><b>note heads: {item.NoteHeadCount}</b><br><a href=\"{dir}/meter-inputs/index.html\"><b>meter inputs</b></a><br><a href=\"{dir}/clef-inputs/README.md\"><b>clef inputs</b></a><br><a href=\"{dir}/notehead-inputs/index.html\"><b>note-head inputs ({item.NoteHeadCandidateCount})</b></a></td>");
             html.Append("<td class=\"mono\">" +
                         $"source elements: {item.SourceElementCount}<br>source uses: {item.SourceUseCount}<br>lines: {item.LineCount}<br>systems: {item.SystemCount}<br>parts: {item.PartCount}<br>measures: {item.MeasureCount}<br>" +
-                        $"P+M primitives: {item.PartMeasurePrimitiveCount}<br>exported SVGs: {item.ExportedPrimitiveCount}<br>M-only: {item.MeasurePrimitiveCount}<br>physical-only: {item.PhysicalOnlyPrimitiveCount}<br>music symbols: {item.MusicSymbolCount}<br>meters: {item.MeterCount}<br>clefs: {item.ClefCount}<br>ledger ladders: {item.LedgerLineCount}<br>" +
+                        $"P+M primitives: {item.PartMeasurePrimitiveCount}<br>exported SVGs: {item.ExportedPrimitiveCount}<br>M-only: {item.MeasurePrimitiveCount}<br>physical-only: {item.PhysicalOnlyPrimitiveCount}<br>music symbols: {item.MusicSymbolCount}<br>meters: {item.MeterCount}<br>clefs: {item.ClefCount}<br>ledger ladders: {item.LedgerLineCount}<br>note heads: {item.NoteHeadCount}<br>note-head candidates: {item.NoteHeadCandidateCount}<br>" +
                         $"<a href=\"{dir}/structure.json\">structure.json</a></td>");
             html.AppendLine("</tr>");
         }
@@ -47,7 +47,7 @@ public sealed class StepByStepReportBuilder
         var md = new StringBuilder();
         md.AppendLine("# SvgStructure step-by-step");
         md.AppendLine();
-        md.AppendLine("Latest results: PartMeasureResolver → PrimitiveResolver → MusicSymbolResolver → MeterResolver → logical grid → ClefResolver → LedgerLineResolver.");
+        md.AppendLine("Latest results: PartMeasureResolver → PrimitiveResolver → MusicSymbolResolver → MeterResolver → logical grid → ClefResolver → LedgerLineResolver → NoteHeadResolver.");
         md.AppendLine();
         md.AppendLine("| SVG | P+M blocks | Primitives | Music symbols | Semantic symbols | State |");
         md.AppendLine("|---|---|---|---|---|---|");
@@ -66,7 +66,7 @@ public sealed class StepByStepReportBuilder
                 $"[![blocks]({dir}/measures.png)]({dir}/measures.png) | " +
                 $"[![primitives]({dir}/classified.png)]({dir}/classified.png)<br>[primitive SVG gallery]({dir}/primitives.html) ({item.ExportedPrimitiveCount}) | " +
                 $"[MusicSymbol gallery]({dir}/music-symbols.html) ({item.MusicSymbolCount}) | " +
-                $"[![symbols]({dir}/meters.png)]({dir}/meters.png)<br>meters={item.MeterCount}<br>clefs={item.ClefCount}<br>ledgerLadders={item.LedgerLineCount}<br>[meter inputs]({dir}/meter-inputs/index.html)<br>[clef inputs]({dir}/clef-inputs/README.md) | " +
+                $"[![symbols]({dir}/meters.png)]({dir}/meters.png)<br>meters={item.MeterCount}<br>clefs={item.ClefCount}<br>ledgerLadders={item.LedgerLineCount}<br>noteHeads={item.NoteHeadCount}<br>[meter inputs]({dir}/meter-inputs/index.html)<br>[clef inputs]({dir}/clef-inputs/README.md)<br>[note-head inputs]({dir}/notehead-inputs/index.html) ({item.NoteHeadCandidateCount}) | " +
                 $"sourceElements={item.SourceElementCount}<br>sourceUses={item.SourceUseCount}<br>parts={item.PartCount}<br>measures={item.MeasureCount}<br>P+M={item.PartMeasurePrimitiveCount}<br>exported={item.ExportedPrimitiveCount}<br>M-only={item.MeasurePrimitiveCount}<br>physical={item.PhysicalOnlyPrimitiveCount}<br>musicSymbols={item.MusicSymbolCount}<br>[json]({dir}/structure.json) |");
         }
 
