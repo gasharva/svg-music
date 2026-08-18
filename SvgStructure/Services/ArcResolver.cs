@@ -17,6 +17,13 @@ public sealed class ArcResolver
     public double MidBandFraction { get; init; } = 0.12;
     public double EndpointContactDistanceInStaffSpaces { get; init; } = 2.0;
 
+    // These shape thresholds were heuristic guesses. Keep their measurements in diagnostics,
+    // but disable rejection by them while we inspect real score data.
+    public bool FilterByMinimumWidth { get; init; } = false;
+    public bool FilterByEndpointThickness { get; init; } = false;
+    public bool FilterByMinimumCurvature { get; init; } = false;
+    public bool FilterByEndpointThicknessSymmetry { get; init; } = false;
+
     public IReadOnlyList<ArcDiagnosticEntry> LastDiagnostics { get; private set; } = Array.Empty<ArcDiagnosticEntry>();
 
     public IReadOnlyList<ArcResolution> Resolve(
@@ -152,6 +159,7 @@ public sealed class ArcResolver
     {
         var widthInStaffSpaces = bounds.Width / staffSpace;
 
+        // Keep only the minimum structural requirements needed to compute endpoints/midpoint.
         if (contour.Points.Count < 6 || bounds.Width <= 1e-9 || bounds.Height <= 1e-9)
         {
             return Reject(
@@ -164,7 +172,7 @@ public sealed class ArcResolver
                 widthInStaffSpaces);
         }
 
-        if (widthInStaffSpaces < MinWidthInStaffSpaces)
+        if (FilterByMinimumWidth && widthInStaffSpaces < MinWidthInStaffSpaces)
         {
             return Reject(
                 primitiveId,
@@ -190,6 +198,8 @@ public sealed class ArcResolver
             .Where(p => Math.Abs(p.X - centerX) <= midBandHalfWidth)
             .ToArray();
 
+        // This is not a semantic filter: without samples at both ends and in the middle we cannot
+        // construct the simple three-point arc representation used downstream.
         if (leftPoints.Length < 2 || rightPoints.Length < 2 || midPoints.Length < 2)
         {
             return Reject(
@@ -212,8 +222,9 @@ public sealed class ArcResolver
         var leftThicknessInStaffSpaces = (leftMaxY - leftMinY) / staffSpace;
         var rightThicknessInStaffSpaces = (rightMaxY - rightMinY) / staffSpace;
 
-        if (leftThicknessInStaffSpaces > MaxEndpointThicknessInStaffSpaces ||
-            rightThicknessInStaffSpaces > MaxEndpointThicknessInStaffSpaces)
+        if (FilterByEndpointThickness &&
+            (leftThicknessInStaffSpaces > MaxEndpointThicknessInStaffSpaces ||
+             rightThicknessInStaffSpaces > MaxEndpointThicknessInStaffSpaces))
         {
             return Reject(
                 primitiveId,
@@ -234,7 +245,7 @@ public sealed class ArcResolver
         var straightMidY = (left.Y + right.Y) / 2.0;
         var curvatureInStaffSpaces = Math.Abs(middle.Y - straightMidY) / staffSpace;
 
-        if (curvatureInStaffSpaces < MinCurvatureInStaffSpaces)
+        if (FilterByMinimumCurvature && curvatureInStaffSpaces < MinCurvatureInStaffSpaces)
         {
             return Reject(
                 primitiveId,
@@ -256,7 +267,7 @@ public sealed class ArcResolver
         var maxThickness = Math.Max(leftMaxY - leftMinY, rightMaxY - rightMinY);
         var thicknessRatio = maxThickness / minThickness;
 
-        if (thicknessRatio > 3.0)
+        if (FilterByEndpointThicknessSymmetry && thicknessRatio > 3.0)
         {
             return Reject(
                 primitiveId,
@@ -280,7 +291,7 @@ public sealed class ArcResolver
             contour.Points.Count,
             staffSpace,
             "geometry",
-            "geometry accepted; checking endpoint contacts",
+            "geometry measured; heuristic shape filters disabled; checking endpoint contacts",
             widthInStaffSpaces,
             leftThicknessInStaffSpaces,
             rightThicknessInStaffSpaces,
@@ -353,12 +364,10 @@ public sealed class ArcResolver
         var nearest = contacts.Min(x => x.Distance);
         var keepWithin = Math.Max(0.01, maxDistance * 0.18);
 
-        var localContacts = contacts
+        return contacts
             .Where(x => x.Distance <= nearest + keepWithin)
             .OrderBy(x => x.Distance)
             .ToArray();
-
-        return localContacts;
     }
 
     private static double FindNearestDistance(
