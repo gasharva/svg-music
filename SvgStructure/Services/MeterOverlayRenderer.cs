@@ -21,6 +21,7 @@ public sealed class MeterOverlayRenderer
         IReadOnlyList<AccidentalResolution> accidentals,
         IReadOnlyList<StemResolution> stems,
         IReadOnlyList<BeamResolution> beams,
+        IReadOnlyList<ArcResolution> arcs,
         LogicalGridResolution logicalGrid,
         string outputPath)
     {
@@ -76,6 +77,9 @@ public sealed class MeterOverlayRenderer
 
         foreach (var beam in beams)
             DrawBeam(canvas, beam);
+
+        foreach (var arc in arcs)
+            DrawArc(canvas, arc);
 
         if (DrawDiagnosticLabels)
             DrawFirstMeasureNoteSummaries(canvas, noteHeads, logicalGrid, bounds);
@@ -214,6 +218,31 @@ public sealed class MeterOverlayRenderer
             (float)beam.RightEndpoint.X,
             (float)beam.RightEndpoint.Y,
             paint);
+    }
+
+    private static void DrawArc(SKCanvas canvas, ArcResolution arc)
+    {
+        using var paint = new SKPaint
+        {
+            Color = SKColors.Red,
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = (float)Math.Clamp(arc.PhysicalBounds.Height * 0.12, 1.4, 3.0),
+            StrokeCap = SKStrokeCap.Round,
+            IsAntialias = true
+        };
+
+        // A quadratic Bezier passing through Midpoint at t=.5 needs this control point.
+        var controlX = 2.0 * arc.Midpoint.X - 0.5 * (arc.LeftEndpoint.X + arc.RightEndpoint.X);
+        var controlY = 2.0 * arc.Midpoint.Y - 0.5 * (arc.LeftEndpoint.Y + arc.RightEndpoint.Y);
+
+        using var path = new SKPath();
+        path.MoveTo((float)arc.LeftEndpoint.X, (float)arc.LeftEndpoint.Y);
+        path.QuadTo(
+            (float)controlX,
+            (float)controlY,
+            (float)arc.RightEndpoint.X,
+            (float)arc.RightEndpoint.Y);
+        canvas.DrawPath(path, paint);
     }
 
     private static void DrawNoteHead(SKCanvas canvas, SKPicture picture, NoteHeadResolution noteHead)
