@@ -17,6 +17,9 @@ public sealed class NoteHeadResolver
     public double HollowInnerMinWidthRatio { get; init; } = 0.25;
     public double HollowInnerMaxWidthRatio { get; init; } = 0.82;
 
+    public IReadOnlyList<NoteHeadDiagnosticEntry> LastDiagnostics { get; private set; } =
+        Array.Empty<NoteHeadDiagnosticEntry>();
+
     public IReadOnlyList<NoteHeadResolution> Resolve(
         PrimitiveResolution primitives,
         LogicalGridResolution grid,
@@ -41,28 +44,82 @@ public sealed class NoteHeadResolver
                 ovalCandidates.Add(oval);
         }
 
+        var diagnostics = new List<NoteHeadDiagnosticEntry>();
         var result = new List<NoteHeadResolution>();
-        foreach (var outer in ovalCandidates.OrderByDescending(x => Area(x.PhysicalBounds)))
-        {
-            if (!IsOnLegalStaffPosition(outer, ledgerLines))
-                continue;
 
-            var containingOuter = ovalCandidates
+        var orderedCandidates = ovalCandidates
+            .OrderBy(x => x.PartNumber)
+            .ThenBy(x => x.MeasureNumber)
+            .ThenBy(x => LogicalCenterX(x.LogicalBounds) ?? double.MinValue)
+            .ThenBy(x => x.LogicalBounds.Top)
+            .ToArray();
+
+        foreach (var outer in orderedCandidates)
+        {
+            var hollowContourDetected = HasHollowSourceContour(outer);
+
+            var legalStaffPosition = IsOnLegalStaffPosition(outer, ledgerLines);
+            if (!legalStaffPosition)
+            {
+                diagnostics.Add(Diagnostic(
+                    outer,
+                    accepted: false,
+                    isFilled: null,
+                    pitch: null,
+                    verdict: "rejected: not on staff/ledger position",
+                    hollowContourDetected));
+                continue;
+            }
+
+            var largerCandidates = ovalCandidates
                 .Where(x => x.Id != outer.Id)
                 .Where(x => x.PartNumber == outer.PartNumber && x.MeasureNumber == outer.MeasureNumber)
                 .Where(x => Area(x.PhysicalBounds) > Area(outer.PhysicalBounds))
+                .ToArray();
+
+            var containingOuter = largerCandidates
                 .Any(x => Contains(x.PhysicalBounds, outer.PhysicalBounds));
             if (containingOuter)
+            {
+                diagnostics.Add(Diagnostic(
+                    outer,
+                    accepted: false,
+                    isFilled: null,
+                    pitch: null,
+                    verdict: "rejected: contained by larger oval candidate",
+                    hollowContourDetected));
                 continue;
+            }
 
             var clef = FindNearestClefToLeft(outer, clefs);
-            if (clef is null || clef.Kind == ClefKind.C)
+            if (clef is null)
+            {
+                diagnostics.Add(Diagnostic(
+                    outer,
+                    accepted: false,
+                    isFilled: null,
+                    pitch: null,
+                    verdict: "rejected: no clef to the left",
+                    hollowContourDetected));
                 continue;
+            }
+
+            if (clef.Kind == ClefKind.C)
+            {
+                diagnostics.Add(Diagnostic(
+                    outer,
+                    accepted: false,
+                    isFilled: null,
+                    pitch: null,
+                    verdict: "rejected: C clef pitch mapping is not implemented",
+                    hollowContourDetected));
+                continue;
+            }
 
             var logicalCenterY = (outer.LogicalBounds.Top + outer.LogicalBounds.Bottom) / 2.0;
             var staffPosition = (int)Math.Round(logicalCenterY);
             var pitch = PitchFor(clef.Kind, staffPosition);
-            var isFilled = !HasHollowSourceContour(outer);
+            var isFilled = !hollowContourDetected;
 
             result.Add(new NoteHeadResolution(
                 outer.PartNumber,
@@ -71,7 +128,17 @@ public sealed class NoteHeadResolver
                 outer.PhysicalBounds,
                 isFilled,
                 pitch));
+
+            diagnostics.Add(Diagnostic(
+                outer,
+                accepted: true,
+                isFilled,
+                pitch,
+                verdict: isFilled ? $"accepted: {pitch} filled" : $"accepted: {pitch} hollow",
+                hollowContourDetected));
         }
+
+        LastDiagnostics = diagnostics;
 
         return result
             .OrderBy(x => x.MeasureNumber)
@@ -80,6 +147,27 @@ public sealed class NoteHeadResolver
             .ThenBy(x => x.LogicalBounds.Top)
             .ToArray();
     }
+
+    private static NoteHeadDiagnosticEntry Diagnostic(
+        OvalCandidate candidate,
+        bool accepted,
+        bool? isFilled,
+        string? pitch,
+        string verdict,
+        bool hollowContourDetected) =>
+        new(
+            candidate.Id,
+            candidate.PartNumber,
+            candidate.MeasureNumber,
+            candidate.PhysicalBounds,
+            candidate.LogicalBounds,
+            candidate.Contour,
+            candidate.SourceGroupContours,
+            accepted,
+            isFilled,
+            pitch,
+            verdict,
+            hollowContourDetected);
 
     private OvalCandidate? TryBuildOval(ResolvedPrimitive primitive, LogicalGridBlock block)
     {
@@ -116,6 +204,7 @@ public sealed class NoteHeadResolver
             primitive.MeasureNumber!.Value,
             bounds,
             logical,
+            primitive.Contour,
             primitive.SourceGroupContours);
     }
 
@@ -124,18 +213,30 @@ public sealed class NoteHeadResolver
         if (outer.SourceGroupContours is null || outer.SourceGroupContours.Count < 2)
             return false;
 
-        var innerBounds = outer.SourceGroupContours
+        var contourBounds = outer.SourceGroupContours
             .Select(TryGetBounds)
             .Where(x => x.HasValue)
             .Select(x => x.Value)
+            .ToArray();
+
+        var smallerContours = contourBounds
             .Where(x => Area(x) < Area(outer.PhysicalBounds) * 0.95)
+            .ToArray();
+
+        var containedContours = smallerContours
             .Where(x => Contains(outer.PhysicalBounds, x))
+            .ToArray();
+
+        var centeredContours = containedContours
             .Where(x => CenterDistance(outer.PhysicalBounds, x) <= outer.PhysicalBounds.Height * 0.35)
+            .ToArray();
+
+        var correctlySizedContours = centeredContours
             .Where(x => WidthRatio(x, outer.PhysicalBounds) >= HollowInnerMinWidthRatio)
             .Where(x => WidthRatio(x, outer.PhysicalBounds) <= HollowInnerMaxWidthRatio)
             .ToArray();
 
-        return innerBounds.Length > 0;
+        return correctlySizedContours.Length > 0;
     }
 
     private static RectD? TryGetBounds(PrimitiveContour contour)
@@ -171,10 +272,13 @@ public sealed class NoteHeadResolver
         if (centerX is null)
             return false;
 
-        return ledgerLines
+        var matchingLadders = ledgerLines
             .Where(x => x.PartNumber == candidate.PartNumber && x.MeasureNumber == candidate.MeasureNumber)
             .Where(x => Math.Sign(x.Depth) == (position < 0 ? -1 : 1))
             .Where(x => Math.Abs(x.Depth) >= requiredDepth)
+            .ToArray();
+
+        return matchingLadders
             .Any(x => ContainsLogicalX(x.LogicalBounds, centerX.Value));
     }
 
@@ -250,7 +354,10 @@ public sealed class NoteHeadResolver
         if (mean <= 1e-9)
             return double.MaxValue;
 
-        var variance = radii.Select(x => (x - mean) * (x - mean)).Average();
+        var variance = radii
+            .Select(x => (x - mean) * (x - mean))
+            .Average();
+
         return Math.Sqrt(variance) / mean;
     }
 
@@ -282,5 +389,6 @@ public sealed class NoteHeadResolver
         int MeasureNumber,
         RectD PhysicalBounds,
         LogicalRectD LogicalBounds,
+        PrimitiveContour Contour,
         IReadOnlyList<PrimitiveContour>? SourceGroupContours);
 }
