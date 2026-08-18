@@ -25,6 +25,8 @@ public sealed record StepByStepItemResult(
     int MeterCount = 0,
     int ClefCount = 0,
     int LedgerLineCount = 0,
+    int NoteHeadCount = 0,
+    int NoteHeadCandidateCount = 0,
     int ExportedPrimitiveCount = 0,
     int SourceElementCount = 0,
     int SourceUseCount = 0,
@@ -44,6 +46,7 @@ public sealed class StepByStepBatchRunner
     private readonly LogicalGridResolver _logicalGridResolver = new(DefaultSubdivisionsPerBeat);
     private readonly LedgerLineResolver _ledgerLineResolver = new();
     private readonly NoteHeadResolver _noteHeadResolver = new();
+    private readonly NoteHeadDiagnosticExporter _noteHeadDiagnosticExporter = new();
     private readonly PartMeasureOverlayRenderer _partMeasureOverlayRenderer = new();
     private readonly PrimitiveOverlayRenderer _primitiveOverlayRenderer = new();
     private readonly MeterOverlayRenderer _meterOverlayRenderer = new();
@@ -158,6 +161,11 @@ public sealed class StepByStepBatchRunner
 
             var ledgerLines = _ledgerLineResolver.Resolve(primitives, logicalGrid);
             var noteHeads = _noteHeadResolver.Resolve(primitives, logicalGrid, clefs, ledgerLines);
+            var noteHeadDiagnostics = _noteHeadResolver.LastDiagnostics;
+
+            _noteHeadDiagnosticExporter.Export(
+                noteHeadDiagnostics,
+                Path.Combine(itemDirectory, "notehead-inputs"));
 
             _partMeasureOverlayRenderer.Render(
                 structure,
@@ -200,6 +208,8 @@ public sealed class StepByStepBatchRunner
                 meters.Length,
                 clefs.Length,
                 ledgerLines.Count,
+                noteHeads.Count,
+                noteHeadDiagnostics.Count,
                 primitiveExport.Items.Count,
                 sourceModel.ElementCount,
                 sourceModel.UseCount);
