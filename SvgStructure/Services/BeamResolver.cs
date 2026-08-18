@@ -16,6 +16,12 @@ public sealed class BeamResolver
     public double StemXTouchToleranceInStaffSpaces { get; init; } = 0.28;
     public double StemYTouchToleranceInStaffSpaces { get; init; } = 0.38;
 
+    /// <summary>
+    /// A real beam must lie on the free-end side of every stem it touches, never through or directly
+    /// against that stem's note head. This is also a strong ledger-line rejection rule.
+    /// </summary>
+    public double NoteHeadClearanceInStaffSpaces { get; init; } = 0.08;
+
     public IReadOnlyList<BeamResolution> Resolve(
         PrimitiveResolution primitives,
         LogicalGridResolution grid,
@@ -112,6 +118,9 @@ public sealed class BeamResolver
             if (!touchedStems.Contains(rightStem))
                 touchedStems.Add(rightStem);
 
+            if (!IsOnBeamSideOfNotes(candidate, touchedStems))
+                continue;
+
             result.Add(new BeamResolution(
                 candidate.MeasureNumber,
                 candidate.PhysicalBounds,
@@ -168,9 +177,10 @@ public sealed class BeamResolver
                 if (touchedStems.Count == 0)
                     continue;
 
-                // A secondary/tertiary beam belongs to level N only when all stems it touches are
-                // already represented by level N-1 beams.
                 if (touchedStems.Any(x => !coveredByPreviousLevel.Contains(x)))
+                    continue;
+
+                if (!IsOnBeamSideOfNotes(candidate, touchedStems))
                     continue;
 
                 var leftStem = FindStemAtAnyPoint(candidate.LeftEndpoint, measureStems, xTolerance, yTolerance);
@@ -181,7 +191,6 @@ public sealed class BeamResolver
                     yTolerance,
                     leftStem);
 
-                // Unlike level 1, only one end is required to terminate at a stem.
                 if (leftStem is null && rightStem is null)
                     continue;
 
@@ -206,6 +215,39 @@ public sealed class BeamResolver
         }
     }
 
+    private bool IsOnBeamSideOfNotes(
+        BeamCandidate beam,
+        IReadOnlyList<StemResolution> touchedStems)
+    {
+        var clearance = beam.StaffSpace * NoteHeadClearanceInStaffSpaces;
+
+        foreach (var stem in touchedStems)
+        {
+            if (stem.AttachedNotes.Count == 0)
+                continue;
+
+            var beamY = InterpolateBeamY(beam.LeftEndpoint, beam.RightEndpoint, stem.PhysicalBounds.CenterX);
+
+            foreach (var note in stem.AttachedNotes)
+            {
+                if (stem.Direction == StemDirection.Up)
+                {
+                    // Up-stem beams live above the note head.
+                    if (beamY >= note.PhysicalBounds.Top - clearance)
+                        return false;
+                }
+                else
+                {
+                    // Down-stem beams live below the note head.
+                    if (beamY <= note.PhysicalBounds.Bottom + clearance)
+                        return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
     private StripCandidate? TryBuildStrip(
         PrimitiveContour contour,
         RectD bounds,
@@ -217,8 +259,6 @@ public sealed class BeamResolver
         if (bounds.Width / staffSpace < MinWidthInStaffSpaces)
             return null;
 
-        // A slanted beam can have a tall overall bbox, so measure thickness locally at both ends
-        // instead of using bbox.Height.
         var bandWidth = Math.Max(bounds.Width * EndpointBandFraction, staffSpace * 0.08);
         var leftPoints = contour.Points
             .Where(p => p.X <= bounds.Left + bandWidth)
