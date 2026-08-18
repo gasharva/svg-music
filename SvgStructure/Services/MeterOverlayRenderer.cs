@@ -9,6 +9,9 @@ public sealed class MeterOverlayRenderer
 {
     private const float RenderScale = 2f;
 
+    /// <summary>Text labels are useful while debugging, but make the overview noisy.</summary>
+    public bool DrawDiagnosticLabels { get; init; } = false;
+
     public string Render(
         PartMeasureResolution structure,
         IReadOnlyList<MeterResolution> meters,
@@ -16,6 +19,7 @@ public sealed class MeterOverlayRenderer
         IReadOnlyList<LedgerLineResolution> ledgerLines,
         IReadOnlyList<NoteHeadResolution> noteHeads,
         IReadOnlyList<AccidentalResolution> accidentals,
+        IReadOnlyList<StemResolution> stems,
         LogicalGridResolution logicalGrid,
         string outputPath)
     {
@@ -44,7 +48,8 @@ public sealed class MeterOverlayRenderer
             RedrawRegion(canvas, picture, meter.PhysicalBounds);
             using var border = Border(SKColors.DeepPink);
             canvas.DrawRect(ToRect(meter.PhysicalBounds), border);
-            DrawMeterLabel(canvas, meter, bounds);
+            if (DrawDiagnosticLabels)
+                DrawMeterLabel(canvas, meter, bounds);
         }
 
         foreach (var clef in clefs)
@@ -52,7 +57,8 @@ public sealed class MeterOverlayRenderer
             RedrawRegion(canvas, picture, clef.PhysicalBounds);
             using var border = Border(SKColors.DodgerBlue);
             canvas.DrawRect(ToRect(clef.PhysicalBounds), border);
-            DrawClefLabel(canvas, clef, bounds);
+            if (DrawDiagnosticLabels)
+                DrawClefLabel(canvas, clef, bounds);
         }
 
         foreach (var ledger in ledgerLines)
@@ -64,7 +70,11 @@ public sealed class MeterOverlayRenderer
         foreach (var accidental in accidentals)
             DrawAccidental(canvas, picture, accidental, bounds);
 
-        DrawFirstMeasureNoteSummaries(canvas, noteHeads, logicalGrid, bounds);
+        foreach (var stem in stems)
+            DrawStem(canvas, stem);
+
+        if (DrawDiagnosticLabels)
+            DrawFirstMeasureNoteSummaries(canvas, noteHeads, logicalGrid, bounds);
 
         Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
         using var image = SKImage.FromBitmap(bitmap);
@@ -74,7 +84,7 @@ public sealed class MeterOverlayRenderer
         return outputPath;
     }
 
-    private static void DrawAccidental(
+    private void DrawAccidental(
         SKCanvas canvas,
         SKPicture picture,
         AccidentalResolution accidental,
@@ -82,46 +92,105 @@ public sealed class MeterOverlayRenderer
     {
         RedrawRegion(canvas, picture, accidental.PhysicalBounds);
 
+        var (borderColor, fillColor, noteColor) = accidental.Kind switch
+        {
+            AccidentalKind.Sharp => (
+                SKColors.DarkOrange,
+                new SKColor(255, 165, 0, 95),
+                new SKColor(255, 235, 59, 105)),
+
+            AccidentalKind.Flat => (
+                SKColors.MediumPurple,
+                new SKColor(147, 112, 219, 95),
+                new SKColor(196, 170, 255, 105)),
+
+            AccidentalKind.Natural => (
+                SKColors.DimGray,
+                new SKColor(105, 105, 105, 80),
+                new SKColor(190, 190, 190, 90)),
+
+            AccidentalKind.DoubleSharp => (
+                SKColors.DarkOrange,
+                new SKColor(255, 165, 0, 95),
+                new SKColor(255, 235, 59, 105)),
+
+            AccidentalKind.DoubleFlat => (
+                SKColors.MediumPurple,
+                new SKColor(147, 112, 219, 95),
+                new SKColor(196, 170, 255, 105)),
+
+            _ => (SKColors.Gray, new SKColor(128, 128, 128, 80), new SKColor(190, 190, 190, 90))
+        };
+
         using (var fill = new SKPaint
         {
-            Color = new SKColor(255, 165, 0, 95),
+            Color = fillColor,
             Style = SKPaintStyle.Fill,
             IsAntialias = true
         })
-        {
             canvas.DrawRect(ToRect(accidental.PhysicalBounds), fill);
-        }
 
-        using (var border = Border(SKColors.DarkOrange))
+        using (var border = Border(borderColor))
             canvas.DrawRect(ToRect(accidental.PhysicalBounds), border);
 
-        var prefix = accidental.Kind switch
+        if (DrawDiagnosticLabels)
         {
-            AccidentalKind.Flat => "F",
-            AccidentalKind.Sharp => "S",
-            AccidentalKind.Natural => "N",
-            AccidentalKind.DoubleFlat => "FF",
-            AccidentalKind.DoubleSharp => "SS",
-            _ => "?"
-        };
-        var label = accidental.Note is null
-            ? prefix
-            : prefix + accidental.Note.Pitch;
-        var b = accidental.PhysicalBounds;
-        var labelHeight = (float)Math.Max(7, Math.Min(11, b.Height * 0.28));
-        DrawReadableLabel(canvas, label, b.Left, b.Top, b.Bottom, labelHeight, SKColors.DarkOrange, page);
+            var prefix = accidental.Kind switch
+            {
+                AccidentalKind.Flat => "F",
+                AccidentalKind.Sharp => "S",
+                AccidentalKind.Natural => "N",
+                AccidentalKind.DoubleFlat => "FF",
+                AccidentalKind.DoubleSharp => "SS",
+                _ => "?"
+            };
+            var label = accidental.Note is null ? prefix : prefix + accidental.Note.Pitch;
+            var b = accidental.PhysicalBounds;
+            var labelHeight = (float)Math.Max(7, Math.Min(11, b.Height * 0.28));
+            DrawReadableLabel(canvas, label, b.Left, b.Top, b.Bottom, labelHeight, borderColor, page);
+        }
 
         if (accidental.Note is null)
             return;
 
-        var noteRect = ToRect(accidental.Note.PhysicalBounds);
         using var noteFill = new SKPaint
         {
-            Color = new SKColor(255, 235, 59, 95),
+            Color = noteColor,
             Style = SKPaintStyle.Fill,
             IsAntialias = true
         };
-        canvas.DrawOval(noteRect, noteFill);
+        canvas.DrawOval(ToRect(accidental.Note.PhysicalBounds), noteFill);
+    }
+
+    private static void DrawStem(SKCanvas canvas, StemResolution stem)
+    {
+        var b = stem.PhysicalBounds;
+        var x = (float)b.CenterX;
+        var top = (float)b.Top;
+        var bottom = (float)b.Bottom;
+        var arrowSize = (float)Math.Clamp(b.Height * 0.075, 2.5, 5.0);
+
+        using var paint = new SKPaint
+        {
+            Color = SKColors.ForestGreen,
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = (float)Math.Clamp(b.Width * 1.25, 1.2, 2.5),
+            StrokeCap = SKStrokeCap.Round,
+            IsAntialias = true
+        };
+
+        canvas.DrawLine(x, top, x, bottom, paint);
+
+        if (stem.Direction == StemDirection.Up)
+        {
+            canvas.DrawLine(x, top, x - arrowSize, top + arrowSize, paint);
+            canvas.DrawLine(x, top, x + arrowSize, top + arrowSize, paint);
+        }
+        else
+        {
+            canvas.DrawLine(x, bottom, x - arrowSize, bottom - arrowSize, paint);
+            canvas.DrawLine(x, bottom, x + arrowSize, bottom - arrowSize, paint);
+        }
     }
 
     private static void DrawNoteHead(SKCanvas canvas, SKPicture picture, NoteHeadResolution noteHead)
@@ -164,15 +233,10 @@ public sealed class MeterOverlayRenderer
             if (!logicalGrid.TryGetBlock(partNotes.Key, 1, out var block))
                 continue;
 
-            var ordered = partNotes
+            var labels = partNotes
                 .OrderBy(x => x.LogicalBounds.Left ?? double.MinValue)
                 .ThenBy(x => x.LogicalBounds.Top)
-                .ToArray();
-
-            var labels = ordered
-                .Select(x => x.IsFilled
-                    ? x.Pitch.ToLowerInvariant()
-                    : x.Pitch.ToUpperInvariant())
+                .Select(x => x.IsFilled ? x.Pitch.ToLowerInvariant() : x.Pitch.ToUpperInvariant())
                 .ToArray();
 
             if (labels.Length == 0)
@@ -181,16 +245,7 @@ public sealed class MeterOverlayRenderer
             var text = string.Join("   ", labels);
             var height = (float)Math.Clamp(block.PhysicalBounds.Height * 0.22, 7, 11);
             var top = block.PhysicalBounds.Bottom + 3;
-
-            DrawReadableLabel(
-                canvas,
-                text,
-                block.PhysicalBounds.Left,
-                top,
-                top + height,
-                height,
-                SKColors.ForestGreen,
-                page);
+            DrawReadableLabel(canvas, text, block.PhysicalBounds.Left, top, top + height, height, SKColors.ForestGreen, page);
         }
     }
 
@@ -202,8 +257,7 @@ public sealed class MeterOverlayRenderer
         if (!logicalGrid.TryGetBlock(ledger.PartNumber, ledger.MeasureNumber, out var block))
             return;
 
-        if (ledger.LogicalBounds.Left is not { } logicalLeft ||
-            ledger.LogicalBounds.Right is not { } logicalRight)
+        if (ledger.LogicalBounds.Left is not { } logicalLeft || ledger.LogicalBounds.Right is not { } logicalRight)
             return;
 
         var left = block.ToPhysical(new LogicalPoint(logicalLeft, 0)).X;
@@ -233,9 +287,8 @@ public sealed class MeterOverlayRenderer
 
     private static void RedrawRegion(SKCanvas canvas, SKPicture picture, RectD region)
     {
-        var clip = ToRect(region);
         canvas.Save();
-        canvas.ClipRect(clip);
+        canvas.ClipRect(ToRect(region));
         canvas.DrawPicture(picture);
         canvas.Restore();
     }
@@ -248,8 +301,7 @@ public sealed class MeterOverlayRenderer
         IsAntialias = true
     };
 
-    private static SKRect ToRect(RectD r) =>
-        new((float)r.Left, (float)r.Top, (float)r.Right, (float)r.Bottom);
+    private static SKRect ToRect(RectD r) => new((float)r.Left, (float)r.Top, (float)r.Right, (float)r.Bottom);
 
     private static void DrawMeterLabel(SKCanvas canvas, MeterResolution meter, SKRect page)
     {
@@ -277,11 +329,23 @@ public sealed class MeterOverlayRenderer
 
         using var background = new SKPaint { Color = new SKColor(255, 255, 255, 238) };
         canvas.DrawRoundRect(new SKRect(x - 3, y - 3, x + totalWidth + 3, y + height + 3), 2, 2, background);
-        using var paint = new SKPaint { Color = color, Style = SKPaintStyle.Stroke, StrokeWidth = Math.Max(0.9f, height * 0.075f), StrokeCap = SKStrokeCap.Round, IsAntialias = true };
+        using var paint = new SKPaint
+        {
+            Color = color,
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = Math.Max(0.9f, height * 0.075f),
+            StrokeCap = SKStrokeCap.Round,
+            IsAntialias = true
+        };
 
         foreach (var ch in text)
         {
-            if (ch == ' ') { x += wordSpacing; continue; }
+            if (ch == ' ')
+            {
+                x += wordSpacing;
+                continue;
+            }
+
             DrawChar(canvas, ch, x, y, charWidth, height, paint);
             x += charWidth + charSpacing;
         }
@@ -297,7 +361,12 @@ public sealed class MeterOverlayRenderer
 
     private static void DrawChar(SKCanvas canvas, char ch, float x, float y, float w, float h, SKPaint paint)
     {
-        if (char.IsDigit(ch)) { DrawDigit(canvas, ch - '0', x, y, w, h, paint); return; }
+        if (char.IsDigit(ch))
+        {
+            DrawDigit(canvas, ch - '0', x, y, w, h, paint);
+            return;
+        }
+
         var upper = char.ToUpperInvariant(ch);
         switch (upper)
         {
@@ -314,13 +383,20 @@ public sealed class MeterOverlayRenderer
             case 'N': canvas.DrawLine(x, y + h, x, y, paint); canvas.DrawLine(x, y, x + w, y + h, paint); canvas.DrawLine(x + w, y + h, x + w, y, paint); break;
             default: canvas.DrawRect(new SKRect(x, y, x + w, y + h), paint); break;
         }
+
         if (char.IsLetter(ch) && char.IsLower(ch))
             canvas.DrawLine(x, y + h + 1.5f, x + w, y + h + 1.5f, paint);
     }
 
     private static void DrawDigit(SKCanvas canvas, int digit, float x, float y, float w, float h, SKPaint paint)
     {
-        var segments = digit switch { 0 => "abcdef", 1 => "bc", 2 => "abdeg", 3 => "abcdg", 4 => "bcfg", 5 => "acdfg", 6 => "acdefg", 7 => "abc", 8 => "abcdefg", 9 => "abcdfg", _ => string.Empty };
+        var segments = digit switch
+        {
+            0 => "abcdef", 1 => "bc", 2 => "abdeg", 3 => "abcdg", 4 => "bcfg",
+            5 => "acdfg", 6 => "acdefg", 7 => "abc", 8 => "abcdefg", 9 => "abcdfg",
+            _ => string.Empty
+        };
+
         foreach (var segment in segments)
         {
             switch (segment)
