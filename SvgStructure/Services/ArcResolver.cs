@@ -3,10 +3,9 @@ using SvgStructure.Models;
 namespace SvgStructure.Services;
 
 /// <summary>
-/// Finds curved filled strips that terminate near recognized note heads or stems.
-/// Unlike beams, arcs are identified by curvature and endpoint proximity rather than physical contact.
-/// Arcs are deliberately allowed to be PhysicalOnly because slurs/ties often cross barlines and
-/// therefore cannot always belong to one P+M or measure scope.
+/// Finds curved filled strips whose endpoints form one of two supported musical attachment patterns:
+/// note head -> different note head, or stem end -> different stem end.
+/// Shape measurements are currently diagnostic only; attachment semantics are the primary filter.
 /// </summary>
 public sealed class ArcResolver
 {
@@ -15,6 +14,8 @@ public sealed class ArcResolver
     public double MaxEndpointThicknessInStaffSpaces { get; init; } = 0.55;
     public double EndpointBandFraction { get; init; } = 0.12;
     public double MidBandFraction { get; init; } = 0.12;
+
+    /// <summary>Maximum distance from an arc endpoint to its attached note head or stem end.</summary>
     public double EndpointContactDistanceInStaffSpaces { get; init; } = 2.0;
 
     // These shape thresholds were heuristic guesses. Keep their measurements in diagnostics,
@@ -63,58 +64,50 @@ public sealed class ArcResolver
             var candidate = analysis.Candidate;
             var contactDistance = staffSpace * EndpointContactDistanceInStaffSpaces;
 
-            var leftContacts = FindEndpointContacts(candidate.LeftEndpoint, contactDistance, noteHeads, stems);
-            var rightContacts = FindEndpointContacts(candidate.RightEndpoint, contactDistance, noteHeads, stems);
+            var leftNoteContacts = FindNoteContacts(candidate.LeftEndpoint, contactDistance, noteHeads);
+            var rightNoteContacts = FindNoteContacts(candidate.RightEndpoint, contactDistance, noteHeads);
+            var leftStemContacts = FindStemEndContacts(candidate.LeftEndpoint, contactDistance, stems);
+            var rightStemContacts = FindStemEndContacts(candidate.RightEndpoint, contactDistance, stems);
 
-            var leftNearest = FindNearestDistance(candidate.LeftEndpoint, noteHeads, stems);
-            var rightNearest = FindNearestDistance(candidate.RightEndpoint, noteHeads, stems);
+            var leftNearest = FindNearestAttachmentDistance(candidate.LeftEndpoint, noteHeads, stems);
+            var rightNearest = FindNearestAttachmentDistance(candidate.RightEndpoint, noteHeads, stems);
 
-            if (leftContacts.Count == 0 || rightContacts.Count == 0)
+            var notePair = FindDifferentNotePair(leftNoteContacts, rightNoteContacts);
+            var stemPair = FindDifferentStemPair(leftStemContacts, rightStemContacts);
+
+            if (notePair is null && stemPair is null)
             {
                 diagnostics.Add(analysis.Diagnostic with
                 {
                     Stage = "contacts",
-                    Verdict = leftContacts.Count == 0 && rightContacts.Count == 0
-                        ? "rejected: no endpoint contacts on either side"
-                        : leftContacts.Count == 0
-                            ? "rejected: no left endpoint contact"
-                            : "rejected: no right endpoint contact",
+                    Verdict = BuildAttachmentRejectionVerdict(
+                        leftNoteContacts,
+                        rightNoteContacts,
+                        leftStemContacts,
+                        rightStemContacts),
                     LeftNearestContactDistanceInStaffSpaces = leftNearest / staffSpace,
                     RightNearestContactDistanceInStaffSpaces = rightNearest / staffSpace,
-                    LeftContactCount = leftContacts.Count,
-                    RightContactCount = rightContacts.Count
+                    LeftContactCount = leftNoteContacts.Count + leftStemContacts.Count,
+                    RightContactCount = rightNoteContacts.Count + rightStemContacts.Count
                 });
                 continue;
             }
 
-            var notes = leftContacts
-                .Concat(rightContacts)
-                .Select(x => x.Note)
-                .Where(x => x is not null)
-                .Cast<NoteHeadResolution>()
-                .Distinct()
-                .ToArray();
+            IReadOnlyList<NoteHeadResolution> notes;
+            IReadOnlyList<StemResolution> contactedStems;
+            string acceptedKind;
 
-            var contactedStems = leftContacts
-                .Concat(rightContacts)
-                .Select(x => x.Stem)
-                .Where(x => x is not null)
-                .Cast<StemResolution>()
-                .Distinct()
-                .ToArray();
-
-            if (notes.Length + contactedStems.Length == 0)
+            if (notePair is not null)
             {
-                diagnostics.Add(analysis.Diagnostic with
-                {
-                    Stage = "contacts",
-                    Verdict = "rejected: endpoint contacts resolved to no notes/stems",
-                    LeftNearestContactDistanceInStaffSpaces = leftNearest / staffSpace,
-                    RightNearestContactDistanceInStaffSpaces = rightNearest / staffSpace,
-                    LeftContactCount = leftContacts.Count,
-                    RightContactCount = rightContacts.Count
-                });
-                continue;
+                notes = new[] { notePair.Left, notePair.Right };
+                contactedStems = Array.Empty<StemResolution>();
+                acceptedKind = "note-note";
+            }
+            else
+            {
+                notes = Array.Empty<NoteHeadResolution>();
+                contactedStems = new[] { stemPair!.Left, stemPair.Right };
+                acceptedKind = "stem-end/stem-end";
             }
 
             result.Add(new ArcResolution(
@@ -128,11 +121,11 @@ public sealed class ArcResolver
             diagnostics.Add(analysis.Diagnostic with
             {
                 Stage = "accepted",
-                Verdict = $"accepted: notes={notes.Length}, stems={contactedStems.Length}",
+                Verdict = $"accepted: {acceptedKind}",
                 LeftNearestContactDistanceInStaffSpaces = leftNearest / staffSpace,
                 RightNearestContactDistanceInStaffSpaces = rightNearest / staffSpace,
-                LeftContactCount = leftContacts.Count,
-                RightContactCount = rightContacts.Count,
+                LeftContactCount = leftNoteContacts.Count + leftStemContacts.Count,
+                RightContactCount = rightNoteContacts.Count + rightStemContacts.Count,
                 Accepted = true
             });
         }
@@ -198,8 +191,6 @@ public sealed class ArcResolver
             .Where(p => Math.Abs(p.X - centerX) <= midBandHalfWidth)
             .ToArray();
 
-        // This is not a semantic filter: without samples at both ends and in the middle we cannot
-        // construct the simple three-point arc representation used downstream.
         if (leftPoints.Length < 2 || rightPoints.Length < 2 || midPoints.Length < 2)
         {
             return Reject(
@@ -291,7 +282,7 @@ public sealed class ArcResolver
             contour.Points.Count,
             staffSpace,
             "geometry",
-            "geometry measured; heuristic shape filters disabled; checking endpoint contacts",
+            "geometry measured; checking strict note-note / stem-end-stem-end attachment",
             widthInStaffSpaces,
             leftThicknessInStaffSpaces,
             rightThicknessInStaffSpaces,
@@ -336,41 +327,90 @@ public sealed class ArcResolver
         return new ArcCandidateAnalysis(null, diagnostic);
     }
 
-    private static IReadOnlyList<EndpointContact> FindEndpointContacts(
+    private static IReadOnlyList<NoteContact> FindNoteContacts(
         PointD endpoint,
         double maxDistance,
-        IReadOnlyList<NoteHeadResolution> noteHeads,
-        IReadOnlyList<StemResolution> stems)
+        IReadOnlyList<NoteHeadResolution> noteHeads)
     {
-        var contacts = new List<EndpointContact>();
-
-        foreach (var note in noteHeads)
-        {
-            var distance = DistanceToRect(endpoint, note.PhysicalBounds);
-            if (distance <= maxDistance)
-                contacts.Add(new EndpointContact(note, null, distance));
-        }
-
-        foreach (var stem in stems)
-        {
-            var distance = DistanceToRect(endpoint, stem.PhysicalBounds);
-            if (distance <= maxDistance)
-                contacts.Add(new EndpointContact(null, stem, distance));
-        }
-
-        if (contacts.Count == 0)
-            return Array.Empty<EndpointContact>();
-
-        var nearest = contacts.Min(x => x.Distance);
-        var keepWithin = Math.Max(0.01, maxDistance * 0.18);
-
-        return contacts
-            .Where(x => x.Distance <= nearest + keepWithin)
+        return noteHeads
+            .Select(note => new NoteContact(note, DistanceToRect(endpoint, note.PhysicalBounds)))
+            .Where(x => x.Distance <= maxDistance)
             .OrderBy(x => x.Distance)
             .ToArray();
     }
 
-    private static double FindNearestDistance(
+    private static IReadOnlyList<StemEndContact> FindStemEndContacts(
+        PointD endpoint,
+        double maxDistance,
+        IReadOnlyList<StemResolution> stems)
+    {
+        var contacts = new List<StemEndContact>();
+
+        foreach (var stem in stems)
+        {
+            var top = new PointD(stem.PhysicalBounds.CenterX, stem.PhysicalBounds.Top);
+            var bottom = new PointD(stem.PhysicalBounds.CenterX, stem.PhysicalBounds.Bottom);
+            var topDistance = Distance(endpoint, top);
+            var bottomDistance = Distance(endpoint, bottom);
+            var distance = Math.Min(topDistance, bottomDistance);
+
+            if (distance <= maxDistance)
+                contacts.Add(new StemEndContact(stem, distance));
+        }
+
+        return contacts
+            .OrderBy(x => x.Distance)
+            .ToArray();
+    }
+
+    private static NotePair? FindDifferentNotePair(
+        IReadOnlyList<NoteContact> left,
+        IReadOnlyList<NoteContact> right)
+    {
+        foreach (var leftContact in left)
+        foreach (var rightContact in right)
+        {
+            if (!ReferenceEquals(leftContact.Note, rightContact.Note))
+                return new NotePair(leftContact.Note, rightContact.Note);
+        }
+
+        return null;
+    }
+
+    private static StemPair? FindDifferentStemPair(
+        IReadOnlyList<StemEndContact> left,
+        IReadOnlyList<StemEndContact> right)
+    {
+        foreach (var leftContact in left)
+        foreach (var rightContact in right)
+        {
+            if (!ReferenceEquals(leftContact.Stem, rightContact.Stem))
+                return new StemPair(leftContact.Stem, rightContact.Stem);
+        }
+
+        return null;
+    }
+
+    private static string BuildAttachmentRejectionVerdict(
+        IReadOnlyList<NoteContact> leftNotes,
+        IReadOnlyList<NoteContact> rightNotes,
+        IReadOnlyList<StemEndContact> leftStems,
+        IReadOnlyList<StemEndContact> rightStems)
+    {
+        if (leftNotes.Count > 0 && rightNotes.Count > 0)
+            return "rejected: both ends reach notes, but not two different notes";
+
+        if (leftStems.Count > 0 && rightStems.Count > 0)
+            return "rejected: both ends reach stem ends, but not two different stems";
+
+        if ((leftNotes.Count > 0 && rightStems.Count > 0) ||
+            (leftStems.Count > 0 && rightNotes.Count > 0))
+            return "rejected: mixed note/stem attachment is not allowed";
+
+        return "rejected: endpoints do not form note-note or stem-end/stem-end pair";
+    }
+
+    private static double FindNearestAttachmentDistance(
         PointD endpoint,
         IReadOnlyList<NoteHeadResolution> noteHeads,
         IReadOnlyList<StemResolution> stems)
@@ -381,7 +421,11 @@ public sealed class ArcResolver
             nearest = Math.Min(nearest, DistanceToRect(endpoint, note.PhysicalBounds));
 
         foreach (var stem in stems)
-            nearest = Math.Min(nearest, DistanceToRect(endpoint, stem.PhysicalBounds));
+        {
+            var top = new PointD(stem.PhysicalBounds.CenterX, stem.PhysicalBounds.Top);
+            var bottom = new PointD(stem.PhysicalBounds.CenterX, stem.PhysicalBounds.Bottom);
+            nearest = Math.Min(nearest, Math.Min(Distance(endpoint, top), Distance(endpoint, bottom)));
+        }
 
         return nearest;
     }
@@ -424,7 +468,17 @@ public sealed class ArcResolver
         return Math.Sqrt(dx * dx + dy * dy);
     }
 
+    private static double Distance(PointD a, PointD b)
+    {
+        var dx = a.X - b.X;
+        var dy = a.Y - b.Y;
+        return Math.Sqrt(dx * dx + dy * dy);
+    }
+
     private sealed record ArcCandidate(PointD LeftEndpoint, PointD Midpoint, PointD RightEndpoint);
     private sealed record ArcCandidateAnalysis(ArcCandidate? Candidate, ArcDiagnosticEntry Diagnostic);
-    private sealed record EndpointContact(NoteHeadResolution? Note, StemResolution? Stem, double Distance);
+    private sealed record NoteContact(NoteHeadResolution Note, double Distance);
+    private sealed record StemEndContact(StemResolution Stem, double Distance);
+    private sealed record NotePair(NoteHeadResolution Left, NoteHeadResolution Right);
+    private sealed record StemPair(StemResolution Left, StemResolution Right);
 }
