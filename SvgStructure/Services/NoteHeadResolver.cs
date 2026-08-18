@@ -15,7 +15,7 @@ public sealed class NoteHeadResolver
     public double MaxLogicalYCenterOffset { get; init; } = 0.40;
     public double MaxRadialVariation { get; init; } = 0.34;
     public double HollowInnerMinWidthRatio { get; init; } = 0.25;
-    public double HollowInnerMaxWidthRatio { get; init; } = 0.82;
+    public double HollowInnerMaxWidthRatio { get; init; } = 0.90;
 
     public IReadOnlyList<NoteHeadDiagnosticEntry> LastDiagnostics { get; private set; } =
         Array.Empty<NoteHeadDiagnosticEntry>();
@@ -56,7 +56,8 @@ public sealed class NoteHeadResolver
 
         foreach (var outer in orderedCandidates)
         {
-            var hollowContourDetected = HasHollowSourceContour(outer);
+            var hollowContourDetected = HasHollowSourceContour(outer) ||
+                                        HasNestedSameSourceOval(outer, ovalCandidates);
 
             var legalStaffPosition = IsOnLegalStaffPosition(outer, ledgerLines);
             if (!legalStaffPosition)
@@ -205,9 +206,14 @@ public sealed class NoteHeadResolver
             bounds,
             logical,
             primitive.Contour,
+            primitive.Source,
             primitive.SourceGroupContours);
     }
 
+    /// <summary>
+    /// Some SVG glyphs expose the white hole as another contour inside the source contour group.
+    /// Keep this as a cheap direct signal when it is available.
+    /// </summary>
     private bool HasHollowSourceContour(OvalCandidate outer)
     {
         if (outer.SourceGroupContours is null || outer.SourceGroupContours.Count < 2)
@@ -237,6 +243,44 @@ public sealed class NoteHeadResolver
             .ToArray();
 
         return correctlySizedContours.Length > 0;
+    }
+
+    /// <summary>
+    /// In real score SVGs a hollow head is often split into two PrimitiveResolver artifacts:
+    /// a larger outer oval and a smaller inner oval. The inner oval is then rejected later as
+    /// "contained by larger oval candidate". Treat that nested oval as the white hole only when
+    /// both artifacts have the same source provenance; this prevents a nearby note in a chord from
+    /// accidentally making another head hollow.
+    /// </summary>
+    private bool HasNestedSameSourceOval(
+        OvalCandidate outer,
+        IReadOnlyList<OvalCandidate> allCandidates)
+    {
+        var nestedCandidates = allCandidates
+            .Where(x => x.Id != outer.Id)
+            .Where(x => x.PartNumber == outer.PartNumber && x.MeasureNumber == outer.MeasureNumber)
+            .Where(x => SameSourceProvenance(outer.Source, x.Source))
+            .Where(x => Area(x.PhysicalBounds) < Area(outer.PhysicalBounds) * 0.95)
+            .Where(x => Contains(outer.PhysicalBounds, x.PhysicalBounds))
+            .Where(x => CenterDistance(outer.PhysicalBounds, x.PhysicalBounds) <= outer.PhysicalBounds.Height * 0.35)
+            .Where(x => WidthRatio(x.PhysicalBounds, outer.PhysicalBounds) >= HollowInnerMinWidthRatio)
+            .Where(x => WidthRatio(x.PhysicalBounds, outer.PhysicalBounds) <= HollowInnerMaxWidthRatio)
+            .ToArray();
+
+        return nestedCandidates.Length > 0;
+    }
+
+    private static bool SameSourceProvenance(PrimitiveSourceRef a, PrimitiveSourceRef b)
+    {
+        if (!string.IsNullOrWhiteSpace(a.GroupAnchor) &&
+            !string.IsNullOrWhiteSpace(b.GroupAnchor))
+            return string.Equals(a.GroupAnchor, b.GroupAnchor, StringComparison.Ordinal);
+
+        if (!string.IsNullOrWhiteSpace(a.Anchor) &&
+            !string.IsNullOrWhiteSpace(b.Anchor))
+            return string.Equals(a.Anchor, b.Anchor, StringComparison.Ordinal);
+
+        return false;
     }
 
     private static RectD? TryGetBounds(PrimitiveContour contour)
@@ -390,5 +434,6 @@ public sealed class NoteHeadResolver
         RectD PhysicalBounds,
         LogicalRectD LogicalBounds,
         PrimitiveContour Contour,
+        PrimitiveSourceRef Source,
         IReadOnlyList<PrimitiveContour>? SourceGroupContours);
 }
