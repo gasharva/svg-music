@@ -1,0 +1,237 @@
+using SvgStructure.Models;
+
+namespace SvgStructure.Services;
+
+/// <summary>
+/// Finds curved filled strips that terminate near recognized note heads or free stem ends.
+/// Unlike beams, arcs are identified by curvature and endpoint proximity rather than physical contact.
+/// </summary>
+public sealed class ArcResolver
+{
+    public double MinWidthInStaffSpaces { get; init; } = 0.90;
+    public double MinCurvatureInStaffSpaces { get; init; } = 0.16;
+    public double MaxEndpointThicknessInStaffSpaces { get; init; } = 0.55;
+    public double EndpointBandFraction { get; init; } = 0.12;
+    public double MidBandFraction { get; init; } = 0.12;
+    public double EndpointContactDistanceInStaffSpaces { get; init; } = 1.15;
+
+    public IReadOnlyList<ArcResolution> Resolve(
+        PrimitiveResolution primitives,
+        LogicalGridResolution grid,
+        IReadOnlyList<NoteHeadResolution> noteHeads,
+        IReadOnlyList<StemResolution> stems)
+    {
+        var result = new List<ArcResolution>();
+
+        foreach (var primitive in primitives.Primitives)
+        {
+            if (primitive.Scope is not (PrimitiveLogicalScope.PartMeasure or PrimitiveLogicalScope.Measure))
+                continue;
+
+            var staffSpace = StaffSpaceFor(primitive, grid);
+            if (staffSpace <= 1e-9)
+                continue;
+
+            var candidate = TryBuildArcCandidate(primitive.Contour, primitive.PhysicalBounds, staffSpace);
+            if (candidate is null)
+                continue;
+
+            var contactDistance = staffSpace * EndpointContactDistanceInStaffSpaces;
+
+            var leftContacts = FindEndpointContacts(candidate.LeftEndpoint, contactDistance, noteHeads, stems);
+            if (leftContacts.Count == 0)
+                continue;
+
+            var rightContacts = FindEndpointContacts(candidate.RightEndpoint, contactDistance, noteHeads, stems);
+            if (rightContacts.Count == 0)
+                continue;
+
+            var notes = leftContacts
+                .Concat(rightContacts)
+                .Select(x => x.Note)
+                .Where(x => x is not null)
+                .Cast<NoteHeadResolution>()
+                .Distinct()
+                .ToArray();
+
+            var contactedStems = leftContacts
+                .Concat(rightContacts)
+                .Select(x => x.Stem)
+                .Where(x => x is not null)
+                .Cast<StemResolution>()
+                .Distinct()
+                .ToArray();
+
+            if (notes.Length + contactedStems.Length == 0)
+                continue;
+
+            result.Add(new ArcResolution(
+                primitive.PhysicalBounds,
+                candidate.LeftEndpoint,
+                candidate.Midpoint,
+                candidate.RightEndpoint,
+                notes,
+                contactedStems));
+        }
+
+        return result
+            .GroupBy(x => (
+                LeftX: Math.Round(x.LeftEndpoint.X, 1),
+                LeftY: Math.Round(x.LeftEndpoint.Y, 1),
+                RightX: Math.Round(x.RightEndpoint.X, 1),
+                RightY: Math.Round(x.RightEndpoint.Y, 1)))
+            .Select(x => x.OrderByDescending(y => y.PhysicalBounds.Width).First())
+            .OrderBy(x => x.PhysicalBounds.Top)
+            .ThenBy(x => x.PhysicalBounds.Left)
+            .ToArray();
+    }
+
+    private ArcCandidate? TryBuildArcCandidate(
+        PrimitiveContour contour,
+        RectD bounds,
+        double staffSpace)
+    {
+        if (contour.Points.Count < 6 || bounds.Width <= 1e-9 || bounds.Height <= 1e-9)
+            return null;
+
+        if (bounds.Width / staffSpace < MinWidthInStaffSpaces)
+            return null;
+
+        var endpointBandWidth = Math.Max(bounds.Width * EndpointBandFraction, staffSpace * 0.06);
+        var midBandHalfWidth = Math.Max(bounds.Width * MidBandFraction / 2.0, staffSpace * 0.05);
+        var centerX = bounds.CenterX;
+
+        var leftPoints = contour.Points
+            .Where(p => p.X <= bounds.Left + endpointBandWidth)
+            .ToArray();
+        var rightPoints = contour.Points
+            .Where(p => p.X >= bounds.Right - endpointBandWidth)
+            .ToArray();
+        var midPoints = contour.Points
+            .Where(p => Math.Abs(p.X - centerX) <= midBandHalfWidth)
+            .ToArray();
+
+        if (leftPoints.Length < 2 || rightPoints.Length < 2 || midPoints.Length < 2)
+            return null;
+
+        var leftMinY = leftPoints.Min(p => (double)p.Y);
+        var leftMaxY = leftPoints.Max(p => (double)p.Y);
+        var rightMinY = rightPoints.Min(p => (double)p.Y);
+        var rightMaxY = rightPoints.Max(p => (double)p.Y);
+        var midMinY = midPoints.Min(p => (double)p.Y);
+        var midMaxY = midPoints.Max(p => (double)p.Y);
+
+        var leftThickness = leftMaxY - leftMinY;
+        var rightThickness = rightMaxY - rightMinY;
+        if (leftThickness / staffSpace > MaxEndpointThicknessInStaffSpaces ||
+            rightThickness / staffSpace > MaxEndpointThicknessInStaffSpaces)
+            return null;
+
+        var left = new PointD(bounds.Left, (leftMinY + leftMaxY) / 2.0);
+        var right = new PointD(bounds.Right, (rightMinY + rightMaxY) / 2.0);
+        var middle = new PointD(centerX, (midMinY + midMaxY) / 2.0);
+
+        var straightMidY = (left.Y + right.Y) / 2.0;
+        var curvature = Math.Abs(middle.Y - straightMidY) / staffSpace;
+        if (curvature < MinCurvatureInStaffSpaces)
+            return null;
+
+        // Reject highly asymmetric blobs. A proper arc can taper, but both ends should still look
+        // like ends of the same thin curved strip.
+        var minThickness = Math.Max(1e-9, Math.Min(leftThickness, rightThickness));
+        var maxThickness = Math.Max(leftThickness, rightThickness);
+        if (maxThickness / minThickness > 3.0)
+            return null;
+
+        return new ArcCandidate(left, middle, right);
+    }
+
+    private static IReadOnlyList<EndpointContact> FindEndpointContacts(
+        PointD endpoint,
+        double maxDistance,
+        IReadOnlyList<NoteHeadResolution> noteHeads,
+        IReadOnlyList<StemResolution> stems)
+    {
+        var contacts = new List<EndpointContact>();
+
+        foreach (var note in noteHeads)
+        {
+            var distance = DistanceToRect(endpoint, note.PhysicalBounds);
+            if (distance <= maxDistance)
+                contacts.Add(new EndpointContact(note, null, distance));
+        }
+
+        foreach (var stem in stems)
+        {
+            var freeEnd = stem.Direction == StemDirection.Up
+                ? new PointD(stem.PhysicalBounds.CenterX, stem.PhysicalBounds.Top)
+                : new PointD(stem.PhysicalBounds.CenterX, stem.PhysicalBounds.Bottom);
+
+            var distance = Distance(endpoint, freeEnd);
+            if (distance <= maxDistance)
+                contacts.Add(new EndpointContact(null, stem, distance));
+        }
+
+        // Keep only the local neighborhood of the endpoint. This avoids an arc endpoint collecting
+        // several unrelated nearby chord heads/stems while still allowing a chord endpoint to expose
+        // more than one legitimate contact if their distances are effectively tied.
+        var nearest = contacts.Count == 0 ? double.PositiveInfinity : contacts.Min(x => x.Distance);
+        var keepWithin = Math.Max(0.01, maxDistance * 0.18);
+        return contacts
+            .Where(x => x.Distance <= nearest + keepWithin)
+            .OrderBy(x => x.Distance)
+            .ToArray();
+    }
+
+    private static double StaffSpaceFor(ResolvedPrimitive primitive, LogicalGridResolution grid)
+    {
+        if (primitive.PartNumber is { } part &&
+            primitive.MeasureNumber is { } measure &&
+            grid.TryGetBlock(part, measure, out var ownBlock))
+            return ownBlock.PhysicalBounds.Height / 4.0;
+
+        if (primitive.MeasureNumber is not { } measureNumber)
+            return grid.Blocks.Count == 0
+                ? 0
+                : grid.Blocks.Average(x => x.PhysicalBounds.Height / 4.0);
+
+        var blocks = grid.Blocks
+            .Where(x => x.MeasureNumber == measureNumber)
+            .ToArray();
+
+        return blocks.Length == 0
+            ? 0
+            : blocks.Average(x => x.PhysicalBounds.Height / 4.0);
+    }
+
+    private static double DistanceToRect(PointD point, RectD rect)
+    {
+        var dx = point.X < rect.Left
+            ? rect.Left - point.X
+            : point.X > rect.Right
+                ? point.X - rect.Right
+                : 0.0;
+
+        var dy = point.Y < rect.Top
+            ? rect.Top - point.Y
+            : point.Y > rect.Bottom
+                ? point.Y - rect.Bottom
+                : 0.0;
+
+        return Math.Sqrt(dx * dx + dy * dy);
+    }
+
+    private static double Distance(PointD a, PointD b)
+    {
+        var dx = a.X - b.X;
+        var dy = a.Y - b.Y;
+        return Math.Sqrt(dx * dx + dy * dy);
+    }
+
+    private sealed record ArcCandidate(PointD LeftEndpoint, PointD Midpoint, PointD RightEndpoint);
+
+    private sealed record EndpointContact(
+        NoteHeadResolution? Note,
+        StemResolution? Stem,
+        double Distance);
+}
