@@ -49964,7 +49964,28 @@
       },
       "kind": 0,
       "confidence": 0.9912919494326953,
-      "note": null
+      "note": {
+        "partNumber": 1,
+        "measureNumber": 3,
+        "logicalBounds": {
+          "left": 3.7564372465799583,
+          "top": 2.992497041701049,
+          "right": 5.2159471861825635,
+          "bottom": 5.056251802975484
+        },
+        "physicalBounds": {
+          "left": 405.66400146484375,
+          "top": 175.2768096923828,
+          "right": 415.0657043457031,
+          "bottom": 182.90444946289062,
+          "width": 9.401702880859375,
+          "height": 7.6276397705078125,
+          "centerX": 410.36485290527344,
+          "centerY": 179.09062957763672
+        },
+        "isFilled": true,
+        "pitch": "B4"
+      }
     },
     {
       "partNumber": 1,
@@ -49987,7 +50008,28 @@
       },
       "kind": 1,
       "confidence": 0.9880364143061842,
-      "note": null
+      "note": {
+        "partNumber": 1,
+        "measureNumber": 5,
+        "logicalBounds": {
+          "left": 5.9334664784740925,
+          "top": 5.9924944575408405,
+          "right": 7.100132089375,
+          "bottom": 8.05624615537051
+        },
+        "physicalBounds": {
+          "left": 86.03276824951172,
+          "top": 355.22296142578125,
+          "right": 95.43447875976562,
+          "bottom": 362.8505859375,
+          "width": 9.401710510253906,
+          "height": 7.62762451171875,
+          "centerX": 90.73362350463867,
+          "centerY": 359.0367736816406
+        },
+        "isFilled": true,
+        "pitch": "F4"
+      }
     },
     {
       "partNumber": 1,
@@ -50274,7 +50316,28 @@
       },
       "kind": 0,
       "confidence": 0.9913224283610451,
-      "note": null
+      "note": {
+        "partNumber": 1,
+        "measureNumber": 11,
+        "logicalBounds": {
+          "left": 3.6035819604576282,
+          "top": 2.9924903290796423,
+          "right": 5.023968450506989,
+          "bottom": 5.0562420269093105
+        },
+        "physicalBounds": {
+          "left": 393.3626403808594,
+          "top": 519.8069458007812,
+          "right": 402.76434326171875,
+          "bottom": 527.4345703125,
+          "width": 9.401702880859375,
+          "height": 7.62762451171875,
+          "centerX": 398.06349182128906,
+          "centerY": 523.6207580566406
+        },
+        "isFilled": true,
+        "pitch": "B4"
+      }
     },
     {
       "partNumber": 1,
@@ -50297,7 +50360,28 @@
       },
       "kind": 1,
       "confidence": 0.988043320620017,
-      "note": null
+      "note": {
+        "partNumber": 1,
+        "measureNumber": 13,
+        "logicalBounds": {
+          "left": 5.796235832893968,
+          "top": 5.9924737996990345,
+          "right": 6.9359185198092295,
+          "bottom": 8.0562297575969
+        },
+        "physicalBounds": {
+          "left": 86.03276824951172,
+          "top": 690.6442260742188,
+          "right": 95.43447875976562,
+          "bottom": 698.2718505859375,
+          "width": 9.401710510253906,
+          "height": 7.62762451171875,
+          "centerX": 90.73362350463867,
+          "centerY": 694.4580383300781
+        },
+        "isFilled": true,
+        "pitch": "F4"
+      }
     },
     {
       "partNumber": 1,
@@ -50452,7 +50536,28 @@
       },
       "kind": 0,
       "confidence": 0.9913380573086253,
-      "note": null
+      "note": {
+        "partNumber": 1,
+        "measureNumber": 17,
+        "logicalBounds": {
+          "left": 6.338120437398886,
+          "top": 6.9437579730906895,
+          "right": 7.453172149208957,
+          "bottom": 9.07250816403202
+        },
+        "physicalBounds": {
+          "left": 93.33863830566406,
+          "top": 869.8321533203125,
+          "right": 103.03602600097656,
+          "bottom": 877.7000122070312,
+          "width": 9.6973876953125,
+          "height": 7.86785888671875,
+          "centerX": 98.18733215332031,
+          "centerY": 873.7660827636719
+        },
+        "isFilled": false,
+        "pitch": "E4"
+      }
     },
     {
       "partNumber": 2,
@@ -50519,7 +50624,28 @@
       },
       "kind": 0,
       "confidence": 0.991348944667115,
-      "note": null
+      "note": {
+        "partNumber": 1,
+        "measureNumber": 18,
+        "logicalBounds": {
+          "left": 2.959956948739286,
+          "top": 6.9437579730906895,
+          "right": 4.287481529969949,
+          "bottom": 9.07250816403202
+        },
+        "physicalBounds": {
+          "left": 268.5626525878906,
+          "top": 869.8321533203125,
+          "right": 278.2600402832031,
+          "bottom": 877.7000122070312,
+          "width": 9.6973876953125,
+          "height": 7.86785888671875,
+          "centerX": 273.4113464355469,
+          "centerY": 873.7660827636719
+        },
+        "isFilled": false,
+        "pitch": "E4"
+      }
     },
     {
       "partNumber": 2,
@@ -50586,7 +50712,28 @@
       },
       "kind": 1,
       "confidence": 0.9880447637894123,
-      "note": null
+      "note": {
+        "partNumber": 1,
+        "measureNumber": 19,
+        "logicalBounds": {
+          "left": 3.124241264524348,
+          "top": 5.943762101551888,
+          "right": 4.4357984416099,
+          "bottom": 8.072512292493219
+        },
+        "physicalBounds": {
+          "left": 445.3573303222656,
+          "top": 866.1361694335938,
+          "right": 455.0547180175781,
+          "bottom": 874.0040283203125,
+          "width": 9.6973876953125,
+          "height": 7.86785888671875,
+          "centerX": 450.2060241699219,
+          "centerY": 870.0700988769531
+        },
+        "isFilled": false,
+        "pitch": "F4"
+      }
     },
     {
       "partNumber": 1,
