@@ -58,11 +58,7 @@ public sealed class MeterOverlayRenderer
             DrawLedgerLadder(canvas, ledger, logicalGrid);
 
         foreach (var noteHead in noteHeads)
-        {
-            RedrawRegion(canvas, picture, noteHead.PhysicalBounds);
-            using var border = Border(SKColors.ForestGreen);
-            canvas.DrawOval(ToRect(noteHead.PhysicalBounds), border);
-        }
+            DrawNoteHead(canvas, picture, noteHead);
 
         DrawFirstMeasureNoteSummaries(canvas, noteHeads, logicalGrid, bounds);
 
@@ -72,6 +68,29 @@ public sealed class MeterOverlayRenderer
         using var stream = File.Create(outputPath);
         data.SaveTo(stream);
         return outputPath;
+    }
+
+    private static void DrawNoteHead(SKCanvas canvas, SKPicture picture, NoteHeadResolution noteHead)
+    {
+        var rect = ToRect(noteHead.PhysicalBounds);
+
+        if (noteHead.IsFilled)
+        {
+            using var fill = new SKPaint
+            {
+                Color = new SKColor(144, 238, 144, 170),
+                Style = SKPaintStyle.Fill,
+                IsAntialias = true
+            };
+            canvas.DrawOval(rect, fill);
+        }
+        else
+        {
+            RedrawRegion(canvas, picture, noteHead.PhysicalBounds);
+        }
+
+        using var border = Border(SKColors.ForestGreen);
+        canvas.DrawOval(rect, border);
     }
 
     private static void DrawFirstMeasureNoteSummaries(
@@ -105,12 +124,11 @@ public sealed class MeterOverlayRenderer
             if (labels.Length == 0)
                 continue;
 
-            // Extra spacing makes dense chords/readouts much easier to inspect at full-page scale.
             var text = string.Join("   ", labels);
             var height = (float)Math.Clamp(block.PhysicalBounds.Height * 0.22, 7, 11);
             var top = block.PhysicalBounds.Bottom + 3;
 
-            DrawVectorLabel(
+            DrawReadableLabel(
                 canvas,
                 text,
                 block.PhysicalBounds.Left,
@@ -183,7 +201,7 @@ public sealed class MeterOverlayRenderer
     {
         var b = meter.PhysicalBounds;
         var height = (float)Math.Max(8, Math.Min(18, b.Height * 0.34));
-        DrawVectorLabel(
+        DrawReadableLabel(
             canvas,
             $"{meter.BeatNumber}-{meter.BeatValue}",
             b.Left,
@@ -198,7 +216,7 @@ public sealed class MeterOverlayRenderer
     {
         var b = clef.PhysicalBounds;
         var height = (float)Math.Max(8, Math.Min(14, b.Height * 0.20));
-        DrawVectorLabel(
+        DrawReadableLabel(
             canvas,
             clef.Kind.ToString(),
             b.Left,
@@ -209,12 +227,7 @@ public sealed class MeterOverlayRenderer
             page);
     }
 
-    /// <summary>
-    /// All semantic labels use a real system typeface. Keeping this helper name avoids churn at the
-    /// call sites, but unlike the old diagnostic seven-segment/vector lettering it preserves case
-    /// (lowercase = filled note head, uppercase = hollow) and is much easier to read when zoomed.
-    /// </summary>
-    private static void DrawVectorLabel(
+    private static void DrawReadableLabel(
         SKCanvas canvas,
         string text,
         double left,
@@ -224,35 +237,143 @@ public sealed class MeterOverlayRenderer
         SKColor color,
         SKRect page)
     {
-        using var typeface = SKTypeface.Default;
-        using var font = new SKFont(typeface, height);
-        using var paint = new SKPaint
-        {
-            Color = color,
-            IsAntialias = true
-        };
+        var charWidth = height * 0.58f;
+        var charSpacing = charWidth * 0.18f;
+        var wordSpacing = charWidth * 0.85f;
+        var totalWidth = MeasureVectorText(text, charWidth, charSpacing, wordSpacing);
 
-        var textWidth = font.MeasureText(text, paint);
         var x = (float)Math.Clamp(
             left,
             page.Left + 2,
-            Math.Max(page.Left + 2, page.Right - textWidth - 4));
+            Math.Max(page.Left + 2, page.Right - totalWidth - 4));
 
-        var preferredBaseline = (float)(top - 3);
-        var fallbackBaseline = (float)Math.Min(page.Bottom - 3, bottom + height + 3);
-        var baseline = preferredBaseline - height >= page.Top
-            ? preferredBaseline
-            : fallbackBaseline;
+        var preferredTop = (float)(top - height - 4);
+        var y = preferredTop >= page.Top
+            ? preferredTop
+            : (float)Math.Min(page.Bottom - height - 3, bottom + 4);
 
         using var background = new SKPaint { Color = new SKColor(255, 255, 255, 238) };
         canvas.DrawRoundRect(
-            new SKRect(x - 3, baseline - height - 3, x + textWidth + 3, baseline + 3),
+            new SKRect(x - 3, y - 3, x + totalWidth + 3, y + height + 3),
             2,
             2,
             background);
 
-        using var blob = SKTextBlob.Create(text, font);
-        if (blob is not null)
-            canvas.DrawText(blob, x, baseline, paint);
+        using var paint = new SKPaint
+        {
+            Color = color,
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = Math.Max(0.9f, height * 0.075f),
+            StrokeCap = SKStrokeCap.Round,
+            IsAntialias = true
+        };
+
+        foreach (var ch in text)
+        {
+            if (ch == ' ')
+            {
+                x += wordSpacing;
+                continue;
+            }
+
+            DrawChar(canvas, ch, x, y, charWidth, height, paint);
+            x += charWidth + charSpacing;
+        }
+    }
+
+    private static float MeasureVectorText(string text, float charWidth, float charSpacing, float wordSpacing)
+    {
+        var width = 0f;
+        foreach (var ch in text)
+            width += ch == ' ' ? wordSpacing : charWidth + charSpacing;
+        return width;
+    }
+
+    private static void DrawChar(SKCanvas canvas, char ch, float x, float y, float w, float h, SKPaint paint)
+    {
+        if (char.IsDigit(ch))
+        {
+            DrawDigit(canvas, ch - '0', x, y, w, h, paint);
+            return;
+        }
+
+        var upper = char.ToUpperInvariant(ch);
+        switch (upper)
+        {
+            case '-': canvas.DrawLine(x, y + h * .5f, x + w * .75f, y + h * .5f, paint); break;
+            case '.': canvas.DrawPoint(x + w * .35f, y + h, paint); break;
+            case 'G':
+                canvas.DrawOval(new SKRect(x, y, x + w, y + h), paint);
+                canvas.DrawLine(x + w * .52f, y + h * .55f, x + w, y + h * .55f, paint);
+                canvas.DrawLine(x + w, y + h * .55f, x + w, y + h * .82f, paint);
+                break;
+            case 'F':
+                canvas.DrawLine(x, y, x, y + h, paint);
+                canvas.DrawLine(x, y, x + w, y, paint);
+                canvas.DrawLine(x, y + h * .48f, x + w * .75f, y + h * .48f, paint);
+                break;
+            case 'C':
+                canvas.DrawArc(new SKRect(x, y, x + w, y + h), 45, 270, false, paint);
+                break;
+            case 'A':
+                canvas.DrawLine(x, y + h, x + w * .5f, y, paint);
+                canvas.DrawLine(x + w * .5f, y, x + w, y + h, paint);
+                canvas.DrawLine(x + w * .22f, y + h * .58f, x + w * .78f, y + h * .58f, paint);
+                break;
+            case 'B':
+                canvas.DrawLine(x, y, x, y + h, paint);
+                canvas.DrawArc(new SKRect(x, y, x + w, y + h * .52f), -90, 180, false, paint);
+                canvas.DrawArc(new SKRect(x, y + h * .48f, x + w, y + h), -90, 180, false, paint);
+                break;
+            case 'D':
+                canvas.DrawLine(x, y, x, y + h, paint);
+                canvas.DrawArc(new SKRect(x - w * .25f, y, x + w, y + h), -90, 180, false, paint);
+                break;
+            case 'E':
+                canvas.DrawLine(x, y, x, y + h, paint);
+                canvas.DrawLine(x, y, x + w, y, paint);
+                canvas.DrawLine(x, y + h * .5f, x + w * .75f, y + h * .5f, paint);
+                canvas.DrawLine(x, y + h, x + w, y + h, paint);
+                break;
+            default:
+                canvas.DrawRect(new SKRect(x, y, x + w, y + h), paint);
+                break;
+        }
+
+        // Preserve filled/hollow diagnostics even though the vector alphabet itself is uppercase-only.
+        if (char.IsLetter(ch) && char.IsLower(ch))
+            canvas.DrawLine(x, y + h + 1.5f, x + w, y + h + 1.5f, paint);
+    }
+
+    private static void DrawDigit(SKCanvas canvas, int digit, float x, float y, float w, float h, SKPaint paint)
+    {
+        var segments = digit switch
+        {
+            0 => "abcdef",
+            1 => "bc",
+            2 => "abdeg",
+            3 => "abcdg",
+            4 => "bcfg",
+            5 => "acdfg",
+            6 => "acdefg",
+            7 => "abc",
+            8 => "abcdefg",
+            9 => "abcdfg",
+            _ => string.Empty
+        };
+
+        foreach (var segment in segments)
+        {
+            switch (segment)
+            {
+                case 'a': canvas.DrawLine(x, y, x + w, y, paint); break;
+                case 'b': canvas.DrawLine(x + w, y, x + w, y + h / 2, paint); break;
+                case 'c': canvas.DrawLine(x + w, y + h / 2, x + w, y + h, paint); break;
+                case 'd': canvas.DrawLine(x, y + h, x + w, y + h, paint); break;
+                case 'e': canvas.DrawLine(x, y + h / 2, x, y + h, paint); break;
+                case 'f': canvas.DrawLine(x, y, x, y + h / 2, paint); break;
+                case 'g': canvas.DrawLine(x, y + h / 2, x + w, y + h / 2, paint); break;
+            }
+        }
     }
 }
