@@ -40733,6 +40733,74 @@
       "partNumber": 1,
       "measureNumber": 3,
       "logicalBounds": {
+        "left": 8.915573381704261,
+        "top": 6.334172931515302,
+        "right": 8.915573381704261,
+        "bottom": 32.91696655185463
+      },
+      "physicalBounds": {
+        "left": 501.4357604980469,
+        "top": 318.57391357421875,
+        "right": 501.4357604980469,
+        "bottom": 402.7161865234375,
+        "width": 0,
+        "height": 84.14227294921875,
+        "centerX": 501.4357604980469,
+        "centerY": 360.6450500488281
+      },
+      "direction": 1,
+      "crossStaff": true,
+      "attachedNotes": [
+        {
+          "partNumber": 1,
+          "measureNumber": 3,
+          "logicalBounds": {
+            "left": 7.695272238158098,
+            "top": 5.963358167763769,
+            "right": 8.980725371161208,
+            "bottom": 8.037880741706658
+          },
+          "physicalBounds": {
+            "left": 493.7003479003906,
+            "top": 317.4001770019531,
+            "right": 501.8487548828125,
+            "bottom": 323.9666442871094,
+            "width": 8.148406982421875,
+            "height": 6.56646728515625,
+            "centerX": 497.77455139160156,
+            "centerY": 320.68341064453125
+          },
+          "isFilled": false,
+          "pitch": "F4"
+        },
+        {
+          "partNumber": 1,
+          "measureNumber": 3,
+          "logicalBounds": {
+            "left": 8.861629094268727,
+            "top": 4.963389502049986,
+            "right": 10.147082227271838,
+            "bottom": 7.0379120759928755
+          },
+          "physicalBounds": {
+            "left": 501.09381103515625,
+            "top": 314.2349853515625,
+            "right": 509.2422180175781,
+            "bottom": 320.80145263671875,
+            "width": 8.148406982421875,
+            "height": 6.56646728515625,
+            "centerX": 505.1680145263672,
+            "centerY": 317.5182189941406
+          },
+          "isFilled": false,
+          "pitch": "G4"
+        }
+      ]
+    },
+    {
+      "partNumber": 1,
+      "measureNumber": 3,
+      "logicalBounds": {
         "left": 10.043285811643981,
         "top": -8.584418182563192,
         "right": 10.043285811643981,
@@ -40864,6 +40932,52 @@
           },
           "isFilled": true,
           "pitch": "B5"
+        }
+      ]
+    },
+    {
+      "partNumber": 2,
+      "measureNumber": 3,
+      "logicalBounds": {
+        "left": 2.5823166502677957,
+        "top": -20.533386681964227,
+        "right": 2.5823166502677957,
+        "bottom": 2.7999932510768146
+      },
+      "physicalBounds": {
+        "left": 461.2896423339844,
+        "top": 308.17926025390625,
+        "right": 461.2896423339844,
+        "bottom": 382.03619384765625,
+        "width": 0,
+        "height": 73.85693359375,
+        "centerX": 461.2896423339844,
+        "centerY": 345.10772705078125
+      },
+      "direction": 0,
+      "crossStaff": true,
+      "attachedNotes": [
+        {
+          "partNumber": 2,
+          "measureNumber": 3,
+          "logicalBounds": {
+            "left": 1.8544178069999964,
+            "top": 2.4048148746267004,
+            "right": 2.607375107751237,
+            "bottom": 3.6163140756024017
+          },
+          "physicalBounds": {
+            "left": 456.675537109375,
+            "top": 380.78533935546875,
+            "right": 461.448486328125,
+            "bottom": 384.6200866699219,
+            "width": 4.77294921875,
+            "height": 3.834747314453125,
+            "centerX": 459.06201171875,
+            "centerY": 382.7027130126953
+          },
+          "isFilled": true,
+          "pitch": "E3"
         }
       ]
     },
