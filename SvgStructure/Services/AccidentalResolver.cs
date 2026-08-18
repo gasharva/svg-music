@@ -13,8 +13,18 @@ public sealed class AccidentalResolver
     private readonly GlyphPcaAccidentalRecognizer _recognizer;
 
     public double MinimumConfidence { get; init; } = 0.70;
-    public double MaxAttachedNoteGapLogicalX { get; init; } = 4.0;
-    public double MaxAttachedNoteYDistance { get; init; } = 0.80;
+
+    // Attachment may span a fairly large empty gap. Actual ownership is constrained primarily by
+    // vertical staff position and by blockers on that same pitch corridor, not by a tiny X radius.
+    public double MaxAttachedNoteGapLogicalX { get; init; } = 8.0;
+
+    // Zone-2 search only considers symbols that actually pass through (or very near) the note's
+    // horizontal pitch lane. Symbols above/below the note must not stop the search.
+    public double NoteSearchLaneTolerance { get; init; } = 1.0;
+
+    // A blocker only matters if it occupies the same pitch corridor between accidental and note.
+    public double AttachmentBlockerLaneTolerance { get; init; } = 0.75;
+
     public double MinLogicalHeight { get; init; } = 1.5;
     public double MaxLogicalHeight { get; init; } = 7.0;
     public double LaneTolerance { get; init; } = 0.55;
@@ -32,6 +42,7 @@ public sealed class AccidentalResolver
         var recognized = new Dictionary<int, RecognizedCandidate?>();
         var found = new Dictionary<int, RecognizedCandidate>();
 
+        // Zone 1: walk from the left edge independently in each logical Y lane.
         foreach (var group in prepared
                      .GroupBy(x => (x.PartNumber, x.MeasureNumber))
                      .OrderBy(x => x.Key.MeasureNumber)
@@ -54,6 +65,8 @@ public sealed class AccidentalResolver
             }
         }
 
+        // Zone 2: for every known note head, walk left only inside that note's pitch corridor.
+        // Already recognized accidentals are transparent. The first other symbol ends the search.
         foreach (var note in noteHeads
                      .OrderBy(x => x.MeasureNumber)
                      .ThenBy(x => x.PartNumber)
@@ -63,9 +76,11 @@ public sealed class AccidentalResolver
             if (noteX is null)
                 continue;
 
+            var noteY = CenterY(note.LogicalBounds);
             var left = prepared
                 .Where(x => x.PartNumber == note.PartNumber && x.MeasureNumber == note.MeasureNumber)
                 .Where(x => x.X < noteX.Value)
+                .Where(x => VerticalDistanceToY(x.LogicalBounds, noteY) <= NoteSearchLaneTolerance)
                 .OrderByDescending(x => x.X)
                 .ToArray();
 
@@ -134,7 +149,7 @@ public sealed class AccidentalResolver
                 symbol.MeasureNumber,
                 logical,
                 x.Value,
-                (logical.Top + logical.Bottom) / 2.0));
+                CenterY(logical)));
         }
 
         return result;
@@ -203,7 +218,11 @@ public sealed class AccidentalResolver
         IReadOnlyList<PreparedCandidate> allSymbols,
         IReadOnlyDictionary<int, RecognizedCandidate> recognizedAccidentals)
     {
+        // Attachment is fundamentally discrete: both an accidental and a note belong to one of the
+        // integer half-staff-space positions. Comparing the quantized positions prevents a flat in a
+        // chord from drifting to the geometrically nearest head one step above/below.
         var anchorY = AccidentalPitchAnchorY(accidental.Kind, accidental.LogicalBounds);
+        var anchorPosition = (int)Math.Round(anchorY);
 
         var candidates = noteHeads
             .Where(x => x.PartNumber == accidental.PartNumber && x.MeasureNumber == accidental.MeasureNumber)
@@ -211,11 +230,12 @@ public sealed class AccidentalResolver
             {
                 Note = x,
                 X = CenterX(x.LogicalBounds),
-                Y = (x.LogicalBounds.Top + x.LogicalBounds.Bottom) / 2.0
+                Y = CenterY(x.LogicalBounds),
+                Position = (int)Math.Round(CenterY(x.LogicalBounds))
             })
             .Where(x => x.X is not null && x.X.Value > accidental.X)
             .Where(x => x.X!.Value - accidental.X <= MaxAttachedNoteGapLogicalX)
-            .Where(x => Math.Abs(x.Y - anchorY) <= MaxAttachedNoteYDistance)
+            .Where(x => x.Position == anchorPosition)
             .OrderBy(x => x.X)
             .ThenBy(x => Math.Abs(x.Y - anchorY))
             .ToArray();
@@ -223,15 +243,20 @@ public sealed class AccidentalResolver
         foreach (var candidate in candidates)
         {
             var targetX = candidate.X!.Value;
+            var targetY = candidate.Y;
 
-            // MusicSymbolResolver often emits a broader symbol candidate that contains the notehead
-            // itself. Such a candidate may have its center to the left of the notehead center and used
-            // to be mistaken for an intervening blocker. A symbol that overlaps the target head is part
-            // of the destination note and is therefore transparent, just like recognized accidentals.
             var blocked = allSymbols
                 .Where(x => x.PartNumber == accidental.PartNumber && x.MeasureNumber == accidental.MeasureNumber)
                 .Where(x => x.X > accidental.X && x.X < targetX)
+
+                // A broader candidate belonging to the accidental itself or to the destination note
+                // is not an intervening musical symbol.
+                .Where(x => !x.Symbol.PhysicalBounds.Intersects(accidental.PhysicalBounds))
                 .Where(x => !x.Symbol.PhysicalBounds.Intersects(candidate.Note.PhysicalBounds))
+
+                // Only geometry on the same pitch corridor can block this attachment. Dynamics,
+                // slurs, neighbouring chord heads, etc. at other Y positions are irrelevant.
+                .Where(x => VerticalDistanceToY(x.LogicalBounds, targetY) <= AttachmentBlockerLaneTolerance)
                 .Any(x => !recognizedAccidentals.ContainsKey(x.Symbol.Id));
 
             if (!blocked)
@@ -245,12 +270,20 @@ public sealed class AccidentalResolver
     {
         return kind switch
         {
-            // The flat's pitch belongs to the bulb, not to the visual center of the tall stem.
-            // On the real glyphs the bulb center is about one full staff-space above the bottom.
-            // One staff-space equals two half-space logical units in this coordinate system.
-            AccidentalKind.Flat or AccidentalKind.DoubleFlat => bounds.Bottom - 2.0,
-            _ => (bounds.Top + bounds.Bottom) / 2.0
+            // For a flat the pitch is at the bulb, not at the center of the tall glyph. The requested
+            // baseline is half the inter-line distance up from the bottom: one logical half-space.
+            AccidentalKind.Flat or AccidentalKind.DoubleFlat => bounds.Bottom - 1.0,
+            _ => CenterY(bounds)
         };
+    }
+
+    private static double VerticalDistanceToY(LogicalRectD bounds, double y)
+    {
+        if (y < bounds.Top)
+            return bounds.Top - y;
+        if (y > bounds.Bottom)
+            return y - bounds.Bottom;
+        return 0;
     }
 
     private static bool OverlapsClef(
@@ -263,6 +296,8 @@ public sealed class AccidentalResolver
 
     private static double? CenterX(LogicalRectD b) =>
         b.Left is { } l && b.Right is { } r ? (l + r) / 2.0 : null;
+
+    private static double CenterY(LogicalRectD b) => (b.Top + b.Bottom) / 2.0;
 
     private sealed record PreparedCandidate(
         MusicSymbolCandidate Symbol,
