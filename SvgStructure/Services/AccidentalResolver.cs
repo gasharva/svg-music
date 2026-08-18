@@ -13,20 +13,10 @@ public sealed class AccidentalResolver
     private readonly GlyphPcaAccidentalRecognizer _recognizer;
 
     public double MinimumConfidence { get; init; } = 0.70;
-
-    // Horizontal distance from accidental to an attached note. This is intentionally independent
-    // from the search-zone logic: once a glyph is recognized as an accidental, attachment may span
-    // a relatively large empty gap as long as no non-accidental symbol sits in between.
     public double MaxAttachedNoteGapLogicalX { get; init; } = 4.0;
-
-    // Vertical alignment tolerance in logical half-staff-space units.
     public double MaxAttachedNoteYDistance { get; init; } = 0.80;
-
     public double MinLogicalHeight { get; init; } = 1.5;
     public double MaxLogicalHeight { get; init; } = 7.0;
-
-    // Symbols whose logical center Y quantizes to the same half-staff-space position are treated
-    // as one vertical lane for the left-edge/key-signature search.
     public double LaneTolerance { get; init; } = 0.55;
 
     public AccidentalResolver(GlyphPcaAccidentalRecognizer recognizer) => _recognizer = recognizer;
@@ -42,9 +32,6 @@ public sealed class AccidentalResolver
         var recognized = new Dictionary<int, RecognizedCandidate?>();
         var found = new Dictionary<int, RecognizedCandidate>();
 
-        // Zone 1: walk from the left edge independently in each logical Y lane.
-        // Clefs are transparent. A successfully recognized accidental is transparent too so a key
-        // signature can contain several consecutive accidentals. The first other symbol stops the lane.
         foreach (var group in prepared
                      .GroupBy(x => (x.PartNumber, x.MeasureNumber))
                      .OrderBy(x => x.Key.MeasureNumber)
@@ -67,8 +54,6 @@ public sealed class AccidentalResolver
             }
         }
 
-        // Zone 2: for every known note head, walk leftwards. Already recognized accidentals are
-        // transparent; the first other symbol terminates the search immediately.
         foreach (var note in noteHeads
                      .OrderBy(x => x.MeasureNumber)
                      .ThenBy(x => x.PartNumber)
@@ -100,8 +85,6 @@ public sealed class AccidentalResolver
             }
         }
 
-        // Every recognized accidental, including one discovered in zone 1, gets a chance to bind
-        // to the first suitable note on its right. If no note can be attached it remains key-like.
         var results = new List<AccidentalResolution>();
         foreach (var accidental in found.Values
                      .OrderBy(x => x.MeasureNumber)
@@ -241,10 +224,14 @@ public sealed class AccidentalResolver
         {
             var targetX = candidate.X!.Value;
 
-            // Nothing except other already-recognized accidentals may sit between the glyph and note.
+            // MusicSymbolResolver often emits a broader symbol candidate that contains the notehead
+            // itself. Such a candidate may have its center to the left of the notehead center and used
+            // to be mistaken for an intervening blocker. A symbol that overlaps the target head is part
+            // of the destination note and is therefore transparent, just like recognized accidentals.
             var blocked = allSymbols
                 .Where(x => x.PartNumber == accidental.PartNumber && x.MeasureNumber == accidental.MeasureNumber)
                 .Where(x => x.X > accidental.X && x.X < targetX)
+                .Where(x => !x.Symbol.PhysicalBounds.Intersects(candidate.Note.PhysicalBounds))
                 .Any(x => !recognizedAccidentals.ContainsKey(x.Symbol.Id));
 
             if (!blocked)
@@ -258,12 +245,10 @@ public sealed class AccidentalResolver
     {
         return kind switch
         {
-            // A flat is vertically asymmetric. Its musical pitch sits roughly half a staff-line
-            // interval above the bottom of the glyph. One staff-line interval is 2 logical Y units,
-            // therefore half of it is exactly 1 logical unit.
-            AccidentalKind.Flat or AccidentalKind.DoubleFlat => bounds.Bottom - 1.0,
-
-            // Sharp/natural/double-sharp are compact enough to use their visual center.
+            // The flat's pitch belongs to the bulb, not to the visual center of the tall stem.
+            // On the real glyphs the bulb center is about one full staff-space above the bottom.
+            // One staff-space equals two half-space logical units in this coordinate system.
+            AccidentalKind.Flat or AccidentalKind.DoubleFlat => bounds.Bottom - 2.0,
             _ => (bounds.Top + bounds.Bottom) / 2.0
         };
     }
