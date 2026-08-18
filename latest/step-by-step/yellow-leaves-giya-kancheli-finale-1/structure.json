@@ -60119,7 +60119,76 @@
           "pitch": "A3"
         }
       ],
-      "stems": []
+      "stems": [
+        {
+          "partNumber": 2,
+          "measureNumber": 6,
+          "logicalBounds": {
+            "left": 16.7332237124775,
+            "top": -6,
+            "right": 16.7332237124775,
+            "bottom": -0.39250106307875865
+          },
+          "physicalBounds": {
+            "left": 344.5386657714844,
+            "top": 391.970703125,
+            "right": 344.5386657714844,
+            "bottom": 412.6960144042969,
+            "width": 0,
+            "height": 20.725311279296875,
+            "centerX": 344.5386657714844,
+            "centerY": 402.33335876464844
+          },
+          "direction": 0,
+          "crossStaff": false,
+          "attachedNotes": [
+            {
+              "partNumber": 2,
+              "measureNumber": 6,
+              "logicalBounds": {
+                "left": 15.345736029100996,
+                "top": -1.0562502838317074,
+                "right": 16.782826591626097,
+                "bottom": 1.0725081640320204
+              },
+              "physicalBounds": {
+                "left": 335.1759948730469,
+                "top": 410.2427978515625,
+                "right": 344.8733825683594,
+                "bottom": 418.1106872558594,
+                "width": 9.6973876953125,
+                "height": 7.867889404296875,
+                "centerX": 340.0246887207031,
+                "centerY": 414.17674255371094
+              },
+              "isFilled": false,
+              "pitch": "A3"
+            },
+            {
+              "partNumber": 2,
+              "measureNumber": 6,
+              "logicalBounds": {
+                "left": 16.68343088794923,
+                "top": -2.056254412292906,
+                "right": 18.12052145047433,
+                "bottom": 0.07250403557082169
+              },
+              "physicalBounds": {
+                "left": 344.2026672363281,
+                "top": 406.5467834472656,
+                "right": 353.9000549316406,
+                "bottom": 414.4146728515625,
+                "width": 9.6973876953125,
+                "height": 7.867889404296875,
+                "centerX": 349.0513610839844,
+                "centerY": 410.48072814941406
+              },
+              "isFilled": false,
+              "pitch": "B3"
+            }
+          ]
+        }
+      ]
     },
     {
       "physicalBounds": {
@@ -60283,7 +60352,54 @@
           "pitch": "A4"
         }
       ],
-      "stems": []
+      "stems": [
+        {
+          "partNumber": 1,
+          "measureNumber": 9,
+          "logicalBounds": {
+            "left": 13.276746459815387,
+            "top": 0.17604584243314989,
+            "right": 13.276746459815387,
+            "bottom": 6.720044917657841
+          },
+          "physicalBounds": {
+            "left": 139.5485076904297,
+            "top": 509.3973693847656,
+            "right": 139.5485076904297,
+            "bottom": 533.583984375,
+            "width": 0,
+            "height": 24.186614990234375,
+            "centerX": 139.5485076904297,
+            "centerY": 521.4906768798828
+          },
+          "direction": 0,
+          "crossStaff": false,
+          "attachedNotes": [
+            {
+              "partNumber": 1,
+              "measureNumber": 9,
+              "logicalBounds": {
+                "left": 12.088838960661981,
+                "top": 5.992477943696046,
+                "right": 13.320680094340394,
+                "bottom": 8.056229641525714
+              },
+              "physicalBounds": {
+                "left": 130.48211669921875,
+                "top": 530.8948974609375,
+                "right": 139.88381958007812,
+                "bottom": 538.5225219726562,
+                "width": 9.401702880859375,
+                "height": 7.62762451171875,
+                "centerX": 135.18296813964844,
+                "centerY": 534.7087097167969
+              },
+              "isFilled": true,
+              "pitch": "F4"
+            }
+          ]
+        }
+      ]
     },
     {
       "physicalBounds": {
