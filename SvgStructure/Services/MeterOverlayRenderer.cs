@@ -97,11 +97,11 @@ public sealed class MeterOverlayRenderer
 
         var prefix = accidental.Kind switch
         {
-            AccidentalKind.Flat => "b",
-            AccidentalKind.Sharp => "s",
-            AccidentalKind.Natural => "n",
-            AccidentalKind.DoubleFlat => "bb",
-            AccidentalKind.DoubleSharp => "ss",
+            AccidentalKind.Flat => "F",
+            AccidentalKind.Sharp => "S",
+            AccidentalKind.Natural => "N",
+            AccidentalKind.DoubleFlat => "FF",
+            AccidentalKind.DoubleSharp => "SS",
             _ => "?"
         };
         var label = accidental.Note is null
