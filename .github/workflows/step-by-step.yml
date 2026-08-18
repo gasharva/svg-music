@@ -7,6 +7,9 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
+  actions: read
 
 concurrency:
   group: svg-structure-step-by-step
@@ -48,6 +51,28 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
+      - name: Prepare GitHub Pages site
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          rm -rf /tmp/svg-music-pages
+          mkdir -p /tmp/svg-music-pages/latest/step-by-step
+          cp -R Samples/step-by-step/_artifacts/. /tmp/svg-music-pages/latest/step-by-step/
+          touch /tmp/svg-music-pages/.nojekyll
+
+          cat > /tmp/svg-music-pages/index.html <<'EOF'
+          <!doctype html>
+          <html><head><meta charset="utf-8"><title>svg-music diagnostics</title>
+          <meta http-equiv="refresh" content="0; url=latest/step-by-step/"></head>
+          <body><a href="latest/step-by-step/">Open latest step-by-step report</a></body></html>
+          EOF
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: /tmp/svg-music-pages
+
       - name: Publish latest report to ci-output
         shell: bash
         run: |
@@ -61,6 +86,7 @@ jobs:
           Branch: ${{ github.ref_name }}
           Commit: ${{ github.sha }}
           Workflow run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          Rendered report: https://gasharva.github.io/svg-music/latest/step-by-step/
           EOF
 
           git config user.name "github-actions[bot]"
@@ -93,6 +119,27 @@ jobs:
           {
             echo '## SvgStructure step-by-step'
             echo
+            echo '- Rendered report: https://gasharva.github.io/svg-music/latest/step-by-step/'
             echo '- Download the **svg-structure-step-by-step-${{ github.sha }}** artifact from this run.'
-            echo '- The latest browsable Markdown report is published to the `ci-output` branch under `latest/step-by-step/`.'
+            echo '- A repository copy is also kept in the `ci-output` branch.'
           } >> "$GITHUB_STEP_SUMMARY"
+
+  deploy-pages:
+    name: Deploy GitHub Pages
+    needs: analyze
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+      actions: read
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v6
+
+      - name: Deploy GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
