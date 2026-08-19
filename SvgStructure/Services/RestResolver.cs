@@ -13,15 +13,16 @@ public sealed record RestDiagnosticEntry(
     string Verdict);
 
 /// <summary>
-/// Resolves rests from still-unclaimed MusicSymbol candidates. Rests are deliberately allowed at any
-/// vertical position: unlike note heads, their placement is not constrained to staff/ledger steps.
-/// A candidate only needs a measure; when its source part is unknown we attach it to the vertically
-/// nearest logical block of that measure for downstream coordinates.
+/// Resolves rests from still-unclaimed MusicSymbol candidates. Rests may sit at arbitrary vertical
+/// positions, but must still belong to the score neighborhood: no farther than two staff spaces from
+/// a staff or from geometry recognized by an earlier pass. A measure is sufficient; Part is optional.
 /// </summary>
 public sealed class RestResolver
 {
     private readonly GlyphPcaRestRecognizer _recognizer;
     private readonly List<RestDiagnosticEntry> _diagnostics = new();
+
+    public double MaxDistanceInStaffSpaces { get; init; } = 2.0;
 
     public RestResolver(GlyphPcaRestRecognizer recognizer)
     {
@@ -33,15 +34,7 @@ public sealed class RestResolver
     public IReadOnlyList<RestResolution> Resolve(
         MusicSymbolResolution symbols,
         LogicalGridResolution grid,
-        IReadOnlyList<LedgerLineResolution> ledgerLines,
-        IReadOnlyList<MeterResolution> meters,
-        IReadOnlyList<ClefResolution> clefs,
-        IReadOnlyList<NoteHeadResolution> noteHeads,
-        IReadOnlyList<AccidentalResolution> accidentals,
-        IReadOnlyList<StemResolution> stems,
-        IReadOnlyList<BeamResolution> beams,
-        IReadOnlyList<NoteFlagResolution> noteFlags,
-        IReadOnlyList<ArcResolution> arcs)
+        IReadOnlyList<RectD> previouslyRecognizedBounds)
     {
         _diagnostics.Clear();
         var results = new List<RestResolution>();
@@ -62,20 +55,8 @@ public sealed class RestResolver
 
             var partNumber = block.PartNumber;
             var logical = block.ToLogical(candidate.PhysicalBounds);
-            var previouslyRecognized = IsPreviouslyRecognized(
-                candidate.PhysicalBounds,
-                candidate.MeasureNumber,
-                candidate.PartNumber,
-                meters,
-                clefs,
-                noteHeads,
-                accidentals,
-                stems,
-                beams,
-                noteFlags,
-                arcs);
 
-            if (previouslyRecognized)
+            if (RecognitionCandidateFilter.IsClaimed(candidate.PhysicalBounds, previouslyRecognizedBounds))
             {
                 _diagnostics.Add(new RestDiagnosticEntry(
                     partNumber,
@@ -85,7 +66,21 @@ public sealed class RestResolver
                     true,
                     true,
                     null,
-                    "skipped: overlaps previously recognized symbol"));
+                    "skipped: contained in previously recognized object"));
+                continue;
+            }
+
+            if (!IsNearScore(candidate, grid, block, previouslyRecognizedBounds))
+            {
+                _diagnostics.Add(new RestDiagnosticEntry(
+                    partNumber,
+                    candidate.MeasureNumber,
+                    candidate,
+                    logical,
+                    false,
+                    false,
+                    null,
+                    $"rejected before PCA: farther than {MaxDistanceInStaffSpaces:0.##} staff spaces from staff/recognized object"));
                 continue;
             }
 
@@ -148,6 +143,34 @@ public sealed class RestResolver
             .ToArray();
     }
 
+    private bool IsNearScore(
+        MusicSymbolCandidate candidate,
+        LogicalGridResolution grid,
+        LogicalGridBlock nearestBlock,
+        IReadOnlyList<RectD> previouslyRecognizedBounds)
+    {
+        var staffSpace = Math.Max(1e-9, nearestBlock.PhysicalBounds.Height / 4.0);
+        var maxDistance = MaxDistanceInStaffSpaces * staffSpace;
+
+        var sameMeasureStaffs = grid.Blocks
+            .Where(x => x.MeasureNumber == candidate.MeasureNumber)
+            .Select(x => x.PhysicalBounds)
+            .ToArray();
+
+        var distanceToStaff = sameMeasureStaffs.Length == 0
+            ? double.PositiveInfinity
+            : sameMeasureStaffs.Min(x => RecognitionCandidateFilter.Distance(candidate.PhysicalBounds, x));
+
+        if (distanceToStaff <= maxDistance)
+            return true;
+
+        var distanceToRecognized = previouslyRecognizedBounds.Count == 0
+            ? double.PositiveInfinity
+            : previouslyRecognizedBounds.Min(x => RecognitionCandidateFilter.Distance(candidate.PhysicalBounds, x));
+
+        return distanceToRecognized <= maxDistance;
+    }
+
     private static LogicalGridBlock? ResolveBlock(
         MusicSymbolCandidate candidate,
         LogicalGridResolution grid)
@@ -167,90 +190,6 @@ public sealed class RestResolver
             .OrderBy(x => VerticalDistance(centerY, x.PhysicalBounds))
             .ThenBy(x => Math.Abs(centerY - x.PhysicalBounds.CenterY))
             .First();
-    }
-
-    private static bool IsPreviouslyRecognized(
-        RectD candidate,
-        int measureNumber,
-        int? sourcePartNumber,
-        IReadOnlyList<MeterResolution> meters,
-        IReadOnlyList<ClefResolution> clefs,
-        IReadOnlyList<NoteHeadResolution> noteHeads,
-        IReadOnlyList<AccidentalResolution> accidentals,
-        IReadOnlyList<StemResolution> stems,
-        IReadOnlyList<BeamResolution> beams,
-        IReadOnlyList<NoteFlagResolution> noteFlags,
-        IReadOnlyList<ArcResolution> arcs)
-    {
-        var occupied = new List<RectD>();
-
-        bool SamePart(int partNumber) =>
-            sourcePartNumber is null || partNumber == sourcePartNumber.Value;
-
-        occupied.AddRange(meters
-            .Where(x => x.MeasureNumber == measureNumber)
-            .Where(x => SamePart(x.PartNumber))
-            .Select(x => x.PhysicalBounds));
-        occupied.AddRange(clefs
-            .Where(x => x.MeasureNumber == measureNumber)
-            .Where(x => SamePart(x.PartNumber))
-            .Select(x => x.PhysicalBounds));
-        occupied.AddRange(noteHeads
-            .Where(x => x.MeasureNumber == measureNumber)
-            .Where(x => SamePart(x.PartNumber))
-            .Select(x => x.PhysicalBounds));
-        occupied.AddRange(accidentals
-            .Where(x => x.MeasureNumber == measureNumber)
-            .Where(x => SamePart(x.PartNumber))
-            .Select(x => x.PhysicalBounds));
-        occupied.AddRange(stems
-            .Where(x => x.MeasureNumber == measureNumber)
-            .Where(x => SamePart(x.PartNumber))
-            .Select(x => x.PhysicalBounds));
-        occupied.AddRange(noteFlags
-            .Where(x => x.MeasureNumber == measureNumber)
-            .Where(x => SamePart(x.PartNumber))
-            .Select(x => x.PhysicalBounds));
-
-        occupied.AddRange(beams
-            .Where(x => x.MeasureNumber == measureNumber)
-            .Where(x => sourcePartNumber is null || x.Stems.Any(s => s.PartNumber == sourcePartNumber.Value))
-            .Select(x => x.PhysicalBounds));
-
-        occupied.AddRange(arcs
-            .Where(x => ArcTouchesMeasureAndOptionalPart(x, sourcePartNumber, measureNumber))
-            .Select(x => x.PhysicalBounds));
-
-        return occupied.Any(x => SignificantOverlap(candidate, x));
-    }
-
-    private static bool ArcTouchesMeasureAndOptionalPart(
-        ArcResolution arc,
-        int? partNumber,
-        int measureNumber)
-    {
-        var notes = arc.Notes.Where(x => x.MeasureNumber == measureNumber);
-        var stems = arc.Stems.Where(x => x.MeasureNumber == measureNumber);
-
-        if (partNumber is null)
-            return notes.Any() || stems.Any();
-
-        return notes.Any(x => x.PartNumber == partNumber.Value) ||
-               stems.Any(x => x.PartNumber == partNumber.Value);
-    }
-
-    private static bool SignificantOverlap(RectD a, RectD b)
-    {
-        var left = Math.Max(a.Left, b.Left);
-        var top = Math.Max(a.Top, b.Top);
-        var right = Math.Min(a.Right, b.Right);
-        var bottom = Math.Min(a.Bottom, b.Bottom);
-        if (right <= left || bottom <= top)
-            return false;
-
-        var overlap = (right - left) * (bottom - top);
-        var candidateArea = Math.Max(1e-9, a.Width * a.Height);
-        return overlap / candidateArea >= 0.55;
     }
 
     private static double VerticalDistance(double y, RectD rect) =>
