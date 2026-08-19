@@ -1,4 +1,5 @@
 using System.Text.Json;
+using GlyphPcaGallery.Services;
 using SvgStructure.Models;
 using SvgSymbols.Services;
 
@@ -16,10 +17,11 @@ public sealed class StepByStepBatchRunner
     public StepByStepBatchResult Run(string inputFolder)
     {
         inputFolder=Path.GetFullPath(inputFolder); var artifactsFolder=Path.Combine(inputFolder,ArtifactsDirectoryName); if(Directory.Exists(artifactsFolder))Directory.Delete(artifactsFolder,true); Directory.CreateDirectory(artifactsFolder);
-        var repositoryRoot=FindRepositoryRoot(inputFolder); var recognizerWork=Path.Combine(Path.GetTempPath(),$"svg-music-recognizers-{Guid.NewGuid():N}"); var glyphs=Path.Combine(repositoryRoot,"References","glyphs"); var glyphPcaModel=Path.Combine(repositoryRoot,"GlyphPcaGallery","glyph-model.json");
-        var baseNumberRecognizer=new GlyphPcaNumberRecognizer(glyphPcaModel,Path.Combine(recognizerWork,"meter-pca"),minimumConfidence:0.20); var diagnosticNumberRecognizer=new DiagnosticNumberRecognizer(baseNumberRecognizer); var meterResolver=new MeterResolver(diagnosticNumberRecognizer);
-        var baseClefRecognizer=new GlyphPcaClefRecognizer(glyphPcaModel,Path.Combine(recognizerWork,"clef-pca")); var legacyIoUClefAnalyzer=new LegacyIoUClefAnalyzer(glyphs); var diagnosticClefRecognizer=new DiagnosticClefRecognizer(baseClefRecognizer,legacyIoUClefAnalyzer); var clefResolver=new ClefResolver(diagnosticClefRecognizer,minimumConfidence:0.55);
-        var accidentalRecognizer=new GlyphPcaAccidentalRecognizer(glyphPcaModel,Path.Combine(recognizerWork,"accidental-pca")); var accidentalResolver=new AccidentalResolver(accidentalRecognizer);
+        var repositoryRoot=FindRepositoryRoot(inputFolder); var recognizerWork=Path.Combine(Path.GetTempPath(),$"svg-music-recognizers-{Guid.NewGuid():N}"); var glyphs=Path.Combine(repositoryRoot,"References","glyphs"); var glyphModelBundlePath=Path.Combine(repositoryRoot,"GlyphPcaGallery","glyph-models.zip");
+        var glyphModelBundle=GlyphModelBundleLoader.Load(glyphModelBundlePath);
+        var baseNumberRecognizer=new GlyphPcaNumberRecognizer(glyphModelBundle,Path.Combine(recognizerWork,"meter-pca"),minimumConfidence:0.20); var diagnosticNumberRecognizer=new DiagnosticNumberRecognizer(baseNumberRecognizer); var meterResolver=new MeterResolver(diagnosticNumberRecognizer);
+        var baseClefRecognizer=new GlyphPcaClefRecognizer(glyphModelBundle,Path.Combine(recognizerWork,"clef-pca")); var legacyIoUClefAnalyzer=new LegacyIoUClefAnalyzer(glyphs); var diagnosticClefRecognizer=new DiagnosticClefRecognizer(baseClefRecognizer,legacyIoUClefAnalyzer); var clefResolver=new ClefResolver(diagnosticClefRecognizer,minimumConfidence:0.55);
+        var accidentalRecognizer=new GlyphPcaAccidentalRecognizer(glyphModelBundle,Path.Combine(recognizerWork,"accidental-pca")); var accidentalResolver=new AccidentalResolver(accidentalRecognizer);
         try { var svgFiles=Directory.EnumerateFiles(inputFolder,"*.svg",SearchOption.TopDirectoryOnly).OrderBy(Path.GetFileName,StringComparer.OrdinalIgnoreCase).ToArray(); var items=new List<StepByStepItemResult>(); foreach(var svgPath in svgFiles) items.Add(Process(svgPath,artifactsFolder,meterResolver,clefResolver,accidentalResolver,diagnosticNumberRecognizer,diagnosticClefRecognizer)); var htmlReportPath=Path.Combine(artifactsFolder,"index.html"); var markdownReportPath=Path.Combine(artifactsFolder,"README.md"); _reportBuilder.WriteHtml(htmlReportPath,items); _reportBuilder.WriteMarkdown(markdownReportPath,items); return new(inputFolder,artifactsFolder,htmlReportPath,markdownReportPath,items); }
         finally { try { if(Directory.Exists(recognizerWork))Directory.Delete(recognizerWork,true); } catch{} }
     }
