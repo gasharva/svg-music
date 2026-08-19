@@ -234,11 +234,28 @@ public sealed class RestResolver
             .Where(x => x.MeasureNumber == measureNumber)
             .Where(x => x.Stems.Any(s => s.PartNumber == partNumber))
             .Select(x => x.PhysicalBounds));
+
         occupied.AddRange(arcs
-            .Where(x => x.MeasureNumber == measureNumber)
+            .Where(x => ArcTouchesPartMeasure(x, partNumber, measureNumber))
             .Select(x => x.PhysicalBounds));
 
         return occupied.Any(x => SignificantOverlap(candidate, x));
+    }
+
+    private static bool ArcTouchesPartMeasure(
+        ArcResolution arc,
+        int partNumber,
+        int measureNumber)
+    {
+        var noteMatch = arc.Notes.Any(x =>
+            x.PartNumber == partNumber &&
+            x.MeasureNumber == measureNumber);
+        if (noteMatch)
+            return true;
+
+        return arc.Stems.Any(x =>
+            x.PartNumber == partNumber &&
+            x.MeasureNumber == measureNumber);
     }
 
     private static bool SignificantOverlap(RectD a, RectD b)
