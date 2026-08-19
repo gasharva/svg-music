@@ -1,9 +1,10 @@
-block: P2-M13
-logical bbox: X 0.79..2.72, Y -0.1..6.1
+block: P1-M17
+logical bbox: X 12.11..13.94, Y -4.5..3.1
 contours: 3
-points: 843
-value: F
-confidence: 0.5014
+points: 549
+value: null
+confidence: 0.0000
+error: PCA rejected: risk=13.476, normalized=13.476, d1/d2=0.598/0.5, classLimit=0.299
 candidates:
-  F: confidence=0.5014, distance=0.9945
-  G: confidence=0.1133, distance=7.8227
+  G: confidence=0.1987, distance=4.0328
+  F: confidence=0.1291, distance=6.744

@@ -25257,50 +25257,6 @@
       "partNumber": 1,
       "measureNumber": 2,
       "logicalBounds": {
-        "left": 3.810603225877353,
-        "top": 6.331249653399134,
-        "right": 4.13480363779548,
-        "bottom": 7.874995900419856
-      },
-      "physicalBounds": {
-        "left": 264.0357971191406,
-        "top": 194.25225830078125,
-        "right": 269.8172912597656,
-        "bottom": 199.19012451171875,
-        "width": 5.781494140625,
-        "height": 4.9378662109375,
-        "centerX": 266.9265441894531,
-        "centerY": 196.72119140625
-      },
-      "isFilled": true,
-      "pitch": "F4"
-    },
-    {
-      "partNumber": 1,
-      "measureNumber": 2,
-      "logicalBounds": {
-        "left": 3.86799817127304,
-        "top": 4.2275037403078475,
-        "right": 4.180765456676108,
-        "bottom": 5.594997259989708
-      },
-      "physicalBounds": {
-        "left": 265.059326171875,
-        "top": 187.52316284179688,
-        "right": 270.6369323730469,
-        "bottom": 191.8972625732422,
-        "width": 5.577606201171875,
-        "height": 4.3740997314453125,
-        "centerX": 267.84812927246094,
-        "centerY": 189.71021270751953
-      },
-      "isFilled": true,
-      "pitch": "A4"
-    },
-    {
-      "partNumber": 1,
-      "measureNumber": 2,
-      "logicalBounds": {
         "left": 5.279822445136721,
         "top": -3.1199981395359933,
         "right": 5.751999789083544,
@@ -25472,50 +25428,6 @@
       },
       "isFilled": true,
       "pitch": "A4"
-    },
-    {
-      "partNumber": 2,
-      "measureNumber": 2,
-      "logicalBounds": {
-        "left": 3.810603225877353,
-        "top": 6.331444982193843,
-        "right": 4.13480363779548,
-        "bottom": 7.875249560511119
-      },
-      "physicalBounds": {
-        "left": 264.0357971191406,
-        "top": 263.6461486816406,
-        "right": 269.8172912597656,
-        "bottom": 268.58404541015625,
-        "width": 5.781494140625,
-        "height": 4.937896728515625,
-        "centerX": 266.9265441894531,
-        "centerY": 266.11509704589844
-      },
-      "isFilled": true,
-      "pitch": "A2"
-    },
-    {
-      "partNumber": 2,
-      "measureNumber": 2,
-      "logicalBounds": {
-        "left": 3.86799817127304,
-        "top": 4.227632580139635,
-        "right": 4.180765456676108,
-        "bottom": 5.595174090073157
-      },
-      "physicalBounds": {
-        "left": 265.059326171875,
-        "top": 256.91705322265625,
-        "right": 270.6369323730469,
-        "bottom": 261.2911682128906,
-        "width": 5.577606201171875,
-        "height": 4.374114990234375,
-        "centerX": 267.84812927246094,
-        "centerY": 259.10411071777344
-      },
-      "isFilled": true,
-      "pitch": "C3"
     },
     {
       "partNumber": 2,
@@ -26554,28 +26466,7 @@
       },
       "kind": 0,
       "confidence": 0.9960619606124097,
-      "note": {
-        "partNumber": 1,
-        "measureNumber": 2,
-        "logicalBounds": {
-          "left": 3.86799817127304,
-          "top": 4.2275037403078475,
-          "right": 4.180765456676108,
-          "bottom": 5.594997259989708
-        },
-        "physicalBounds": {
-          "left": 265.059326171875,
-          "top": 187.52316284179688,
-          "right": 270.6369323730469,
-          "bottom": 191.8972625732422,
-          "width": 5.577606201171875,
-          "height": 4.3740997314453125,
-          "centerX": 267.84812927246094,
-          "centerY": 189.71021270751953
-        },
-        "isFilled": true,
-        "pitch": "A4"
-      }
+      "note": null
     },
     {
       "partNumber": 1,
@@ -26667,28 +26558,7 @@
       },
       "kind": 0,
       "confidence": 0.9960416252852324,
-      "note": {
-        "partNumber": 1,
-        "measureNumber": 2,
-        "logicalBounds": {
-          "left": 3.810603225877353,
-          "top": 6.331249653399134,
-          "right": 4.13480363779548,
-          "bottom": 7.874995900419856
-        },
-        "physicalBounds": {
-          "left": 264.0357971191406,
-          "top": 194.25225830078125,
-          "right": 269.8172912597656,
-          "bottom": 199.19012451171875,
-          "width": 5.781494140625,
-          "height": 4.9378662109375,
-          "centerX": 266.9265441894531,
-          "centerY": 196.72119140625
-        },
-        "isFilled": true,
-        "pitch": "F4"
-      }
+      "note": null
     },
     {
       "partNumber": 1,
@@ -27109,28 +26979,7 @@
       },
       "kind": 0,
       "confidence": 0.9960648924870344,
-      "note": {
-        "partNumber": 2,
-        "measureNumber": 2,
-        "logicalBounds": {
-          "left": 3.810603225877353,
-          "top": 6.331444982193843,
-          "right": 4.13480363779548,
-          "bottom": 7.875249560511119
-        },
-        "physicalBounds": {
-          "left": 264.0357971191406,
-          "top": 263.6461486816406,
-          "right": 269.8172912597656,
-          "bottom": 268.58404541015625,
-          "width": 5.781494140625,
-          "height": 4.937896728515625,
-          "centerX": 266.9265441894531,
-          "centerY": 266.11509704589844
-        },
-        "isFilled": true,
-        "pitch": "A2"
-      }
+      "note": null
     },
     {
       "partNumber": 2,
@@ -27199,28 +27048,7 @@
       },
       "kind": 0,
       "confidence": 0.9960586335682668,
-      "note": {
-        "partNumber": 2,
-        "measureNumber": 2,
-        "logicalBounds": {
-          "left": 3.86799817127304,
-          "top": 4.227632580139635,
-          "right": 4.180765456676108,
-          "bottom": 5.595174090073157
-        },
-        "physicalBounds": {
-          "left": 265.059326171875,
-          "top": 256.91705322265625,
-          "right": 270.6369323730469,
-          "bottom": 261.2911682128906,
-          "width": 5.577606201171875,
-          "height": 4.374114990234375,
-          "centerX": 267.84812927246094,
-          "centerY": 259.10411071777344
-        },
-        "isFilled": true,
-        "pitch": "C3"
-      }
+      "note": null
     },
     {
       "partNumber": 2,

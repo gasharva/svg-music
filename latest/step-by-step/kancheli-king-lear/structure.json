@@ -38635,6 +38635,50 @@
       "partNumber": 2,
       "measureNumber": 1,
       "logicalBounds": {
+        "left": 7.322495026494206,
+        "top": -0.498591162285089,
+        "right": 8.062917404472817,
+        "bottom": 4.22860531092048
+      },
+      "physicalBounds": {
+        "left": 166.4679718017578,
+        "top": 371.59521484375,
+        "right": 171.69927978515625,
+        "bottom": 386.55816650390625,
+        "width": 5.2313079833984375,
+        "height": 14.96295166015625,
+        "centerX": 169.08362579345703,
+        "centerY": 379.0766906738281
+      },
+      "kind": 0,
+      "confidence": 0.9013461367710911,
+      "note": {
+        "partNumber": 2,
+        "measureNumber": 1,
+        "logicalBounds": {
+          "left": 8.389707156226427,
+          "top": 1.9636088420535045,
+          "right": 9.543004112907237,
+          "bottom": 4.038131415996395
+        },
+        "physicalBounds": {
+          "left": 174.00814819335938,
+          "top": 379.3887939453125,
+          "right": 182.1565399169922,
+          "bottom": 385.95526123046875,
+          "width": 8.148391723632812,
+          "height": 6.56646728515625,
+          "centerX": 178.08234405517578,
+          "centerY": 382.6720275878906
+        },
+        "isFilled": false,
+        "pitch": "E3"
+      }
+    },
+    {
+      "partNumber": 2,
+      "measureNumber": 1,
+      "logicalBounds": {
         "left": 10.383858069099352,
         "top": -4.498446542502549,
         "right": 11.124280447077965,
@@ -47756,144 +47800,7 @@
       }
     }
   ],
-  "noteFlags": [
-    {
-      "partNumber": 1,
-      "measureNumber": 2,
-      "denominator": 8,
-      "physicalBounds": {
-        "left": 329.5840148925781,
-        "top": 345.8375549316406,
-        "right": 336.0050964355469,
-        "bottom": 365.5756530761719,
-        "width": 6.42108154296875,
-        "height": 19.73809814453125,
-        "centerX": 332.7945556640625,
-        "centerY": 355.70660400390625
-      },
-      "logicalBounds": {
-        "left": 6.766405780568771,
-        "top": 14.947486146629997,
-        "right": 7.7258447208715495,
-        "bottom": 21.18327906074272
-      },
-      "stem": {
-        "partNumber": 1,
-        "measureNumber": 2,
-        "logicalBounds": {
-          "left": 10.372270303553988,
-          "top": 7.333341367765697,
-          "right": 10.372270303553988,
-          "bottom": 12.584331410693668
-        },
-        "physicalBounds": {
-          "left": 353.7164001464844,
-          "top": 321.736572265625,
-          "right": 353.7164001464844,
-          "bottom": 338.35748291015625,
-          "width": 0,
-          "height": 16.62091064453125,
-          "centerX": 353.7164001464844,
-          "centerY": 330.0470275878906
-        },
-        "direction": 1,
-        "crossStaff": false,
-        "attachedNotes": [
-          {
-            "partNumber": 1,
-            "measureNumber": 2,
-            "logicalBounds": {
-              "left": 10.321746157576426,
-              "top": 5.963772744473717,
-              "right": 11.539282316875228,
-              "bottom": 8.038295318416607
-            },
-            "physicalBounds": {
-              "left": 353.3782653808594,
-              "top": 317.4014892578125,
-              "right": 361.52667236328125,
-              "bottom": 323.96795654296875,
-              "width": 8.148406982421875,
-              "height": 6.56646728515625,
-              "centerX": 357.4524688720703,
-              "centerY": 320.6847229003906
-            },
-            "isFilled": false,
-            "pitch": "F4"
-          }
-        ]
-      },
-      "confidence": 0.622450802179597
-    },
-    {
-      "partNumber": 1,
-      "measureNumber": 11,
-      "denominator": 8,
-      "physicalBounds": {
-        "left": 476.2458190917969,
-        "top": 725.1522827148438,
-        "right": 482.6669006347656,
-        "bottom": 744.890380859375,
-        "width": 6.42108154296875,
-        "height": 19.73809814453125,
-        "centerX": 479.45635986328125,
-        "centerY": 735.0213317871094
-      },
-      "logicalBounds": {
-        "left": 6.502092924847279,
-        "top": 14.945618796488674,
-        "right": 7.248696579899285,
-        "bottom": 21.181336559922485
-      },
-      "stem": {
-        "partNumber": 1,
-        "measureNumber": 11,
-        "logicalBounds": {
-          "left": 9.676373784198068,
-          "top": 7.333291554788544,
-          "right": 9.676373784198068,
-          "bottom": 12.582579310943247
-        },
-        "physicalBounds": {
-          "left": 503.5458679199219,
-          "top": 701.0567626953125,
-          "right": 503.5458679199219,
-          "bottom": 717.6724853515625,
-          "width": 0,
-          "height": 16.61572265625,
-          "centerX": 503.5458679199219,
-          "centerY": 709.3646240234375
-        },
-        "direction": 1,
-        "crossStaff": false,
-        "attachedNotes": [
-          {
-            "partNumber": 1,
-            "measureNumber": 11,
-            "logicalBounds": {
-              "left": 9.636617563599783,
-              "top": 5.961579807465183,
-              "right": 10.58406393929473,
-              "bottom": 8.036077380292417
-            },
-            "physicalBounds": {
-              "left": 503.2039489746094,
-              "top": 696.71484375,
-              "right": 511.35235595703125,
-              "bottom": 703.2813110351562,
-              "width": 8.148406982421875,
-              "height": 6.56646728515625,
-              "centerX": 507.2781524658203,
-              "centerY": 699.9980773925781
-            },
-            "isFilled": false,
-            "pitch": "F4"
-          }
-        ]
-      },
-      "confidence": 0.622446849200103
-    }
-  ],
+  "noteFlags": [],
   "arcs": [
     {
       "physicalBounds": {
@@ -49437,52 +49344,6 @@
       "candidateId": 64
     },
     {
-      "partNumber": 1,
-      "measureNumber": 2,
-      "denominator": 8,
-      "logicalBounds": {
-        "left": 19.113549469880496,
-        "top": -62.97419501013544,
-        "right": 19.923508985157063,
-        "bottom": -60.64978391394159
-      },
-      "physicalBounds": {
-        "left": 412.2177429199219,
-        "top": 99.1927719116211,
-        "right": 417.638427734375,
-        "bottom": 106.55020904541016,
-        "width": 5.420684814453125,
-        "height": 7.3574371337890625,
-        "centerX": 414.92808532714844,
-        "centerY": 102.87149047851562
-      },
-      "confidence": 0.3832135924128611,
-      "candidateId": 149
-    },
-    {
-      "partNumber": 1,
-      "measureNumber": 2,
-      "denominator": 8,
-      "logicalBounds": {
-        "left": 23.12031032336294,
-        "top": -70.04856091264725,
-        "right": 24.32867644136563,
-        "bottom": -66.76969299630497
-      },
-      "physicalBounds": {
-        "left": 439.03314208984375,
-        "top": 76.80034637451172,
-        "right": 447.12017822265625,
-        "bottom": 87.17891693115234,
-        "width": 8.0870361328125,
-        "height": 10.378570556640625,
-        "centerX": 443.07666015625,
-        "centerY": 81.98963165283203
-      },
-      "confidence": 0.40937892332865466,
-      "candidateId": 159
-    },
-    {
       "partNumber": 2,
       "measureNumber": 2,
       "denominator": 8,
@@ -49573,29 +49434,6 @@
       },
       "confidence": 0.7124071983863065,
       "candidateId": 371
-    },
-    {
-      "partNumber": 2,
-      "measureNumber": 10,
-      "denominator": 8,
-      "logicalBounds": {
-        "left": 15.14584708405999,
-        "top": 101.45195983436254,
-        "right": 15.769292312053407,
-        "bottom": 103.56567891593272
-      },
-      "physicalBounds": {
-        "left": 359.3284912109375,
-        "top": 1073.6192626953125,
-        "right": 363.6234436035156,
-        "bottom": 1080.309814453125,
-        "width": 4.294952392578125,
-        "height": 6.6905517578125,
-        "centerX": 361.47596740722656,
-        "centerY": 1076.9645385742188
-      },
-      "confidence": 0.3743572189940083,
-      "candidateId": 494
     },
     {
       "partNumber": 1,
