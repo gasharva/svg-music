@@ -31,23 +31,84 @@ public sealed class StepByStepBatchRunner
     private StepByStepItemResult Process(string svgPath,string artifactsFolder,MeterResolver meterResolver,ClefResolver clefResolver,AccidentalResolver accidentalResolver,NoteFlagResolver noteFlagResolver,RestResolver restResolver,DiagnosticNumberRecognizer diagnosticNumberRecognizer,DiagnosticClefRecognizer diagnosticClefRecognizer)
     {
         var fileName=Path.GetFileName(svgPath); var stem=Path.GetFileNameWithoutExtension(svgPath); var itemDirectory=Path.Combine(artifactsFolder,stem); Directory.CreateDirectory(itemDirectory);
-        try {
-            File.Copy(svgPath,Path.Combine(itemDirectory,"source.svg"),true); var sourceModel=_sourceModelDumper.Dump(svgPath,itemDirectory); var structure=_partMeasureResolver.Resolve(svgPath); var primitives=_primitiveResolver.Resolve(structure); var primitiveExport=_primitiveSvgExporter.Export(primitives,itemDirectory); var musicSymbols=_musicSymbolResolver.Resolve(primitives); _musicSymbolSvgExporter.Export(musicSymbols,itemDirectory);
-            diagnosticNumberRecognizer.BeginDocument(Path.Combine(itemDirectory,"meter-inputs")); var meters=structure.Map.Blocks.Select(block=>meterResolver.Resolve(block,musicSymbols)).Where(x=>x is not null).Select(x=>x!).ToArray(); var logicalGrid=_logicalGridResolver.Resolve(structure,meters);
-            diagnosticClefRecognizer.BeginDocument(Path.Combine(itemDirectory,"clef-inputs")); var clefs=structure.Map.Blocks.SelectMany(block=>clefResolver.Resolve(block,musicSymbols,logicalGrid)).ToArray(); var ledgerLines=_ledgerLineResolver.Resolve(primitives,logicalGrid); var noteHeads=_noteHeadResolver.Resolve(primitives,logicalGrid,clefs,ledgerLines); var noteHeadDiagnostics=_noteHeadResolver.LastDiagnostics; _noteHeadDiagnosticExporter.Export(noteHeadDiagnostics,Path.Combine(itemDirectory,"notehead-inputs"));
-            var stems=_stemDetector.Resolve(primitives,logicalGrid,noteHeads);
-            var beams=_beamResolver.Resolve(primitives,logicalGrid,stems);
-            var noteFlags=noteFlagResolver.Resolve(musicSymbols,logicalGrid,stems,beams);
+        try
+        {
+            File.Copy(svgPath,Path.Combine(itemDirectory,"source.svg"),true);
+            var sourceModel=_sourceModelDumper.Dump(svgPath,itemDirectory);
+            var structure=_partMeasureResolver.Resolve(svgPath);
+            var primitives=_primitiveResolver.Resolve(structure);
+            var primitiveExport=_primitiveSvgExporter.Export(primitives,itemDirectory);
+            var musicSymbols=_musicSymbolResolver.Resolve(primitives);
+            _musicSymbolSvgExporter.Export(musicSymbols,itemDirectory);
+
+            diagnosticNumberRecognizer.BeginDocument(Path.Combine(itemDirectory,"meter-inputs"));
+            var meters=structure.Map.Blocks
+                .Select(block=>meterResolver.Resolve(block,musicSymbols))
+                .Where(x=>x is not null)
+                .Select(x=>x!)
+                .ToArray();
+            var logicalGrid=_logicalGridResolver.Resolve(structure,meters);
+
+            var claimed=new List<RectD>();
+            claimed.AddRange(meters.Select(x=>x.PhysicalBounds));
+
+            diagnosticClefRecognizer.BeginDocument(Path.Combine(itemDirectory,"clef-inputs"));
+            var clefSymbols=RecognitionCandidateFilter.ExcludeClaimed(musicSymbols,claimed);
+            var clefs=structure.Map.Blocks
+                .SelectMany(block=>clefResolver.Resolve(block,clefSymbols,logicalGrid))
+                .ToArray();
+            claimed.AddRange(clefs.Select(x=>x.PhysicalBounds));
+
+            var ledgerPrimitives=RecognitionCandidateFilter.ExcludeClaimed(primitives,claimed);
+            var ledgerLines=_ledgerLineResolver.Resolve(ledgerPrimitives,logicalGrid);
+
+            var noteHeadPrimitives=RecognitionCandidateFilter.ExcludeClaimed(primitives,claimed);
+            var noteHeads=_noteHeadResolver.Resolve(noteHeadPrimitives,logicalGrid,clefs,ledgerLines);
+            var noteHeadDiagnostics=_noteHeadResolver.LastDiagnostics;
+            _noteHeadDiagnosticExporter.Export(noteHeadDiagnostics,Path.Combine(itemDirectory,"notehead-inputs"));
+            claimed.AddRange(noteHeads.Select(x=>x.PhysicalBounds));
+
+            var stemPrimitives=RecognitionCandidateFilter.ExcludeClaimed(primitives,claimed);
+            var stems=_stemDetector.Resolve(stemPrimitives,logicalGrid,noteHeads);
+            claimed.AddRange(stems.Select(x=>x.PhysicalBounds));
+
+            var beamPrimitives=RecognitionCandidateFilter.ExcludeClaimed(primitives,claimed);
+            var beams=_beamResolver.Resolve(beamPrimitives,logicalGrid,stems);
+            claimed.AddRange(beams.Select(x=>x.PhysicalBounds));
+
+            var flagSymbols=RecognitionCandidateFilter.ExcludeClaimed(musicSymbols,claimed);
+            var noteFlags=noteFlagResolver.Resolve(flagSymbols,logicalGrid,stems,beams);
             _noteFlagDiagnosticExporter.Export(noteFlagResolver.LastDiagnostics,Path.Combine(itemDirectory,"flag-inputs"));
-            var arcs=_arcResolver.Resolve(primitives,logicalGrid,noteHeads,stems);
-            _arcDiagnosticExporter.Export(primitives,_arcResolver.LastDiagnostics,Path.Combine(itemDirectory,"arc-inputs"));
-            var accidentals=accidentalResolver.Resolve(musicSymbols,logicalGrid,noteHeads,clefs,meters);
-            var rests=restResolver.Resolve(musicSymbols,logicalGrid,ledgerLines,meters,clefs,noteHeads,accidentals,stems,beams,noteFlags,arcs);
+            claimed.AddRange(noteFlags.Select(x=>x.PhysicalBounds));
+
+            var arcPrimitives=RecognitionCandidateFilter.ExcludeClaimed(primitives,claimed);
+            var arcs=_arcResolver.Resolve(arcPrimitives,logicalGrid,noteHeads,stems);
+            _arcDiagnosticExporter.Export(arcPrimitives,_arcResolver.LastDiagnostics,Path.Combine(itemDirectory,"arc-inputs"));
+            claimed.AddRange(arcs.Select(x=>x.PhysicalBounds));
+
+            var accidentalSymbols=RecognitionCandidateFilter.ExcludeClaimed(musicSymbols,claimed);
+            var accidentals=accidentalResolver.Resolve(accidentalSymbols,logicalGrid,noteHeads,clefs,meters);
+            claimed.AddRange(accidentals.Select(x=>x.PhysicalBounds));
+
+            var restSymbols=RecognitionCandidateFilter.ExcludeClaimed(musicSymbols,claimed);
+            var rests=restResolver.Resolve(restSymbols,logicalGrid,claimed);
             _restDiagnosticExporter.Export(restResolver.LastDiagnostics,Path.Combine(itemDirectory,"rest-inputs"));
-            _partMeasureOverlayRenderer.Render(structure,Path.Combine(itemDirectory,"measures.png")); _primitiveOverlayRenderer.Render(primitives,Path.Combine(itemDirectory,"classified.png")); var metersPath=Path.Combine(itemDirectory,"meters.png"); _meterOverlayRenderer.Render(structure,meters,clefs,ledgerLines,noteHeads,accidentals,stems,beams,arcs,logicalGrid,metersPath); _noteFlagOverlayRenderer.Render(structure,noteFlags,metersPath); _restOverlayRenderer.Render(structure,rests,metersPath);
+
+            _partMeasureOverlayRenderer.Render(structure,Path.Combine(itemDirectory,"measures.png"));
+            _primitiveOverlayRenderer.Render(primitives,Path.Combine(itemDirectory,"classified.png"));
+            var metersPath=Path.Combine(itemDirectory,"meters.png");
+            _meterOverlayRenderer.Render(structure,meters,clefs,ledgerLines,noteHeads,accidentals,stems,beams,arcs,logicalGrid,metersPath);
+            _noteFlagOverlayRenderer.Render(structure,noteFlags,metersPath);
+            _restOverlayRenderer.Render(structure,rests,metersPath);
+
             WriteResolutionJson(Path.Combine(itemDirectory,"structure.json"),fileName,structure,primitives,musicSymbols,meters,logicalGrid,clefs,ledgerLines,noteHeads,accidentals,stems,beams,noteFlags,arcs,rests);
             return new(fileName,stem,structure.LineCount,structure.SystemCount,structure.Parts.Count,structure.Measures.Count,primitives.PartMeasurePrimitives.Count,primitives.MeasurePrimitives.Count,primitives.PhysicalOnlyPrimitives.Count,musicSymbols.Candidates.Count,meters.Length,clefs.Length,ledgerLines.Count,noteHeads.Count,noteHeadDiagnostics.Count,accidentals.Count,rests.Count,primitiveExport.Items.Count,sourceModel.ElementCount,sourceModel.UseCount);
-        } catch(Exception ex) { File.WriteAllText(Path.Combine(itemDirectory,"error.txt"),ex.ToString()); return new(fileName,stem,0,0,0,0,Error:ex.Message); }
+        }
+        catch(Exception ex)
+        {
+            File.WriteAllText(Path.Combine(itemDirectory,"error.txt"),ex.ToString());
+            return new(fileName,stem,0,0,0,0,Error:ex.Message);
+        }
     }
 
     private static void WriteResolutionJson(string path,string fileName,PartMeasureResolution structure,PrimitiveResolution primitives,MusicSymbolResolution musicSymbols,IReadOnlyList<MeterResolution> meters,LogicalGridResolution logicalGrid,IReadOnlyList<ClefResolution> clefs,IReadOnlyList<LedgerLineResolution> ledgerLines,IReadOnlyList<NoteHeadResolution> noteHeads,IReadOnlyList<AccidentalResolution> accidentals,IReadOnlyList<StemResolution> stems,IReadOnlyList<BeamResolution> beams,IReadOnlyList<NoteFlagResolution> noteFlags,IReadOnlyList<ArcResolution> arcs,IReadOnlyList<RestResolution> rests)
