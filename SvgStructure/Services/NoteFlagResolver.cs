@@ -63,9 +63,6 @@ public sealed class NoteFlagResolver
             var maxDistance = staffSpace * _maxEndpointDistanceInStaffSpaces;
             var endpoint = FreeEndpoint(stem);
 
-            // Do not trust the candidate's pre-existing PartNumber here. A flag may sit between the
-            // two staves and be assigned to the neighbouring part by the earlier geometric pass.
-            // Proximity to a known free stem endpoint is the stronger semantic relation.
             var nearbySymbols = symbols.Candidates
                 .Where(x => x.MeasureNumber == stem.MeasureNumber)
                 .Where(x => x.SmoothPaths.Count > 0)
@@ -112,9 +109,19 @@ public sealed class NoteFlagResolver
                 }
 
                 var wholeRecognition = _recognizer.Recognize(contours);
-                var accepted = TryAccepted(wholeRecognition, stem.Direction)
-                    ? new RecognitionHit(wholeRecognition, Bounds(contours), "whole candidate")
-                    : TryRecognizeSingleContour(contours, stem.Direction);
+
+                // A multi-contour MusicSymbolCandidate may be a large conglomerate containing a real
+                // flag plus unrelated notation. Never accept the parent bbox as a flag: recognize its
+                // individual contours and keep the bbox of the actual recognized contour instead.
+                RecognitionHit? accepted;
+                if (contours.Count == 1 && TryAccepted(wholeRecognition, stem.Direction))
+                {
+                    accepted = new RecognitionHit(wholeRecognition, Bounds(contours), "single-contour candidate");
+                }
+                else
+                {
+                    accepted = TryRecognizeSingleContour(contours, stem.Direction);
+                }
 
                 if (accepted is null)
                 {
@@ -138,6 +145,23 @@ public sealed class NoteFlagResolver
 
                 var recognition = accepted.Recognition;
                 var physicalBounds = accepted.PhysicalBounds;
+
+                // Recognition must stay local to the free stem end. This is not a shape heuristic;
+                // it merely prevents a page-sized/measure-sized parent contour from becoming a flag.
+                if (Distance(endpoint, physicalBounds) > maxDistance)
+                {
+                    _diagnostics.Add(new NoteFlagDiagnosticEntry(
+                        stem.PartNumber,
+                        stem.MeasureNumber,
+                        stem,
+                        item.Symbol,
+                        distanceInStaffSpaces,
+                        true,
+                        recognition,
+                        "rejected: recognized contour is not near free stem endpoint"));
+                    continue;
+                }
+
                 var logicalBounds = block.ToLogical(physicalBounds);
                 var flag = new NoteFlagResolution(
                     stem.PartNumber,
@@ -213,7 +237,6 @@ public sealed class NoteFlagResolver
         double staffSpace,
         out string reason)
     {
-        // Only reject obvious stems / hairlines here. Shape discrimination belongs to the PCA model.
         var minWidth = Math.Max(stem.PhysicalBounds.Width * 2.0, staffSpace * 0.12);
         if (candidate.Width < minWidth)
         {
