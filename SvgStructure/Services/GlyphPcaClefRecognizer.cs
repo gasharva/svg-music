@@ -1,6 +1,5 @@
 using System.Numerics;
 using System.Text;
-using System.Text.Json;
 using System.Xml.Linq;
 using GlyphPcaGallery.Models;
 using GlyphPcaGallery.Services;
@@ -10,28 +9,25 @@ namespace SvgStructure.Services;
 
 /// <summary>
 /// IClefRecognizer adapter over the reusable GlyphPcaGallery runtime.
-/// The trained model stays glyph-generic; this adapter translates the model's clef
-/// class vocabulary into the pipeline's ClefSymbol vocabulary.
+/// The recognizer deliberately owns the model-family choice so callers do not need to know
+/// which bundle member implements clef recognition.
 /// </summary>
 public sealed class GlyphPcaClefRecognizer : IClefRecognizer
 {
+    public const string ModelFamily = "clefs";
+
     private readonly GlyphFingerprintAnalyzer _analyzer;
     private readonly string _workDirectory;
 
-    public GlyphPcaClefRecognizer(string modelPath, string workDirectory)
+    public GlyphPcaClefRecognizer(GlyphModelBundle bundle, string workDirectory)
+        : this(bundle.GetRequired(ModelFamily), workDirectory)
     {
-        if (!File.Exists(modelPath))
-            throw new FileNotFoundException("Glyph PCA model not found.", modelPath);
+    }
 
+    public GlyphPcaClefRecognizer(GlyphModel model, string workDirectory)
+    {
         _workDirectory = workDirectory;
         Directory.CreateDirectory(_workDirectory);
-
-        var json = File.ReadAllText(modelPath);
-        var model = JsonSerializer.Deserialize<GlyphModel>(
-            json,
-            new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
-            ?? throw new InvalidDataException("Could not deserialize glyph PCA model.");
-
         _analyzer = new GlyphFingerprintAnalyzer(model);
     }
 
@@ -51,8 +47,6 @@ public sealed class GlyphPcaClefRecognizer : IClefRecognizer
             if (analysis.Error is not null)
                 return new ClefSymbolRecognition(null, 0, Array.Empty<ClefSymbolCandidate>(), analysis.Error);
 
-            // Acceptance is global. If the best PCA class is another glyph, do not reinterpret a
-            // lower-ranked clef match as a clef.
             var globalBest = analysis.Matches.FirstOrDefault();
             var globalBestClef = globalBest is null ? null : ParseClefClass(globalBest.Class);
             if (!analysis.Accepted || globalBestClef is null)
@@ -90,17 +84,18 @@ public sealed class GlyphPcaClefRecognizer : IClefRecognizer
         return new ClefSymbolCandidate(symbol.Value, match.Distance, confidence);
     }
 
-    private static ClefSymbol? ParseClefClass(string className) => className.ToLowerInvariant() switch
+    private static ClefSymbol? ParseClefClass(string className)
     {
-        // Current model vocabulary.
-        "gclef" => ClefSymbol.G,
-        "fclef" => ClefSymbol.F,
+        if (className.Equals("gclef", StringComparison.OrdinalIgnoreCase) ||
+            className.Equals("treble", StringComparison.OrdinalIgnoreCase))
+            return ClefSymbol.G;
 
-        // Backward compatibility with the first hand-trained model.
-        "treble" => ClefSymbol.G,
-        "bass" => ClefSymbol.F,
-        _ => null
-    };
+        if (className.Equals("fclef", StringComparison.OrdinalIgnoreCase) ||
+            className.Equals("bass", StringComparison.OrdinalIgnoreCase))
+            return ClefSymbol.F;
+
+        return null;
+    }
 
     private static void WriteContoursSvg(
         IReadOnlyList<IReadOnlyList<Vector2>> contours,
