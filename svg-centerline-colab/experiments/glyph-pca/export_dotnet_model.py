@@ -20,6 +20,7 @@ def export_dotnet_model(
     sdf_boundary_samples=1024,
     class_threshold_multiplier=1.25,
     ratio_threshold=0.50,
+    wrong_distance_threshold_fraction=0.20,
 ):
     X = np.asarray(X, dtype=np.float64)
     labels = np.asarray(labels)
@@ -39,21 +40,24 @@ def export_dotnet_model(
     nearest_wrong = []
     margins = []
     class_same_distances = {}
+    class_wrong_distances = {}
 
     for i in range(len(labels)):
+        cls = str(labels[i])
         same = np.where((labels == labels[i]) & (np.arange(len(labels)) != i))[0]
         wrong = np.where(labels != labels[i])[0]
 
         if len(same):
             ds = float(np.min(distances[i, same]))
             nearest_same.append(ds)
-            class_same_distances.setdefault(str(labels[i]), []).append(ds)
+            class_same_distances.setdefault(cls, []).append(ds)
         else:
             ds = None
 
         if len(wrong):
             dw = float(np.min(distances[i, wrong]))
             nearest_wrong.append(dw)
+            class_wrong_distances.setdefault(cls, []).append(dw)
         else:
             dw = None
 
@@ -67,24 +71,45 @@ def export_dotnet_model(
 
     class_calibration = {}
     for cls in sorted(set(str(x) for x in labels)):
-        values = class_same_distances.get(cls, [])
-        if values:
-            median = float(np.median(values))
-            maximum = float(np.max(values))
-            p95 = float(np.percentile(values, 95))
-            threshold = maximum * float(class_threshold_multiplier)
+        same_values = class_same_distances.get(cls, [])
+        wrong_values = class_wrong_distances.get(cls, [])
+
+        if same_values:
+            median = float(np.median(same_values))
+            maximum = float(np.max(same_values))
+            p95 = float(np.percentile(same_values, 95))
+            same_limit = maximum * float(class_threshold_multiplier)
         else:
             # A class with a single prototype cannot estimate its own spread.
             # Fall back to the global same-class p95 so inference still works.
             median = same_p95
             maximum = same_p95
             p95 = same_p95
-            threshold = same_p95 * float(class_threshold_multiplier)
+            same_limit = same_p95 * float(class_threshold_multiplier)
+
+        # A class can be extremely compact in the training corpus (for example several nearly
+        # identical copies of one font's G clef). Using only the observed same-class spread then
+        # creates an unrealistically tiny open-set radius and rejects legitimate glyphs from a
+        # different font even when they are vastly closer to this class than to every other class.
+        #
+        # Keep the within-class limit, but give it a conservative floor based on how far the
+        # nearest wrong class actually is. The ratio test remains an independent guard against
+        # ambiguous samples.
+        if wrong_values:
+            class_wrong_p05 = float(np.percentile(wrong_values, 5))
+        else:
+            class_wrong_p05 = wrong_p05
+
+        separation_floor = class_wrong_p05 * float(wrong_distance_threshold_fraction)
+        threshold = max(same_limit, separation_floor)
 
         class_calibration[cls] = {
             "nearestSameMedian": median,
             "nearestSameP95": p95,
             "nearestSameMax": maximum,
+            "nearestWrongP05": class_wrong_p05,
+            "sameClassDistanceLimit": same_limit,
+            "separationFloor": separation_floor,
             "distanceThreshold": threshold,
         }
 
@@ -114,6 +139,7 @@ def export_dotnet_model(
             "nearestWrongP01": wrong_p01,
             "marginP05": float(np.percentile(margins, 5)) if margins else 0.0,
             "classThresholdMultiplier": float(class_threshold_multiplier),
+            "wrongDistanceThresholdFraction": float(wrong_distance_threshold_fraction),
             "ratioThreshold": float(ratio_threshold),
             "classes": class_calibration,
         },
