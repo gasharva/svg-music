@@ -51651,98 +51651,7 @@
       }
     }
   ],
-  "noteFlags": [
-    {
-      "partNumber": 2,
-      "measureNumber": 6,
-      "denominator": 8,
-      "physicalBounds": {
-        "left": 290.97601318359375,
-        "top": 385.5653076171875,
-        "right": 298.07232666015625,
-        "bottom": 407.8013610839844,
-        "width": 7.0963134765625,
-        "height": 22.236053466796875,
-        "centerX": 294.524169921875,
-        "centerY": 396.68333435058594
-      },
-      "logicalBounds": {
-        "left": 8.754474276805299,
-        "top": -7.500010321152996,
-        "right": 9.805095345613543,
-        "bottom": -1.483760697875081
-      },
-      "stem": {
-        "partNumber": 2,
-        "measureNumber": 6,
-        "logicalBounds": {
-          "left": 8.825929268820172,
-          "top": -7.5562812472906975,
-          "right": 8.825929268820172,
-          "bottom": -0.46968677364885786
-        },
-        "physicalBounds": {
-          "left": 291.4586486816406,
-          "top": 385.3573303222656,
-          "right": 291.4586486816406,
-          "bottom": 411.54937744140625,
-          "width": 0,
-          "height": 26.192047119140625,
-          "centerX": 291.4586486816406,
-          "centerY": 398.45335388183594
-        },
-        "direction": 0,
-        "crossStaff": false,
-        "attachedNotes": [
-          {
-            "partNumber": 2,
-            "measureNumber": 6,
-            "logicalBounds": {
-              "left": 7.457142592506692,
-              "top": -1.1037523583834596,
-              "right": 8.897646315184513,
-              "bottom": 1.1037523583834596
-            },
-            "physicalBounds": {
-              "left": 282.21331787109375,
-              "top": 409.20587158203125,
-              "right": 291.94305419921875,
-              "bottom": 417.36480712890625,
-              "width": 9.729736328125,
-              "height": 8.158935546875,
-              "centerX": 287.07818603515625,
-              "centerY": 413.28533935546875
-            },
-            "isFilled": true,
-            "pitch": "A3"
-          },
-          {
-            "partNumber": 2,
-            "measureNumber": 6,
-            "logicalBounds": {
-              "left": 8.75446975862686,
-              "top": -2.103748229922261,
-              "right": 10.194973481304682,
-              "bottom": 0.1037564868446584
-            },
-            "physicalBounds": {
-              "left": 290.9759826660156,
-              "top": 405.5098876953125,
-              "right": 300.7057189941406,
-              "bottom": 413.6688232421875,
-              "width": 9.729736328125,
-              "height": 8.158935546875,
-              "centerX": 295.8408508300781,
-              "centerY": 409.58935546875
-            },
-            "isFilled": true,
-            "pitch": "B3"
-          }
-        ]
-      },
-      "confidence": 0.688700718385711
-    }
-  ],
+  "noteFlags": [],
   "arcs": [
     {
       "physicalBounds": {
@@ -51889,6 +51798,29 @@
   ],
   "rests": [
     {
+      "partNumber": 2,
+      "measureNumber": 6,
+      "denominator": 8,
+      "logicalBounds": {
+        "left": 1.5169081532638424,
+        "top": -3.6399981834770725,
+        "right": 2.624302393248999,
+        "bottom": 0.08000132110758357
+      },
+      "physicalBounds": {
+        "left": 242.09060668945312,
+        "top": 399.8319091796875,
+        "right": 249.5703887939453,
+        "bottom": 413.5810241699219,
+        "width": 7.4797821044921875,
+        "height": 13.749114990234375,
+        "centerX": 245.83049774169922,
+        "centerY": 406.7064666748047
+      },
+      "confidence": 0.5063925744439629,
+      "candidateId": 251
+    },
+    {
       "partNumber": 1,
       "measureNumber": 7,
       "denominator": 4,
@@ -51979,6 +51911,29 @@
       },
       "confidence": 0.5063904261364215,
       "candidateId": 564
+    },
+    {
+      "partNumber": 2,
+      "measureNumber": 20,
+      "denominator": 4,
+      "logicalBounds": {
+        "left": 2.110854405908383,
+        "top": -8.168788356063999,
+        "right": 3.164151811111603,
+        "bottom": -2.4353182327672513
+      },
+      "physicalBounds": {
+        "left": 614.2035522460938,
+        "top": 906.70166015625,
+        "right": 622.0667724609375,
+        "bottom": 927.8925170898438,
+        "width": 7.86322021484375,
+        "height": 21.19085693359375,
+        "centerX": 618.1351623535156,
+        "centerY": 917.2970886230469
+      },
+      "confidence": 0.6293344188105123,
+      "candidateId": 720
     }
   ]
 }

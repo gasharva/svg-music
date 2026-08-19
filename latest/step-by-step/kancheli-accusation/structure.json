@@ -85895,7 +85895,7 @@
           }
         ]
       },
-      "confidence": 0.9611892704689587
+      "confidence": 0.9644182689739415
     },
     {
       "partNumber": 1,
@@ -85963,7 +85963,7 @@
           }
         ]
       },
-      "confidence": 0.9612356215093849
+      "confidence": 0.9644371561524758
     },
     {
       "partNumber": 1,
@@ -86031,7 +86031,7 @@
           }
         ]
       },
-      "confidence": 0.9612356215093849
+      "confidence": 0.9644371561524758
     }
   ],
   "arcs": [
@@ -87458,6 +87458,144 @@
       "candidateId": 15
     },
     {
+      "partNumber": 1,
+      "measureNumber": 2,
+      "denominator": 4,
+      "logicalBounds": {
+        "left": 3.7363689674788,
+        "top": -5.016915653125467,
+        "right": 4.417297931267749,
+        "bottom": 0.8627850810591927
+      },
+      "physicalBounds": {
+        "left": 334.25390625,
+        "top": 176.25375366210938,
+        "right": 340.56146240234375,
+        "bottom": 194.86476135253906,
+        "width": 6.30755615234375,
+        "height": 18.611007690429688,
+        "centerX": 337.4076843261719,
+        "centerY": 185.55925750732422
+      },
+      "confidence": 0.9054407069289546,
+      "candidateId": 86
+    },
+    {
+      "partNumber": 1,
+      "measureNumber": 2,
+      "denominator": 16,
+      "logicalBounds": {
+        "left": 7.816407974469748,
+        "top": -5.693252539276228,
+        "right": 8.716365804749804,
+        "bottom": 0.07477788865267715
+      },
+      "physicalBounds": {
+        "left": 372.0479736328125,
+        "top": 174.11294555664062,
+        "right": 380.3844299316406,
+        "bottom": 192.3704833984375,
+        "width": 8.336456298828125,
+        "height": 18.257537841796875,
+        "centerX": 376.21620178222656,
+        "centerY": 183.24171447753906
+      },
+      "confidence": 0.7124153965471467,
+      "candidateId": 91
+    },
+    {
+      "partNumber": 1,
+      "measureNumber": 2,
+      "denominator": 8,
+      "logicalBounds": {
+        "left": 10.183084671087165,
+        "top": -35.42295881720585,
+        "right": 10.768271898054701,
+        "bottom": -33.098553323595624
+      },
+      "physicalBounds": {
+        "left": 393.97088623046875,
+        "top": 80.00955200195312,
+        "right": 399.3915710449219,
+        "bottom": 87.36698913574219,
+        "width": 5.420684814453125,
+        "height": 7.3574371337890625,
+        "centerX": 396.6812286376953,
+        "centerY": 83.68827056884766
+      },
+      "confidence": 0.38319058806836453,
+      "candidateId": 198
+    },
+    {
+      "partNumber": 1,
+      "measureNumber": 2,
+      "denominator": 8,
+      "logicalBounds": {
+        "left": 10.830333865579625,
+        "top": -35.42295881720585,
+        "right": 11.415521092547161,
+        "bottom": -33.098553323595624
+      },
+      "physicalBounds": {
+        "left": 399.9664611816406,
+        "top": 80.00955200195312,
+        "right": 405.38714599609375,
+        "bottom": 87.36698913574219,
+        "width": 5.420684814453125,
+        "height": 7.3574371337890625,
+        "centerX": 402.6768035888672,
+        "centerY": 83.68827056884766
+      },
+      "confidence": 0.38318897574782906,
+      "candidateId": 200
+    },
+    {
+      "partNumber": 1,
+      "measureNumber": 2,
+      "denominator": 8,
+      "logicalBounds": {
+        "left": 15.032638704335355,
+        "top": -29.36248138024788,
+        "right": 15.617825931302892,
+        "bottom": -27.038075886637646
+      },
+      "physicalBounds": {
+        "left": 438.8930969238281,
+        "top": 99.1927719116211,
+        "right": 444.31378173828125,
+        "bottom": 106.55020904541016,
+        "width": 5.420684814453125,
+        "height": 7.3574371337890625,
+        "centerX": 441.6034393310547,
+        "centerY": 102.87149047851562
+      },
+      "confidence": 0.3832025921664502,
+      "candidateId": 219
+    },
+    {
+      "partNumber": 1,
+      "measureNumber": 4,
+      "denominator": 8,
+      "logicalBounds": {
+        "left": 6.760393860829761,
+        "top": -3.707205633219027,
+        "right": 7.867087825739728,
+        "bottom": -0.014025211643335493
+      },
+      "physicalBounds": {
+        "left": 105.95803833007812,
+        "top": 367.1522216796875,
+        "right": 112.6477279663086,
+        "bottom": 378.8446350097656,
+        "width": 6.689689636230469,
+        "height": 11.692413330078125,
+        "centerX": 109.30288314819336,
+        "centerY": 372.99842834472656
+      },
+      "confidence": 0.7237051628447373,
+      "candidateId": 324
+    },
+    {
       "partNumber": 2,
       "measureNumber": 5,
       "denominator": 8,
@@ -87482,6 +87620,75 @@
     },
     {
       "partNumber": 1,
+      "measureNumber": 6,
+      "denominator": 16,
+      "logicalBounds": {
+        "left": 1.8876149721850295,
+        "top": -5.693243077160353,
+        "right": 2.7706207479151734,
+        "bottom": 0.0736058529955394
+      },
+      "physicalBounds": {
+        "left": 426.1429748535156,
+        "top": 360.8645324707031,
+        "right": 434.47943115234375,
+        "bottom": 379.1220703125,
+        "width": 8.336456298828125,
+        "height": 18.257537841796875,
+        "centerX": 430.3112030029297,
+        "centerY": 369.99330139160156
+      },
+      "confidence": 0.7124310235879534,
+      "candidateId": 399
+    },
+    {
+      "partNumber": 2,
+      "measureNumber": 6,
+      "denominator": 16,
+      "logicalBounds": {
+        "left": 16.9750313595579,
+        "top": -5.695924643996876,
+        "right": 17.858033902835693,
+        "bottom": 0.07207797842288446
+      },
+      "physicalBounds": {
+        "left": 568.583251953125,
+        "top": 435.5139465332031,
+        "right": 576.919677734375,
+        "bottom": 453.771484375,
+        "width": 8.33642578125,
+        "height": 18.257537841796875,
+        "centerX": 572.75146484375,
+        "centerY": 444.64271545410156
+      },
+      "confidence": 0.7124137131642612,
+      "candidateId": 446
+    },
+    {
+      "partNumber": 1,
+      "measureNumber": 7,
+      "denominator": 16,
+      "logicalBounds": {
+        "left": 19.246488093249067,
+        "top": 8.303853607273359,
+        "right": 20.444440038762185,
+        "bottom": 14.07186587094224
+      },
+      "physicalBounds": {
+        "left": 199.02822875976562,
+        "top": 585.1395263671875,
+        "right": 207.3647003173828,
+        "bottom": 603.3970947265625,
+        "width": 8.336471557617188,
+        "height": 18.257568359375,
+        "centerX": 203.19646453857422,
+        "centerY": 594.268310546875
+      },
+      "confidence": 0.7124262787300012,
+      "candidateId": 494
+    },
+    {
+      "partNumber": 1,
       "measureNumber": 8,
       "denominator": 8,
       "logicalBounds": {
@@ -87502,6 +87709,75 @@
       },
       "confidence": 0.7237070597566367,
       "candidateId": 529
+    },
+    {
+      "partNumber": 1,
+      "measureNumber": 8,
+      "denominator": 4,
+      "logicalBounds": {
+        "left": 3.698818722418645,
+        "top": -9.020371959391058,
+        "right": 4.73650963262588,
+        "bottom": -3.140694748411604
+      },
+      "physicalBounds": {
+        "left": 310.26220703125,
+        "top": 530.3029174804688,
+        "right": 316.56976318359375,
+        "bottom": 548.9139404296875,
+        "width": 6.30755615234375,
+        "height": 18.61102294921875,
+        "centerX": 313.4159851074219,
+        "centerY": 539.6084289550781
+      },
+      "confidence": 0.9054367052386285,
+      "candidateId": 530
+    },
+    {
+      "partNumber": 2,
+      "measureNumber": 8,
+      "denominator": 4,
+      "logicalBounds": {
+        "left": 1.083765934308801,
+        "top": -9.182926270779955,
+        "right": 1.6356470386057052,
+        "bottom": -4.35041204387743
+      },
+      "physicalBounds": {
+        "left": 294.3667297363281,
+        "top": 604.4374389648438,
+        "right": 297.7213134765625,
+        "bottom": 619.7338256835938,
+        "width": 3.354583740234375,
+        "height": 15.29638671875,
+        "centerX": 296.0440216064453,
+        "centerY": 612.0856323242188
+      },
+      "confidence": 0.4822313543879035,
+      "candidateId": 579
+    },
+    {
+      "partNumber": 2,
+      "measureNumber": 9,
+      "denominator": 8,
+      "logicalBounds": {
+        "left": 2.165282541597042,
+        "top": -4.708990245442691,
+        "right": 3.1960564283070823,
+        "bottom": -1.0150717190147585
+      },
+      "physicalBounds": {
+        "left": 496.3421936035156,
+        "top": 618.5988159179688,
+        "right": 503.0318603515625,
+        "bottom": 630.2911987304688,
+        "width": 6.689666748046875,
+        "height": 11.6923828125,
+        "centerX": 499.68702697753906,
+        "centerY": 624.4450073242188
+      },
+      "confidence": 0.7236898773689642,
+      "candidateId": 591
     }
   ]
 }
