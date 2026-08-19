@@ -1,6 +1,5 @@
 using System.Numerics;
 using System.Text;
-using System.Text.Json;
 using System.Xml.Linq;
 using GlyphPcaGallery.Models;
 using GlyphPcaGallery.Services;
@@ -16,27 +15,25 @@ public sealed record AccidentalRecognition(
     string? Error = null);
 
 /// <summary>
-/// Thin adapter over the glyph-generic PCA model. The current trained model contains flat, sharp,
-/// natural, double-flat and double-sharp classes; this adapter translates that model vocabulary
-/// into the SvgStructure accidental domain enum.
+/// Thin adapter over the glyph-generic PCA runtime. The recognizer owns the bundle family name
+/// and translates the model vocabulary into the SvgStructure accidental domain enum.
 /// </summary>
 public sealed class GlyphPcaAccidentalRecognizer
 {
+    public const string ModelFamily = "accidentals";
+
     private readonly GlyphFingerprintAnalyzer _analyzer;
     private readonly string _workDirectory;
 
-    public GlyphPcaAccidentalRecognizer(string modelPath, string workDirectory)
+    public GlyphPcaAccidentalRecognizer(GlyphModelBundle bundle, string workDirectory)
+        : this(bundle.GetRequired(ModelFamily), workDirectory)
     {
-        if (!File.Exists(modelPath))
-            throw new FileNotFoundException("Glyph PCA model not found.", modelPath);
+    }
 
+    public GlyphPcaAccidentalRecognizer(GlyphModel model, string workDirectory)
+    {
         _workDirectory = workDirectory;
         Directory.CreateDirectory(_workDirectory);
-
-        var model = JsonSerializer.Deserialize<GlyphModel>(
-            File.ReadAllText(modelPath),
-            new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
-            ?? throw new InvalidDataException("Could not deserialize glyph PCA model.");
         _analyzer = new GlyphFingerprintAnalyzer(model);
     }
 
@@ -55,7 +52,6 @@ public sealed class GlyphPcaAccidentalRecognizer
             if (analysis.Error is not null)
                 return new AccidentalRecognition(null, 0, Array.Empty<AccidentalCandidate>(), analysis.Error);
 
-            // Never resurrect a lower-ranked accidental if the global PCA verdict was another class.
             var globalBest = analysis.Matches.FirstOrDefault();
             var globalKind = globalBest is null ? null : ParseClass(globalBest.Class);
             if (!analysis.Accepted || globalKind is null)
@@ -95,14 +91,11 @@ public sealed class GlyphPcaAccidentalRecognizer
 
     private static AccidentalKind? ParseClass(string name) => name.ToLowerInvariant() switch
     {
-        // Current model vocabulary.
         "accidentalflat" => AccidentalKind.Flat,
         "accidentalsharp" => AccidentalKind.Sharp,
         "accidentalnatural" => AccidentalKind.Natural,
         "accidentaldoublesharp" => AccidentalKind.DoubleSharp,
         "accidentaldoubleflat" => AccidentalKind.DoubleFlat,
-
-        // Backward compatibility with the first hand-trained model.
         "flat" => AccidentalKind.Flat,
         "sharp" => AccidentalKind.Sharp,
         "natural" => AccidentalKind.Natural,
