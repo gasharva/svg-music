@@ -61,6 +61,11 @@ public sealed class StepByStepBatchRunner
 
             var ledgerPrimitives=RecognitionCandidateFilter.ExcludeClaimed(primitives,claimed);
             var ledgerLines=_ledgerLineResolver.Resolve(ledgerPrimitives,logicalGrid);
+            foreach(var ledger in ledgerLines)
+            {
+                if(logicalGrid.TryGetBlock(ledger.PartNumber,ledger.MeasureNumber,out var ledgerBlock))
+                    claimed.Add(ledgerBlock.ToPhysical(ledger.LogicalBounds));
+            }
 
             var noteHeadPrimitives=RecognitionCandidateFilter.ExcludeClaimed(primitives,claimed);
             var noteHeads=_noteHeadResolver.Resolve(noteHeadPrimitives,logicalGrid,clefs,ledgerLines);
