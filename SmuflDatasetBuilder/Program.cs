@@ -8,17 +8,17 @@ const string ClassesUrl = "https://raw.githubusercontent.com/w3c/smufl/gh-pages/
 var selectedGlyphNames = new HashSet<string>(StringComparer.Ordinal)
 {
     "fClef", "gClef", "coda",
-    "timeSig1", "timeSig2", "timeSig4", "timeSig6", "timeSig8", "timeSig9",
-    "tuplet1", "tuplet3", "tuplet4", "tuplet5",
+    "timeSig1", "timeSig2", "timeSig3", "timeSig4", "timeSig5", "timeSig6", "timeSig7", "timeSig8", "timeSig9", "timeSig0",
+    "tuplet1", "tuplet2", "tuplet3", "tuplet4", "tuplet5", "tuplet6", "tuplet7", "tuplet8", "tuplet9", "tuplet0",
     "accidentalDoubleFlat", "accidentalDoubleSharp", "accidentalFlat", "accidentalNatural", "accidentalSharp",
-    "flag8thUp", "flag8thDown", "flag16thUp", "flag16thDown",
-    "dynamicForte", "dynamicFFF", "dynamicMF", "dynamicMP", "dynamicPiano", "dynamicPPP",
+    "flag8thUp", "flag16thUp", "flag32ndUp", //"flag32ndDown", "flag16thDown", "flag8thDown",
+    "dynamicForte", "dynamicFF", "dynamicMF", "dynamicMP", "dynamicPiano", "dynamicPP", "dynamicPPP", "dynamicFFF",
     "dynamicSforzando", "dynamicSforzato",
     "articMarcatoAbove", "articMarcatoBelow",
     "ornamentMordent", "ornamentShortTrill", "ornamentTurn",
     "keyboardPedalPed", "keyboardPedalUp",
-    "rest16th", "restQuarter", "rest8th",
-    "tremolo1", "tremolo2", "tremolo3", "tremolo4", "tremolo5"
+    "rest32nd", "rest16th", "restQuarter", "rest8th", "restHalf", "restWhole", "rest8th",
+    //"tremolo1", "tremolo2", "tremolo3", "tremolo4", "tremolo5"
 };
 
 var outputDirectory = Path.Combine(AppContext.BaseDirectory, "output");
