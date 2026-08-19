@@ -2,6 +2,7 @@ block: P1-M9
 logical bbox: X ?..?, Y -3.27..11.5
 contours: 4
 points: 1107
-value: null
-confidence: 0.0000
+value: G
+confidence: 0.8939
 candidates:
+  G: confidence=0.8939, distance=0.1187
