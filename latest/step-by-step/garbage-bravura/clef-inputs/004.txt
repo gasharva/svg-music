@@ -4,4 +4,7 @@ contours: 2
 points: 828
 value: null
 confidence: 0.0000
+error: PCA rejected: risk=6.714, normalized=6.714, d1/d2=0.276/0.5, classLimit=0.299
 candidates:
+  G: confidence=0.3323, distance=2.0092
+  F: confidence=0.1206, distance=7.2897
