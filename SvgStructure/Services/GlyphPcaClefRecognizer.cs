@@ -47,11 +47,6 @@ public sealed class GlyphPcaClefRecognizer : IClefRecognizer
             if (analysis.Error is not null)
                 return new ClefSymbolRecognition(null, 0, Array.Empty<ClefSymbolCandidate>(), analysis.Error);
 
-            var globalBest = analysis.Matches.FirstOrDefault();
-            var globalBestClef = globalBest is null ? null : ParseClefClass(globalBest.Class);
-            if (!analysis.Accepted || globalBestClef is null)
-                return new ClefSymbolRecognition(null, 0, Array.Empty<ClefSymbolCandidate>());
-
             var candidates = analysis.Matches
                 .Select(ToClefCandidate)
                 .Where(x => x is not null)
@@ -63,7 +58,13 @@ public sealed class GlyphPcaClefRecognizer : IClefRecognizer
 
             var best = candidates.FirstOrDefault();
             if (best is null)
-                return new ClefSymbolRecognition(null, 0, Array.Empty<ClefSymbolCandidate>());
+                return new ClefSymbolRecognition(null, 0, candidates, "PCA produced no clef-class matches.");
+
+            if (!analysis.Accepted)
+            {
+                var reason = $"PCA rejected: risk={analysis.Risk:0.###}, normalized={analysis.NormalizedDistance:0.###}, d1/d2={analysis.DistanceRatio:0.###}/{analysis.RatioThreshold:0.###}, classLimit={analysis.ClassDistanceThreshold:0.###}";
+                return new ClefSymbolRecognition(null, 0, candidates, reason);
+            }
 
             return new ClefSymbolRecognition(best.Symbol, best.Confidence, candidates);
         }
