@@ -20,7 +20,7 @@ def export_dotnet_model(
     sdf_boundary_samples=1024,
     class_threshold_multiplier=1.25,
     ratio_threshold=0.50,
-    wrong_distance_threshold_fraction=0.20,
+    wrong_distance_threshold_fraction=0.85,
 ):
     X = np.asarray(X, dtype=np.float64)
     labels = np.asarray(labels)
@@ -92,9 +92,10 @@ def export_dotnet_model(
         # creates an unrealistically tiny open-set radius and rejects legitimate glyphs from a
         # different font even when they are vastly closer to this class than to every other class.
         #
-        # Keep the within-class limit, but give it a conservative floor based on how far the
-        # nearest wrong class actually is. The ratio test remains an independent guard against
-        # ambiguous samples.
+        # Keep the within-class limit, but allow most of the measured gap to the nearest wrong
+        # class to be used as an open-set radius. This is intentionally below the wrong-class
+        # distance itself; the independent d1/d2 ratio test still guards the ambiguous region
+        # where two classes become similarly plausible.
         if wrong_values:
             class_wrong_p05 = float(np.percentile(wrong_values, 5))
         else:
