@@ -3,6 +3,7 @@ logical bbox: X ?..?, Y -0.1..7.08
 contours: 3
 points: 443
 value: F
-confidence: 0.9867
+confidence: 0.9467
 candidates:
-  F: confidence=0.9867, distance=0.0135
+  F: confidence=0.9467, distance=0.0563
+  G: confidence=0.1164, distance=7.5933

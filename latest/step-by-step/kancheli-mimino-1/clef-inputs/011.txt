@@ -1,8 +1,9 @@
 block: P1-M13
-logical bbox: X ?..?, Y -3.36..11.52
+logical bbox: X 0.93..3.27, Y -3.36..11.52
 contours: 4
 points: 1986
 value: G
-confidence: 0.8697
+confidence: 0.7847
 candidates:
-  G: confidence=0.8697, distance=0.1499
+  G: confidence=0.7847, distance=0.2743
+  F: confidence=0.1141, distance=7.7618
