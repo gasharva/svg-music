@@ -2,6 +2,16 @@ using SvgStructure.Models;
 
 namespace SvgStructure.Services;
 
+public sealed record NoteFlagDiagnosticEntry(
+    int PartNumber,
+    int MeasureNumber,
+    StemResolution Stem,
+    MusicSymbolCandidate Candidate,
+    double EndpointDistanceInStaffSpaces,
+    bool PassedGeometrySanity,
+    NoteFlagRecognition? Recognition,
+    string Verdict);
+
 /// <summary>
 /// Resolves standalone note flags. A flag is considered only next to the free endpoint of a stem.
 /// Any stem touched by a recognized beam is not free and therefore cannot own a standalone flag.
@@ -10,6 +20,7 @@ public sealed class NoteFlagResolver
 {
     private readonly GlyphPcaNoteFlagRecognizer _recognizer;
     private readonly double _maxEndpointDistanceInStaffSpaces;
+    private readonly List<NoteFlagDiagnosticEntry> _diagnostics = new();
 
     public NoteFlagResolver(
         GlyphPcaNoteFlagRecognizer recognizer,
@@ -19,12 +30,16 @@ public sealed class NoteFlagResolver
         _maxEndpointDistanceInStaffSpaces = maxEndpointDistanceInStaffSpaces;
     }
 
+    public IReadOnlyList<NoteFlagDiagnosticEntry> LastDiagnostics => _diagnostics;
+
     public IReadOnlyList<NoteFlagResolution> Resolve(
         MusicSymbolResolution symbols,
         LogicalGridResolution grid,
         IReadOnlyList<StemResolution> stems,
         IReadOnlyList<BeamResolution> beams)
     {
+        _diagnostics.Clear();
+
         var beamedStems = beams
             .SelectMany(x => x.Stems)
             .ToHashSet();
@@ -57,35 +72,91 @@ public sealed class NoteFlagResolver
                     Distance = Distance(endpoint, x.PhysicalBounds)
                 })
                 .Where(x => x.Distance <= maxDistance)
-                .Where(x => LooksLikeFlagEnvelope(x.Symbol.PhysicalBounds, stem, staffSpace))
                 .OrderBy(x => x.Distance)
                 .ToArray();
 
             foreach (var item in nearbySymbols)
             {
+                var distanceInStaffSpaces = item.Distance / Math.Max(1e-9, staffSpace);
+
+                if (!PassesFlagGeometrySanity(item.Symbol.PhysicalBounds, stem, endpoint, staffSpace, out var geometryReason))
+                {
+                    _diagnostics.Add(new NoteFlagDiagnosticEntry(
+                        stem.PartNumber,
+                        stem.MeasureNumber,
+                        stem,
+                        item.Symbol,
+                        distanceInStaffSpaces,
+                        false,
+                        null,
+                        "rejected before PCA: " + geometryReason));
+                    continue;
+                }
+
                 var contours = SmoothSymbolContourConverter.ToContours(new[] { item.Symbol });
                 if (contours.Count == 0)
+                {
+                    _diagnostics.Add(new NoteFlagDiagnosticEntry(
+                        stem.PartNumber,
+                        stem.MeasureNumber,
+                        stem,
+                        item.Symbol,
+                        distanceInStaffSpaces,
+                        true,
+                        null,
+                        "rejected: no usable contours"));
                     continue;
+                }
 
                 var recognition = _recognizer.Recognize(contours);
                 if (recognition.Denominator is null || recognition.Direction is null)
-                    continue;
-
-                if (recognition.Direction.Value != stem.Direction)
-                    continue;
-
-                var logicalBounds = block.ToLogical(item.Symbol.PhysicalBounds);
-                hits.Add(new Hit(
-                    stem,
-                    new NoteFlagResolution(
+                {
+                    _diagnostics.Add(new NoteFlagDiagnosticEntry(
                         stem.PartNumber,
                         stem.MeasureNumber,
-                        recognition.Denominator.Value,
-                        item.Symbol.PhysicalBounds,
-                        logicalBounds,
                         stem,
-                        recognition.Confidence),
-                    item.Distance));
+                        item.Symbol,
+                        distanceInStaffSpaces,
+                        true,
+                        recognition,
+                        "rejected by PCA"));
+                    continue;
+                }
+
+                if (recognition.Direction.Value != stem.Direction)
+                {
+                    _diagnostics.Add(new NoteFlagDiagnosticEntry(
+                        stem.PartNumber,
+                        stem.MeasureNumber,
+                        stem,
+                        item.Symbol,
+                        distanceInStaffSpaces,
+                        true,
+                        recognition,
+                        $"rejected: PCA direction {recognition.Direction.Value} != stem {stem.Direction}"));
+                    continue;
+                }
+
+                var logicalBounds = block.ToLogical(item.Symbol.PhysicalBounds);
+                var flag = new NoteFlagResolution(
+                    stem.PartNumber,
+                    stem.MeasureNumber,
+                    recognition.Denominator.Value,
+                    item.Symbol.PhysicalBounds,
+                    logicalBounds,
+                    stem,
+                    recognition.Confidence);
+
+                hits.Add(new Hit(stem, flag, item.Distance));
+                _diagnostics.Add(new NoteFlagDiagnosticEntry(
+                    stem.PartNumber,
+                    stem.MeasureNumber,
+                    stem,
+                    item.Symbol,
+                    distanceInStaffSpaces,
+                    true,
+                    recognition,
+                    $"accepted: 1/{recognition.Denominator.Value} {recognition.Direction.Value}"));
             }
         }
 
@@ -102,32 +173,46 @@ public sealed class NoteFlagResolver
             .ToArray();
     }
 
-    private static bool LooksLikeFlagEnvelope(RectD candidate, StemResolution stem, double staffSpace)
+    private static bool PassesFlagGeometrySanity(
+        RectD candidate,
+        StemResolution stem,
+        PointD freeEndpoint,
+        double staffSpace,
+        out string reason)
     {
-        // A standalone flag has visible lateral ink. A lone stem (or another almost vertical hairline)
-        // must never be sent to the PCA flag recognizer just because its bbox touches a free endpoint.
-        var minimumWidth = staffSpace * 0.28;
-        var minimumHeight = staffSpace * 0.45;
-        if (candidate.Width < minimumWidth || candidate.Height < minimumHeight)
+        var minWidth = Math.Max(stem.PhysicalBounds.Width * 2.0, staffSpace * 0.16);
+        if (candidate.Width < minWidth)
+        {
+            reason = $"width {candidate.Width / staffSpace:0.###}sp < {minWidth / staffSpace:0.###}sp";
             return false;
+        }
 
-        // Reject candidates that are essentially the stem itself. Parent symbol candidates may contain
-        // both stem and flag, so do not require disjointness; merely require substantially more width
-        // than the thin stem bbox.
-        if (candidate.Width <= Math.Max(minimumWidth, stem.PhysicalBounds.Width * 2.5))
+        var minHeight = staffSpace * 0.28;
+        if (candidate.Height < minHeight)
+        {
+            reason = $"height {candidate.Height / staffSpace:0.###}sp < {minHeight / staffSpace:0.###}sp";
             return false;
+        }
 
-        // The flag must live at the free end, not around the note-head end of the stem. Allow overlap
-        // with the endpoint because many fonts draw the flag physically into the stem.
-        var endpointY = stem.Direction == StemDirection.Up
-            ? stem.PhysicalBounds.Top
-            : stem.PhysicalBounds.Bottom;
-        var verticalReach = staffSpace * 1.6;
+        var attachedEndpointY = stem.Direction == StemDirection.Up
+            ? stem.PhysicalBounds.Bottom
+            : stem.PhysicalBounds.Top;
+        var freeDistance = VerticalDistance(freeEndpoint.Y, candidate);
+        var attachedDistance = VerticalDistance(attachedEndpointY, candidate);
+        if (attachedDistance + staffSpace * 0.05 < freeDistance)
+        {
+            reason = $"closer to note endpoint ({attachedDistance / staffSpace:0.###}sp) than free endpoint ({freeDistance / staffSpace:0.###}sp)";
+            return false;
+        }
 
-        return stem.Direction == StemDirection.Up
-            ? candidate.Top <= endpointY + staffSpace * 0.45 && candidate.Bottom <= endpointY + verticalReach
-            : candidate.Bottom >= endpointY - staffSpace * 0.45 && candidate.Top >= endpointY - verticalReach;
+        reason = "ok";
+        return true;
     }
+
+    private static double VerticalDistance(double y, RectD rect) =>
+        y < rect.Top ? rect.Top - y
+        : y > rect.Bottom ? y - rect.Bottom
+        : 0;
 
     private static PointD FreeEndpoint(StemResolution stem) =>
         stem.Direction == StemDirection.Up
