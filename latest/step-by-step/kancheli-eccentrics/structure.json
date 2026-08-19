@@ -62745,7 +62745,7 @@
       "beatNumber": 3,
       "beatValue": 4,
       "side": 0,
-      "confidence": 0.8274181272618947,
+      "confidence": 0.8274181244868684,
       "physicalBounds": {
         "left": 125.65262603759766,
         "top": 183.5644989013672,
@@ -62785,7 +62785,7 @@
       "beatNumber": 3,
       "beatValue": 4,
       "side": 0,
-      "confidence": 0.8274178986342098,
+      "confidence": 0.8274178958646923,
       "physicalBounds": {
         "left": 125.65262603759766,
         "top": 254.26576232910156,
@@ -63894,7 +63894,7 @@
       "partNumber": 1,
       "measureNumber": 1,
       "kind": 0,
-      "confidence": 0.962000785734534,
+      "confidence": 0.9620007857345363,
       "physicalBounds": {
         "left": 101.29457092285156,
         "top": 173.0912322998047,
@@ -63916,7 +63916,7 @@
       "partNumber": 2,
       "measureNumber": 1,
       "kind": 0,
-      "confidence": 0.9619982843130999,
+      "confidence": 0.9619982843131021,
       "physicalBounds": {
         "left": 101.29457092285156,
         "top": 243.79249572753906,
@@ -63938,7 +63938,7 @@
       "partNumber": 1,
       "measureNumber": 7,
       "kind": 0,
-      "confidence": 0.9619954206055789,
+      "confidence": 0.9619954206055803,
       "physicalBounds": {
         "left": 71.48735809326172,
         "top": 361.6928405761719,
@@ -63960,7 +63960,7 @@
       "partNumber": 2,
       "measureNumber": 7,
       "kind": 0,
-      "confidence": 0.9619927556296177,
+      "confidence": 0.9619927556296194,
       "physicalBounds": {
         "left": 71.48735809326172,
         "top": 432.39410400390625,
@@ -63982,7 +63982,7 @@
       "partNumber": 1,
       "measureNumber": 13,
       "kind": 0,
-      "confidence": 0.9619994235079332,
+      "confidence": 0.9619994235079352,
       "physicalBounds": {
         "left": 71.48735809326172,
         "top": 550.29443359375,
@@ -64004,7 +64004,7 @@
       "partNumber": 2,
       "measureNumber": 13,
       "kind": 1,
-      "confidence": 0.6293634222705541,
+      "confidence": 0.6293634222705536,
       "physicalBounds": {
         "left": 71.64964294433594,
         "top": 631.3641967773438,
@@ -64026,7 +64026,7 @@
       "partNumber": 1,
       "measureNumber": 18,
       "kind": 0,
-      "confidence": 0.9619968054473873,
+      "confidence": 0.9619968054473891,
       "physicalBounds": {
         "left": 71.48735809326172,
         "top": 738.8973999023438,
@@ -64048,7 +64048,7 @@
       "partNumber": 2,
       "measureNumber": 18,
       "kind": 1,
-      "confidence": 0.6293542291226061,
+      "confidence": 0.6293542291226057,
       "physicalBounds": {
         "left": 71.64964294433594,
         "top": 819.9657592773438,
@@ -64070,7 +64070,7 @@
       "partNumber": 1,
       "measureNumber": 23,
       "kind": 0,
-      "confidence": 0.9619933247476917,
+      "confidence": 0.9619933247476948,
       "physicalBounds": {
         "left": 71.48735809326172,
         "top": 927.4989624023438,
@@ -64092,7 +64092,7 @@
       "partNumber": 2,
       "measureNumber": 23,
       "kind": 1,
-      "confidence": 0.6293775631404664,
+      "confidence": 0.6293775631404661,
       "physicalBounds": {
         "left": 71.64964294433594,
         "top": 1008.5673828125,
@@ -69130,7 +69130,7 @@
         "centerY": 183.37242889404297
       },
       "kind": 1,
-      "confidence": 0.9718035347002981,
+      "confidence": 0.9718035344930329,
       "note": {
         "partNumber": 1,
         "measureNumber": 1,
@@ -69174,7 +69174,7 @@
         "centerY": 276.2220153808594
       },
       "kind": 1,
-      "confidence": 0.9719295785536666,
+      "confidence": 0.971929578344149,
       "note": {
         "partNumber": 2,
         "measureNumber": 2,
@@ -69218,7 +69218,7 @@
         "centerY": 183.37242889404297
       },
       "kind": 1,
-      "confidence": 0.9718332072255069,
+      "confidence": 0.971833207018317,
       "note": {
         "partNumber": 1,
         "measureNumber": 3,
@@ -69262,7 +69262,7 @@
         "centerY": 285.7176208496094
       },
       "kind": 1,
-      "confidence": 0.9721639088379966,
+      "confidence": 0.972163908627045,
       "note": {
         "partNumber": 2,
         "measureNumber": 3,
@@ -69306,7 +69306,7 @@
         "centerY": 276.2220153808594
       },
       "kind": 1,
-      "confidence": 0.9719992493816989,
+      "confidence": 0.9719992491719351,
       "note": {
         "partNumber": 2,
         "measureNumber": 3,
@@ -69350,7 +69350,7 @@
         "centerY": 276.2220153808594
       },
       "kind": 1,
-      "confidence": 0.9719992493816989,
+      "confidence": 0.9719992491719351,
       "note": {
         "partNumber": 2,
         "measureNumber": 4,
@@ -69394,7 +69394,7 @@
         "centerY": 183.37242889404297
       },
       "kind": 1,
-      "confidence": 0.9717416452155707,
+      "confidence": 0.9717416450084669,
       "note": {
         "partNumber": 1,
         "measureNumber": 5,
@@ -69438,7 +69438,7 @@
         "centerY": 276.2220153808594
       },
       "kind": 1,
-      "confidence": 0.9720082065521375,
+      "confidence": 0.9720082063422399,
       "note": {
         "partNumber": 2,
         "measureNumber": 5,
@@ -69482,7 +69482,7 @@
         "centerY": 180.20723724365234
       },
       "kind": 1,
-      "confidence": 0.9717601721909297,
+      "confidence": 0.9717601719830816,
       "note": {
         "partNumber": 1,
         "measureNumber": 6,
@@ -69526,7 +69526,7 @@
         "centerY": 276.2220153808594
       },
       "kind": 1,
-      "confidence": 0.9719334844291763,
+      "confidence": 0.9719334842194629,
       "note": {
         "partNumber": 2,
         "measureNumber": 6,
@@ -69570,7 +69570,7 @@
         "centerY": 368.8088684082031
       },
       "kind": 1,
-      "confidence": 0.9718564665517667,
+      "confidence": 0.971856466343098,
       "note": {
         "partNumber": 1,
         "measureNumber": 7,
@@ -69614,7 +69614,7 @@
         "centerY": 474.3192138671875
       },
       "kind": 1,
-      "confidence": 0.9721936848000187,
+      "confidence": 0.9721936845893846,
       "note": {
         "partNumber": 2,
         "measureNumber": 7,
@@ -69658,7 +69658,7 @@
         "centerY": 464.8236389160156
       },
       "kind": 1,
-      "confidence": 0.9718212242445485,
+      "confidence": 0.9718212240362,
       "note": {
         "partNumber": 2,
         "measureNumber": 7,
@@ -69702,7 +69702,7 @@
         "centerY": 474.31854248046875
       },
       "kind": 2,
-      "confidence": 0.981114611809039,
+      "confidence": 0.9811146118099959,
       "note": {
         "partNumber": 2,
         "measureNumber": 8,
@@ -69746,7 +69746,7 @@
         "centerY": 393.7635803222656
       },
       "kind": 0,
-      "confidence": 0.9013541578867651,
+      "confidence": 0.9013541579512109,
       "note": {
         "partNumber": 1,
         "measureNumber": 9,
@@ -69790,7 +69790,7 @@
         "centerY": 394.1304016113281
       },
       "kind": 1,
-      "confidence": 0.9718817013459581,
+      "confidence": 0.9718817011378206,
       "note": {
         "partNumber": 1,
         "measureNumber": 10,
@@ -69834,7 +69834,7 @@
         "centerY": 436.3356018066406
       },
       "kind": 1,
-      "confidence": 0.971800312174891,
+      "confidence": 0.9718003119670956,
       "note": {
         "partNumber": 2,
         "measureNumber": 11,
@@ -69878,7 +69878,7 @@
         "centerY": 371.9740295410156
       },
       "kind": 1,
-      "confidence": 0.971937195419484,
+      "confidence": 0.9719371952095202,
       "note": {
         "partNumber": 1,
         "measureNumber": 12,
@@ -69922,7 +69922,7 @@
         "centerY": 394.1316833496094
       },
       "kind": 1,
-      "confidence": 0.9719637074499546,
+      "confidence": 0.9719637072405561,
       "note": {
         "partNumber": 1,
         "measureNumber": 12,
@@ -69966,7 +69966,7 @@
         "centerY": 589.063720703125
       },
       "kind": 1,
-      "confidence": 0.9718953293518005,
+      "confidence": 0.9718953291438103,
       "note": {
         "partNumber": 1,
         "measureNumber": 13,
@@ -70010,7 +70010,7 @@
         "centerY": 579.568115234375
       },
       "kind": 1,
-      "confidence": 0.9719346068549711,
+      "confidence": 0.9719346066468062,
       "note": {
         "partNumber": 1,
         "measureNumber": 13,
@@ -70054,7 +70054,7 @@
         "centerY": 560.5783081054688
       },
       "kind": 1,
-      "confidence": 0.9718280799503898,
+      "confidence": 0.9718280797425951,
       "note": {
         "partNumber": 1,
         "measureNumber": 13,
@@ -70098,7 +70098,7 @@
         "centerY": 557.4097900390625
       },
       "kind": 2,
-      "confidence": 0.9811435579055775,
+      "confidence": 0.9811435579066046,
       "note": {
         "partNumber": 1,
         "measureNumber": 13,
@@ -70142,7 +70142,7 @@
         "centerY": 579.5661010742188
       },
       "kind": 2,
-      "confidence": 0.9811421642622911,
+      "confidence": 0.9811421642633027,
       "note": {
         "partNumber": 1,
         "measureNumber": 14,
@@ -70186,7 +70186,7 @@
         "centerY": 560.5756225585938
       },
       "kind": 1,
-      "confidence": 0.9719919163639312,
+      "confidence": 0.9719919161549974,
       "note": {
         "partNumber": 1,
         "measureNumber": 14,
@@ -70230,7 +70230,7 @@
         "centerY": 637.5993041992188
       },
       "kind": 1,
-      "confidence": 0.9720838450617958,
+      "confidence": 0.97208384485226,
       "note": {
         "partNumber": 2,
         "measureNumber": 14,
@@ -70274,7 +70274,7 @@
         "centerY": 560.5756225585938
       },
       "kind": 1,
-      "confidence": 0.9721188218763114,
+      "confidence": 0.9721188216660027,
       "note": {
         "partNumber": 1,
         "measureNumber": 15,
@@ -70318,7 +70318,7 @@
         "centerY": 624.9371948242188
       },
       "kind": 1,
-      "confidence": 0.9720007313373172,
+      "confidence": 0.9720007311279051,
       "note": {
         "partNumber": 2,
         "measureNumber": 15,
@@ -70362,7 +70362,7 @@
         "centerY": 582.7333374023438
       },
       "kind": 1,
-      "confidence": 0.9719932022754658,
+      "confidence": 0.9719932020659963,
       "note": {
         "partNumber": 1,
         "measureNumber": 16,
@@ -70406,7 +70406,7 @@
         "centerY": 582.7333374023438
       },
       "kind": 1,
-      "confidence": 0.9719890115262393,
+      "confidence": 0.9719890113174694,
       "note": {
         "partNumber": 1,
         "measureNumber": 16,
@@ -70450,7 +70450,7 @@
         "centerY": 582.7333374023438
       },
       "kind": 1,
-      "confidence": 0.9718330746866903,
+      "confidence": 0.9718330744783086,
       "note": {
         "partNumber": 1,
         "measureNumber": 17,
@@ -70494,7 +70494,7 @@
         "centerY": 582.3651428222656
       },
       "kind": 0,
-      "confidence": 0.9013167852555005,
+      "confidence": 0.9013167853198675,
       "note": {
         "partNumber": 1,
         "measureNumber": 17,
@@ -70538,7 +70538,7 @@
         "centerY": 804.043212890625
       },
       "kind": 1,
-      "confidence": 0.9719351733797986,
+      "confidence": 0.9719351731714319,
       "note": {
         "partNumber": 2,
         "measureNumber": 19,
@@ -70582,7 +70582,7 @@
         "centerY": 758.6727905273438
       },
       "kind": 1,
-      "confidence": 0.9719628427983411,
+      "confidence": 0.9719628425888102,
       "note": {
         "partNumber": 1,
         "measureNumber": 20,
@@ -70626,7 +70626,7 @@
         "centerY": 813.5387573242188
       },
       "kind": 1,
-      "confidence": 0.9721273434597706,
+      "confidence": 0.9721273432502691,
       "note": {
         "partNumber": 2,
         "measureNumber": 20,
@@ -70670,7 +70670,7 @@
         "centerY": 749.17724609375
       },
       "kind": 1,
-      "confidence": 0.9720719039255662,
+      "confidence": 0.9720719037160304,
       "note": {
         "partNumber": 1,
         "measureNumber": 21,
@@ -70714,7 +70714,7 @@
         "centerY": 771.3348999023438
       },
       "kind": 1,
-      "confidence": 0.9717515532527853,
+      "confidence": 0.9717515530456263,
       "note": {
         "partNumber": 1,
         "measureNumber": 21,
@@ -70758,7 +70758,7 @@
         "centerY": 768.1697387695312
       },
       "kind": 1,
-      "confidence": 0.9719217806387129,
+      "confidence": 0.9719217804304794,
       "note": {
         "partNumber": 1,
         "measureNumber": 22,
@@ -70802,7 +70802,7 @@
         "centerY": 777.665283203125
       },
       "kind": 1,
-      "confidence": 0.9721320363617828,
+      "confidence": 0.9721320361500606,
       "note": {
         "partNumber": 1,
         "measureNumber": 22,
@@ -70846,7 +70846,7 @@
         "centerY": 765.0045166015625
       },
       "kind": 1,
-      "confidence": 0.9720730687639244,
+      "confidence": 0.9720730685552049,
       "note": {
         "partNumber": 1,
         "measureNumber": 22,
@@ -70890,7 +70890,7 @@
         "centerY": 749.17724609375
       },
       "kind": 1,
-      "confidence": 0.9718221424999185,
+      "confidence": 0.9718221422926521,
       "note": {
         "partNumber": 1,
         "measureNumber": 22,
@@ -70934,7 +70934,7 @@
         "centerY": 746.0113525390625
       },
       "kind": 2,
-      "confidence": 0.9811003091206827,
+      "confidence": 0.9811003091217112,
       "note": {
         "partNumber": 1,
         "measureNumber": 22,
@@ -70978,7 +70978,7 @@
         "centerY": 956.7693481445312
       },
       "kind": 2,
-      "confidence": 0.9811338223637872,
+      "confidence": 0.981133822364721,
       "note": {
         "partNumber": 1,
         "measureNumber": 23,
@@ -71022,7 +71022,7 @@
         "centerY": 937.77880859375
       },
       "kind": 1,
-      "confidence": 0.9718280685909122,
+      "confidence": 0.9718280683831159,
       "note": {
         "partNumber": 1,
         "measureNumber": 23,
@@ -71066,7 +71066,7 @@
         "centerY": 998.9745483398438
       },
       "kind": 2,
-      "confidence": 0.9811665130418005,
+      "confidence": 0.9811665130426547,
       "note": {
         "partNumber": 2,
         "measureNumber": 23,
@@ -71110,7 +71110,7 @@
         "centerY": 937.77880859375
       },
       "kind": 1,
-      "confidence": 0.9719050633037878,
+      "confidence": 0.9719050630957168,
       "note": {
         "partNumber": 1,
         "measureNumber": 24,
@@ -71154,7 +71154,7 @@
         "centerY": 959.9365234375
       },
       "kind": 1,
-      "confidence": 0.9719056515184448,
+      "confidence": 0.9719056513100308,
       "note": {
         "partNumber": 1,
         "measureNumber": 25,
@@ -71198,7 +71198,7 @@
         "centerY": 915.6211547851562
       },
       "kind": 1,
-      "confidence": 0.9720730687639244,
+      "confidence": 0.9720730685552049,
       "note": {
         "partNumber": 1,
         "measureNumber": 26,
