@@ -5,67 +5,20 @@ using System.Text.Json.Nodes;
 const string GlyphNamesUrl = "https://raw.githubusercontent.com/w3c/smufl/gh-pages/metadata/glyphnames.json";
 const string ClassesUrl = "https://raw.githubusercontent.com/w3c/smufl/gh-pages/metadata/classes.json";
 
-// Canonical SMuFL glyph names selected for the first recognition dataset.
-// No project-specific aliases: the dataset label is the SMuFL glyph name itself.
 var selectedGlyphNames = new HashSet<string>(StringComparer.Ordinal)
 {
-    "fClef",
-    "gClef",
-    "coda",
-
-    "timeSig1",
-    "timeSig2",
-    "timeSig4",
-    "timeSig6",
-    "timeSig8",
-    "timeSig9",
-
-    "tuplet1",
-    "tuplet3",
-    "tuplet4",
-    "tuplet5",
-
-    "accidentalDoubleFlat",
-    "accidentalDoubleSharp",
-    "accidentalFlat",
-    "accidentalNatural",
-    "accidentalSharp",
-
-    "flag8thUp",
-    "flag8thDown",
-    "flag16thUp",
-    "flag16thDown",
-
-    "dynamicForte",
-    "dynamicFFF",
-    "dynamicMF",
-    "dynamicMP",
-    "dynamicPiano",
-    "dynamicPPP",
-    "dynamicSforzando",
-    "dynamicSforzato",
-
-    "articMarcatoAbove",
-    "articMarcatoBelow",
-
-    "ornamentMordent",
-    "ornamentShortTrill",
-    "ornamentTurn",
-
-    "keyboardPedalPed",
-    "keyboardPedalUp",
-
-    "rest16th",
-    "restQuarter",
-    "rest8th",
-
-    // We intentionally keep every SMuFL tremolo glyph selected. They can later be
-    // collapsed into one recognition category without inventing aliases here.
-    "tremolo1",
-    "tremolo2",
-    "tremolo3",
-    "tremolo4",
-    "tremolo5"
+    "fClef", "gClef", "coda",
+    "timeSig1", "timeSig2", "timeSig4", "timeSig6", "timeSig8", "timeSig9",
+    "tuplet1", "tuplet3", "tuplet4", "tuplet5",
+    "accidentalDoubleFlat", "accidentalDoubleSharp", "accidentalFlat", "accidentalNatural", "accidentalSharp",
+    "flag8thUp", "flag8thDown", "flag16thUp", "flag16thDown",
+    "dynamicForte", "dynamicFFF", "dynamicMF", "dynamicMP", "dynamicPiano", "dynamicPPP",
+    "dynamicSforzando", "dynamicSforzato",
+    "articMarcatoAbove", "articMarcatoBelow",
+    "ornamentMordent", "ornamentShortTrill", "ornamentTurn",
+    "keyboardPedalPed", "keyboardPedalUp",
+    "rest16th", "restQuarter", "rest8th",
+    "tremolo1", "tremolo2", "tremolo3", "tremolo4", "tremolo5"
 };
 
 var outputDirectory = Path.Combine(AppContext.BaseDirectory, "output");
@@ -120,6 +73,8 @@ Console.WriteLine($"HTML:         {htmlPath}");
 Console.WriteLine($"Glyph CSV:    {glyphCsvPath}");
 Console.WriteLine($"Selected CSV: {selectedCsvPath}");
 Console.WriteLine($"Class CSV:    {classCsvPath}");
+
+await FontDatasetExporter.ExportAsync(http, selectedGlyphs, outputDirectory);
 
 static List<SmuflGlyph> ParseGlyphs(string json)
 {
@@ -198,7 +153,7 @@ static void WriteHtml(string path, IReadOnlyList<SmuflGlyph> glyphs, IReadOnlyLi
     sb.AppendLine("<style>body{font-family:system-ui,Arial,sans-serif;margin:24px;color:#222;background:#fafafa}input{font:inherit;padding:8px 10px;width:min(520px,90vw);border:1px solid #bbb;border-radius:6px}.stats{color:#666}.toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:14px 0}.toolbar label{display:flex;gap:6px;align-items:center}.toolbar input[type=checkbox]{width:auto}.tabs{display:flex;gap:8px;margin:20px 0}.tabs button{font:inherit;padding:8px 14px}.panel{display:none}.panel.active{display:block}table{border-collapse:collapse;width:100%;background:#fff}th,td{border-bottom:1px solid #ddd;text-align:left;padding:7px 9px;vertical-align:top}th{position:sticky;top:0;background:#eee}.mono{font-family:ui-monospace,Consolas,monospace}.tag{display:inline-block;padding:2px 6px;margin:1px 3px 1px 0;border-radius:10px;background:#eee;font-size:11px}.chosen{background:#e8f6e8}.yes{font-weight:700}.muted{color:#777}.class-card{background:#fff;border:1px solid #ddd;border-radius:8px;padding:12px;margin:10px 0}.glyphs{font:12px ui-monospace,Consolas,monospace;line-height:1.6}</style></head><body>");
     sb.AppendLine("<h1>SMuFL inventory</h1>");
     sb.AppendLine($"<p class=\"stats\"><b>{glyphs.Count}</b> canonical glyph names · <b>{selected.Count}</b> selected for the first dataset · <b>{classes.Count}</b> SMuFL classes/groups.</p>");
-    sb.AppendLine("<p><b>Dataset labels use canonical SMuFL glyph names only.</b> No bass/treble/dgt/... aliases are introduced.</p>");
+    sb.AppendLine("<p><b>Dataset labels use canonical SMuFL glyph names only.</b></p>");
     sb.AppendLine("<div class=\"toolbar\"><input id=\"q\" placeholder=\"Filter: clef, accidental, tuplet, tremolo...\" autofocus><label><input id=\"selectedOnly\" type=\"checkbox\"> selected only</label></div>");
     sb.AppendLine("<div class=\"tabs\"><button data-tab=\"glyphs\">Glyphs</button><button data-tab=\"classes\">SMuFL classes</button></div>");
     sb.AppendLine("<section id=\"glyphs\" class=\"panel active\"><table><thead><tr><th>Selected</th><th>Name</th><th>Codepoint</th><th>Description</th><th>SMuFL classes</th></tr></thead><tbody>");
