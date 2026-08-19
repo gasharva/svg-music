@@ -13,7 +13,7 @@ public sealed class NoteFlagResolver
 
     public NoteFlagResolver(
         GlyphPcaNoteFlagRecognizer recognizer,
-        double maxEndpointDistanceInStaffSpaces = 1.0)
+        double maxEndpointDistanceInStaffSpaces = 1.25)
     {
         _recognizer = recognizer;
         _maxEndpointDistanceInStaffSpaces = maxEndpointDistanceInStaffSpaces;
@@ -57,6 +57,7 @@ public sealed class NoteFlagResolver
                     Distance = Distance(endpoint, x.PhysicalBounds)
                 })
                 .Where(x => x.Distance <= maxDistance)
+                .Where(x => LooksLikeFlagEnvelope(x.Symbol.PhysicalBounds, stem, staffSpace))
                 .OrderBy(x => x.Distance)
                 .ToArray();
 
@@ -70,8 +71,6 @@ public sealed class NoteFlagResolver
                 if (recognition.Denominator is null || recognition.Direction is null)
                     continue;
 
-                // SMuFL has separate up/down flag glyphs. Requiring the same direction is a useful
-                // sanity check and prevents a nearby unrelated curl from attaching to the stem.
                 if (recognition.Direction.Value != stem.Direction)
                     continue;
 
@@ -90,7 +89,6 @@ public sealed class NoteFlagResolver
             }
         }
 
-        // One standalone flag glyph per stem: the PCA class itself encodes 1/8, 1/16 or 1/32.
         return hits
             .GroupBy(x => x.Stem)
             .Select(group => group
@@ -102,6 +100,33 @@ public sealed class NoteFlagResolver
             .ThenBy(x => x.PartNumber)
             .ThenBy(x => x.PhysicalBounds.Left)
             .ToArray();
+    }
+
+    private static bool LooksLikeFlagEnvelope(RectD candidate, StemResolution stem, double staffSpace)
+    {
+        // A standalone flag has visible lateral ink. A lone stem (or another almost vertical hairline)
+        // must never be sent to the PCA flag recognizer just because its bbox touches a free endpoint.
+        var minimumWidth = staffSpace * 0.28;
+        var minimumHeight = staffSpace * 0.45;
+        if (candidate.Width < minimumWidth || candidate.Height < minimumHeight)
+            return false;
+
+        // Reject candidates that are essentially the stem itself. Parent symbol candidates may contain
+        // both stem and flag, so do not require disjointness; merely require substantially more width
+        // than the thin stem bbox.
+        if (candidate.Width <= Math.Max(minimumWidth, stem.PhysicalBounds.Width * 2.5))
+            return false;
+
+        // The flag must live at the free end, not around the note-head end of the stem. Allow overlap
+        // with the endpoint because many fonts draw the flag physically into the stem.
+        var endpointY = stem.Direction == StemDirection.Up
+            ? stem.PhysicalBounds.Top
+            : stem.PhysicalBounds.Bottom;
+        var verticalReach = staffSpace * 1.6;
+
+        return stem.Direction == StemDirection.Up
+            ? candidate.Top <= endpointY + staffSpace * 0.45 && candidate.Bottom <= endpointY + verticalReach
+            : candidate.Bottom >= endpointY - staffSpace * 0.45 && candidate.Top >= endpointY - verticalReach;
     }
 
     private static PointD FreeEndpoint(StemResolution stem) =>
