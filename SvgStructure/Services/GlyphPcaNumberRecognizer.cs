@@ -1,7 +1,6 @@
 using System.Globalization;
 using System.Numerics;
 using System.Text;
-using System.Text.Json;
 using System.Xml.Linq;
 using GlyphPcaGallery.Models;
 using GlyphPcaGallery.Services;
@@ -10,34 +9,33 @@ using SvgSymbols.Services;
 namespace SvgStructure.Services;
 
 /// <summary>
-/// Adapter that lets MeterResolver use the reusable GlyphPcaGallery runtime without moving
-/// the PCA/SDF implementation into SvgStructure. Candidate contours are written to a temporary
-/// SVG because GlyphFingerprintAnalyzer intentionally owns SVG parsing/canonicalization.
+/// Adapter that lets MeterResolver use the reusable GlyphPcaGallery runtime.
+/// The recognizer owns the bundle family name used for time-signature digits.
 /// </summary>
 public sealed class GlyphPcaNumberRecognizer : ISvgNumberRecognizer
 {
+    public const string ModelFamily = "meters";
+
     private readonly GlyphFingerprintAnalyzer _analyzer;
     private readonly string _workDirectory;
     private readonly double _minimumConfidence;
 
     public GlyphPcaNumberRecognizer(
-        string modelPath,
+        GlyphModelBundle bundle,
+        string workDirectory,
+        double minimumConfidence = 0.20)
+        : this(bundle.GetRequired(ModelFamily), workDirectory, minimumConfidence)
+    {
+    }
+
+    public GlyphPcaNumberRecognizer(
+        GlyphModel model,
         string workDirectory,
         double minimumConfidence = 0.20)
     {
-        if (!File.Exists(modelPath))
-            throw new FileNotFoundException("Glyph PCA model not found.", modelPath);
-
         _workDirectory = workDirectory;
         _minimumConfidence = minimumConfidence;
         Directory.CreateDirectory(_workDirectory);
-
-        var json = File.ReadAllText(modelPath);
-        var model = JsonSerializer.Deserialize<GlyphModel>(
-            json,
-            new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
-            ?? throw new InvalidDataException("Could not deserialize glyph PCA model.");
-
         _analyzer = new GlyphFingerprintAnalyzer(model);
     }
 
@@ -57,8 +55,6 @@ public sealed class GlyphPcaNumberRecognizer : ISvgNumberRecognizer
             if (analysis.Error is not null)
                 return new SvgNumberRecognition(null, 0, Array.Empty<SvgNumberCandidate>(), analysis.Error);
 
-            // Acceptance belongs to the global glyph classifier. Do not take a lower-ranked numeric
-            // match when the model actually classified the shape as another glyph class (flat, note, ...).
             var globalBest = analysis.Matches.FirstOrDefault();
             var globalBestDigit = globalBest is null ? null : ParseDigitClass(globalBest.Class);
             if (!analysis.Accepted || globalBestDigit is null)
@@ -92,8 +88,6 @@ public sealed class GlyphPcaNumberRecognizer : ISvgNumberRecognizer
         if (value is null)
             return null;
 
-        // The PCA gallery exposes distance/risk rather than a probability. MeterResolver only
-        // needs a monotonic confidence for ranking candidate pairs, so use a bounded inverse distance.
         var confidence = 1.0 / (1.0 + Math.Max(0, match.Distance));
         return new SvgNumberCandidate(value.Value, confidence);
     }
@@ -103,10 +97,7 @@ public sealed class GlyphPcaNumberRecognizer : ISvgNumberRecognizer
         if (int.TryParse(className, NumberStyles.None, CultureInfo.InvariantCulture, out var plainDigit))
             return plainDigit;
 
-        // The trained glyph model uses semantic class labels (currently dgt3, dgt4, ...), not
-        // bare numeric strings. Keep the adapter responsible for translating model vocabulary into
-        // ISvgNumberRecognizer's numeric vocabulary; the PCA project itself remains glyph-agnostic.
-        foreach (var prefix in new[] { "dgt", "digit", "timesig" })
+        foreach (var prefix in new[] { "timesig", "dgt", "digit" })
         {
             if (!className.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
                 continue;
