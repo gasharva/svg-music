@@ -13,7 +13,7 @@ internal static class FontDatasetExporter
         new("Bravura", "steinbergmedia/bravura", "Bravura.otf"),
         new("Leland", "MuseScoreFonts/Leland", "Leland.otf"),
         new("Sebastian", "fkretlow/sebastian", "Sebastian.otf"),
-        new("Emmentaler", "musescore/MuseScore", "Emmentaler.otf"),
+        new("FinaleMaestro", "musescore/MuseScore", "FinaleMaestro.otf"),
         new("Gootville", "musescore/MuseScore", "Gootville.otf")
     ];
 
@@ -94,7 +94,6 @@ internal static class FontDatasetExporter
             throw new FileNotFoundException($"{source.FileName} not found in {source.Repository}{truncated}");
         }
 
-        // Prefer redistributable/build output over test fixtures if a repository contains duplicates.
         var remotePath = candidates
             .OrderBy(x => x.Contains("test", StringComparison.OrdinalIgnoreCase) ? 1 : 0)
             .ThenBy(x => x.Length)
@@ -201,20 +200,21 @@ internal static class FontDatasetExporter
             .ToDictionary(x => (x.Glyph, x.Font), x => x.File!, new GlyphFontComparer());
 
         var sb = new StringBuilder();
-        sb.AppendLine("<!doctype html><html><head><meta charset=\"utf-8\"><title>SMuFL dataset</title>");
-        sb.AppendLine("<style>body{font-family:system-ui,Arial,sans-serif;margin:24px;background:#fafafa}.glyph{margin:28px 0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}.card{background:white;border:1px solid #ddd;border-radius:8px;padding:10px}.shape{height:130px;display:flex;align-items:center;justify-content:center;background:#f5f5f5}.shape img{max-width:100%;max-height:120px}.font{font-size:12px;margin-top:6px}.missing{color:#999}.mono{font-family:ui-monospace,Consolas,monospace}</style></head><body>");
-        sb.AppendLine("<h1>Selected SMuFL glyph dataset</h1><p>Canonical SMuFL labels; one vector sample per available font.</p>");
+        sb.AppendLine("<!doctype html><html><head><meta charset=\"utf-8\"><title>SMuFL dataset gallery</title>");
+        sb.AppendLine("<style>body{font-family:system-ui,Arial,sans-serif;margin:24px;background:#fafafa;color:#222}header{position:sticky;top:0;background:#fafafaeF;padding:10px 0 14px;backdrop-filter:blur(6px);z-index:2}input{font:inherit;padding:8px 10px;width:min(520px,90vw);border:1px solid #bbb;border-radius:6px}.glyph{margin:28px 0;padding-top:8px}.glyph h2{margin-bottom:4px}.meta{color:#777;font-size:12px;margin-bottom:10px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}.card{background:white;border:1px solid #ddd;border-radius:8px;padding:10px}.shape{height:150px;display:flex;align-items:center;justify-content:center;background:#f5f5f5}.shape img{max-width:100%;max-height:140px}.font{font-size:12px;margin-top:6px;font-weight:600}.missing{color:#999}.mono{font-family:ui-monospace,Consolas,monospace}</style></head><body>");
+        sb.AppendLine("<header><h1>SMuFL dataset gallery</h1><p>Каждый класс и глиф из каждого доступного шрифта.</p><input id=\"q\" placeholder=\"Filter glyph: clef, accidental, tremolo...\" autofocus></header>");
 
         foreach (var glyph in glyphs)
         {
-            sb.AppendLine($"<section class=\"glyph\"><h2 class=\"mono\">{glyph.Name}</h2><div class=\"grid\">");
+            var search = $"{glyph.Name} {glyph.Codepoint} {glyph.Description}".ToLowerInvariant();
+            sb.AppendLine($"<section class=\"glyph\" data-search=\"{System.Net.WebUtility.HtmlEncode(search)}\"><h2 class=\"mono\">{System.Net.WebUtility.HtmlEncode(glyph.Name)}</h2><div class=\"meta\">{System.Net.WebUtility.HtmlEncode(glyph.Codepoint)} · {System.Net.WebUtility.HtmlEncode(glyph.Description)}</div><div class=\"grid\">");
             foreach (var source in sources)
             {
                 sb.AppendLine("<div class=\"card\">");
                 if (available.TryGetValue((glyph.Name, source.Name), out var relative))
                 {
                     var fromGallery = "dataset/" + relative;
-                    sb.AppendLine($"<div class=\"shape\"><img src=\"{fromGallery}\"></div><div class=\"font\">{source.Name}</div>");
+                    sb.AppendLine($"<div class=\"shape\"><img src=\"{fromGallery}\" alt=\"{glyph.Name} in {source.Name}\"></div><div class=\"font\">{source.Name}</div>");
                 }
                 else
                 {
@@ -225,7 +225,7 @@ internal static class FontDatasetExporter
             sb.AppendLine("</div></section>");
         }
 
-        sb.AppendLine("</body></html>");
+        sb.AppendLine("<script>const q=document.querySelector('#q');q.addEventListener('input',()=>{const s=q.value.trim().toLowerCase();document.querySelectorAll('.glyph').forEach(x=>x.style.display=!s||x.dataset.search.includes(s)?'':'none')});</script></body></html>");
         File.WriteAllText(path, sb.ToString(), new UTF8Encoding(false));
     }
 
