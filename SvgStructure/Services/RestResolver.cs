@@ -13,9 +13,10 @@ public sealed record RestDiagnosticEntry(
     string Verdict);
 
 /// <summary>
-/// Resolves rests from still-unclaimed MusicSymbol candidates. Positional legality intentionally
-/// mirrors NoteHeadResolver: on/in the staff, first outside half-space, or farther out only when the
-/// candidate sits over a recognized ledger ladder.
+/// Resolves rests from still-unclaimed MusicSymbol candidates. Rests are deliberately allowed at any
+/// vertical position: unlike note heads, their placement is not constrained to staff/ledger steps.
+/// A candidate only needs a measure; when its source part is unknown we attach it to the vertically
+/// nearest logical block of that measure for downstream coordinates.
 /// </summary>
 public sealed class RestResolver
 {
@@ -46,7 +47,7 @@ public sealed class RestResolver
         var results = new List<RestResolution>();
 
         var candidates = symbols.Candidates
-            .Where(x => x.PartNumber is not null)
+            .Where(x => x.MeasureNumber > 0)
             .Where(x => x.SmoothPaths.Count > 0)
             .OrderBy(x => x.MeasureNumber)
             .ThenBy(x => x.PartNumber)
@@ -55,15 +56,16 @@ public sealed class RestResolver
 
         foreach (var candidate in candidates)
         {
-            var partNumber = candidate.PartNumber!.Value;
-            if (!grid.TryGetBlock(partNumber, candidate.MeasureNumber, out var block))
+            var block = ResolveBlock(candidate, grid);
+            if (block is null)
                 continue;
 
+            var partNumber = block.PartNumber;
             var logical = block.ToLogical(candidate.PhysicalBounds);
             var previouslyRecognized = IsPreviouslyRecognized(
                 candidate.PhysicalBounds,
                 candidate.MeasureNumber,
-                partNumber,
+                candidate.PartNumber,
                 meters,
                 clefs,
                 noteHeads,
@@ -84,25 +86,6 @@ public sealed class RestResolver
                     true,
                     null,
                     "skipped: overlaps previously recognized symbol"));
-                continue;
-            }
-
-            var onLegalStaffPosition = IsOnLegalStaffPosition(
-                partNumber,
-                candidate.MeasureNumber,
-                logical,
-                ledgerLines);
-            if (!onLegalStaffPosition)
-            {
-                _diagnostics.Add(new RestDiagnosticEntry(
-                    partNumber,
-                    candidate.MeasureNumber,
-                    candidate,
-                    logical,
-                    false,
-                    false,
-                    null,
-                    "rejected before PCA: not on staff/ledger position"));
                 continue;
             }
 
@@ -165,41 +148,31 @@ public sealed class RestResolver
             .ToArray();
     }
 
-    private static bool IsOnLegalStaffPosition(
-        int partNumber,
-        int measureNumber,
-        LogicalRectD logicalBounds,
-        IReadOnlyList<LedgerLineResolution> ledgerLines)
+    private static LogicalGridBlock? ResolveBlock(
+        MusicSymbolCandidate candidate,
+        LogicalGridResolution grid)
     {
-        var centerY = (logicalBounds.Top + logicalBounds.Bottom) / 2.0;
-        var position = (int)Math.Round(centerY);
+        if (candidate.PartNumber is { } partNumber &&
+            grid.TryGetBlock(partNumber, candidate.MeasureNumber, out var exact))
+            return exact;
 
-        if (position >= 0 && position <= 8)
-            return true;
-        if (position is -1 or 9)
-            return true;
-
-        var requiredDepth = position < -1
-            ? (int)Math.Ceiling((Math.Abs(position) - 1) / 2.0)
-            : (int)Math.Ceiling((position - 9) / 2.0);
-
-        var centerX = LogicalCenterX(logicalBounds);
-        if (centerX is null)
-            return false;
-
-        var matchingLadders = ledgerLines
-            .Where(x => x.PartNumber == partNumber && x.MeasureNumber == measureNumber)
-            .Where(x => Math.Sign(x.Depth) == (position < 0 ? -1 : 1))
-            .Where(x => Math.Abs(x.Depth) >= requiredDepth)
+        var sameMeasure = grid.Blocks
+            .Where(x => x.MeasureNumber == candidate.MeasureNumber)
             .ToArray();
+        if (sameMeasure.Length == 0)
+            return null;
 
-        return matchingLadders.Any(x => ContainsLogicalX(x.LogicalBounds, centerX.Value));
+        var centerY = candidate.PhysicalBounds.CenterY;
+        return sameMeasure
+            .OrderBy(x => VerticalDistance(centerY, x.PhysicalBounds))
+            .ThenBy(x => Math.Abs(centerY - x.PhysicalBounds.CenterY))
+            .First();
     }
 
     private static bool IsPreviouslyRecognized(
         RectD candidate,
         int measureNumber,
-        int partNumber,
+        int? sourcePartNumber,
         IReadOnlyList<MeterResolution> meters,
         IReadOnlyList<ClefResolution> clefs,
         IReadOnlyList<NoteHeadResolution> noteHeads,
@@ -211,51 +184,59 @@ public sealed class RestResolver
     {
         var occupied = new List<RectD>();
 
+        bool SamePart(int partNumber) =>
+            sourcePartNumber is null || partNumber == sourcePartNumber.Value;
+
         occupied.AddRange(meters
-            .Where(x => x.MeasureNumber == measureNumber && x.PartNumber == partNumber)
+            .Where(x => x.MeasureNumber == measureNumber)
+            .Where(x => SamePart(x.PartNumber))
             .Select(x => x.PhysicalBounds));
         occupied.AddRange(clefs
-            .Where(x => x.MeasureNumber == measureNumber && x.PartNumber == partNumber)
+            .Where(x => x.MeasureNumber == measureNumber)
+            .Where(x => SamePart(x.PartNumber))
             .Select(x => x.PhysicalBounds));
         occupied.AddRange(noteHeads
-            .Where(x => x.MeasureNumber == measureNumber && x.PartNumber == partNumber)
+            .Where(x => x.MeasureNumber == measureNumber)
+            .Where(x => SamePart(x.PartNumber))
             .Select(x => x.PhysicalBounds));
         occupied.AddRange(accidentals
-            .Where(x => x.MeasureNumber == measureNumber && x.PartNumber == partNumber)
+            .Where(x => x.MeasureNumber == measureNumber)
+            .Where(x => SamePart(x.PartNumber))
             .Select(x => x.PhysicalBounds));
         occupied.AddRange(stems
-            .Where(x => x.MeasureNumber == measureNumber && x.PartNumber == partNumber)
+            .Where(x => x.MeasureNumber == measureNumber)
+            .Where(x => SamePart(x.PartNumber))
             .Select(x => x.PhysicalBounds));
         occupied.AddRange(noteFlags
-            .Where(x => x.MeasureNumber == measureNumber && x.PartNumber == partNumber)
+            .Where(x => x.MeasureNumber == measureNumber)
+            .Where(x => SamePart(x.PartNumber))
             .Select(x => x.PhysicalBounds));
 
         occupied.AddRange(beams
             .Where(x => x.MeasureNumber == measureNumber)
-            .Where(x => x.Stems.Any(s => s.PartNumber == partNumber))
+            .Where(x => sourcePartNumber is null || x.Stems.Any(s => s.PartNumber == sourcePartNumber.Value))
             .Select(x => x.PhysicalBounds));
 
         occupied.AddRange(arcs
-            .Where(x => ArcTouchesPartMeasure(x, partNumber, measureNumber))
+            .Where(x => ArcTouchesMeasureAndOptionalPart(x, sourcePartNumber, measureNumber))
             .Select(x => x.PhysicalBounds));
 
         return occupied.Any(x => SignificantOverlap(candidate, x));
     }
 
-    private static bool ArcTouchesPartMeasure(
+    private static bool ArcTouchesMeasureAndOptionalPart(
         ArcResolution arc,
-        int partNumber,
+        int? partNumber,
         int measureNumber)
     {
-        var noteMatch = arc.Notes.Any(x =>
-            x.PartNumber == partNumber &&
-            x.MeasureNumber == measureNumber);
-        if (noteMatch)
-            return true;
+        var notes = arc.Notes.Where(x => x.MeasureNumber == measureNumber);
+        var stems = arc.Stems.Where(x => x.MeasureNumber == measureNumber);
 
-        return arc.Stems.Any(x =>
-            x.PartNumber == partNumber &&
-            x.MeasureNumber == measureNumber);
+        if (partNumber is null)
+            return notes.Any() || stems.Any();
+
+        return notes.Any(x => x.PartNumber == partNumber.Value) ||
+               stems.Any(x => x.PartNumber == partNumber.Value);
     }
 
     private static bool SignificantOverlap(RectD a, RectD b)
@@ -272,9 +253,8 @@ public sealed class RestResolver
         return overlap / candidateArea >= 0.55;
     }
 
-    private static bool ContainsLogicalX(LogicalRectD bounds, double x) =>
-        bounds.Left is { } left && bounds.Right is { } right && x >= left && x <= right;
-
-    private static double? LogicalCenterX(LogicalRectD bounds) =>
-        bounds.Left is { } left && bounds.Right is { } right ? (left + right) / 2.0 : null;
+    private static double VerticalDistance(double y, RectD rect) =>
+        y < rect.Top ? rect.Top - y
+        : y > rect.Bottom ? y - rect.Bottom
+        : 0;
 }
