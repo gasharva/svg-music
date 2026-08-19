@@ -10,7 +10,7 @@ namespace SvgStructure.Services;
 
 /// <summary>
 /// IClefRecognizer adapter over the reusable GlyphPcaGallery runtime.
-/// The trained model stays glyph-generic; this adapter translates the model's treble/bass
+/// The trained model stays glyph-generic; this adapter translates the model's clef
 /// class vocabulary into the pipeline's ClefSymbol vocabulary.
 /// </summary>
 public sealed class GlyphPcaClefRecognizer : IClefRecognizer
@@ -51,8 +51,8 @@ public sealed class GlyphPcaClefRecognizer : IClefRecognizer
             if (analysis.Error is not null)
                 return new ClefSymbolRecognition(null, 0, Array.Empty<ClefSymbolCandidate>(), analysis.Error);
 
-            // As with meter digits, acceptance is global. If the best PCA class is a rest, flat,
-            // notehead, etc., do not reinterpret a lower-ranked treble/bass match as a clef.
+            // Acceptance is global. If the best PCA class is another glyph, do not reinterpret a
+            // lower-ranked clef match as a clef.
             var globalBest = analysis.Matches.FirstOrDefault();
             var globalBestClef = globalBest is null ? null : ParseClefClass(globalBest.Class);
             if (!analysis.Accepted || globalBestClef is null)
@@ -90,16 +90,17 @@ public sealed class GlyphPcaClefRecognizer : IClefRecognizer
         return new ClefSymbolCandidate(symbol.Value, match.Distance, confidence);
     }
 
-    private static ClefSymbol? ParseClefClass(string className)
+    private static ClefSymbol? ParseClefClass(string className) => className.ToLowerInvariant() switch
     {
-        if (className.Equals("treble", StringComparison.OrdinalIgnoreCase))
-            return ClefSymbol.G;
+        // Current model vocabulary.
+        "gclef" => ClefSymbol.G,
+        "fclef" => ClefSymbol.F,
 
-        if (className.Equals("bass", StringComparison.OrdinalIgnoreCase))
-            return ClefSymbol.F;
-
-        return null;
-    }
+        // Backward compatibility with the first hand-trained model.
+        "treble" => ClefSymbol.G,
+        "bass" => ClefSymbol.F,
+        _ => null
+    };
 
     private static void WriteContoursSvg(
         IReadOnlyList<IReadOnlyList<Vector2>> contours,
