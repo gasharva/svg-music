@@ -16,9 +16,9 @@ public sealed record AccidentalRecognition(
     string? Error = null);
 
 /// <summary>
-/// Thin adapter over the glyph-generic PCA model. At the moment the trained model contains
-/// flat and sharp. Natural/double-sharp/double-flat are deliberately present in the domain enum
-/// and can be enabled simply by adding corresponding PCA classes later.
+/// Thin adapter over the glyph-generic PCA model. The current trained model contains flat, sharp,
+/// natural, double-flat and double-sharp classes; this adapter translates that model vocabulary
+/// into the SvgStructure accidental domain enum.
 /// </summary>
 public sealed class GlyphPcaAccidentalRecognizer
 {
@@ -95,6 +95,14 @@ public sealed class GlyphPcaAccidentalRecognizer
 
     private static AccidentalKind? ParseClass(string name) => name.ToLowerInvariant() switch
     {
+        // Current model vocabulary.
+        "accidentalflat" => AccidentalKind.Flat,
+        "accidentalsharp" => AccidentalKind.Sharp,
+        "accidentalnatural" => AccidentalKind.Natural,
+        "accidentaldoublesharp" => AccidentalKind.DoubleSharp,
+        "accidentaldoubleflat" => AccidentalKind.DoubleFlat,
+
+        // Backward compatibility with the first hand-trained model.
         "flat" => AccidentalKind.Flat,
         "sharp" => AccidentalKind.Sharp,
         "natural" => AccidentalKind.Natural,
