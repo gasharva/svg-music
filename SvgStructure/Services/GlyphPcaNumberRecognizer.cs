@@ -58,7 +58,7 @@ public sealed class GlyphPcaNumberRecognizer : ISvgNumberRecognizer
                 return new SvgNumberRecognition(null, 0, Array.Empty<SvgNumberCandidate>(), analysis.Error);
 
             // Acceptance belongs to the global glyph classifier. Do not take a lower-ranked numeric
-            // match when the model actually classified the shape as another glyph class (flat, note, ...).
+            // match when the model actually classified the shape as another glyph class.
             var globalBest = analysis.Matches.FirstOrDefault();
             var globalBestDigit = globalBest is null ? null : ParseDigitClass(globalBest.Class);
             if (!analysis.Accepted || globalBestDigit is null)
@@ -103,10 +103,11 @@ public sealed class GlyphPcaNumberRecognizer : ISvgNumberRecognizer
         if (int.TryParse(className, NumberStyles.None, CultureInfo.InvariantCulture, out var plainDigit))
             return plainDigit;
 
-        // The trained glyph model uses semantic class labels (currently dgt3, dgt4, ...), not
-        // bare numeric strings. Keep the adapter responsible for translating model vocabulary into
-        // ISvgNumberRecognizer's numeric vocabulary; the PCA project itself remains glyph-agnostic.
-        foreach (var prefix in new[] { "dgt", "digit", "timesig" })
+        // Current model vocabulary is timesigN (the checked-in model currently contains
+        // timesig1, timesig2, timesig4, timesig6, timesig8 and timesig9). Keep the older aliases
+        // so previously trained models remain usable. Parsing is generic, so any future timesigN
+        // class starts working without another code change.
+        foreach (var prefix in new[] { "timesig", "dgt", "digit" })
         {
             if (!className.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
                 continue;
