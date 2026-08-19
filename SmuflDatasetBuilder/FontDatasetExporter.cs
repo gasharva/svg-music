@@ -13,8 +13,8 @@ internal static class FontDatasetExporter
         new("Bravura", "steinbergmedia/bravura", "Bravura.otf"),
         new("Leland", "MuseScoreFonts/Leland", "Leland.otf"),
         new("Sebastian", "fkretlow/sebastian", "Sebastian.otf"),
-        new("Emmentaler", "musescore/MuseScore", "Emmentaler.otf"),
-        new("Gootville", "musescore/MuseScore", "Gootville.otf")
+        new("Gootville", "musescore/MuseScore", "Gootville.otf"),
+        new("FinaleMaestro", "musescore/MuseScore", "FinaleMaestro.otf")
     ];
 
     public static async Task ExportAsync(
@@ -38,6 +38,9 @@ internal static class FontDatasetExporter
             try
             {
                 var fontPath = await DownloadFontAsync(http, source, fontsDirectory, cancellationToken);
+                if (fontPath is null)
+                    continue;
+
                 var count = ExportFont(source.Name, fontPath, glyphs, datasetDirectory, manifest);
                 Console.WriteLine($"[{source.Name}] exported {count}/{glyphs.Count} selected glyphs");
             }
@@ -58,7 +61,7 @@ internal static class FontDatasetExporter
         Console.WriteLine($"Gallery:  {Path.Combine(outputDirectory, "dataset-gallery.html")}");
     }
 
-    private static async Task<string> DownloadFontAsync(
+    private static async Task<string?> DownloadFontAsync(
         HttpClient http,
         FontSource source,
         string fontsDirectory,
@@ -91,7 +94,10 @@ internal static class FontDatasetExporter
         if (candidates.Length == 0)
         {
             var truncated = treeJson["truncated"]?.GetValue<bool>() == true ? " (GitHub tree was truncated)" : string.Empty;
-            throw new FileNotFoundException($"{source.FileName} not found in {source.Repository}{truncated}");
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine($"[{source.Name}] skipped: {source.FileName} not found in {source.Repository}{truncated}");
+            Console.ResetColor();
+            return null;
         }
 
         // Prefer redistributable/build output over test fixtures if a repository contains duplicates.
