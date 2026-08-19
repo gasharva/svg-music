@@ -1,0 +1,10 @@
+block: P1-M14
+logical bbox: X 12.63..14.59, Y -5.64..2.02
+contours: 2
+points: 365
+value: null
+confidence: 0.0000
+error: PCA rejected: risk=9.092, normalized=9.092, d1/d2=0.386/0.5, classLimit=0.299
+candidates:
+  G: confidence=0.2688, distance=2.7207
+  F: confidence=0.1243, distance=7.0439
