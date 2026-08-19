@@ -42,7 +42,6 @@ public sealed class MeterOverlayRenderer
         canvas.Translate(-bounds.Left, -bounds.Top);
         canvas.DrawPicture(picture);
 
-        // Keep the source score clearly visible: the semantic overlay should highlight, not erase it.
         using (var veil = new SKPaint { Color = new SKColor(255, 255, 255, 105) })
             canvas.DrawRect(bounds, veil);
 
@@ -232,6 +231,7 @@ public sealed class MeterOverlayRenderer
             IsAntialias = true
         };
 
+        // A quadratic Bezier passing through Midpoint at t=.5 needs this control point.
         var controlX = 2.0 * arc.Midpoint.X - 0.5 * (arc.LeftEndpoint.X + arc.RightEndpoint.X);
         var controlY = 2.0 * arc.Midpoint.Y - 0.5 * (arc.LeftEndpoint.Y + arc.RightEndpoint.Y);
 
@@ -419,49 +419,48 @@ public sealed class MeterOverlayRenderer
             return;
         }
 
-        var cx = x + w * 0.5f;
-        var top = y;
-        var mid = y + h * 0.5f;
-        var bottom = y + h;
-        switch (char)
+        var upper = char.ToUpperInvariant(ch);
+        switch (upper)
         {
-            case '-': canvas.DrawLine(x + w * 0.15f, mid, x + w * 0.85f, mid, paint); break;
-            case 'G': DrawOvalChar(canvas, x, y, w, h, paint, openRight: true); canvas.DrawLine(cx, mid, x + w, mid, paint); break;
-            case 'F': canvas.DrawLine(x + w * .18f, top, x + w * .18f, bottom, paint); canvas.DrawLine(x + w * .18f, top, x + w * .88f, top, paint); canvas.DrawLine(x + w * .18f, mid, x + w * .72f, mid, paint); break;
-            case 'S': DrawS(canvas, x, y, w, h, paint); break;
-            case 'N': canvas.DrawLine(x + w*.15f,bottom,x+w*.15f,top,paint); canvas.DrawLine(x+w*.15f,top,x+w*.85f,bottom,paint); canvas.DrawLine(x+w*.85f,bottom,x+w*.85f,top,paint); break;
-            case 'A': canvas.DrawLine(x+w*.12f,bottom,cx,top,paint); canvas.DrawLine(cx,top,x+w*.88f,bottom,paint); canvas.DrawLine(x+w*.28f,mid,x+w*.72f,mid,paint); break;
-            case 'B': canvas.DrawLine(x+w*.15f,top,x+w*.15f,bottom,paint); DrawRightLobe(canvas,x+w*.15f,top,w*.7f,h*.5f,paint); DrawRightLobe(canvas,x+w*.15f,mid,w*.7f,h*.5f,paint); break;
-            case 'C': DrawOvalChar(canvas, x, y, w, h, paint, openRight: true); break;
-            case 'D': canvas.DrawLine(x+w*.15f,top,x+w*.15f,bottom,paint); DrawRightLobe(canvas,x+w*.15f,top,w*.72f,h,paint); break;
-            case 'E': canvas.DrawLine(x+w*.15f,top,x+w*.15f,bottom,paint); canvas.DrawLine(x+w*.15f,top,x+w*.88f,top,paint); canvas.DrawLine(x+w*.15f,mid,x+w*.72f,mid,paint); canvas.DrawLine(x+w*.15f,bottom,x+w*.88f,bottom,paint); break;
-            default: canvas.DrawRect(x+w*.2f,y+h*.2f,w*.6f,h*.6f,paint); break;
+            case '-': canvas.DrawLine(x, y + h * .5f, x + w * .75f, y + h * .5f, paint); break;
+            case '.': canvas.DrawPoint(x + w * .35f, y + h, paint); break;
+            case 'G': canvas.DrawOval(new SKRect(x, y, x + w, y + h), paint); canvas.DrawLine(x + w * .52f, y + h * .55f, x + w, y + h * .55f, paint); canvas.DrawLine(x + w, y + h * .55f, x + w, y + h * .82f, paint); break;
+            case 'F': canvas.DrawLine(x, y, x, y + h, paint); canvas.DrawLine(x, y, x + w, y, paint); canvas.DrawLine(x, y + h * .48f, x + w * .75f, y + h * .48f, paint); break;
+            case 'C': canvas.DrawArc(new SKRect(x, y, x + w, y + h), 45, 270, false, paint); break;
+            case 'A': canvas.DrawLine(x, y + h, x + w * .5f, y, paint); canvas.DrawLine(x + w * .5f, y, x + w, y + h, paint); canvas.DrawLine(x + w * .22f, y + h * .58f, x + w * .78f, y + h * .58f, paint); break;
+            case 'B': canvas.DrawLine(x, y, x, y + h, paint); canvas.DrawArc(new SKRect(x, y, x + w, y + h * .52f), -90, 180, false, paint); canvas.DrawArc(new SKRect(x, y + h * .48f, x + w, y + h), -90, 180, false, paint); break;
+            case 'D': canvas.DrawLine(x, y, x, y + h, paint); canvas.DrawArc(new SKRect(x - w * .25f, y, x + w, y + h), -90, 180, false, paint); break;
+            case 'E': canvas.DrawLine(x, y, x + w, y, paint); canvas.DrawLine(x, y, x + w, y, paint); canvas.DrawLine(x, y + h * .5f, x + w * .75f, y + h * .5f, paint); canvas.DrawLine(x, y + h, x + w, y + h, paint); break;
+            case 'S': canvas.DrawArc(new SKRect(x, y, x + w, y + h * .55f), 210, 250, false, paint); canvas.DrawArc(new SKRect(x, y + h * .45f, x + w, y + h), 30, 250, false, paint); break;
+            case 'N': canvas.DrawLine(x, y + h, x, y, paint); canvas.DrawLine(x, y, x + w, y + h, paint); canvas.DrawLine(x + w, y + h, x + w, y, paint); break;
+            default: canvas.DrawRect(new SKRect(x, y, x + w, y + h), paint); break;
         }
+
+        if (char.IsLetter(ch) && char.IsLower(ch))
+            canvas.DrawLine(x, y + h + 1.5f, x + w, y + h + 1.5f, paint);
     }
 
     private static void DrawDigit(SKCanvas canvas, int digit, float x, float y, float w, float h, SKPaint paint)
     {
-        var a = (x+w*.2f,y+h*.1f); var b=(x+w*.8f,y+h*.1f); var c=(x+w*.82f,y+h*.5f); var d=(x+w*.8f,y+h*.9f); var e=(x+w*.2f,y+h*.9f); var f=(x+w*.18f,y+h*.5f); var g=(x+w*.2f,y+h*.5f); var gr=(x+w*.8f,y+h*.5f);
-        void L((float x,float y)p,(float x,float y)q)=>canvas.DrawLine(p.x,p.y,q.x,q.y,paint);
-        switch(digit)
+        var segments = digit switch
         {
-            case 0: L(a,b);L(b,d);L(d,e);L(e,a);break;
-            case 1: L((x+w*.5f,y+h*.12f),(x+w*.5f,y+h*.9f));L((x+w*.38f,y+h*.25f),(x+w*.5f,y+h*.12f));break;
-            case 2: L(a,b);L(b,c);L(c,g);L(g,e);L(e,d);break;
-            case 3: L(a,b);L(b,c);L(g,gr);L(c,d);L(e,d);break;
-            case 4: L(a,f);L(f,gr);L(b,d);break;
-            case 5: L(b,a);L(a,f);L(f,gr);L(c,d);L(d,e);break;
-            case 6: L(b,a);L(a,e);L(e,d);L(d,c);L(c,g);L(g,f);break;
-            case 7: L(a,b);L(b,d);break;
-            case 8: L(a,b);L(b,d);L(d,e);L(e,a);L(g,gr);break;
-            case 9: L(d,b);L(b,a);L(a,f);L(f,gr);L(g,c);break;
+            0 => "abcdef", 1 => "bc", 2 => "abdeg", 3 => "abcdg", 4 => "bcfg",
+            5 => "acdfg", 6 => "acdefg", 7 => "abc", 8 => "abcdefg", 9 => "abcdfg",
+            _ => string.Empty
+        };
+
+        foreach (var segment in segments)
+        {
+            switch (segment)
+            {
+                case 'a': canvas.DrawLine(x, y, x + w, y, paint); break;
+                case 'b': canvas.DrawLine(x + w, y, x + w, y + h / 2, paint); break;
+                case 'c': canvas.DrawLine(x + w, y + h / 2, x + w, y + h, paint); break;
+                case 'd': canvas.DrawLine(x, y + h, x + w, y + h, paint); break;
+                case 'e': canvas.DrawLine(x, y + h / 2, x, y + h, paint); break;
+                case 'f': canvas.DrawLine(x, y, x, y + h / 2, paint); break;
+                case 'g': canvas.DrawLine(x, y + h / 2, x + w, y + h / 2, paint); break;
+            }
         }
     }
-
-    private static void DrawOvalChar(SKCanvas canvas,float x,float y,float w,float h,SKPaint paint,bool openRight)
-    {
-        using var p=new SKPath(); p.MoveTo(x+w*.78f,y+h*.15f); p.CubicTo(x+w*.15f,y,x+w*.05f,y+h*.85f,x+w*.78f,y+h*.85f); if(!openRight)p.CubicTo(x+w,y+h*.75f,x+w,y+h*.25f,x+w*.78f,y+h*.15f); canvas.DrawPath(p,paint);
-    }
-    private static void DrawS(SKCanvas canvas,float x,float y,float w,float h,SKPaint paint){using var p=new SKPath();p.MoveTo(x+w*.85f,y+h*.15f);p.CubicTo(x+w*.2f,y,x+w*.05f,y+h*.45f,x+w*.55f,y+h*.5f);p.CubicTo(x+w,y+h*.55f,x+w*.85f,y+h*.98f,x+w*.15f,y+h*.85f);canvas.DrawPath(p,paint);}
-    private static void DrawRightLobe(SKCanvas canvas,float x,float y,float w,float h,SKPaint paint){using var p=new SKPath();p.MoveTo(x,y);p.CubicTo(x+w,y,x+w,y+h,x,y+h);canvas.DrawPath(p,paint);}
 }
