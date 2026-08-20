@@ -5,70 +5,90 @@ using System.Xml.Schema;
 using System.Xml.Serialization;
 using Microsoft.CSharp;
 
-if (args.Length != 3)
+try
 {
-    Console.Error.WriteLine("Usage: MusicXmlModelGenerator <schema-dir> <output.cs> <namespace>");
-    return 2;
+    return Run(args);
+}
+catch (Exception ex)
+{
+    Console.Error.WriteLine("MusicXmlModelGenerator FAILED:");
+    Console.Error.WriteLine(ex.ToString());
+    return 1;
 }
 
-var schemaDir = Path.GetFullPath(args[0]);
-var outputPath = Path.GetFullPath(args[1]);
-var targetNamespace = args[2];
-
-var schemas = new XmlSchemas();
-foreach (var fileName in new[] { "xml.xsd", "xlink.xsd", "musicxml.xsd" })
+static int Run(string[] args)
 {
-    var path = Path.Combine(schemaDir, fileName);
-    using var reader = XmlReader.Create(path, new XmlReaderSettings { DtdProcessing = DtdProcessing.Ignore, XmlResolver = null });
-    var schema = XmlSchema.Read(reader, (_, e) => Console.Error.WriteLine(e.Message))
-        ?? throw new InvalidDataException($"Could not read schema {path}");
-    schemas.Add(schema);
-}
-
-schemas.Compile((_, e) => Console.Error.WriteLine(e.Message), fullCompile: true);
-
-var codeNamespace = new CodeNamespace(targetNamespace);
-var compileUnit = new CodeCompileUnit();
-compileUnit.Namespaces.Add(codeNamespace);
-
-var importer = new XmlSchemaImporter(schemas);
-var exporter = new XmlCodeExporter(codeNamespace, compileUnit, CodeGenerationOptions.GenerateProperties);
-var exported = new HashSet<string>(StringComparer.Ordinal);
-
-foreach (XmlSchema schema in schemas)
-{
-    foreach (XmlSchemaType schemaType in schema.SchemaTypes.Values)
+    if (args.Length != 3)
     {
-        if (schemaType.QualifiedName.IsEmpty)
-            continue;
-        var key = "T:" + schemaType.QualifiedName;
-        if (!exported.Add(key))
-            continue;
-        exporter.ExportTypeMapping(importer.ImportSchemaType(schemaType.QualifiedName));
+        Console.Error.WriteLine("Usage: MusicXmlModelGenerator <schema-dir> <output.cs> <namespace>");
+        return 2;
     }
 
-    foreach (XmlSchemaElement element in schema.Elements.Values)
+    var schemaDir = Path.GetFullPath(args[0]);
+    var outputPath = Path.GetFullPath(args[1]);
+    var targetNamespace = args[2];
+
+    Console.WriteLine($"Schema dir: {schemaDir}");
+    Console.WriteLine($"Output:     {outputPath}");
+    Console.WriteLine($"Namespace:  {targetNamespace}");
+
+    var schemas = new XmlSchemas();
+    foreach (var fileName in new[] { "xml.xsd", "xlink.xsd", "musicxml.xsd" })
     {
-        if (element.QualifiedName.IsEmpty)
-            continue;
-        var key = "E:" + element.QualifiedName;
-        if (!exported.Add(key))
-            continue;
-        exporter.ExportTypeMapping(importer.ImportTypeMapping(element.QualifiedName));
+        var path = Path.Combine(schemaDir, fileName);
+        Console.WriteLine($"Reading schema: {path}");
+        using var reader = XmlReader.Create(path, new XmlReaderSettings { DtdProcessing = DtdProcessing.Ignore, XmlResolver = null });
+        var schema = XmlSchema.Read(reader, (_, e) => Console.Error.WriteLine($"Schema read: {e.Severity}: {e.Message}"))
+            ?? throw new InvalidDataException($"Could not read schema {path}");
+        schemas.Add(schema);
     }
-}
 
-Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
-using var provider = new CSharpCodeProvider();
-using var writer = new StreamWriter(outputPath, false, new System.Text.UTF8Encoding(false));
-provider.GenerateCodeFromCompileUnit(
-    compileUnit,
-    writer,
-    new CodeGeneratorOptions
+    Console.WriteLine("Compiling schemas...");
+    schemas.Compile((_, e) => Console.Error.WriteLine($"Schema compile: {e.Severity}: {e.Message}"), fullCompile: true);
+
+    var codeNamespace = new CodeNamespace(targetNamespace);
+    var compileUnit = new CodeCompileUnit();
+    compileUnit.Namespaces.Add(codeNamespace);
+
+    var importer = new XmlSchemaImporter(schemas);
+    var exporter = new XmlCodeExporter(codeNamespace, compileUnit, CodeGenerationOptions.GenerateProperties);
+    var exported = new HashSet<string>(StringComparer.Ordinal);
+
+    foreach (XmlSchema schema in schemas)
     {
-        BracingStyle = "C",
-        BlankLinesBetweenMembers = true
-    });
+        foreach (XmlSchemaType schemaType in schema.SchemaTypes.Values)
+        {
+            if (schemaType.QualifiedName.IsEmpty)
+                continue;
+            var key = "T:" + schemaType.QualifiedName;
+            if (!exported.Add(key))
+                continue;
+            exporter.ExportTypeMapping(importer.ImportSchemaType(schemaType.QualifiedName));
+        }
 
-Console.WriteLine($"Generated xsd.exe-style model: {outputPath}");
-return 0;
+        foreach (XmlSchemaElement element in schema.Elements.Values)
+        {
+            if (element.QualifiedName.IsEmpty)
+                continue;
+            var key = "E:" + element.QualifiedName;
+            if (!exported.Add(key))
+                continue;
+            exporter.ExportTypeMapping(importer.ImportTypeMapping(element.QualifiedName));
+        }
+    }
+
+    Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
+    using var provider = new CSharpCodeProvider();
+    using var writer = new StreamWriter(outputPath, false, new System.Text.UTF8Encoding(false));
+    provider.GenerateCodeFromCompileUnit(
+        compileUnit,
+        writer,
+        new CodeGeneratorOptions
+        {
+            BracingStyle = "C",
+            BlankLinesBetweenMembers = true
+        });
+
+    Console.WriteLine($"Generated xsd.exe-style model: {outputPath}");
+    return 0;
+}
