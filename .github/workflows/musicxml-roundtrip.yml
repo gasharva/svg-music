@@ -1,0 +1,66 @@
+name: MusicXML round-trip
+
+on:
+  push:
+    branches: [ master ]
+    paths:
+      - 'MusicXml/**'
+      - 'Samples/step-by-step/*.musicxml'
+      - '.github/workflows/musicxml-roundtrip.yml'
+      - 'SvgToMusicXmlPoc.sln'
+  workflow_dispatch:
+
+jobs:
+  roundtrip:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Build
+        run: dotnet build MusicXml/MusicXml.csproj --configuration Release
+
+      - name: Round-trip real MuseScore MusicXML
+        run: |
+          mkdir -p artifacts/musicxml
+          dotnet run --project MusicXml/MusicXml.csproj --configuration Release --no-build -- \
+            Samples/step-by-step/kancheli-mimino-reference.musicxml \
+            artifacts/musicxml/kancheli-mimino-reference.roundtrip.musicxml \
+            | tee artifacts/musicxml/summary.txt
+
+      - name: XML parse smoke test
+        run: python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          p='artifacts/musicxml/kancheli-mimino-reference.roundtrip.musicxml'
+          root=ET.parse(p).getroot()
+          assert root.tag == 'score-partwise'
+          print('XML parser OK:', p)
+          PY
+
+      - name: Upload round-trip artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: musicxml-roundtrip-${{ github.sha }}
+          path: artifacts/musicxml/
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Summary
+        run: |
+          {
+            echo '## MusicXML round-trip PoC'
+            echo
+            echo 'The repository MusicXML reader parsed a real reference score, wrote the complete document back, then re-read it and verified every projected note/rest field.'
+            echo
+            echo 'Download the **musicxml-roundtrip-${{ github.sha }}** artifact and open `kancheli-mimino-reference.roundtrip.musicxml` in MuseScore for the visual smoke test.'
+            echo
+            echo '```text'
+            cat artifacts/musicxml/summary.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
