@@ -1,8 +1,8 @@
 using System;
 using System.CodeDom;
 using System.CodeDom.Compiler;
-using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Xml;
 using System.Xml.Schema;
 using System.Xml.Serialization;
@@ -55,29 +55,21 @@ static int Run(string[] args)
 
     var importer = new XmlSchemaImporter(schemas);
     var exporter = new XmlCodeExporter(codeNamespace, compileUnit, CodeGenerationOptions.GenerateProperties);
-    var exported = new HashSet<string>(StringComparer.Ordinal);
 
-    foreach (XmlSchema schema in schemas)
+    // Important: behave like xsd.exe /classes and start from document roots only.
+    // Exporting every schema type first can create standalone mappings that do not preserve
+    // the repeated xs:choice streams used heavily by MusicXML (measure contents, part-list, etc.).
+    var musicXmlSchema = schemas.Cast<XmlSchema>()
+        .Single(x => string.IsNullOrEmpty(x.TargetNamespace) && x.Elements[new XmlQualifiedName("score-partwise")] is not null);
+
+    foreach (var rootName in new[] { "score-partwise", "score-timewise" })
     {
-        foreach (XmlSchemaType schemaType in schema.SchemaTypes.Values)
-        {
-            if (schemaType.QualifiedName.IsEmpty)
-                continue;
-            var key = "T:" + schemaType.QualifiedName;
-            if (!exported.Add(key))
-                continue;
-            exporter.ExportTypeMapping(importer.ImportSchemaType(schemaType.QualifiedName));
-        }
+        var qualifiedName = new XmlQualifiedName(rootName);
+        if (musicXmlSchema.Elements[qualifiedName] is null)
+            continue;
 
-        foreach (XmlSchemaElement element in schema.Elements.Values)
-        {
-            if (element.QualifiedName.IsEmpty)
-                continue;
-            var key = "E:" + element.QualifiedName;
-            if (!exported.Add(key))
-                continue;
-            exporter.ExportTypeMapping(importer.ImportTypeMapping(element.QualifiedName));
-        }
+        Console.WriteLine($"Exporting document root: {rootName}");
+        exporter.ExportTypeMapping(importer.ImportTypeMapping(qualifiedName));
     }
 
     Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
@@ -93,5 +85,29 @@ static int Run(string[] args)
         });
 
     Console.WriteLine($"Generated xsd.exe-style model: {outputPath}");
+
+    // Cheap but useful sanity diagnostics. A healthy xsd.exe-style MusicXML model should
+    // contain polymorphic object arrays for repeated choices rather than independent arrays
+    // per element kind. Keep this diagnostic visible in normal build output.
+    var generated = File.ReadAllText(outputPath);
+    var objectArrays = Count(generated, "object[]");
+    var choiceIdentifiers = Count(generated, "XmlChoiceIdentifier");
+    var noteElementMappings = Count(generated, "XmlElementAttribute(\"note\"");
+    var backupElementMappings = Count(generated, "XmlElementAttribute(\"backup\"");
+    var directionElementMappings = Count(generated, "XmlElementAttribute(\"direction\"");
+    Console.WriteLine($"Generated model diagnostics: object[]={objectArrays}, XmlChoiceIdentifier={choiceIdentifiers}, note mappings={noteElementMappings}, backup mappings={backupElementMappings}, direction mappings={directionElementMappings}");
+
     return 0;
+}
+
+static int Count(string text, string needle)
+{
+    var count = 0;
+    var index = 0;
+    while ((index = text.IndexOf(needle, index, StringComparison.Ordinal)) >= 0)
+    {
+        count++;
+        index += needle.Length;
+    }
+    return count;
 }
