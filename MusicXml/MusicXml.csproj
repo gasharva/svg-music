@@ -8,25 +8,41 @@
     <XsdNamespace>&lt;Namespace Prefix='xs' Uri='http://www.w3.org/2001/XMLSchema' /&gt;</XsdNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\MusicXmlModelGenerator\MusicXmlModelGenerator.csproj"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
   <!--
-    Generate the serializer model with the same System.Xml.Serialization CodeDOM pipeline
-    used by xsd.exe. This is important for MusicXML because repeated xs:choice content must
-    stay as an ordered Items[] stream; XmlSchemaClassGenerator split those choices into
-    separate collections and therefore reordered notes / backups / directions on round-trip.
+    The serializer model is generated from the official, pinned MusicXML 4.0 XSD.
+    We first download the three schema files into obj/ and patch MusicXML's two historic
+    http://www.musicxml.org/xsd imports to local relative files.
+
+    MusicXmlModelGenerator is a real project in the solution and a build dependency of this
+    project. We execute its already-built DLL here instead of nesting `dotnet run` inside MSBuild.
   -->
-  <Target Name="GenerateMusicXml40Model" BeforeTargets="CoreCompile">
+  <Target Name="GenerateMusicXml40Model" BeforeTargets="CoreCompile" DependsOnTargets="ResolveProjectReferences">
     <PropertyGroup>
       <MusicXmlSchemaDir>$(IntermediateOutputPath)MusicXmlSchema</MusicXmlSchemaDir>
       <GeneratedMusicXmlDir>$(IntermediateOutputPath)MusicXmlGenerated</GeneratedMusicXmlDir>
-      <GeneratedMusicXmlFile>$(GeneratedMusicXmlDir)/MusicXml.Generated.cs</GeneratedMusicXmlFile>
+      <MusicXmlGeneratorDll>$(MSBuildProjectDirectory)\..\MusicXmlModelGenerator\bin\$(Configuration)\net8.0\MusicXmlModelGenerator.dll</MusicXmlGeneratorDll>
     </PropertyGroup>
 
     <RemoveDir Directories="$(MusicXmlSchemaDir);$(GeneratedMusicXmlDir)" />
     <MakeDir Directories="$(MusicXmlSchemaDir);$(GeneratedMusicXmlDir)" />
 
-    <DownloadFile SourceUrl="$(MusicXml40SchemaBaseUrl)/musicxml.xsd" DestinationFolder="$(MusicXmlSchemaDir)" DestinationFileName="musicxml.xsd" />
-    <DownloadFile SourceUrl="$(MusicXml40SchemaBaseUrl)/xml.xsd" DestinationFolder="$(MusicXmlSchemaDir)" DestinationFileName="xml.xsd" />
-    <DownloadFile SourceUrl="$(MusicXml40SchemaBaseUrl)/xlink.xsd" DestinationFolder="$(MusicXmlSchemaDir)" DestinationFileName="xlink.xsd" />
+    <DownloadFile
+      SourceUrl="$(MusicXml40SchemaBaseUrl)/musicxml.xsd"
+      DestinationFolder="$(MusicXmlSchemaDir)"
+      DestinationFileName="musicxml.xsd" />
+    <DownloadFile
+      SourceUrl="$(MusicXml40SchemaBaseUrl)/xml.xsd"
+      DestinationFolder="$(MusicXmlSchemaDir)"
+      DestinationFileName="xml.xsd" />
+    <DownloadFile
+      SourceUrl="$(MusicXml40SchemaBaseUrl)/xlink.xsd"
+      DestinationFolder="$(MusicXmlSchemaDir)"
+      DestinationFileName="xlink.xsd" />
 
     <XmlPoke
       XmlInputPath="$(MusicXmlSchemaDir)/musicxml.xsd"
@@ -40,11 +56,11 @@
       Namespaces="$(XsdNamespace)" />
 
     <Exec
-      Command="dotnet run --project &quot;$(MSBuildProjectDirectory)/../MusicXmlModelGenerator/MusicXmlModelGenerator.csproj&quot; --configuration Release -- &quot;$(MusicXmlSchemaDir)&quot; &quot;$(GeneratedMusicXmlFile)&quot; MusicXml.Generated"
+      Command="dotnet &quot;$(MusicXmlGeneratorDll)&quot; &quot;$(MusicXmlSchemaDir)&quot; &quot;$(GeneratedMusicXmlDir)\MusicXml.Generated.cs&quot; MusicXml.Generated"
       WorkingDirectory="$(MSBuildProjectDirectory)" />
 
     <ItemGroup>
-      <Compile Include="$(GeneratedMusicXmlFile)" />
+      <Compile Include="$(GeneratedMusicXmlDir)/**/*.cs" />
     </ItemGroup>
   </Target>
 </Project>
