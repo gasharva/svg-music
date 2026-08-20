@@ -3,12 +3,14 @@ using SvgStructure.Models;
 namespace SvgStructure.Services;
 
 /// <summary>
-/// Shared law for all semantic passes after meter detection: geometry already claimed by an earlier
-/// pass is no longer a candidate. A later candidate is removed when its physical bbox is fully inside
-/// (including equality with) a previously recognized bbox.
+/// Shared law for semantic passes after meter detection. Earlier recognized geometry suppresses a
+/// later candidate only when both bounding boxes are practically the same. A large recognized object
+/// (for example an arc) must not hide unrelated primitives merely because they lie inside its bbox.
 /// </summary>
 public static class RecognitionCandidateFilter
 {
+    public const double MaxClaimedEdgeGapFraction = 0.05;
+
     public static MusicSymbolResolution ExcludeClaimed(
         MusicSymbolResolution symbols,
         IEnumerable<RectD> claimedBounds)
@@ -40,7 +42,31 @@ public static class RecognitionCandidateFilter
     }
 
     public static bool IsClaimed(RectD candidate, IEnumerable<RectD> claimedBounds) =>
-        claimedBounds.Any(x => Contains(x, candidate));
+        claimedBounds.Any(x => NearlySameBounds(x, candidate));
+
+    /// <summary>
+    /// The candidate must be contained by the recognized bbox and repeat all four edges within 5%
+    /// of that bbox's width/height. This intentionally rejects the old broad "anything inside" rule.
+    /// </summary>
+    public static bool NearlySameBounds(
+        RectD recognized,
+        RectD candidate,
+        double maxEdgeGapFraction = MaxClaimedEdgeGapFraction)
+    {
+        if (!Contains(recognized, candidate))
+            return false;
+
+        if (recognized.Width <= 1e-9 || recognized.Height <= 1e-9)
+            return false;
+
+        var maxXGap = recognized.Width * maxEdgeGapFraction;
+        var maxYGap = recognized.Height * maxEdgeGapFraction;
+
+        return candidate.Left - recognized.Left <= maxXGap &&
+               recognized.Right - candidate.Right <= maxXGap &&
+               candidate.Top - recognized.Top <= maxYGap &&
+               recognized.Bottom - candidate.Bottom <= maxYGap;
+    }
 
     public static bool Contains(RectD outer, RectD inner) =>
         inner.Left >= outer.Left &&
