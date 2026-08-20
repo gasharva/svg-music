@@ -4,7 +4,8 @@ using SvgStructure.Models;
 namespace SvgStructure.Services;
 
 /// <summary>
-/// Finds small round augmentation dots to the right of already recognized note heads.
+/// Finds small round augmentation dots to the right of already recognized notes or rests.
+/// Matching is one-to-one: once a note/rest has received a dot it cannot receive another dot.
 /// This pass is deliberately geometric: no PCA/model recognition is used.
 /// </summary>
 public sealed class DotResolver
@@ -15,18 +16,85 @@ public sealed class DotResolver
     public double MinAspectRatio { get; init; } = 0.55;
     public double MaxAspectRatio { get; init; } = 1.80;
     public double MinCircularity { get; init; } = 0.64;
-    public double MaxLogicalDistanceToNote { get; init; } = 4.0;
+    public double MaxLogicalDistanceToTarget { get; init; } = 4.0;
     public double MaxVerticalErrorLogical { get; init; } = 0.70;
-    public double LineSnapToleranceLogical { get; init; } = 0.40;
     public double MaxAreaFractionOfNoteHead { get; init; } = 0.35;
     public double MaxDimensionFractionOfNoteHead { get; init; } = 0.72;
 
     public IReadOnlyList<DotResolution> Resolve(
         PrimitiveResolution primitives,
         LogicalGridResolution grid,
-        IReadOnlyList<NoteHeadResolution> noteHeads)
+        IReadOnlyList<NoteHeadResolution> noteHeads,
+        IReadOnlyList<RestResolution> rests)
     {
+        var dotCandidates = BuildDotCandidates(primitives, grid);
+        var targets = BuildTargets(noteHeads, rests);
+        var pairings = new List<Pairing>();
+
+        foreach (var dot in dotCandidates)
+        {
+            foreach (var target in targets)
+            {
+                if (dot.PartNumber != target.PartNumber || dot.MeasureNumber != target.MeasureNumber)
+                    continue;
+
+                var dx = dot.LogicalX - target.LogicalX;
+                if (dx <= 0 || dx >= MaxLogicalDistanceToTarget)
+                    continue;
+
+                if (target.Note is not null && !IsMuchSmallerThanNote(dot.PhysicalBounds, target.PhysicalBounds))
+                    continue;
+
+                // A dot may sit beside the target or half a staff-space above/below it,
+                // regardless of whether the note itself is on a line or in a space.
+                var dy = VerticalError(dot.LogicalY, target.LogicalY);
+                if (dy > MaxVerticalErrorLogical)
+                    continue;
+
+                pairings.Add(new Pairing(dot, target, dx + dy * 1.75));
+            }
+        }
+
+        // Global greedy matching is preferable to resolving dots one by one: the best geometric
+        // pair wins first, then both the dot and its target are removed from further consideration.
+        // In particular, vertically stacked dots can never attach to the same note/rest.
+        var usedDots = new HashSet<int>();
+        var usedTargets = new HashSet<string>(StringComparer.Ordinal);
         var result = new List<DotResolution>();
+
+        foreach (var pairing in pairings.OrderBy(x => x.Score).ThenBy(x => x.Dot.PhysicalBounds.Left))
+        {
+            if (!usedDots.Add(pairing.Dot.PrimitiveId))
+                continue;
+            if (!usedTargets.Add(pairing.Target.Key))
+            {
+                usedDots.Remove(pairing.Dot.PrimitiveId);
+                continue;
+            }
+
+            result.Add(new DotResolution(
+                pairing.Dot.PrimitiveId,
+                pairing.Dot.PartNumber,
+                pairing.Dot.MeasureNumber,
+                pairing.Dot.LogicalBounds,
+                pairing.Dot.PhysicalBounds,
+                pairing.Target.Note,
+                pairing.Target.Rest));
+        }
+
+        return result
+            .OrderBy(x => x.MeasureNumber)
+            .ThenBy(x => x.PartNumber)
+            .ThenBy(x => x.PhysicalBounds.Left)
+            .ThenBy(x => x.PhysicalBounds.Top)
+            .ToArray();
+    }
+
+    private IReadOnlyList<DotCandidate> BuildDotCandidates(
+        PrimitiveResolution primitives,
+        LogicalGridResolution grid)
+    {
+        var result = new List<DotCandidate>();
 
         foreach (var primitive in primitives.Primitives)
         {
@@ -41,85 +109,76 @@ public sealed class DotResolver
             if (!LooksLikeDot(primitive, staffSpace))
                 continue;
 
-            var dotLogical = block.ToLogical(primitive.PhysicalBounds);
-            var dotCenterX = Center(dotLogical.Left, dotLogical.Right);
-            var dotCenterY = (dotLogical.Top + dotLogical.Bottom) / 2.0;
-            if (dotCenterX is null)
+            var logical = block.ToLogical(primitive.PhysicalBounds);
+            var logicalX = Center(logical.Left, logical.Right);
+            if (logicalX is null)
                 continue;
 
-            var note = FindAttachedNote(
-                primitive.PhysicalBounds,
-                dotCenterX.Value,
-                dotCenterY,
-                partNumber,
-                measureNumber,
-                noteHeads);
-            if (note is null)
-                continue;
-
-            result.Add(new DotResolution(
+            result.Add(new DotCandidate(
                 primitive.Id,
                 partNumber,
                 measureNumber,
-                dotLogical,
+                logical,
                 primitive.PhysicalBounds,
-                note));
+                logicalX.Value,
+                (logical.Top + logical.Bottom) / 2.0));
         }
 
-        return result
-            .OrderBy(x => x.MeasureNumber)
-            .ThenBy(x => x.PartNumber)
-            .ThenBy(x => x.PhysicalBounds.Left)
-            .ThenBy(x => x.PhysicalBounds.Top)
-            .ToArray();
+        return result;
     }
 
-    private NoteHeadResolution? FindAttachedNote(
-        RectD dotBounds,
-        double dotLogicalX,
-        double dotLogicalY,
-        int partNumber,
-        int measureNumber,
-        IReadOnlyList<NoteHeadResolution> noteHeads)
+    private static IReadOnlyList<TargetCandidate> BuildTargets(
+        IReadOnlyList<NoteHeadResolution> noteHeads,
+        IReadOnlyList<RestResolution> rests)
     {
-        return noteHeads
-            .Where(x => x.PartNumber == partNumber && x.MeasureNumber == measureNumber)
-            .Select(note => new
-            {
-                Note = note,
-                NoteX = Center(note.LogicalBounds.Left, note.LogicalBounds.Right),
-                NoteY = (note.LogicalBounds.Top + note.LogicalBounds.Bottom) / 2.0
-            })
-            .Where(x => x.NoteX is not null)
-            .Select(x => new
-            {
-                x.Note,
-                Dx = dotLogicalX - x.NoteX!.Value,
-                Dy = VerticalError(dotLogicalY, x.NoteY),
-                SizeOk = IsMuchSmallerThanNote(dotBounds, x.Note.PhysicalBounds)
-            })
-            .Where(x => x.SizeOk)
-            .Where(x => x.Dx > 0 && x.Dx < MaxLogicalDistanceToNote)
-            .Where(x => x.Dy <= MaxVerticalErrorLogical)
-            .OrderBy(x => x.Dx + x.Dy * 1.75)
-            .Select(x => x.Note)
-            .FirstOrDefault();
+        var result = new List<TargetCandidate>();
+
+        for (var i = 0; i < noteHeads.Count; i++)
+        {
+            var note = noteHeads[i];
+            var x = Center(note.LogicalBounds.Left, note.LogicalBounds.Right);
+            if (x is null)
+                continue;
+
+            result.Add(new TargetCandidate(
+                $"n:{i}",
+                note.PartNumber,
+                note.MeasureNumber,
+                x.Value,
+                (note.LogicalBounds.Top + note.LogicalBounds.Bottom) / 2.0,
+                note.PhysicalBounds,
+                note,
+                null));
+        }
+
+        for (var i = 0; i < rests.Count; i++)
+        {
+            var rest = rests[i];
+            var x = Center(rest.LogicalBounds.Left, rest.LogicalBounds.Right);
+            if (x is null)
+                continue;
+
+            result.Add(new TargetCandidate(
+                $"r:{i}",
+                rest.PartNumber,
+                rest.MeasureNumber,
+                x.Value,
+                (rest.LogicalBounds.Top + rest.LogicalBounds.Bottom) / 2.0,
+                rest.PhysicalBounds,
+                null,
+                rest));
+        }
+
+        return result;
     }
 
-    private double VerticalError(double dotY, double noteY)
-    {
-        var nearestLine = Math.Round(noteY / 2.0) * 2.0;
-        var noteIsOnLine = Math.Abs(noteY - nearestLine) <= LineSnapToleranceLogical;
-
-        if (!noteIsOnLine)
-            return Math.Abs(dotY - noteY);
-
-        // Staff and ledger lines are all even logical Y levels. A dot belonging to a
-        // line note is conventionally moved into either adjacent space: +/- 1 logical Y.
-        return Math.Min(
-            Math.Abs(dotY - (nearestLine - 1.0)),
-            Math.Abs(dotY - (nearestLine + 1.0)));
-    }
+    private static double VerticalError(double dotY, double targetY) =>
+        new[]
+        {
+            Math.Abs(dotY - targetY),
+            Math.Abs(dotY - (targetY - 1.0)),
+            Math.Abs(dotY - (targetY + 1.0))
+        }.Min();
 
     private bool LooksLikeDot(ResolvedPrimitive primitive, double staffSpace)
     {
@@ -181,4 +240,25 @@ public sealed class DotResolver
 
     private static double? Center(double? left, double? right) =>
         left is { } l && right is { } r ? (l + r) / 2.0 : null;
+
+    private sealed record DotCandidate(
+        int PrimitiveId,
+        int PartNumber,
+        int MeasureNumber,
+        LogicalRectD LogicalBounds,
+        RectD PhysicalBounds,
+        double LogicalX,
+        double LogicalY);
+
+    private sealed record TargetCandidate(
+        string Key,
+        int PartNumber,
+        int MeasureNumber,
+        double LogicalX,
+        double LogicalY,
+        RectD PhysicalBounds,
+        NoteHeadResolution? Note,
+        RestResolution? Rest);
+
+    private sealed record Pairing(DotCandidate Dot, TargetCandidate Target, double Score);
 }
