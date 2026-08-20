@@ -4,7 +4,7 @@ using SvgStructure.Models;
 
 namespace SvgStructure.Services;
 
-/// <summary>Diagnostic overlay: recognized dots and contours of their attached note heads are red.</summary>
+/// <summary>Diagnostic overlay: recognized dots and their attached note/rest targets are red.</summary>
 public sealed class DotOverlayRenderer
 {
     private const float RenderScale = 2f;
@@ -49,7 +49,11 @@ public sealed class DotOverlayRenderer
 
             canvas.DrawOval(ToRect(dot.PhysicalBounds), dotFill);
             canvas.DrawOval(ToRect(dot.PhysicalBounds), redBorder);
-            canvas.DrawOval(ToRect(dot.Note.PhysicalBounds), redBorder);
+
+            if (dot.Note is not null)
+                canvas.DrawOval(ToRect(dot.Note.PhysicalBounds), redBorder);
+            else if (dot.Rest is not null)
+                canvas.DrawRect(ToRect(dot.Rest.PhysicalBounds), redBorder);
         }
 
         using var image = SKImage.FromBitmap(bitmap);
