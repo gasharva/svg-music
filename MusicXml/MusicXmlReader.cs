@@ -85,7 +85,15 @@ public sealed class MusicXmlReader
             var path = Path.Combine(schemaDirectory, name);
             if (!File.Exists(path))
                 throw new FileNotFoundException($"MusicXML validation schema not found: {path}", path);
-            schemas.Add(null, path);
+
+            using var reader = XmlReader.Create(path, new XmlReaderSettings
+            {
+                DtdProcessing = DtdProcessing.Ignore,
+                XmlResolver = null
+            });
+            var schema = XmlSchema.Read(reader, null)
+                ?? throw new InvalidDataException($"Could not read MusicXML validation schema: {path}");
+            schemas.Add(schema);
         }
 
         var errors = new List<string>();
