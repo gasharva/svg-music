@@ -12,6 +12,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmuflDatasetBuilder", "Smuf
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MusicXml", "MusicXml\MusicXml.csproj", "{F13B2E64-6584-4D80-B4EB-BFF0A11D7B41}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MusicXmlModelGenerator", "MusicXmlModelGenerator\MusicXmlModelGenerator.csproj", "{6B3D0C39-67B5-4A6A-A8E4-130409A0B2B8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,6 +40,10 @@ Global
 		{F13B2E64-6584-4D80-B4EB-BFF0A11D7B41}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F13B2E64-6584-4D80-B4EB-BFF0A11D7B41}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F13B2E64-6584-4D80-B4EB-BFF0A11D7B41}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6B3D0C39-67B5-4A6A-A8E4-130409A0B2B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B3D0C39-67B5-4A6A-A8E4-130409A0B2B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B3D0C39-67B5-4A6A-A8E4-130409A0B2B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B3D0C39-67B5-4A6A-A8E4-130409A0B2B8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
