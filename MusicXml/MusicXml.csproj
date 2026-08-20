@@ -4,5 +4,23 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <GeneratedMusicXmlDir>$(IntermediateOutputPath)MusicXmlGenerated</GeneratedMusicXmlDir>
+    <MusicXml40SchemaUrl>https://raw.githubusercontent.com/w3c-cg/musicxml/v4.0/schema/musicxml.xsd</MusicXml40SchemaUrl>
   </PropertyGroup>
+
+  <!--
+    The serializer model is intentionally generated from the official, pinned MusicXML 4.0 XSD.
+    It lives under obj/, is not hand-maintained, and is an implementation detail of Reader/Writer.
+  -->
+  <Target Name="GenerateMusicXml40Model" BeforeTargets="CoreCompile">
+    <RemoveDir Directories="$(GeneratedMusicXmlDir)" />
+    <MakeDir Directories="$(GeneratedMusicXmlDir)" />
+    <Exec Command="dotnet tool restore" WorkingDirectory="$(MSBuildProjectDirectory)/.." />
+    <Exec
+      Command="dotnet xscgen -n &quot;MusicXml.Generated&quot; -o &quot;$(GeneratedMusicXmlDir)&quot; --disableComments --forceUriScheme=https &quot;$(MusicXml40SchemaUrl)&quot;"
+      WorkingDirectory="$(MSBuildProjectDirectory)/.." />
+    <ItemGroup>
+      <Compile Include="$(GeneratedMusicXmlDir)/**/*.cs" />
+    </ItemGroup>
+  </Target>
 </Project>
