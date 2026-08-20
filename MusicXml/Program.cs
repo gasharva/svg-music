@@ -10,6 +10,9 @@ var input = Path.GetFullPath(args[0]);
 var output = args.Length == 2
     ? Path.GetFullPath(args[1])
     : Path.Combine(Path.GetDirectoryName(input)!, Path.GetFileNameWithoutExtension(input) + ".roundtrip.musicxml");
+var semanticDiffPath = Path.Combine(
+    Path.GetDirectoryName(output)!,
+    Path.GetFileNameWithoutExtension(output) + ".semantic-diff.txt");
 
 var reader = new MusicXmlReader();
 var writer = new MusicXmlWriter();
@@ -20,6 +23,14 @@ writer.Write(score, output);
 
 var roundTrip = reader.Read(output);
 PrintSummary("ROUNDTRIP", output, roundTrip);
+
+var differences = SemanticXmlDiff.Compare(input, output);
+File.WriteAllLines(
+    semanticDiffPath,
+    differences.Count == 0
+        ? new[] { "Semantic XML diff: no element, text, attribute, or child-order differences." }
+        : new[] { $"Semantic XML differences: {differences.Count} shown." }.Concat(differences));
+Console.WriteLine($"Semantic XML diff: {semanticDiffPath} ({differences.Count} differences)");
 
 var before = Fingerprints(score).ToArray();
 var after = Fingerprints(roundTrip).ToArray();
