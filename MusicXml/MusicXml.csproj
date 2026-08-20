@@ -9,36 +9,24 @@
   </PropertyGroup>
 
   <!--
-    The serializer model is generated from the official, pinned MusicXML 4.0 XSD.
-    We first download the three schema files into obj/ and patch MusicXML's two historic
-    http://www.musicxml.org/xsd imports to local relative files. This avoids xscgen trying
-    to resolve those legacy URLs while still generating from the W3C v4.0 sources.
-
-    Generated classes must be public because System.Xml.Serialization.XmlSerializer only
-    processes public root/types. They still live in the isolated MusicXml.Generated namespace
-    and are never exposed by our public reader/writer API.
+    Generate the serializer model with the same System.Xml.Serialization CodeDOM pipeline
+    used by xsd.exe. This is important for MusicXML because repeated xs:choice content must
+    stay as an ordered Items[] stream; XmlSchemaClassGenerator split those choices into
+    separate collections and therefore reordered notes / backups / directions on round-trip.
   -->
   <Target Name="GenerateMusicXml40Model" BeforeTargets="CoreCompile">
     <PropertyGroup>
       <MusicXmlSchemaDir>$(IntermediateOutputPath)MusicXmlSchema</MusicXmlSchemaDir>
       <GeneratedMusicXmlDir>$(IntermediateOutputPath)MusicXmlGenerated</GeneratedMusicXmlDir>
+      <GeneratedMusicXmlFile>$(GeneratedMusicXmlDir)/MusicXml.Generated.cs</GeneratedMusicXmlFile>
     </PropertyGroup>
 
     <RemoveDir Directories="$(MusicXmlSchemaDir);$(GeneratedMusicXmlDir)" />
     <MakeDir Directories="$(MusicXmlSchemaDir);$(GeneratedMusicXmlDir)" />
 
-    <DownloadFile
-      SourceUrl="$(MusicXml40SchemaBaseUrl)/musicxml.xsd"
-      DestinationFolder="$(MusicXmlSchemaDir)"
-      DestinationFileName="musicxml.xsd" />
-    <DownloadFile
-      SourceUrl="$(MusicXml40SchemaBaseUrl)/xml.xsd"
-      DestinationFolder="$(MusicXmlSchemaDir)"
-      DestinationFileName="xml.xsd" />
-    <DownloadFile
-      SourceUrl="$(MusicXml40SchemaBaseUrl)/xlink.xsd"
-      DestinationFolder="$(MusicXmlSchemaDir)"
-      DestinationFileName="xlink.xsd" />
+    <DownloadFile SourceUrl="$(MusicXml40SchemaBaseUrl)/musicxml.xsd" DestinationFolder="$(MusicXmlSchemaDir)" DestinationFileName="musicxml.xsd" />
+    <DownloadFile SourceUrl="$(MusicXml40SchemaBaseUrl)/xml.xsd" DestinationFolder="$(MusicXmlSchemaDir)" DestinationFileName="xml.xsd" />
+    <DownloadFile SourceUrl="$(MusicXml40SchemaBaseUrl)/xlink.xsd" DestinationFolder="$(MusicXmlSchemaDir)" DestinationFileName="xlink.xsd" />
 
     <XmlPoke
       XmlInputPath="$(MusicXmlSchemaDir)/musicxml.xsd"
@@ -51,13 +39,12 @@
       Value="xlink.xsd"
       Namespaces="$(XsdNamespace)" />
 
-    <Exec Command="dotnet tool restore" WorkingDirectory="$(MSBuildProjectDirectory)/.." />
     <Exec
-      Command="dotnet xscgen -n &quot;MusicXml.Generated&quot; -o &quot;$(GeneratedMusicXmlDir)&quot; --disableComments &quot;$(MusicXmlSchemaDir)/musicxml.xsd&quot;"
+      Command="dotnet run --project &quot;$(MSBuildProjectDirectory)/../MusicXmlModelGenerator/MusicXmlModelGenerator.csproj&quot; --configuration Release -- &quot;$(MusicXmlSchemaDir)&quot; &quot;$(GeneratedMusicXmlFile)&quot; MusicXml.Generated"
       WorkingDirectory="$(MSBuildProjectDirectory)" />
 
     <ItemGroup>
-      <Compile Include="$(GeneratedMusicXmlDir)/**/*.cs" />
+      <Compile Include="$(GeneratedMusicXmlFile)" />
     </ItemGroup>
   </Target>
 </Project>
