@@ -3,16 +3,17 @@ namespace MusicXml;
 public sealed class MusicXmlDocument
 {
     internal MusicXmlDocument(
-        object serializationModel,
+        object backingStore,
         string? version,
         IReadOnlyList<MusicXmlPart> parts)
     {
-        SerializationModel = serializationModel;
+        BackingStore = backingStore;
         Version = version;
         Parts = parts;
     }
 
-    internal object SerializationModel { get; }
+    // Deliberately opaque: only MusicXmlReader/MusicXmlWriter know what the backing store is.
+    internal object BackingStore { get; }
 
     public string? Version { get; }
     public IReadOnlyList<MusicXmlPart> Parts { get; }
