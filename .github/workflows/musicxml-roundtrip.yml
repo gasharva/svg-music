@@ -5,6 +5,7 @@ on:
     branches: [ master ]
     paths:
       - 'MusicXml/**'
+      - 'MusicXmlModelGenerator/**'
       - 'Samples/step-by-step/*.musicxml'
       - '.github/workflows/musicxml-roundtrip.yml'
       - 'SvgToMusicXmlPoc.sln'
@@ -12,7 +13,10 @@ on:
 
 jobs:
   roundtrip:
-    runs-on: ubuntu-24.04
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
 
     steps:
       - name: Checkout
@@ -35,7 +39,7 @@ jobs:
             | tee artifacts/musicxml/summary.txt
 
       - name: XML parse smoke test
-        run: python3 - <<'PY'
+        run: python - <<'PY'
           import xml.etree.ElementTree as ET
           p='artifacts/musicxml/kancheli-mimino-reference.roundtrip.musicxml'
           root=ET.parse(p).getroot()
@@ -45,84 +49,8 @@ jobs:
 
       - name: Semantic XML diff
         run: |
-          python3 - <<'PY' | tee artifacts/musicxml/semantic-diff.txt
-          import xml.etree.ElementTree as ET
-
-          before_path = 'Samples/step-by-step/kancheli-mimino-reference.musicxml'
-          after_path = 'artifacts/musicxml/kancheli-mimino-reference.roundtrip.musicxml'
-          before = ET.parse(before_path).getroot()
-          after = ET.parse(after_path).getroot()
-          differences = []
-          max_differences = 500
-
-          def clean_text(value):
-              if value is None:
-                  return ''
-              return ' '.join(value.split())
-
-          def tag_name(tag):
-              return tag.rsplit('}', 1)[-1]
-
-          def describe_child(child, index):
-              tag = tag_name(child.tag)
-              hints = []
-              for key in ('number', 'id', 'type', 'staff', 'voice'):
-                  if key in child.attrib:
-                      hints.append(f"{key}={child.attrib[key]!r}")
-              if tag == 'measure' and 'number' in child.attrib:
-                  return f"measure[@number={child.attrib['number']!r}]"
-              return f"{tag}[{index}]" + (f"[{', '.join(hints)}]" if hints else '')
-
-          def add(message):
-              if len(differences) < max_differences:
-                  differences.append(message)
-
-          def compare(a, b, path):
-              if tag_name(a.tag) != tag_name(b.tag):
-                  add(f"{path}: ELEMENT changed {tag_name(a.tag)!r} -> {tag_name(b.tag)!r}")
-                  return
-
-              a_attrs = dict(a.attrib)
-              b_attrs = dict(b.attrib)
-              for key in sorted(a_attrs.keys() - b_attrs.keys()):
-                  add(f"{path}: LOST attribute {key}={a_attrs[key]!r}")
-              for key in sorted(b_attrs.keys() - a_attrs.keys()):
-                  add(f"{path}: ADDED attribute {key}={b_attrs[key]!r}")
-              for key in sorted(a_attrs.keys() & b_attrs.keys()):
-                  if a_attrs[key] != b_attrs[key]:
-                      add(f"{path}: CHANGED attribute {key}: {a_attrs[key]!r} -> {b_attrs[key]!r}")
-
-              at = clean_text(a.text)
-              bt = clean_text(b.text)
-              if at != bt:
-                  add(f"{path}: TEXT changed {at!r} -> {bt!r}")
-
-              ac = list(a)
-              bc = list(b)
-              if len(ac) != len(bc):
-                  add(f"{path}: CHILD COUNT changed {len(ac)} -> {len(bc)}")
-
-              common = min(len(ac), len(bc))
-              for i in range(common):
-                  child_path = path + '/' + describe_child(ac[i], i)
-                  compare(ac[i], bc[i], child_path)
-
-              for i in range(common, len(ac)):
-                  child = ac[i]
-                  add(f"{path}: LOST child {describe_child(child, i)}")
-              for i in range(common, len(bc)):
-                  child = bc[i]
-                  add(f"{path}: ADDED child {describe_child(child, i)}")
-
-          compare(before, after, '/score-partwise')
-
-          if differences:
-              print(f"Semantic XML differences: {len(differences)} shown (limit {max_differences}).")
-              for item in differences:
-                  print(item)
-          else:
-              print('Semantic XML diff: no element, text, attribute, or child-order differences.')
-          PY
+          cp artifacts/musicxml/kancheli-mimino-reference.roundtrip.semantic-diff.txt artifacts/musicxml/semantic-diff.txt
+          head -n 120 artifacts/musicxml/semantic-diff.txt
 
       - name: Upload round-trip artifact
         uses: actions/upload-artifact@v4
@@ -139,9 +67,7 @@ jobs:
             echo
             echo 'The reader deserialized the complete XSD-generated MusicXML model, the writer serialized it again, and the compact note/rest projection survived unchanged.'
             echo
-            echo 'The artifact also contains **semantic-diff.txt**, which compares the original and round-trip XML by element order, attributes and values while ignoring formatting whitespace.'
-            echo
-            echo 'Download the **musicxml-roundtrip-${{ github.sha }}** artifact and open `kancheli-mimino-reference.roundtrip.musicxml` in MuseScore for the visual smoke test.'
+            echo 'The artifact also contains **semantic-diff.txt**.'
             echo
             echo '### Typed projection'
             echo '```text'
