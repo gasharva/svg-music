@@ -5,19 +5,20 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GeneratedMusicXmlDir>$(IntermediateOutputPath)MusicXmlGenerated</GeneratedMusicXmlDir>
-    <MusicXml40SchemaUrl>https://raw.githubusercontent.com/w3c-cg/musicxml/v4.0/schema/musicxml.xsd</MusicXml40SchemaUrl>
+    <MusicXml40SchemaRoot>https://raw.githubusercontent.com/w3c-cg/musicxml/v4.0/schema</MusicXml40SchemaRoot>
   </PropertyGroup>
 
   <!--
     The serializer model is intentionally generated from the official, pinned MusicXML 4.0 XSD.
-    It lives under obj/, is internal to this assembly, and is an implementation detail of Reader/Writer.
+    We pass the two imported schemas explicitly because musicxml.xsd still references the old
+    musicxml.org HTTP locations, which are unreliable for schema resolvers.
   -->
   <Target Name="GenerateMusicXml40Model" BeforeTargets="CoreCompile">
     <RemoveDir Directories="$(GeneratedMusicXmlDir)" />
     <MakeDir Directories="$(GeneratedMusicXmlDir)" />
     <Exec Command="dotnet tool restore" WorkingDirectory="$(MSBuildProjectDirectory)/.." />
     <Exec
-      Command="dotnet xscgen -n &quot;MusicXml.Generated&quot; -o &quot;$(GeneratedMusicXmlDir)&quot; --assemblyVisible --disableComments --forceUriScheme=https &quot;$(MusicXml40SchemaUrl)&quot;"
+      Command="dotnet xscgen -n &quot;MusicXml.Generated&quot; -o &quot;$(GeneratedMusicXmlDir)&quot; --assemblyVisible --disableComments --forceUriScheme=https &quot;$(MusicXml40SchemaRoot)/xml.xsd&quot; &quot;$(MusicXml40SchemaRoot)/xlink.xsd&quot; &quot;$(MusicXml40SchemaRoot)/musicxml.xsd&quot;"
       WorkingDirectory="$(MSBuildProjectDirectory)/.." />
     <ItemGroup>
       <Compile Include="$(GeneratedMusicXmlDir)/**/*.cs" />
