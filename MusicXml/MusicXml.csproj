@@ -17,9 +17,6 @@
     Generated classes must be public because System.Xml.Serialization.XmlSerializer only
     processes public root/types. They still live in the isolated MusicXml.Generated namespace
     and are never exposed by our public reader/writer API.
-
-    --order is important for MusicXML: it generates XmlElement(Order=...) metadata so
-    XmlSerializer writes schema sequence members back in the original schema order.
   -->
   <Target Name="GenerateMusicXml40Model" BeforeTargets="CoreCompile">
     <PropertyGroup>
@@ -56,7 +53,7 @@
 
     <Exec Command="dotnet tool restore" WorkingDirectory="$(MSBuildProjectDirectory)/.." />
     <Exec
-      Command="dotnet xscgen -n &quot;MusicXml.Generated&quot; -o &quot;$(GeneratedMusicXmlDir)&quot; --disableComments --order &quot;$(MusicXmlSchemaDir)/musicxml.xsd&quot;"
+      Command="dotnet xscgen -n &quot;MusicXml.Generated&quot; -o &quot;$(GeneratedMusicXmlDir)&quot; --disableComments &quot;$(MusicXmlSchemaDir)/musicxml.xsd&quot;"
       WorkingDirectory="$(MSBuildProjectDirectory)" />
 
     <ItemGroup>
