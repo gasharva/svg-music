@@ -1,8 +1,8 @@
 namespace SvgStructure.Models;
 
 /// <summary>
-/// An augmentation dot recognized geometrically to the right of a note head.
-/// Note is the note head whose duration the dot augments.
+/// An augmentation dot recognized geometrically to the right of either a note head or a rest.
+/// Exactly one of Note and Rest is populated.
 /// </summary>
 public sealed record DotResolution(
     int PrimitiveId,
@@ -10,4 +10,8 @@ public sealed record DotResolution(
     int MeasureNumber,
     LogicalRectD LogicalBounds,
     RectD PhysicalBounds,
-    NoteHeadResolution Note);
+    NoteHeadResolution? Note,
+    RestResolution? Rest)
+{
+    public RectD TargetPhysicalBounds => Note?.PhysicalBounds ?? Rest!.PhysicalBounds;
+}
