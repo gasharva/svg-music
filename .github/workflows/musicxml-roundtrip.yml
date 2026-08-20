@@ -5,7 +5,6 @@ on:
     branches: [ master ]
     paths:
       - 'MusicXml/**'
-      - 'MusicXmlModelGenerator/**'
       - 'Samples/step-by-step/*.musicxml'
       - '.github/workflows/musicxml-roundtrip.yml'
       - 'SvgToMusicXmlPoc.sln'
@@ -13,10 +12,7 @@ on:
 
 jobs:
   roundtrip:
-    runs-on: windows-latest
-    defaults:
-      run:
-        shell: bash
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout
@@ -39,7 +35,7 @@ jobs:
             | tee artifacts/musicxml/summary.txt
 
       - name: XML parse smoke test
-        run: python - <<'PY'
+        run: python3 - <<'PY'
           import xml.etree.ElementTree as ET
           p='artifacts/musicxml/kancheli-mimino-reference.roundtrip.musicxml'
           root=ET.parse(p).getroot()
@@ -65,7 +61,7 @@ jobs:
           {
             echo '## MusicXML round-trip PoC'
             echo
-            echo 'The reader deserialized the complete XSD-generated MusicXML model, the writer serialized it again, and the compact note/rest projection survived unchanged.'
+            echo 'The reader projects the MusicXML document into the compact domain model while preserving the complete source XML as an opaque backing store. The writer emits that backing document unchanged.'
             echo
             echo 'The artifact also contains **semantic-diff.txt**.'
             echo
