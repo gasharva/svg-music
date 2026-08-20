@@ -4,22 +4,54 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <GeneratedMusicXmlDir>$(IntermediateOutputPath)MusicXmlGenerated</GeneratedMusicXmlDir>
-    <MusicXml40SchemaRoot>https://raw.githubusercontent.com/w3c-cg/musicxml/v4.0/schema</MusicXml40SchemaRoot>
+    <MusicXml40SchemaBaseUrl>https://raw.githubusercontent.com/w3c-cg/musicxml/v4.0/schema</MusicXml40SchemaBaseUrl>
+    <XsdNamespace>&lt;Namespace Prefix='xs' Uri='http://www.w3.org/2001/XMLSchema' /&gt;</XsdNamespace>
   </PropertyGroup>
 
   <!--
-    The serializer model is intentionally generated from the official, pinned MusicXML 4.0 XSD.
-    We pass the two imported schemas explicitly because musicxml.xsd still references the old
-    musicxml.org HTTP locations, which are unreliable for schema resolvers.
+    The serializer model is generated from the official, pinned MusicXML 4.0 XSD.
+    We first download the three schema files into obj/ and patch MusicXML's two historic
+    http://www.musicxml.org/xsd imports to local relative files. This avoids xscgen trying
+    to resolve those legacy URLs while still generating from the unmodified W3C v4.0 sources.
   -->
   <Target Name="GenerateMusicXml40Model" BeforeTargets="CoreCompile">
-    <RemoveDir Directories="$(GeneratedMusicXmlDir)" />
-    <MakeDir Directories="$(GeneratedMusicXmlDir)" />
+    <PropertyGroup>
+      <MusicXmlSchemaDir>$(IntermediateOutputPath)MusicXmlSchema</MusicXmlSchemaDir>
+      <GeneratedMusicXmlDir>$(IntermediateOutputPath)MusicXmlGenerated</GeneratedMusicXmlDir>
+    </PropertyGroup>
+
+    <RemoveDir Directories="$(MusicXmlSchemaDir);$(GeneratedMusicXmlDir)" />
+    <MakeDir Directories="$(MusicXmlSchemaDir);$(GeneratedMusicXmlDir)" />
+
+    <DownloadFile
+      SourceUrl="$(MusicXml40SchemaBaseUrl)/musicxml.xsd"
+      DestinationFolder="$(MusicXmlSchemaDir)"
+      DestinationFileName="musicxml.xsd" />
+    <DownloadFile
+      SourceUrl="$(MusicXml40SchemaBaseUrl)/xml.xsd"
+      DestinationFolder="$(MusicXmlSchemaDir)"
+      DestinationFileName="xml.xsd" />
+    <DownloadFile
+      SourceUrl="$(MusicXml40SchemaBaseUrl)/xlink.xsd"
+      DestinationFolder="$(MusicXmlSchemaDir)"
+      DestinationFileName="xlink.xsd" />
+
+    <XmlPoke
+      XmlInputPath="$(MusicXmlSchemaDir)/musicxml.xsd"
+      Query="/xs:schema/xs:import[@namespace='http://www.w3.org/XML/1998/namespace']/@schemaLocation"
+      Value="xml.xsd"
+      Namespaces="$(XsdNamespace)" />
+    <XmlPoke
+      XmlInputPath="$(MusicXmlSchemaDir)/musicxml.xsd"
+      Query="/xs:schema/xs:import[@namespace='http://www.w3.org/1999/xlink']/@schemaLocation"
+      Value="xlink.xsd"
+      Namespaces="$(XsdNamespace)" />
+
     <Exec Command="dotnet tool restore" WorkingDirectory="$(MSBuildProjectDirectory)/.." />
     <Exec
-      Command="dotnet xscgen -n &quot;MusicXml.Generated&quot; -o &quot;$(GeneratedMusicXmlDir)&quot; --assemblyVisible --disableComments --forceUriScheme=https &quot;$(MusicXml40SchemaRoot)/xml.xsd&quot; &quot;$(MusicXml40SchemaRoot)/xlink.xsd&quot; &quot;$(MusicXml40SchemaRoot)/musicxml.xsd&quot;"
-      WorkingDirectory="$(MSBuildProjectDirectory)/.." />
+      Command="dotnet xscgen -n &quot;MusicXml.Generated&quot; -o &quot;$(GeneratedMusicXmlDir)&quot; --assemblyVisible --disableComments &quot;$(MusicXmlSchemaDir)/musicxml.xsd&quot;"
+      WorkingDirectory="$(MSBuildProjectDirectory)" />
+
     <ItemGroup>
       <Compile Include="$(GeneratedMusicXmlDir)/**/*.cs" />
     </ItemGroup>
