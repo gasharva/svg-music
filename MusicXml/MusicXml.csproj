@@ -12,7 +12,11 @@
     The serializer model is generated from the official, pinned MusicXML 4.0 XSD.
     We first download the three schema files into obj/ and patch MusicXML's two historic
     http://www.musicxml.org/xsd imports to local relative files. This avoids xscgen trying
-    to resolve those legacy URLs while still generating from the unmodified W3C v4.0 sources.
+    to resolve those legacy URLs while still generating from the W3C v4.0 sources.
+
+    Generated classes must be public because System.Xml.Serialization.XmlSerializer only
+    processes public root/types. They still live in the isolated MusicXml.Generated namespace
+    and are never exposed by our public reader/writer API.
   -->
   <Target Name="GenerateMusicXml40Model" BeforeTargets="CoreCompile">
     <PropertyGroup>
@@ -49,7 +53,7 @@
 
     <Exec Command="dotnet tool restore" WorkingDirectory="$(MSBuildProjectDirectory)/.." />
     <Exec
-      Command="dotnet xscgen -n &quot;MusicXml.Generated&quot; -o &quot;$(GeneratedMusicXmlDir)&quot; --assemblyVisible --disableComments &quot;$(MusicXmlSchemaDir)/musicxml.xsd&quot;"
+      Command="dotnet xscgen -n &quot;MusicXml.Generated&quot; -o &quot;$(GeneratedMusicXmlDir)&quot; --disableComments &quot;$(MusicXmlSchemaDir)/musicxml.xsd&quot;"
       WorkingDirectory="$(MSBuildProjectDirectory)" />
 
     <ItemGroup>
