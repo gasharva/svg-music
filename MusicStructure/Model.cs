@@ -30,23 +30,42 @@ public sealed record MusicScore(int StaffCount, IReadOnlyList<MusicMeasure> Meas
 }
 
 /// <summary>
-/// SVG-free recognition contract. Coordinates are already logical musical coordinates;
-/// no physical boxes, contours, primitive ids, SVG nodes or XML types are allowed here.
+/// SVG-free recognition contract. This layer contains only recognized musical facts and
+/// relationships between them. No physical boxes, contours, primitive ids, SVG nodes or XML types.
 /// </summary>
 public sealed record RecognizedNoteInput(
+    string Key,
     int Staff,
     int Measure,
     double? LogicalX,
     string Pitch,
     bool IsFilled,
-    MusicStemDirection? Stem,
     MusicAccidental? Accidental,
-    int DotCount,
-    int? FlagDenominator,
-    IReadOnlyList<MusicBeam> Beams);
+    int DotCount);
+
+public sealed record RecognizedStemInput(
+    int Staff,
+    int Measure,
+    MusicStemDirection Direction,
+    IReadOnlyList<string> AttachedNoteKeys);
+
+public sealed record RecognizedBeamInput(
+    int Staff,
+    int Measure,
+    int Level,
+    IReadOnlyList<string> StemKeys);
+
+public sealed record RecognizedFlagInput(
+    int Staff,
+    int Measure,
+    int Denominator,
+    string StemKey);
 
 public sealed record MusicStructureInput(
     int StaffCount,
     IReadOnlyList<int> MeasureNumbers,
     IReadOnlySet<int> SystemStartMeasures,
-    IReadOnlyList<RecognizedNoteInput> Notes);
+    IReadOnlyList<RecognizedNoteInput> Notes,
+    IReadOnlyList<RecognizedStemInput> Stems,
+    IReadOnlyList<RecognizedBeamInput> Beams,
+    IReadOnlyList<RecognizedFlagInput> Flags);
