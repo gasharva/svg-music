@@ -54,7 +54,7 @@ public static class ReferenceValidationWithNotes
                 if (differences.Count == 0)
                 {
                     matched++;
-                    rows.Add(new("ok", key.Measure, key.Staff, e[i].Label, Label(a[i]), "Matched visible note properties recovered from SVG."));
+                    rows.Add(new("ok", key.Measure, key.Staff, e[i].Label, Label(a[i]), "Matched note properties recovered from SVG."));
                 }
                 else
                 {
@@ -63,10 +63,10 @@ public static class ReferenceValidationWithNotes
             }
 
             for (var i = pairCount; i < e.Length; i++)
-                rows.Add(new("missing", key.Measure, key.Staff, e[i].Label, "—", "Reference visible note was not built from the recognized SVG symbols."));
+                rows.Add(new("missing", key.Measure, key.Staff, e[i].Label, "—", "Reference note was not built from the recognized SVG symbols."));
 
             for (var i = pairCount; i < a.Length; i++)
-                rows.Add(new("extra", key.Measure, key.Staff, "—", Label(a[i]), "Built note has no matching visible reference note at this staff/measure/pitch."));
+                rows.Add(new("extra", key.Measure, key.Staff, "—", Label(a[i]), "Built note has no matching reference note at this staff/measure/pitch."));
         }
 
         return new NoteComparison(matched, expected.Count, rows.Count(x => x.State == "extra"), rows);
@@ -82,8 +82,6 @@ public static class ReferenceValidationWithNotes
         if (!string.Equals(expected.Stem, actualStem, StringComparison.OrdinalIgnoreCase))
             result.Add($"stem expected {expected.Stem ?? "—"}, got {actualStem ?? "—"}");
 
-        // <pitch><alter> may come only from the key signature. That is not a visible per-note
-        // symbol and we do not have a KeySignatureResolver yet. Compare explicit accidentals only.
         var actualAccidental = actual.Accidental is null ? null : AccidentalText(actual.Accidental.Value);
         if (!string.Equals(expected.Accidental, actualAccidental, StringComparison.OrdinalIgnoreCase))
             result.Add($"accidental expected {expected.Accidental ?? "—"}, got {actualAccidental ?? "—"}");
@@ -109,21 +107,11 @@ public static class ReferenceValidationWithNotes
             var measures = part.Elements().Where(x => x.Name.LocalName == "measure").ToArray();
             var staffCount = Math.Max(1, part.Descendants().Where(x => x.Name.LocalName == "staves")
                 .Select(x => ParseInt(x.Value) ?? 1).DefaultIfEmpty(1).Max());
-            var octaveShift = new Dictionary<int, int>();
 
             for (var m = 0; m < measures.Length; m++)
             {
-                foreach (var element in measures[m].Elements())
+                foreach (var element in measures[m].Elements().Where(x => x.Name.LocalName == "note" && !x.Elements().Any(c => c.Name.LocalName == "rest")))
                 {
-                    if (element.Name.LocalName == "direction")
-                    {
-                        ApplyOctaveShift(element, octaveShift);
-                        continue;
-                    }
-
-                    if (element.Name.LocalName != "note" || element.Elements().Any(c => c.Name.LocalName == "rest"))
-                        continue;
-
                     var pitch = element.Elements().FirstOrDefault(x => x.Name.LocalName == "pitch");
                     if (pitch is null)
                         continue;
@@ -134,7 +122,6 @@ public static class ReferenceValidationWithNotes
                         continue;
 
                     var staff = ParseInt(ChildValue(element, "staff")) ?? 1;
-                    var visualOctave = octave.Value + octaveShift.GetValueOrDefault(staff);
                     var alter = ParseInt(ChildValue(pitch, "alter")) ?? 0;
                     var accidental = ChildValue(element, "accidental");
                     var beams = element.Elements().Where(x => x.Name.LocalName == "beam")
@@ -149,7 +136,7 @@ public static class ReferenceValidationWithNotes
                         decimal.TryParse(element.Attributes().FirstOrDefault(a => a.Name.LocalName == "default-x")?.Value,
                             NumberStyles.Any, CultureInfo.InvariantCulture, out var dx) ? dx : null,
                         step,
-                        visualOctave,
+                        octave.Value,
                         accidental is null ? 0 : alter,
                         ChildValue(element, "type"),
                         ChildValue(element, "stem"),
@@ -163,28 +150,6 @@ public static class ReferenceValidationWithNotes
         }
 
         return result;
-    }
-
-    private static void ApplyOctaveShift(XElement direction, IDictionary<int, int> state)
-    {
-        var staff = ParseInt(ChildValue(direction, "staff")) ?? 1;
-        foreach (var shift in direction.Descendants().Where(x => x.Name.LocalName == "octave-shift"))
-        {
-            var type = shift.Attributes().FirstOrDefault(x => x.Name.LocalName == "type")?.Value;
-            if (string.Equals(type, "stop", StringComparison.OrdinalIgnoreCase))
-            {
-                state[staff] = 0;
-                continue;
-            }
-
-            var size = ParseInt(shift.Attributes().FirstOrDefault(x => x.Name.LocalName == "size")?.Value) ?? 8;
-            var octaves = Math.Max(1, (size - 1) / 7);
-            state[staff] = string.Equals(type, "down", StringComparison.OrdinalIgnoreCase)
-                ? -octaves
-                : string.Equals(type, "up", StringComparison.OrdinalIgnoreCase)
-                    ? octaves
-                    : state.GetValueOrDefault(staff);
-        }
     }
 
     private static void AppendNoteChecks(string htmlPath, IReadOnlyList<NoteCheckRow> rows, int matched, int expected, int extra)
