@@ -8,11 +8,7 @@ public sealed class ChordRule : IMusicNoteRule
 
     public ChordRule(MusicMeasureInput input)
     {
-        var directStemByNote = input.Stems
-            .SelectMany(stem => stem.AttachedNoteKeys.Select(noteKey => (noteKey, stem)))
-            .GroupBy(x => x.noteKey)
-            .ToDictionary(g => g.Key, g => g.Select(x => x.stem).ToArray());
-
+        var stemByNote = StemAssignmentMap.Build(input);
         var result = new Dictionary<string, ChordInfo>();
         var order = input.Notes.Select((note, index) => (note.Key, index)).ToDictionary(x => x.Key, x => x.index);
         var chordIndex = 0;
@@ -32,7 +28,7 @@ public sealed class ChordRule : IMusicNoteRule
                 {
                     if (group.All(existing =>
                             Math.Abs(candidate.LogicalX!.Value - existing.LogicalX!.Value) <= MaxLogicalXDistance &&
-                            StemsCompatible(existing.Key, candidate.Key, directStemByNote)))
+                            StemsCompatible(existing.Key, candidate.Key, stemByNote)))
                     {
                         group.Add(candidate);
                         remaining.Remove(candidate);
@@ -43,11 +39,17 @@ public sealed class ChordRule : IMusicNoteRule
                     continue;
 
                 var stems = group
-                    .SelectMany(x => directStemByNote.TryGetValue(x.Key, out var s) ? s : Array.Empty<RecognizedStemInput>())
+                    .Where(x => stemByNote.ContainsKey(x.Key))
+                    .Select(x => stemByNote[x.Key])
                     .DistinctBy(x => x.Key)
                     .ToArray();
 
-                var inheritedStem = stems.Length == 1 ? stems[0] : null;
+                // A chord may have one shared stem or no stem. If two different stems are present,
+                // these horizontally close heads are different voices, not one chord.
+                if (stems.Length > 1)
+                    continue;
+
+                var inheritedStem = stems.SingleOrDefault();
                 var sharedDotCount = group.Max(x => x.DotCount);
                 var ordered = group.OrderBy(x => order[x.Key]).ToArray();
                 var chordKey = $"m{input.Number}:s{bucket.Key.Staff}:chord:{++chordIndex}";
@@ -78,13 +80,13 @@ public sealed class ChordRule : IMusicNoteRule
     private static bool StemsCompatible(
         string leftKey,
         string rightKey,
-        IReadOnlyDictionary<string, RecognizedStemInput[]> stemsByNote)
+        IReadOnlyDictionary<string, RecognizedStemInput> stemsByNote)
     {
-        var left = stemsByNote.TryGetValue(leftKey, out var ls) ? ls : Array.Empty<RecognizedStemInput>();
-        var right = stemsByNote.TryGetValue(rightKey, out var rs) ? rs : Array.Empty<RecognizedStemInput>();
-        if (left.Length == 0 || right.Length == 0)
+        var hasLeft = stemsByNote.TryGetValue(leftKey, out var left);
+        var hasRight = stemsByNote.TryGetValue(rightKey, out var right);
+        if (!hasLeft || !hasRight)
             return true;
-        return left.Any(l => right.Any(r => l.Key == r.Key));
+        return left!.Key == right!.Key;
     }
 
     private sealed record ChordInfo(
