@@ -3,7 +3,6 @@ using System.Net;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
-using MusicXml;
 using SvgStructure.Models;
 
 namespace SvgStructure.Services;
@@ -27,8 +26,8 @@ public static class ReferenceValidation
         if (!File.Exists(referencePath))
             return null;
 
-        // Read once as XML here because this diagnostic needs layout semantics that are not yet
-        // exposed by the compact MusicXml model: staves inside a MusicXML part and system breaks.
+        // This diagnostic intentionally reads layout-only MusicXML details directly: physical
+        // staves, system breaks and visible/repeated notation are not yet part of the compact model.
         var referenceLayout = ReadReferenceLayout(referencePath);
 
         var expectedBlocks = referenceLayout.Blocks.ToHashSet();
@@ -56,20 +55,20 @@ public static class ReferenceValidation
         var actualClefs = result.Clefs
             .Select(c => new ClefItem(c.PartNumber, c.MeasureNumber, c.Kind.ToString()))
             .ToList();
-        var matchedActual = new HashSet<int>();
+        var matchedActualClefs = new HashSet<int>();
         var matchedClefs = 0;
 
         foreach (var expected in expectedClefs.OrderBy(x => x.Measure).ThenBy(x => x.Part))
         {
             var candidate = actualClefs
                 .Select((value, index) => (value, index))
-                .FirstOrDefault(x => !matchedActual.Contains(x.index) &&
+                .FirstOrDefault(x => !matchedActualClefs.Contains(x.index) &&
                                      x.value.Part == expected.Part &&
                                      x.value.Measure == expected.Measure &&
                                      string.Equals(x.value.Kind, expected.Kind, StringComparison.OrdinalIgnoreCase));
             if (candidate.value is not null)
             {
-                matchedActual.Add(candidate.index);
+                matchedActualClefs.Add(candidate.index);
                 matchedClefs++;
                 rows.Add(new("ClefResolver", expected.Measure, expected.Part, "ok", expected.Kind, candidate.value.Kind, expected.Reason));
             }
@@ -81,10 +80,46 @@ public static class ReferenceValidation
 
         for (var i = 0; i < actualClefs.Count; i++)
         {
-            if (matchedActual.Contains(i))
+            if (matchedActualClefs.Contains(i))
                 continue;
             var extra = actualClefs[i];
             rows.Add(new("ClefResolver", extra.Measure, extra.Part, "extra", "—", extra.Kind, "Resolved visible clef has no matching reference clef at this staff/measure."));
+        }
+
+        var expectedMeters = referenceLayout.VisibleMeters;
+        var actualMeters = result.Meters
+            .Select(m => new MeterItem(m.PartNumber, m.MeasureNumber, m.BeatNumber, m.BeatValue, m.Side))
+            .ToList();
+        var matchedActualMeters = new HashSet<int>();
+        var matchedMeters = 0;
+
+        foreach (var expected in expectedMeters.OrderBy(x => x.Measure).ThenBy(x => x.Part))
+        {
+            var candidate = actualMeters
+                .Select((value, index) => (value, index))
+                .FirstOrDefault(x => !matchedActualMeters.Contains(x.index) &&
+                                     x.value.Part == expected.Part &&
+                                     x.value.Measure == expected.Measure &&
+                                     x.value.Beats == expected.Beats &&
+                                     x.value.BeatType == expected.BeatType);
+            if (candidate.value is not null)
+            {
+                matchedActualMeters.Add(candidate.index);
+                matchedMeters++;
+                rows.Add(new("MeterResolver", expected.Measure, expected.Part, "ok", expected.Label, candidate.value.Label, expected.Reason));
+            }
+            else
+            {
+                rows.Add(new("MeterResolver", expected.Measure, expected.Part, "missing", expected.Label, "—", expected.Reason + " Reference visible meter was not resolved."));
+            }
+        }
+
+        for (var i = 0; i < actualMeters.Count; i++)
+        {
+            if (matchedActualMeters.Contains(i))
+                continue;
+            var extra = actualMeters[i];
+            rows.Add(new("MeterResolver", extra.Measure, extra.Part, "extra", "—", extra.Label, $"Resolved {extra.Side.ToString().ToLowerInvariant()}-side meter has no matching reference meter at this staff/measure."));
         }
 
         var htmlPath = Path.Combine(itemDirectory, "reference-checks.html");
@@ -100,6 +135,7 @@ public static class ReferenceValidation
             new[]
             {
                 new ResolverCheckSummary("PartMeasureResolver", matchedBlocks, expectedBlocks.Count, extraBlocks.Length),
+                new ResolverCheckSummary("MeterResolver", matchedMeters, expectedMeters.Count, Math.Max(0, actualMeters.Count - matchedMeters)),
                 new ResolverCheckSummary("ClefResolver", matchedClefs, expectedClefs.Count, Math.Max(0, actualClefs.Count - matchedClefs))
             });
     }
@@ -114,6 +150,7 @@ public static class ReferenceValidation
 
         var blocks = new List<BlockItem>();
         var visibleClefs = new List<ExpectedClef>();
+        var visibleMeters = new List<ExpectedMeter>();
         var globalStaffOffset = 0;
 
         foreach (var musicXmlPart in musicXmlParts)
@@ -132,6 +169,38 @@ public static class ReferenceValidation
             {
                 var measure = measures[measureIndex];
                 var measureNumber = measureIndex + 1;
+
+                var explicitMeters = measure.Descendants()
+                    .Where(x => x.Name.LocalName == "time")
+                    .Select(x => new
+                    {
+                        Element = x,
+                        Staff = ParsePositiveInt(Attribute(x, "number")),
+                        Beats = ParsePositiveInt(Child(x, "beats")?.Value),
+                        BeatType = ParsePositiveInt(Child(x, "beat-type")?.Value)
+                    })
+                    .Where(x => x.Beats.HasValue && x.BeatType.HasValue)
+                    .ToArray();
+
+                foreach (var meter in explicitMeters)
+                {
+                    if (meter.Staff.HasValue)
+                    {
+                        AddVisibleMeter(visibleMeters, globalStaffOffset + meter.Staff.Value, measureNumber,
+                            meter.Beats!.Value, meter.BeatType!.Value,
+                            "Explicit staff-specific time signature in reference MusicXML.");
+                    }
+                    else
+                    {
+                        // An unnumbered MusicXML <time> applies to the whole multi-staff part and is
+                        // engraved on every staff, so compare it with every physical SVG staff.
+                        for (var staff = 1; staff <= staffCount; staff++)
+                            AddVisibleMeter(visibleMeters, globalStaffOffset + staff, measureNumber,
+                                meter.Beats!.Value, meter.BeatType!.Value,
+                                "Part-wide time signature in reference MusicXML.");
+                    }
+                }
+
                 var explicitClefs = measure.Descendants()
                     .Where(x => x.Name.LocalName == "clef")
                     .Select(x => new
@@ -143,8 +212,6 @@ public static class ReferenceValidation
                     .Select(x => (x.Staff, Kind: x.Kind!))
                     .ToArray();
 
-                // An explicit clef is visibly printed, whether it is at the start or in the middle
-                // of a measure. It also becomes the active clef for subsequent system starts.
                 foreach (var clef in explicitClefs)
                 {
                     currentClefs[clef.Staff] = clef.Kind;
@@ -156,9 +223,8 @@ public static class ReferenceValidation
                 if (!isSystemStart)
                     continue;
 
-                // MuseScore does not normally repeat <clef> in MusicXML merely because a new
-                // printed system starts. The engraving still shows the current clef at that point,
-                // so carry the active clef state forward for visual comparison with the SVG.
+                // MusicXML usually carries the clef state rather than repeating <clef> at each
+                // printed system. SVG contains the visually repeated glyph, so recreate it here.
                 for (var staff = 1; staff <= staffCount; staff++)
                 {
                     if (!currentClefs.TryGetValue(staff, out var kind))
@@ -171,7 +237,7 @@ public static class ReferenceValidation
             globalStaffOffset += staffCount;
         }
 
-        return new ReferenceLayout(blocks, visibleClefs);
+        return new ReferenceLayout(blocks, visibleClefs, visibleMeters);
     }
 
     private static int DetectStaffCount(XElement musicXmlPart)
@@ -215,6 +281,13 @@ public static class ReferenceValidation
         items.Add(new ExpectedClef(part, measure, kind, reason));
     }
 
+    private static void AddVisibleMeter(List<ExpectedMeter> items, int part, int measure, int beats, int beatType, string reason)
+    {
+        if (items.Any(x => x.Part == part && x.Measure == measure && x.Beats == beats && x.BeatType == beatType))
+            return;
+        items.Add(new ExpectedMeter(part, measure, beats, beatType, reason));
+    }
+
     private static IEnumerable<XElement> Children(XContainer parent, string localName) =>
         parent.Elements().Where(x => x.Name.LocalName == localName);
 
@@ -252,38 +325,103 @@ public static class ReferenceValidation
     private static void WriteGeneratedMusicXml(string path, SvgStructureResolution result)
     {
         XNamespace ns = XNamespace.None;
-        var scoreParts = result.Structure.Parts
-            .Select(p => new XElement(ns + "score-part", new XAttribute("id", $"P{p.Number}"), new XElement(ns + "part-name", $"Part {p.Number}")));
+        var staffCount = Math.Max(1, result.Structure.Parts.Count);
 
-        var partElements = result.Structure.Parts.Select(part =>
-            new XElement(ns + "part",
-                new XAttribute("id", $"P{part.Number}"),
-                result.Structure.Measures.Select(measure =>
+        // SvgStructure's P1/P2/... are physical staves, not independent instruments. Emit one
+        // multi-staff MusicXML part so a piano grand staff is connected by one brace.
+        var scorePart = new XElement(ns + "score-part",
+            new XAttribute("id", "P1"),
+            new XElement(ns + "part-name", new XAttribute("print-object", "no"), "Resolved score"));
+
+        var part = new XElement(ns + "part", new XAttribute("id", "P1"));
+        foreach (var measure in result.Structure.Measures)
+        {
+            var measureEl = new XElement(ns + "measure", new XAttribute("number", measure.Number));
+            if (measure.StartsNewSystem)
+                measureEl.Add(new XElement(ns + "print", new XAttribute("new-system", "yes")));
+
+            var meters = result.Meters
+                .Where(m => m.MeasureNumber == measure.Number)
+                .OrderBy(m => m.PartNumber)
+                .ToArray();
+            var clefs = result.Clefs
+                .Where(c => c.MeasureNumber == measure.Number)
+                .OrderBy(c => c.PhysicalBounds.Left)
+                .ThenBy(c => c.PartNumber)
+                .ToArray();
+
+            var needsAttributes = measure.Number == 1 || meters.Length > 0 || clefs.Length > 0;
+            if (needsAttributes)
+            {
+                var attributes = new XElement(ns + "attributes");
+
+                if (meters.Length > 0)
                 {
-                    var measureEl = new XElement(ns + "measure", new XAttribute("number", measure.Number));
-                    var clefs = result.Clefs.Where(c => c.PartNumber == part.Number && c.MeasureNumber == measure.Number).OrderBy(c => c.PhysicalBounds.Left).ToArray();
-                    if (clefs.Length > 0)
+                    var distinctMeters = meters.Select(m => (m.BeatNumber, m.BeatValue)).Distinct().ToArray();
+                    var allStavesCovered = Enumerable.Range(1, staffCount)
+                        .All(staff => meters.Any(m => m.PartNumber == staff));
+
+                    if (distinctMeters.Length == 1 && allStavesCovered)
                     {
-                        measureEl.Add(new XElement(ns + "attributes",
-                            clefs.Select(c => new XElement(ns + "clef",
-                                new XElement(ns + "sign", c.Kind.ToString()),
-                                new XElement(ns + "line", c.Kind == ClefKind.G ? 2 : c.Kind == ClefKind.F ? 4 : 3)))));
+                        attributes.Add(TimeElement(ns, distinctMeters[0].BeatNumber, distinctMeters[0].BeatValue, staff: null));
                     }
-                    return measureEl;
-                })));
+                    else
+                    {
+                        foreach (var meter in meters)
+                            attributes.Add(TimeElement(ns, meter.BeatNumber, meter.BeatValue, meter.PartNumber));
+                    }
+                }
+
+                if (measure.Number == 1 && staffCount > 1)
+                {
+                    attributes.Add(new XElement(ns + "staves", staffCount));
+                    attributes.Add(new XElement(ns + "part-symbol", "brace"));
+                }
+
+                foreach (var clef in clefs)
+                {
+                    attributes.Add(new XElement(ns + "clef",
+                        staffCount > 1 ? new XAttribute("number", clef.PartNumber) : null,
+                        new XElement(ns + "sign", clef.Kind.ToString()),
+                        new XElement(ns + "line", clef.Kind == ClefKind.G ? 2 : clef.Kind == ClefKind.F ? 4 : 3)));
+                }
+
+                measureEl.Add(attributes);
+            }
+
+            part.Add(measureEl);
+        }
 
         var doc = new XDocument(
             new XDeclaration("1.0", "UTF-8", null),
             new XElement(ns + "score-partwise",
                 new XAttribute("version", "4.0"),
-                new XElement(ns + "part-list", scoreParts),
-                partElements));
+                new XElement(ns + "part-list", scorePart),
+                part));
         doc.Save(path);
     }
 
-    private sealed record ReferenceLayout(IReadOnlyList<BlockItem> Blocks, IReadOnlyList<ExpectedClef> VisibleClefs);
+    private static XElement TimeElement(XNamespace ns, int beats, int beatType, int? staff) =>
+        new(ns + "time",
+            staff.HasValue ? new XAttribute("number", staff.Value) : null,
+            new XElement(ns + "beats", beats),
+            new XElement(ns + "beat-type", beatType));
+
+    private sealed record ReferenceLayout(
+        IReadOnlyList<BlockItem> Blocks,
+        IReadOnlyList<ExpectedClef> VisibleClefs,
+        IReadOnlyList<ExpectedMeter> VisibleMeters);
+
     private sealed record BlockItem(int Part, int Measure);
     private sealed record ExpectedClef(int Part, int Measure, string Kind, string Reason);
+    private sealed record ExpectedMeter(int Part, int Measure, int Beats, int BeatType, string Reason)
+    {
+        public string Label => $"{Beats}/{BeatType}";
+    }
     private sealed record ClefItem(int Part, int Measure, string Kind);
+    private sealed record MeterItem(int Part, int Measure, int Beats, int BeatType, MeterSide Side)
+    {
+        public string Label => $"{Beats}/{BeatType}";
+    }
     private sealed record CheckRow(string Resolver, int Measure, int Part, string State, string Expected, string Actual, string Description);
 }
