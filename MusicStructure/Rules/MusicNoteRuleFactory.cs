@@ -9,6 +9,7 @@ public sealed class MusicNoteRuleFactory
         new ChordRule(input),
         new VoiceRule(input),
         new BeamRule(input),
-        new DurationRule(input)
+        new DurationRule(input),
+        new SlurRule(input)
     };
 }
