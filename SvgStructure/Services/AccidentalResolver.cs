@@ -13,18 +13,10 @@ public sealed class AccidentalResolver
     private readonly GlyphPcaAccidentalRecognizer _recognizer;
 
     public double MinimumConfidence { get; init; } = 0.70;
-
-    // Attachment may span a fairly large empty gap. Actual ownership is constrained primarily by
-    // vertical staff position and by blockers on that same pitch corridor, not by a tiny X radius.
     public double MaxAttachedNoteGapLogicalX { get; init; } = 8.0;
-
-    // Zone-2 search only considers symbols that actually pass through (or very near) the note's
-    // horizontal pitch lane. Symbols above/below the note must not stop the search.
     public double NoteSearchLaneTolerance { get; init; } = 1.0;
-
-    // A blocker only matters if it occupies the same pitch corridor between accidental and note.
     public double AttachmentBlockerLaneTolerance { get; init; } = 0.75;
-
+    public double AttachmentPitchTolerance { get; init; } = 0.65;
     public double MinLogicalHeight { get; init; } = 1.5;
     public double MaxLogicalHeight { get; init; } = 7.0;
     public double LaneTolerance { get; init; } = 0.55;
@@ -42,7 +34,6 @@ public sealed class AccidentalResolver
         var recognized = new Dictionary<int, RecognizedCandidate?>();
         var found = new Dictionary<int, RecognizedCandidate>();
 
-        // Zone 1: walk from the left edge independently in each logical Y lane.
         foreach (var group in prepared
                      .GroupBy(x => (x.PartNumber, x.MeasureNumber))
                      .OrderBy(x => x.Key.MeasureNumber)
@@ -65,8 +56,6 @@ public sealed class AccidentalResolver
             }
         }
 
-        // Zone 2: for every known note head, walk left only inside that note's pitch corridor.
-        // Already recognized accidentals are transparent. The first other symbol ends the search.
         foreach (var note in noteHeads
                      .OrderBy(x => x.MeasureNumber)
                      .ThenBy(x => x.PartNumber)
@@ -120,12 +109,9 @@ public sealed class AccidentalResolver
         return results;
     }
 
-    private IReadOnlyList<PreparedCandidate> PrepareCandidates(
-        MusicSymbolResolution symbols,
-        LogicalGridResolution grid)
+    private IReadOnlyList<PreparedCandidate> PrepareCandidates(MusicSymbolResolution symbols, LogicalGridResolution grid)
     {
         var result = new List<PreparedCandidate>();
-
         foreach (var symbol in symbols.Candidates
                      .Where(x => x.Scope == PrimitiveLogicalScope.PartMeasure && x.PartNumber is not null)
                      .Where(x => x.SmoothPaths.Count > 0))
@@ -143,43 +129,28 @@ public sealed class AccidentalResolver
             if (x is null)
                 continue;
 
-            result.Add(new PreparedCandidate(
-                symbol,
-                part,
-                symbol.MeasureNumber,
-                logical,
-                x.Value,
-                CenterY(logical)));
+            result.Add(new PreparedCandidate(symbol, part, symbol.MeasureNumber, logical, x.Value, CenterY(logical)));
         }
-
         return result;
     }
 
-    private IReadOnlyList<IReadOnlyList<PreparedCandidate>> BuildVerticalLanes(
-        IReadOnlyList<PreparedCandidate> candidates)
+    private IReadOnlyList<IReadOnlyList<PreparedCandidate>> BuildVerticalLanes(IReadOnlyList<PreparedCandidate> candidates)
     {
         var lanes = new List<List<PreparedCandidate>>();
-
         foreach (var candidate in candidates.OrderBy(x => x.CenterY))
         {
-            var lane = lanes.FirstOrDefault(x =>
-                Math.Abs(x.Average(c => c.CenterY) - candidate.CenterY) <= LaneTolerance);
-
+            var lane = lanes.FirstOrDefault(x => Math.Abs(x.Average(c => c.CenterY) - candidate.CenterY) <= LaneTolerance);
             if (lane is null)
             {
                 lane = new List<PreparedCandidate>();
                 lanes.Add(lane);
             }
-
             lane.Add(candidate);
         }
-
         return lanes;
     }
 
-    private RecognizedCandidate? Recognize(
-        PreparedCandidate candidate,
-        IDictionary<int, RecognizedCandidate?> cache)
+    private RecognizedCandidate? Recognize(PreparedCandidate candidate, IDictionary<int, RecognizedCandidate?> cache)
     {
         if (cache.TryGetValue(candidate.Symbol.Id, out var cached))
             return cached;
@@ -199,15 +170,8 @@ public sealed class AccidentalResolver
         }
 
         var result = new RecognizedCandidate(
-            candidate.Symbol.Id,
-            candidate.PartNumber,
-            candidate.MeasureNumber,
-            candidate.LogicalBounds,
-            candidate.Symbol.PhysicalBounds,
-            candidate.X,
-            recognition.Kind.Value,
-            recognition.Confidence);
-
+            candidate.Symbol.Id, candidate.PartNumber, candidate.MeasureNumber, candidate.LogicalBounds,
+            candidate.Symbol.PhysicalBounds, candidate.X, recognition.Kind.Value, recognition.Confidence);
         cache[candidate.Symbol.Id] = result;
         return result;
     }
@@ -218,9 +182,6 @@ public sealed class AccidentalResolver
         IReadOnlyList<PreparedCandidate> allSymbols,
         IReadOnlyDictionary<int, RecognizedCandidate> recognizedAccidentals)
     {
-        // Attachment is fundamentally discrete: both an accidental and a note belong to one of the
-        // integer half-staff-space positions. Comparing the quantized positions prevents a flat in a
-        // chord from drifting to the geometrically nearest head one step above/below.
         var anchorY = AccidentalPitchAnchorY(accidental.Kind, accidental.LogicalBounds);
         var anchorPosition = (int)Math.Round(anchorY);
 
@@ -235,27 +196,24 @@ public sealed class AccidentalResolver
             })
             .Where(x => x.X is not null && x.X.Value > accidental.X)
             .Where(x => x.X!.Value - accidental.X <= MaxAttachedNoteGapLogicalX)
-            .Where(x => x.Position == anchorPosition)
-            .OrderBy(x => x.X)
+            // Exact quantized staff position remains preferred, but SVG glyph boxes are sometimes
+            // shifted by a fraction of a half-space. Accept a small geometric tolerance instead of
+            // dropping an otherwise obvious accidental completely.
+            .Where(x => x.Position == anchorPosition || Math.Abs(x.Y - anchorY) <= AttachmentPitchTolerance)
+            .OrderBy(x => x.Position == anchorPosition ? 0 : 1)
             .ThenBy(x => Math.Abs(x.Y - anchorY))
+            .ThenBy(x => x.X)
             .ToArray();
 
         foreach (var candidate in candidates)
         {
             var targetX = candidate.X!.Value;
             var targetY = candidate.Y;
-
             var blocked = allSymbols
                 .Where(x => x.PartNumber == accidental.PartNumber && x.MeasureNumber == accidental.MeasureNumber)
                 .Where(x => x.X > accidental.X && x.X < targetX)
-
-                // A broader candidate belonging to the accidental itself or to the destination note
-                // is not an intervening musical symbol.
                 .Where(x => !x.Symbol.PhysicalBounds.Intersects(accidental.PhysicalBounds))
                 .Where(x => !x.Symbol.PhysicalBounds.Intersects(candidate.Note.PhysicalBounds))
-
-                // Only geometry on the same pitch corridor can block this attachment. Dynamics,
-                // slurs, neighbouring chord heads, etc. at other Y positions are irrelevant.
                 .Where(x => VerticalDistanceToY(x.LogicalBounds, targetY) <= AttachmentBlockerLaneTolerance)
                 .Any(x => !recognizedAccidentals.ContainsKey(x.Symbol.Id));
 
@@ -266,54 +224,29 @@ public sealed class AccidentalResolver
         return null;
     }
 
-    private static double AccidentalPitchAnchorY(AccidentalKind kind, LogicalRectD bounds)
+    private static double AccidentalPitchAnchorY(AccidentalKind kind, LogicalRectD bounds) => kind switch
     {
-        return kind switch
-        {
-            // For a flat the pitch is at the bulb, not at the center of the tall glyph. The requested
-            // baseline is half the inter-line distance up from the bottom: one logical half-space.
-            AccidentalKind.Flat or AccidentalKind.DoubleFlat => bounds.Bottom - 1.0,
-            _ => CenterY(bounds)
-        };
-    }
+        AccidentalKind.Flat or AccidentalKind.DoubleFlat => bounds.Bottom - 1.0,
+        _ => CenterY(bounds)
+    };
 
     private static double VerticalDistanceToY(LogicalRectD bounds, double y)
     {
-        if (y < bounds.Top)
-            return bounds.Top - y;
-        if (y > bounds.Bottom)
-            return y - bounds.Bottom;
+        if (y < bounds.Top) return bounds.Top - y;
+        if (y > bounds.Bottom) return y - bounds.Bottom;
         return 0;
     }
 
-    private static bool OverlapsClef(
-        PreparedCandidate candidate,
-        IReadOnlyList<ClefResolution> clefs) =>
-        clefs.Any(c =>
-            c.PartNumber == candidate.PartNumber &&
-            c.MeasureNumber == candidate.MeasureNumber &&
-            c.PhysicalBounds.Intersects(candidate.Symbol.PhysicalBounds));
+    private static bool OverlapsClef(PreparedCandidate candidate, IReadOnlyList<ClefResolution> clefs) =>
+        clefs.Any(c => c.PartNumber == candidate.PartNumber && c.MeasureNumber == candidate.MeasureNumber &&
+                       c.PhysicalBounds.Intersects(candidate.Symbol.PhysicalBounds));
 
-    private static double? CenterX(LogicalRectD b) =>
-        b.Left is { } l && b.Right is { } r ? (l + r) / 2.0 : null;
-
+    private static double? CenterX(LogicalRectD b) => b.Left is { } l && b.Right is { } r ? (l + r) / 2.0 : null;
     private static double CenterY(LogicalRectD b) => (b.Top + b.Bottom) / 2.0;
 
-    private sealed record PreparedCandidate(
-        MusicSymbolCandidate Symbol,
-        int PartNumber,
-        int MeasureNumber,
-        LogicalRectD LogicalBounds,
-        double X,
-        double CenterY);
+    private sealed record PreparedCandidate(MusicSymbolCandidate Symbol, int PartNumber, int MeasureNumber,
+        LogicalRectD LogicalBounds, double X, double CenterY);
 
-    private sealed record RecognizedCandidate(
-        int SymbolId,
-        int PartNumber,
-        int MeasureNumber,
-        LogicalRectD LogicalBounds,
-        RectD PhysicalBounds,
-        double X,
-        AccidentalKind Kind,
-        double Confidence);
+    private sealed record RecognizedCandidate(int SymbolId, int PartNumber, int MeasureNumber,
+        LogicalRectD LogicalBounds, RectD PhysicalBounds, double X, AccidentalKind Kind, double Confidence);
 }
