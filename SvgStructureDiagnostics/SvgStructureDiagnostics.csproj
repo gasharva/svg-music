@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SvgStructure\SvgStructure.csproj" />
+    <ProjectReference Include="..\MusicXml\MusicXml.csproj" />
+    <ProjectReference Include="..\SvgSymbols\SvgSymbols.csproj" />
+    <ProjectReference Include="..\GlyphPcaGallery\GlyphPcaGallery.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\SvgStructure\Program.cs" Link="Program.cs" />
+    <Compile Include="..\SvgStructure\Services\*Diagnostic*.cs" Link="Services\%(Filename)%(Extension)" />
+    <Compile Include="..\SvgStructure\Services\*OverlayRenderer.cs" Link="Services\%(Filename)%(Extension)" />
+    <Compile Include="..\SvgStructure\Services\*Exporter.cs" Link="Services\%(Filename)%(Extension)" />
+    <Compile Include="..\SvgStructure\Services\StepByStepBatchRunner.cs" Link="Services\StepByStepBatchRunner.cs" />
+    <Compile Include="..\SvgStructure\Services\StepByStepReportBuilder.cs" Link="Services\StepByStepReportBuilder.cs" />
+  </ItemGroup>
+</Project>
