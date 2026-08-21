@@ -26,51 +26,63 @@
     "measures": [
       {
         "number": 1,
-        "width": 204.74688720703125
+        "width": 204.74688720703125,
+        "startsNewSystem": false
       },
       {
         "number": 2,
-        "width": 222.31591796875
+        "width": 222.31591796875,
+        "startsNewSystem": false
       },
       {
         "number": 3,
-        "width": 188.4747314453125
+        "width": 188.4747314453125,
+        "startsNewSystem": false
       },
       {
         "number": 4,
-        "width": 193.43203735351562
+        "width": 193.43203735351562,
+        "startsNewSystem": true
       },
       {
         "number": 5,
-        "width": 149.7968275282118
+        "width": 149.7968275282118,
+        "startsNewSystem": false
       },
       {
         "number": 6,
-        "width": 302.1119554307726
+        "width": 302.1119554307726,
+        "startsNewSystem": false
       },
       {
         "number": 7,
-        "width": 222.68596903483075
+        "width": 222.68596903483075,
+        "startsNewSystem": true
       },
       {
         "number": 8,
-        "width": 194.51051839192706
+        "width": 194.51051839192706,
+        "startsNewSystem": false
       },
       {
         "number": 9,
-        "width": 207.6782684326172
+        "width": 207.6782684326172,
+        "startsNewSystem": false
       },
       {
         "number": 10,
-        "width": 329.67183113098145
+        "width": 329.67183113098145,
+        "startsNewSystem": true
       },
       {
         "number": 11,
-        "width": 295.20292472839355
+        "width": 295.20292472839355,
+        "startsNewSystem": false
       },
       {
         "number": 12,
-        "width": 624.874755859375
+        "width": 624.874755859375,
+        "startsNewSystem": true
       }
     ],
     "blocks": [

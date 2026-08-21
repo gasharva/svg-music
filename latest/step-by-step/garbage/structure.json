@@ -26,35 +26,43 @@
     "measures": [
       {
         "number": 1,
-        "width": 112.23070526123047
+        "width": 112.23070526123047,
+        "startsNewSystem": false
       },
       {
         "number": 2,
-        "width": 285.3293914794922
+        "width": 285.3293914794922,
+        "startsNewSystem": false
       },
       {
         "number": 3,
-        "width": 249.36215209960938
+        "width": 249.36215209960938,
+        "startsNewSystem": false
       },
       {
         "number": 4,
-        "width": 213.62798767089845
+        "width": 213.62798767089845,
+        "startsNewSystem": true
       },
       {
         "number": 5,
-        "width": 263.7620849609375
+        "width": 263.7620849609375,
+        "startsNewSystem": false
       },
       {
         "number": 6,
-        "width": 4.6700439453125
+        "width": 4.6700439453125,
+        "startsNewSystem": false
       },
       {
         "number": 7,
-        "width": 208.2811279296875
+        "width": 208.2811279296875,
+        "startsNewSystem": false
       },
       {
         "number": 8,
-        "width": 5.093831380208371
+        "width": 5.093831380208371,
+        "startsNewSystem": false
       }
     ],
     "blocks": [

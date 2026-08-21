@@ -2,79 +2,23 @@
 <score-partwise version="4.0">
   <part-list>
     <score-part id="P1">
-      <part-name>Part 1</part-name>
-    </score-part>
-    <score-part id="P2">
-      <part-name>Part 2</part-name>
+      <part-name print-object="no">Resolved score</part-name>
     </score-part>
   </part-list>
   <part id="P1">
     <measure number="1">
       <attributes>
-        <clef>
+        <time>
+          <beats>3</beats>
+          <beat-type>4</beat-type>
+        </time>
+        <staves>2</staves>
+        <part-symbol>brace</part-symbol>
+        <clef number="1">
           <sign>G</sign>
           <line>2</line>
         </clef>
-      </attributes>
-    </measure>
-    <measure number="2" />
-    <measure number="3" />
-    <measure number="4" />
-    <measure number="5" />
-    <measure number="6">
-      <attributes>
-        <clef>
-          <sign>G</sign>
-          <line>2</line>
-        </clef>
-      </attributes>
-    </measure>
-    <measure number="7" />
-    <measure number="8" />
-    <measure number="9" />
-    <measure number="10" />
-    <measure number="11">
-      <attributes>
-        <clef>
-          <sign>G</sign>
-          <line>2</line>
-        </clef>
-      </attributes>
-    </measure>
-    <measure number="12" />
-    <measure number="13" />
-    <measure number="14" />
-    <measure number="15" />
-    <measure number="16">
-      <attributes>
-        <clef>
-          <sign>G</sign>
-          <line>2</line>
-        </clef>
-      </attributes>
-    </measure>
-    <measure number="17" />
-    <measure number="18" />
-    <measure number="19" />
-    <measure number="20" />
-    <measure number="21">
-      <attributes>
-        <clef>
-          <sign>G</sign>
-          <line>2</line>
-        </clef>
-      </attributes>
-    </measure>
-    <measure number="22" />
-    <measure number="23" />
-    <measure number="24" />
-    <measure number="25" />
-    <measure number="26" />
-  </part>
-  <part id="P2">
-    <measure number="1">
-      <attributes>
-        <clef>
+        <clef number="2">
           <sign>F</sign>
           <line>4</line>
         </clef>
@@ -85,8 +29,13 @@
     <measure number="4" />
     <measure number="5" />
     <measure number="6">
+      <print new-system="yes" />
       <attributes>
-        <clef>
+        <clef number="1">
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
+        <clef number="2">
           <sign>F</sign>
           <line>4</line>
         </clef>
@@ -97,8 +46,17 @@
     <measure number="9" />
     <measure number="10" />
     <measure number="11">
+      <print new-system="yes" />
       <attributes>
-        <clef>
+        <time number="2">
+          <beats>4</beats>
+          <beat-type>4</beat-type>
+        </time>
+        <clef number="1">
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
+        <clef number="2">
           <sign>F</sign>
           <line>4</line>
         </clef>
@@ -109,8 +67,13 @@
     <measure number="14" />
     <measure number="15" />
     <measure number="16">
+      <print new-system="yes" />
       <attributes>
-        <clef>
+        <clef number="1">
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
+        <clef number="2">
           <sign>F</sign>
           <line>4</line>
         </clef>
@@ -121,8 +84,13 @@
     <measure number="19" />
     <measure number="20" />
     <measure number="21">
+      <print new-system="yes" />
       <attributes>
-        <clef>
+        <clef number="1">
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
+        <clef number="2">
           <sign>F</sign>
           <line>4</line>
         </clef>
