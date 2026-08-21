@@ -21,6 +21,7 @@ public sealed class MusicScoreBuilder
             .Concat(input.Stems.Select(x => x.Measure))
             .Concat(input.Beams.Select(x => x.Measure))
             .Concat(input.Flags.Select(x => x.Measure))
+            .Concat(input.Arcs.Select(x => x.Measure))
             .Distinct()
             .OrderBy(x => x)
             .ToArray();
@@ -33,7 +34,8 @@ public sealed class MusicScoreBuilder
                 input.Notes.Where(x => x.Measure == number).ToArray(),
                 input.Stems.Where(x => x.Measure == number).ToArray(),
                 input.Beams.Where(x => x.Measure == number).ToArray(),
-                input.Flags.Where(x => x.Measure == number).ToArray())))
+                input.Flags.Where(x => x.Measure == number).ToArray(),
+                input.Arcs.Where(x => x.Measure == number).ToArray())))
             .ToArray();
 
         return new MusicScore(input.StaffCount, measures);
