@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Xml.Linq;
 using MusicStructure;
 
@@ -5,6 +6,8 @@ namespace SvgStructure.Services;
 
 internal static class ResolvedMusicXmlNoteWriter
 {
+    private const double LogicalXToTenths = 10.0;
+
     public static void Append(string path, MusicScore score)
     {
         var doc = XDocument.Load(path);
@@ -47,8 +50,6 @@ internal static class ResolvedMusicXmlNoteWriter
                     lastVoiceDuration = VoiceDuration(voices[voiceIndex]);
                 }
 
-                // Every physical staff starts at the beginning of the measure. Rewind the
-                // final voice before writing the next staff. Earlier voices were already rewound.
                 if (staffIndex < staffs.Length - 1 && lastVoiceDuration > 0)
                     measure.Add(new XElement("backup", new XElement("duration", lastVoiceDuration)));
             }
@@ -84,6 +85,9 @@ internal static class ResolvedMusicXmlNoteWriter
         pitch.Add(new XElement("octave", note.Pitch.Octave));
 
         var noteEl = new XElement("note");
+        if (note.LogicalX.HasValue)
+            noteEl.Add(new XAttribute("default-x",
+                (note.LogicalX.Value * LogicalXToTenths).ToString("0.###", CultureInfo.InvariantCulture)));
         if (note.IsChordTone)
             noteEl.Add(new XElement("chord"));
         noteEl.Add(pitch);
@@ -100,6 +104,16 @@ internal static class ResolvedMusicXmlNoteWriter
         noteEl.Add(new XElement("staff", note.Staff));
         foreach (var beam in note.Beams)
             noteEl.Add(new XElement("beam", new XAttribute("number", beam.Level), BeamText(beam.Position)));
+
+        var slurs = note.Slurs ?? Array.Empty<MusicSlur>();
+        if (slurs.Count > 0)
+        {
+            noteEl.Add(new XElement("notations",
+                slurs.Select(slur => new XElement("slur",
+                    new XAttribute("type", slur.Type == MusicSlurType.Start ? "start" : "stop"),
+                    new XAttribute("number", slur.Number)))));
+        }
+
         return noteEl;
     }
 
