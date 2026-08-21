@@ -3,6 +3,7 @@ namespace MusicStructure;
 public enum MusicAccidental { Flat, Sharp, Natural, DoubleSharp, DoubleFlat }
 public enum MusicStemDirection { Up, Down }
 public enum MusicBeamPosition { Begin, Continue, End, ForwardHook, BackwardHook }
+public enum MusicSlurType { Start, Stop }
 
 public sealed record MusicPitch(string Step, int Octave, int Alter = 0)
 {
@@ -10,6 +11,7 @@ public sealed record MusicPitch(string Step, int Octave, int Alter = 0)
 }
 
 public sealed record MusicBeam(int Level, MusicBeamPosition Position);
+public sealed record MusicSlur(int Number, MusicSlurType Type);
 
 public sealed record MusicNote(
     int Staff,
@@ -23,7 +25,8 @@ public sealed record MusicNote(
     IReadOnlyList<MusicBeam> Beams,
     bool IsChordTone = false,
     string? ChordGroupKey = null,
-    int? Voice = null);
+    int? Voice = null,
+    IReadOnlyList<MusicSlur>? Slurs = null);
 
 public sealed record MusicMeasure(int Number, bool StartsNewSystem, IReadOnlyList<MusicNote> Notes);
 public sealed record MusicScore(int StaffCount, IReadOnlyList<MusicMeasure> Measures)
@@ -49,6 +52,7 @@ public sealed record RecognizedStemInput(
     string Key,
     int Staff,
     int Measure,
+    double? LogicalX,
     MusicStemDirection Direction,
     IReadOnlyList<string> AttachedNoteKeys);
 
@@ -63,6 +67,11 @@ public sealed record RecognizedFlagInput(
     int Denominator,
     string StemKey);
 
+public sealed record RecognizedArcInput(
+    int Measure,
+    IReadOnlyList<string> NoteKeys,
+    IReadOnlyList<string> StemKeys);
+
 public sealed record MusicStructureInput(
     int StaffCount,
     IReadOnlyList<int> MeasureNumbers,
@@ -70,7 +79,8 @@ public sealed record MusicStructureInput(
     IReadOnlyList<RecognizedNoteInput> Notes,
     IReadOnlyList<RecognizedStemInput> Stems,
     IReadOnlyList<RecognizedBeamInput> Beams,
-    IReadOnlyList<RecognizedFlagInput> Flags);
+    IReadOnlyList<RecognizedFlagInput> Flags,
+    IReadOnlyList<RecognizedArcInput> Arcs);
 
 public sealed record MusicMeasureInput(
     int Number,
@@ -79,7 +89,8 @@ public sealed record MusicMeasureInput(
     IReadOnlyList<RecognizedNoteInput> Notes,
     IReadOnlyList<RecognizedStemInput> Stems,
     IReadOnlyList<RecognizedBeamInput> Beams,
-    IReadOnlyList<RecognizedFlagInput> Flags);
+    IReadOnlyList<RecognizedFlagInput> Flags,
+    IReadOnlyList<RecognizedArcInput> Arcs);
 
 public sealed record MusicNoteDraft(
     RecognizedNoteInput Source,
@@ -92,13 +103,15 @@ public sealed record MusicNoteDraft(
     string? Type = null,
     bool IsChordTone = false,
     string? ChordGroupKey = null,
-    int? Voice = null)
+    int? Voice = null,
+    IReadOnlyList<MusicSlur>? Slurs = null)
 {
     public static MusicNoteDraft From(RecognizedNoteInput source) => new(
         source,
         Accidental: source.Accidental,
         DotCount: source.DotCount,
-        Beams: Array.Empty<MusicBeam>());
+        Beams: Array.Empty<MusicBeam>(),
+        Slurs: Array.Empty<MusicSlur>());
 
     public MusicNote ToMusicNote()
     {
@@ -119,6 +132,7 @@ public sealed record MusicNoteDraft(
             Beams ?? Array.Empty<MusicBeam>(),
             IsChordTone,
             ChordGroupKey,
-            Voice);
+            Voice,
+            Slurs ?? Array.Empty<MusicSlur>());
     }
 }
