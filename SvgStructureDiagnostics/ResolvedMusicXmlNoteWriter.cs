@@ -25,32 +25,43 @@ internal static class ResolvedMusicXmlNoteWriter
                 continue;
 
             var staffs = musicMeasure.Notes.Select(x => x.Staff).Distinct().OrderBy(x => x).ToArray();
-            var firstStaff = true;
-            foreach (var staff in staffs)
+            for (var staffIndex = 0; staffIndex < staffs.Length; staffIndex++)
             {
-                var ordered = OrderStaffNotes(musicMeasure.Notes.Where(x => x.Staff == staff).ToArray());
-                if (!firstStaff)
+                var staff = staffs[staffIndex];
+                var staffNotes = musicMeasure.Notes.Where(x => x.Staff == staff).ToArray();
+                var voices = staffNotes
+                    .GroupBy(x => x.Voice ?? 1)
+                    .OrderBy(x => x.Key)
+                    .ToArray();
+
+                var lastVoiceDuration = 0;
+                for (var voiceIndex = 0; voiceIndex < voices.Length; voiceIndex++)
                 {
-                    var previousStaff = staffs[Array.IndexOf(staffs, staff) - 1];
-                    var rewind = StaffDuration(musicMeasure.Notes.Where(x => x.Staff == previousStaff));
-                    if (rewind > 0)
-                        measure.Add(new XElement("backup", new XElement("duration", rewind)));
+                    if (voiceIndex > 0 && lastVoiceDuration > 0)
+                        measure.Add(new XElement("backup", new XElement("duration", lastVoiceDuration)));
+
+                    var ordered = OrderVoiceNotes(voices[voiceIndex].ToArray());
+                    foreach (var note in ordered)
+                        measure.Add(CreateNote(note));
+
+                    lastVoiceDuration = VoiceDuration(voices[voiceIndex]);
                 }
 
-                foreach (var note in ordered)
-                    measure.Add(CreateNote(note));
-
-                firstStaff = false;
+                // Every physical staff starts at the beginning of the measure. Rewind the
+                // final voice before writing the next staff. Earlier voices were already rewound.
+                if (staffIndex < staffs.Length - 1 && lastVoiceDuration > 0)
+                    measure.Add(new XElement("backup", new XElement("duration", lastVoiceDuration)));
             }
         }
 
         doc.Save(path);
     }
 
-    private static IReadOnlyList<MusicNote> OrderStaffNotes(IReadOnlyList<MusicNote> notes)
+    private static IReadOnlyList<MusicNote> OrderVoiceNotes(IReadOnlyList<MusicNote> notes)
     {
+        var singleIndex = 0;
         var groups = notes
-            .GroupBy(x => x.ChordGroupKey ?? $"single:{Guid.NewGuid():N}")
+            .GroupBy(x => x.ChordGroupKey ?? $"single:{++singleIndex}:{x.LogicalX}")
             .Select(group => new
             {
                 X = group.Min(x => x.LogicalX ?? double.MaxValue),
@@ -62,7 +73,7 @@ internal static class ResolvedMusicXmlNoteWriter
         return groups.SelectMany(x => x.Notes).ToArray();
     }
 
-    private static int StaffDuration(IEnumerable<MusicNote> notes) =>
+    private static int VoiceDuration(IEnumerable<MusicNote> notes) =>
         notes.Where(x => !x.IsChordTone).Sum(Duration);
 
     private static XElement CreateNote(MusicNote note)
@@ -77,6 +88,8 @@ internal static class ResolvedMusicXmlNoteWriter
             noteEl.Add(new XElement("chord"));
         noteEl.Add(pitch);
         noteEl.Add(new XElement("duration", Duration(note)));
+        if (note.Voice is not null)
+            noteEl.Add(new XElement("voice", note.Voice.Value));
         noteEl.Add(new XElement("type", note.Type));
         for (var i = 0; i < note.DotCount; i++)
             noteEl.Add(new XElement("dot"));
