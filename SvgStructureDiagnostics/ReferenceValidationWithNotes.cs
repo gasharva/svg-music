@@ -42,7 +42,6 @@ public static class ReferenceValidationWithNotes
         {
             var candidates = actual.Select((note, index) => (note, index))
                 .Where(x => !used.Contains(x.index) && x.note.Measure == exp.Measure && x.note.Staff == exp.Staff && PitchKey(x.note) == exp.Pitch)
-                .OrderBy(x => Math.Abs((decimal)(x.note.LogicalX ?? 0) - (exp.X ?? 0)))
                 .ToArray();
 
             if (candidates.Length == 0)
@@ -51,7 +50,7 @@ public static class ReferenceValidationWithNotes
                 continue;
             }
 
-            var candidate = candidates[0];
+            var candidate = candidates.OrderBy(x => Differences(exp, x.note).Count).First();
             used.Add(candidate.index);
             var differences = Differences(exp, candidate.note);
             if (differences.Count == 0)
@@ -147,7 +146,7 @@ public static class ReferenceValidationWithNotes
             }
         }
         sb.Append("</tbody></table></details>");
-        html = html.Replace("</body>", sb + "</body>", StringComparison.OrdinalIgnoreCase);
+        html = html.Replace("</body>", sb.ToString() + "</body>", StringComparison.OrdinalIgnoreCase);
         File.WriteAllText(htmlPath, html);
     }
 
