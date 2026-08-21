@@ -1,6 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -15,5 +14,14 @@
     <PackageReference Include="Clipper2" Version="2.0.0" />
     <PackageReference Include="Svg.Skia" Version="5.2.1" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="4.148.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Program.cs" />
+    <Compile Remove="Services\*Diagnostic*.cs" />
+    <Compile Remove="Services\*OverlayRenderer.cs" />
+    <Compile Remove="Services\*Exporter.cs" />
+    <Compile Remove="Services\StepByStepBatchRunner.cs" />
+    <Compile Remove="Services\StepByStepReportBuilder.cs" />
   </ItemGroup>
 </Project>
