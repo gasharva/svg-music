@@ -15,6 +15,7 @@ public sealed class ChordRule : IMusicNoteRule
 
         var result = new Dictionary<string, ChordInfo>();
         var order = input.Notes.Select((note, index) => (note.Key, index)).ToDictionary(x => x.Key, x => x.index);
+        var chordIndex = 0;
 
         foreach (var bucket in input.Notes
                      .Where(x => x.LogicalX.HasValue)
@@ -48,8 +49,9 @@ public sealed class ChordRule : IMusicNoteRule
 
                 var inheritedStem = stems.Length == 1 ? stems[0] : null;
                 var ordered = group.OrderBy(x => order[x.Key]).ToArray();
+                var chordKey = $"m{input.Number}:s{bucket.Key.Staff}:chord:{++chordIndex}";
                 for (var i = 0; i < ordered.Length; i++)
-                    result[ordered[i].Key] = new ChordInfo(i > 0, inheritedStem);
+                    result[ordered[i].Key] = new ChordInfo(chordKey, i > 0, inheritedStem);
             }
         }
 
@@ -61,7 +63,11 @@ public sealed class ChordRule : IMusicNoteRule
         if (!_chords.TryGetValue(note.Source.Key, out var chord))
             return note;
 
-        var updated = note with { IsChordTone = chord.IsChordTone };
+        var updated = note with
+        {
+            IsChordTone = chord.IsChordTone,
+            ChordGroupKey = chord.GroupKey
+        };
         if (updated.Stem is null && chord.SharedStem is not null)
             updated = updated with { Stem = chord.SharedStem.Direction, StemKey = chord.SharedStem.Key };
         return updated;
@@ -79,5 +85,5 @@ public sealed class ChordRule : IMusicNoteRule
         return left.Any(l => right.Any(r => l.Key == r.Key));
     }
 
-    private sealed record ChordInfo(bool IsChordTone, RecognizedStemInput? SharedStem);
+    private sealed record ChordInfo(string GroupKey, bool IsChordTone, RecognizedStemInput? SharedStem);
 }
