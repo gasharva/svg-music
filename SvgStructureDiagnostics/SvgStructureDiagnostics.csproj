@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SvgStructure\SvgStructure.csproj" />
+    <ProjectReference Include="..\MusicStructure\MusicStructure.csproj" />
     <ProjectReference Include="..\MusicXml\MusicXml.csproj" />
     <ProjectReference Include="..\SvgSymbols\SvgSymbols.csproj" />
     <ProjectReference Include="..\GlyphPcaGallery\GlyphPcaGallery.csproj" />
