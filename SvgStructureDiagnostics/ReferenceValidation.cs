@@ -27,25 +27,36 @@ public static class ReferenceValidation
         if (!File.Exists(referencePath))
             return null;
 
-        var reader = new MusicXmlReader();
-        var reference = reader.Read(referencePath);
+        // Read once as XML here because this diagnostic needs layout semantics that are not yet
+        // exposed by the compact MusicXml model: staves inside a MusicXML part and system breaks.
+        var referenceLayout = ReadReferenceLayout(referencePath);
 
-        var expectedParts = reference.Parts.Count;
-        var expectedMeasures = reference.Parts.Count == 0 ? 0 : reference.Parts.Max(p => p.Measures.Count);
-        var actualParts = result.Structure.Parts.Count;
-        var actualMeasures = result.Structure.Measures.Count;
+        var expectedBlocks = referenceLayout.Blocks.ToHashSet();
+        var actualBlocks = result.Structure.Map.Blocks
+            .Select(x => new BlockItem(x.PartNumber, x.MeasureNumber))
+            .ToHashSet();
 
-        var pmMatched = Math.Min(expectedParts, actualParts) * Math.Min(expectedMeasures, actualMeasures);
-        var pmExpected = expectedParts * expectedMeasures;
-        var pmActual = actualParts * actualMeasures;
-        var pmExtra = Math.Max(0, pmActual - pmExpected);
+        var matchedBlocks = expectedBlocks.Intersect(actualBlocks).Count();
+        var missingBlocks = expectedBlocks.Except(actualBlocks)
+            .OrderBy(x => x.Measure).ThenBy(x => x.Part)
+            .ToArray();
+        var extraBlocks = actualBlocks.Except(expectedBlocks)
+            .OrderBy(x => x.Measure).ThenBy(x => x.Part)
+            .ToArray();
 
-        var expectedClefs = ReadClefs(referencePath);
+        var rows = new List<CheckRow>();
+        foreach (var block in expectedBlocks.Intersect(actualBlocks).OrderBy(x => x.Measure).ThenBy(x => x.Part))
+            rows.Add(new("PartMeasureResolver", block.Measure, block.Part, "ok", $"P{block.Part}-M{block.Measure}", $"P{block.Part}-M{block.Measure}", "Matched physical staff/measure block."));
+        foreach (var block in missingBlocks)
+            rows.Add(new("PartMeasureResolver", block.Measure, block.Part, "missing", $"P{block.Part}-M{block.Measure}", "—", "Reference staff/measure block was not resolved."));
+        foreach (var block in extraBlocks)
+            rows.Add(new("PartMeasureResolver", block.Measure, block.Part, "extra", "—", $"P{block.Part}-M{block.Measure}", "Resolved staff/measure block has no reference counterpart."));
+
+        var expectedClefs = referenceLayout.VisibleClefs;
         var actualClefs = result.Clefs
-            .Select(c => new ClefItem(c.PartNumber, c.MeasureNumber, c.Kind.ToString(), c.PhysicalBounds.Left))
+            .Select(c => new ClefItem(c.PartNumber, c.MeasureNumber, c.Kind.ToString()))
             .ToList();
         var matchedActual = new HashSet<int>();
-        var clefRows = new List<CheckRow>();
         var matchedClefs = 0;
 
         foreach (var expected in expectedClefs.OrderBy(x => x.Measure).ThenBy(x => x.Part))
@@ -60,11 +71,11 @@ public static class ReferenceValidation
             {
                 matchedActual.Add(candidate.index);
                 matchedClefs++;
-                clefRows.Add(new("ClefResolver", expected.Measure, expected.Part, "ok", expected.Kind, candidate.value.Kind, "Matched reference clef."));
+                rows.Add(new("ClefResolver", expected.Measure, expected.Part, "ok", expected.Kind, candidate.value.Kind, expected.Reason));
             }
             else
             {
-                clefRows.Add(new("ClefResolver", expected.Measure, expected.Part, "missing", expected.Kind, "—", "Reference clef was not resolved."));
+                rows.Add(new("ClefResolver", expected.Measure, expected.Part, "missing", expected.Kind, "—", expected.Reason + " Reference visible clef was not resolved."));
             }
         }
 
@@ -73,24 +84,8 @@ public static class ReferenceValidation
             if (matchedActual.Contains(i))
                 continue;
             var extra = actualClefs[i];
-            clefRows.Add(new("ClefResolver", extra.Measure, extra.Part, "extra", "—", extra.Kind, "Resolved clef has no matching reference clef."));
+            rows.Add(new("ClefResolver", extra.Measure, extra.Part, "extra", "—", extra.Kind, "Resolved visible clef has no matching reference clef at this staff/measure."));
         }
-
-        var rows = new List<CheckRow>();
-        var maxMeasures = Math.Max(expectedMeasures, actualMeasures);
-        var maxParts = Math.Max(expectedParts, actualParts);
-        for (var measure = 1; measure <= maxMeasures; measure++)
-        for (var part = 1; part <= maxParts; part++)
-        {
-            var expected = part <= expectedParts && measure <= expectedMeasures;
-            var actual = part <= actualParts && measure <= actualMeasures;
-            rows.Add(expected && actual
-                ? new("PartMeasureResolver", measure, part, "ok", $"P{part}-M{measure}", $"P{part}-M{measure}", "Matched logical part/measure block.")
-                : expected
-                    ? new("PartMeasureResolver", measure, part, "missing", $"P{part}-M{measure}", "—", "Reference part/measure block was not resolved.")
-                    : new("PartMeasureResolver", measure, part, "extra", "—", $"P{part}-M{measure}", "Resolved part/measure block has no reference counterpart."));
-        }
-        rows.AddRange(clefRows);
 
         var htmlPath = Path.Combine(itemDirectory, "reference-checks.html");
         WriteHtml(htmlPath, rows);
@@ -104,44 +99,140 @@ public static class ReferenceValidation
             generatedPath,
             new[]
             {
-                new ResolverCheckSummary("PartMeasureResolver", pmMatched, pmExpected, pmExtra),
+                new ResolverCheckSummary("PartMeasureResolver", matchedBlocks, expectedBlocks.Count, extraBlocks.Length),
                 new ResolverCheckSummary("ClefResolver", matchedClefs, expectedClefs.Count, Math.Max(0, actualClefs.Count - matchedClefs))
             });
     }
 
-    private static IReadOnlyList<ClefItem> ReadClefs(string path)
+    private static ReferenceLayout ReadReferenceLayout(string path)
     {
         using var stream = File.OpenRead(path);
         using var xml = XmlReader.Create(stream, new XmlReaderSettings { DtdProcessing = DtdProcessing.Parse, XmlResolver = null });
         var doc = XDocument.Load(xml);
-        var root = doc.Root!;
-        var items = new List<ClefItem>();
-        var parts = root.Elements().Where(x => x.Name.LocalName == "part").ToArray();
-        for (var p = 0; p < parts.Length; p++)
+        var root = doc.Root ?? throw new InvalidDataException("MusicXML has no root element.");
+        var musicXmlParts = Children(root, "part").ToArray();
+
+        var blocks = new List<BlockItem>();
+        var visibleClefs = new List<ExpectedClef>();
+        var globalStaffOffset = 0;
+
+        foreach (var musicXmlPart in musicXmlParts)
         {
-            var measures = parts[p].Elements().Where(x => x.Name.LocalName == "measure").ToArray();
-            for (var m = 0; m < measures.Length; m++)
+            var measures = Children(musicXmlPart, "measure").ToArray();
+            var staffCount = DetectStaffCount(musicXmlPart);
+
+            for (var measureIndex = 0; measureIndex < measures.Length; measureIndex++)
             {
-                foreach (var clef in measures[m].Descendants().Where(x => x.Name.LocalName == "clef"))
+                for (var staff = 1; staff <= staffCount; staff++)
+                    blocks.Add(new BlockItem(globalStaffOffset + staff, measureIndex + 1));
+            }
+
+            var currentClefs = new Dictionary<int, string>();
+            for (var measureIndex = 0; measureIndex < measures.Length; measureIndex++)
+            {
+                var measure = measures[measureIndex];
+                var measureNumber = measureIndex + 1;
+                var explicitClefs = measure.Descendants()
+                    .Where(x => x.Name.LocalName == "clef")
+                    .Select(x => new
+                    {
+                        Staff = ParsePositiveInt(Attribute(x, "number")) ?? 1,
+                        Kind = Child(x, "sign")?.Value.Trim()
+                    })
+                    .Where(x => !string.IsNullOrWhiteSpace(x.Kind))
+                    .Select(x => (x.Staff, Kind: x.Kind!))
+                    .ToArray();
+
+                // An explicit clef is visibly printed, whether it is at the start or in the middle
+                // of a measure. It also becomes the active clef for subsequent system starts.
+                foreach (var clef in explicitClefs)
                 {
-                    var sign = clef.Elements().FirstOrDefault(x => x.Name.LocalName == "sign")?.Value?.Trim();
-                    if (string.IsNullOrWhiteSpace(sign))
+                    currentClefs[clef.Staff] = clef.Kind;
+                    AddVisibleClef(visibleClefs, globalStaffOffset + clef.Staff, measureNumber, clef.Kind,
+                        "Explicit clef in reference MusicXML.");
+                }
+
+                var isSystemStart = measureIndex == 0 || HasSystemBreak(measure);
+                if (!isSystemStart)
+                    continue;
+
+                // MuseScore does not normally repeat <clef> in MusicXML merely because a new
+                // printed system starts. The engraving still shows the current clef at that point,
+                // so carry the active clef state forward for visual comparison with the SVG.
+                for (var staff = 1; staff <= staffCount; staff++)
+                {
+                    if (!currentClefs.TryGetValue(staff, out var kind))
                         continue;
-                    var numberText = clef.Attributes().FirstOrDefault(x => x.Name.LocalName == "number")?.Value;
-                    var staff = int.TryParse(numberText, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed) ? parsed : 1;
-                    items.Add(new ClefItem(p + staff, m + 1, sign, 0));
+                    AddVisibleClef(visibleClefs, globalStaffOffset + staff, measureNumber, kind,
+                        measureIndex == 0 ? "Initial visible clef." : "Clef repeated visually at a new system/page.");
                 }
             }
+
+            globalStaffOffset += staffCount;
         }
-        return items;
+
+        return new ReferenceLayout(blocks, visibleClefs);
     }
+
+    private static int DetectStaffCount(XElement musicXmlPart)
+    {
+        var values = new List<int> { 1 };
+        values.AddRange(musicXmlPart.Descendants()
+            .Where(x => x.Name.LocalName == "staves")
+            .Select(x => ParsePositiveInt(x.Value))
+            .Where(x => x.HasValue)
+            .Select(x => x!.Value));
+        values.AddRange(musicXmlPart.Descendants()
+            .Where(x => x.Name.LocalName == "clef")
+            .Select(x => ParsePositiveInt(Attribute(x, "number")))
+            .Where(x => x.HasValue)
+            .Select(x => x!.Value));
+        values.AddRange(musicXmlPart.Descendants()
+            .Where(x => x.Name.LocalName == "staff")
+            .Select(x => ParsePositiveInt(x.Value))
+            .Where(x => x.HasValue)
+            .Select(x => x!.Value));
+        return values.Max();
+    }
+
+    private static bool HasSystemBreak(XElement measure)
+    {
+        foreach (var print in Children(measure, "print"))
+        {
+            if (IsYes(Attribute(print, "new-system")) || IsYes(Attribute(print, "new-page")))
+                return true;
+        }
+        return false;
+    }
+
+    private static bool IsYes(string? value) =>
+        string.Equals(value, "yes", StringComparison.OrdinalIgnoreCase) || value == "1" || string.Equals(value, "true", StringComparison.OrdinalIgnoreCase);
+
+    private static void AddVisibleClef(List<ExpectedClef> items, int part, int measure, string kind, string reason)
+    {
+        if (items.Any(x => x.Part == part && x.Measure == measure && string.Equals(x.Kind, kind, StringComparison.OrdinalIgnoreCase)))
+            return;
+        items.Add(new ExpectedClef(part, measure, kind, reason));
+    }
+
+    private static IEnumerable<XElement> Children(XContainer parent, string localName) =>
+        parent.Elements().Where(x => x.Name.LocalName == localName);
+
+    private static XElement? Child(XContainer parent, string localName) =>
+        Children(parent, localName).FirstOrDefault();
+
+    private static string? Attribute(XElement element, string localName) =>
+        element.Attributes().FirstOrDefault(x => x.Name.LocalName == localName)?.Value;
+
+    private static int? ParsePositiveInt(string? value) =>
+        int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed) && parsed > 0 ? parsed : null;
 
     private static void WriteHtml(string path, IReadOnlyList<CheckRow> rows)
     {
         var sb = new StringBuilder();
         sb.AppendLine("<!doctype html><html><head><meta charset=\"utf-8\"><title>Resolver reference checks</title>");
         sb.AppendLine("<style>body{font-family:Segoe UI,Arial,sans-serif;margin:24px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccc;padding:7px}th{background:#eee}.ok{background:#e9f8e9}.missing{background:#ffdede}.extra{background:#ffe8c2}.group td{background:#ddd;font-weight:700}</style></head><body>");
-        sb.AppendLine("<h1>Resolver reference checks</h1><table><thead><tr><th>Resolver</th><th>Measure</th><th>Part</th><th>Expected</th><th>Actual</th><th>Problem</th></tr></thead><tbody>");
+        sb.AppendLine("<h1>Resolver reference checks</h1><p><b>Part</b> here means a physical staff in the SVG. A single MusicXML piano &lt;part&gt; with &lt;staves&gt;2&lt;/staves&gt; therefore maps to P1 and P2.</p><table><thead><tr><th>Resolver</th><th>Measure</th><th>Part</th><th>Expected</th><th>Actual</th><th>Problem</th></tr></thead><tbody>");
         string? lastResolver = null;
         int? lastMeasure = null;
         foreach (var row in rows.OrderBy(x => x.Resolver).ThenBy(x => x.Measure).ThenBy(x => x.Part))
@@ -190,6 +281,9 @@ public static class ReferenceValidation
         doc.Save(path);
     }
 
-    private sealed record ClefItem(int Part, int Measure, string Kind, double X);
+    private sealed record ReferenceLayout(IReadOnlyList<BlockItem> Blocks, IReadOnlyList<ExpectedClef> VisibleClefs);
+    private sealed record BlockItem(int Part, int Measure);
+    private sealed record ExpectedClef(int Part, int Measure, string Kind, string Reason);
+    private sealed record ClefItem(int Part, int Measure, string Kind);
     private sealed record CheckRow(string Resolver, int Measure, int Part, string State, string Expected, string Actual, string Description);
 }
