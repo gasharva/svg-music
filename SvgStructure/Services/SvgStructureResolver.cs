@@ -51,7 +51,9 @@ public sealed class SvgStructureResolver
         var musicSymbols = _musicSymbolResolver.Resolve(primitives);
 
         var meters = structure.Map.Blocks
-            .Select(block => meterResolver.Resolve(block, musicSymbols))
+            .Select(block => meterResolver.Resolve(
+                block,
+                ThinWavySymbolFilter.ExcludeForMeter(musicSymbols, block)))
             .Where(x => x is not null)
             .Select(x => x!)
             .ToArray();
