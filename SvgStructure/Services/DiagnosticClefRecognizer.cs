@@ -8,17 +8,12 @@ using SvgSymbols.Services;
 
 namespace SvgStructure.Services;
 
-public sealed record ClefDiagnosticContext(
-    int PartNumber,
-    int MeasureNumber,
-    LogicalRectD LogicalBounds);
-
 /// <summary>
 /// Diagnostic decorator around IClefRecognizer. Writes exactly the glyph contours sent to the
 /// current recognizer and presents them in the same compact gallery style as meter inputs.
 /// Legacy IoU/skeleton experiments intentionally stay out of this report.
 /// </summary>
-public sealed class DiagnosticClefRecognizer : IClefRecognizer
+public sealed class DiagnosticClefRecognizer : IClefRecognizer, IClefRecognitionContextReceiver
 {
     private const int ImageSize = 256;
     private const float Padding = 20f;
@@ -26,7 +21,7 @@ public sealed class DiagnosticClefRecognizer : IClefRecognizer
     private readonly IClefRecognizer _inner;
     private readonly List<Entry> _entries = new();
     private string? _outputDirectory;
-    private ClefDiagnosticContext? _nextContext;
+    private ClefRecognitionContext? _nextContext;
     private int _sequence;
 
     public DiagnosticClefRecognizer(IClefRecognizer inner, LegacyIoUClefAnalyzer? legacyIoU = null)
@@ -47,7 +42,7 @@ public sealed class DiagnosticClefRecognizer : IClefRecognizer
         WriteIndex();
     }
 
-    public void SetNextContext(ClefDiagnosticContext context) => _nextContext = context;
+    public void SetNextContext(ClefRecognitionContext context) => _nextContext = context;
 
     public ClefSymbolRecognition Recognize(IReadOnlyList<IReadOnlyList<Vector2>> contours)
     {
@@ -117,7 +112,7 @@ public sealed class DiagnosticClefRecognizer : IClefRecognizer
     private static void WriteResult(
         ClefSymbolRecognition result,
         IReadOnlyList<IReadOnlyList<Vector2>> contours,
-        ClefDiagnosticContext? context,
+        ClefRecognitionContext? context,
         string outputPath)
     {
         var text = new StringBuilder();
@@ -229,5 +224,5 @@ public sealed class DiagnosticClefRecognizer : IClefRecognizer
     private sealed record Entry(
         string Stem,
         ClefSymbolRecognition Result,
-        ClefDiagnosticContext? Context);
+        ClefRecognitionContext? Context);
 }
