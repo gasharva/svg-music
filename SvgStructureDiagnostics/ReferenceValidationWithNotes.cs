@@ -18,7 +18,7 @@ public static class ReferenceValidationWithNotes
         var score = new NoteBuilder().Build(SvgToMusicStructureAdapter.Convert(resolved));
         var comparison = CompareNotes(baseline.ReferencePath, score);
         AppendNoteChecks(baseline.HtmlPath, comparison.Rows, comparison.Matched, comparison.Expected, comparison.Extra);
-        AppendNotesToMusicXml(baseline.GeneratedMusicXmlPath, score);
+        ResolvedMusicXmlNoteWriter.Append(baseline.GeneratedMusicXmlPath, score);
 
         return baseline with
         {
@@ -176,57 +176,6 @@ public static class ReferenceValidationWithNotes
         sb.Append("</tbody></table></details>");
         html = html.Replace("</body>", sb + "</body>", StringComparison.OrdinalIgnoreCase);
         File.WriteAllText(htmlPath, html);
-    }
-
-    private static void AppendNotesToMusicXml(string path, MusicScore score)
-    {
-        var doc = XDocument.Load(path);
-        var part = doc.Root!.Elements().First(x => x.Name.LocalName == "part");
-        var measures = part.Elements().Where(x => x.Name.LocalName == "measure")
-            .ToDictionary(x => ParseInt(x.Attribute("number")?.Value) ?? 0);
-
-        if (measures.TryGetValue(1, out var firstMeasure))
-        {
-            var attributes = firstMeasure.Elements().FirstOrDefault(x => x.Name.LocalName == "attributes");
-            if (attributes is not null && !attributes.Elements().Any(x => x.Name.LocalName == "divisions"))
-                attributes.AddFirst(new XElement("divisions", 32));
-        }
-
-        foreach (var note in score.Notes)
-        {
-            if (!measures.TryGetValue(note.Measure, out var measure))
-                continue;
-
-            var pitch = new XElement("pitch", new XElement("step", note.Pitch.Step));
-            if (note.Pitch.Alter != 0) pitch.Add(new XElement("alter", note.Pitch.Alter));
-            pitch.Add(new XElement("octave", note.Pitch.Octave));
-
-            var noteEl = new XElement("note");
-            if (note.IsChordTone) noteEl.Add(new XElement("chord"));
-            noteEl.Add(pitch);
-            noteEl.Add(new XElement("duration", Duration(note)));
-            noteEl.Add(new XElement("type", note.Type));
-            for (var i = 0; i < note.DotCount; i++) noteEl.Add(new XElement("dot"));
-            if (note.Accidental is not null) noteEl.Add(new XElement("accidental", AccidentalText(note.Accidental.Value)));
-            if (note.Stem is not null) noteEl.Add(new XElement("stem", note.Stem.ToString()!.ToLowerInvariant()));
-            noteEl.Add(new XElement("staff", note.Staff));
-            foreach (var beam in note.Beams)
-                noteEl.Add(new XElement("beam", new XAttribute("number", beam.Level), BeamText(beam.Position)));
-            measure.Add(noteEl);
-        }
-
-        doc.Save(path);
-    }
-
-    private static int Duration(MusicNote note)
-    {
-        var denominator = note.Type switch
-        {
-            "whole" => 1, "half" => 2, "quarter" => 4, "eighth" => 8,
-            "16th" => 16, "32nd" => 32, "64th" => 64, _ => 4
-        };
-        var baseDuration = 128 / denominator;
-        return note.DotCount == 0 ? baseDuration : note.DotCount == 1 ? baseDuration * 3 / 2 : baseDuration * 7 / 4;
     }
 
     private static NoteMatchKey MatchKey(MusicNote note) => new(note.Measure, note.Staff, note.Pitch.Step, note.Pitch.Octave);
