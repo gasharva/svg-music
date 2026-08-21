@@ -28,6 +28,6 @@ public sealed class MusicXmlWriter
         };
 
         using var writer = XmlWriter.Create(path, settings);
-        output.Save(writer, SaveOptions.DisableFormatting);
+        output.Save(writer); //, SaveOptions.DisableFormatting);
     }
 }
