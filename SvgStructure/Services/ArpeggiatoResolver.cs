@@ -17,7 +17,7 @@ public sealed class ArpeggiatoResolver
     public double MaxFragmentGapInStaffSpaces { get; init; } = 1.0;
     public double MaxNoteDistanceLogicalUnits { get; init; } = 3.0;
     public double NoteColumnToleranceLogicalUnits { get; init; } = 0.45;
-    public int MinWaveDirectionChanges { get; init; } = 4;
+    public int MinWaveDirectionChanges { get; init; } = 2;
     public double MinWaveAmplitudeInStaffSpaces { get; init; } = 0.08;
     public int SliceCount { get; init; } = 24;
 
@@ -115,15 +115,12 @@ public sealed class ArpeggiatoResolver
             if (xs.Length == 0)
                 continue;
 
-            // Midpoint of the horizontal envelope is stable for outlined squiggles:
-            // it approximates their centerline without caring which side of the outline a point belongs to.
             centers.Add(((top + bottom) / 2.0, (xs.Min() + xs.Max()) / 2.0));
         }
 
         if (centers.Count < 7)
             return false;
 
-        // Small 3-point smoothing suppresses contour sampling noise.
         var smoothed = new double[centers.Count];
         for (var i = 0; i < centers.Count; i++)
         {
@@ -253,8 +250,6 @@ public sealed class ArpeggiatoResolver
             if (sameColumn.Length < 2)
                 continue;
 
-            // Test the arpeggiato against every staff participating in this chord. This is what lets
-            // one mark span two staves while logical X remains staff-local.
             var acceptable = false;
             foreach (var note in sameColumn)
             {
@@ -275,8 +270,6 @@ public sealed class ArpeggiatoResolver
             if (!acceptable)
                 continue;
 
-            // Physical sanity check: chord heads must really be to the right, not merely map there
-            // because two staff blocks have slightly different left/right edges.
             if (sameColumn.Count(x => x.PhysicalBounds.CenterX >= arpeggio.Right) < 2)
                 continue;
 
