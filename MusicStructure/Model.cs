@@ -69,3 +69,50 @@ public sealed record MusicStructureInput(
     IReadOnlyList<RecognizedStemInput> Stems,
     IReadOnlyList<RecognizedBeamInput> Beams,
     IReadOnlyList<RecognizedFlagInput> Flags);
+
+public sealed record MusicMeasureInput(
+    int Number,
+    bool StartsNewSystem,
+    int StaffCount,
+    IReadOnlyList<RecognizedNoteInput> Notes,
+    IReadOnlyList<RecognizedStemInput> Stems,
+    IReadOnlyList<RecognizedBeamInput> Beams,
+    IReadOnlyList<RecognizedFlagInput> Flags);
+
+public sealed record MusicNoteDraft(
+    RecognizedNoteInput Source,
+    MusicPitch? Pitch = null,
+    MusicStemDirection? Stem = null,
+    string? StemKey = null,
+    MusicAccidental? Accidental = null,
+    int DotCount = 0,
+    IReadOnlyList<MusicBeam>? Beams = null,
+    string? Type = null,
+    bool IsChordTone = false)
+{
+    public static MusicNoteDraft From(RecognizedNoteInput source) => new(
+        source,
+        Accidental: source.Accidental,
+        DotCount: source.DotCount,
+        Beams: Array.Empty<MusicBeam>());
+
+    public MusicNote ToMusicNote()
+    {
+        if (Pitch is null)
+            throw new InvalidOperationException($"Pitch was not resolved for note '{Source.Key}'.");
+        if (Type is null)
+            throw new InvalidOperationException($"Duration was not resolved for note '{Source.Key}'.");
+
+        return new MusicNote(
+            Source.Staff,
+            Source.Measure,
+            Source.LogicalX,
+            Pitch,
+            Type,
+            Stem,
+            Accidental,
+            DotCount,
+            Beams ?? Array.Empty<MusicBeam>(),
+            IsChordTone);
+    }
+}
