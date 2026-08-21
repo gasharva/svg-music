@@ -7,23 +7,30 @@ internal static class SvgToMusicStructureAdapter
 {
     public static MusicStructureInput Convert(SvgStructureResolution source)
     {
+        var stemKeys = source.Stems
+            .Select((stem, index) => (stem, key: $"stem:{index}"))
+            .ToDictionary(x => x.stem, x => x.key);
+
         var stems = source.Stems.Select(stem => new RecognizedStemInput(
+            stemKeys[stem],
             stem.PartNumber,
             stem.MeasureNumber,
             stem.Direction == StemDirection.Up ? MusicStemDirection.Up : MusicStemDirection.Down,
             stem.AttachedNotes.Select(NoteKey).ToArray())).ToArray();
 
         var beams = source.Beams.Select(beam => new RecognizedBeamInput(
-            beam.PartNumber,
             beam.MeasureNumber,
             beam.Level,
-            beam.Stems.Select(StemKey).ToArray())).ToArray();
+            beam.Stems.Where(stemKeys.ContainsKey).Select(stem => stemKeys[stem]).ToArray())).ToArray();
 
-        var flags = source.NoteFlags.Select(flag => new RecognizedFlagInput(
-            flag.Stem.PartNumber,
-            flag.Stem.MeasureNumber,
-            flag.Denominator,
-            StemKey(flag.Stem))).ToArray();
+        var flags = source.NoteFlags
+            .Where(flag => stemKeys.ContainsKey(flag.Stem))
+            .Select(flag => new RecognizedFlagInput(
+                flag.Stem.PartNumber,
+                flag.Stem.MeasureNumber,
+                flag.Denominator,
+                stemKeys[flag.Stem]))
+            .ToArray();
 
         var notes = source.NoteHeads.Select(head =>
         {
@@ -52,7 +59,6 @@ internal static class SvgToMusicStructureAdapter
     }
 
     private static string NoteKey(NoteHeadResolution head) => $"note:{head.Id}";
-    private static string StemKey(StemResolution stem) => $"stem:{stem.Id}";
 
     private static double? CenterX(NoteHeadResolution head) =>
         head.LogicalBounds.Left is { } left && head.LogicalBounds.Right is { } right
