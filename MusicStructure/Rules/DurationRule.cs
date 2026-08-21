@@ -26,7 +26,7 @@ public sealed class DurationRule : IMusicNoteRule
                 ? note.Source.IsFilled ? "quarter" : "whole"
                 : note.Source.IsFilled ? "quarter" : "half";
 
-        return note with { Type = type, DotCount = note.Source.DotCount };
+        return note with { Type = type };
     }
 
     private static string TypeName(int denominator) => denominator switch
