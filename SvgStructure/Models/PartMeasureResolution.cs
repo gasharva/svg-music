@@ -3,8 +3,11 @@ namespace SvgStructure.Models;
 /// <summary>Logical part in reading order. Number is one-based.</summary>
 public sealed record Part(int Number, string Id);
 
-/// <summary>Logical measure in score order. Number is one-based.</summary>
-public sealed record Measure(int Number, double Width);
+/// <summary>
+/// Logical measure in score order. Number is one-based. StartsNewSystem means this measure begins
+/// a new printed staff system in the source SVG and should become a MusicXML system break.
+/// </summary>
+public sealed record Measure(int Number, double Width, bool StartsNewSystem = false);
 
 /// <summary>One logical Pn-Mm block mapped to its physical SVG rectangle.</summary>
 public sealed record PartMeasureBlock(
