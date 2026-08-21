@@ -6,8 +6,22 @@ public sealed class NoteBuilder
 {
     public MusicScore Build(MusicStructureInput input)
     {
+        var stemsByNote = input.Stems
+            .SelectMany(stem => stem.AttachedNoteKeys.Select(noteKey => (noteKey, stem)))
+            .GroupBy(x => x.noteKey)
+            .ToDictionary(g => g.Key, g => g.Select(x => x.stem).ToArray());
+
+        var flagsByStem = input.Flags
+            .GroupBy(x => x.StemKey)
+            .ToDictionary(g => g.Key, g => g.OrderByDescending(x => x.Denominator).First());
+
+        var beamsByStem = input.Beams
+            .SelectMany(beam => beam.StemKeys.Select(stemKey => (stemKey, beam)))
+            .GroupBy(x => x.stemKey)
+            .ToDictionary(g => g.Key, g => g.Select(x => x.beam).OrderBy(x => x.Level).ToArray());
+
         var notes = input.Notes
-            .Select(BuildNote)
+            .Select(note => BuildNote(note, stemsByNote, flagsByStem, beamsByStem))
             .OrderBy(x => x.Measure)
             .ThenBy(x => x.LogicalX ?? double.MaxValue)
             .ThenBy(x => x.Staff)
@@ -26,30 +40,36 @@ public sealed class NoteBuilder
             if (!note.LogicalX.HasValue)
                 return note;
             var key = (note.Measure, Math.Round(note.LogicalX.Value, 2));
-            if (!chordGroups.TryGetValue(key, out var group))
-                return note;
-            return note with { IsChordTone = Array.IndexOf(group, note) > 0 };
+            return chordGroups.TryGetValue(key, out var group)
+                ? note with { IsChordTone = Array.IndexOf(group, note) > 0 }
+                : note;
         }).ToArray();
 
         var measures = input.MeasureNumbers
             .OrderBy(x => x)
-            .Select(number => new MusicMeasure(
-                number,
-                input.SystemStartMeasures.Contains(number),
-                withChordFlags.Where(x => x.Measure == number).ToArray()))
+            .Select(number => new MusicMeasure(number, input.SystemStartMeasures.Contains(number), withChordFlags.Where(x => x.Measure == number).ToArray()))
             .ToArray();
 
         return new MusicScore(input.StaffCount, measures);
     }
 
-    private static MusicNote BuildNote(RecognizedNoteInput input)
+    private static MusicNote BuildNote(
+        RecognizedNoteInput input,
+        IReadOnlyDictionary<string, RecognizedStemInput[]> stemsByNote,
+        IReadOnlyDictionary<string, RecognizedFlagInput> flagsByStem,
+        IReadOnlyDictionary<string, RecognizedBeamInput[]> beamsByStem)
     {
-        var pitch = ParsePitch(input.Pitch, input.Accidental);
-        var beamDenominator = input.Beams.Count == 0 ? (int?)null : 4 * (1 << input.Beams.Max(x => x.Level));
-        var denominator = input.FlagDenominator ?? beamDenominator;
+        var stem = stemsByNote.TryGetValue(input.Key, out var attachedStems) ? attachedStems.FirstOrDefault() : null;
+        var semanticBeams = stem is null || !beamsByStem.TryGetValue(stem.Key, out var rawBeams)
+            ? Array.Empty<MusicBeam>()
+            : BuildSemanticBeams(rawBeams, stem, input);
+
+        var flagDenominator = stem is not null && flagsByStem.TryGetValue(stem.Key, out var flag) ? flag.Denominator : (int?)null;
+        var beamDenominator = semanticBeams.Length == 0 ? (int?)null : 4 * (1 << semanticBeams.Max(x => x.Level));
+        var denominator = flagDenominator ?? beamDenominator;
         var type = denominator is not null
             ? TypeName(denominator.Value)
-            : input.Stem is null
+            : stem is null
                 ? input.IsFilled ? "quarter" : "whole"
                 : input.IsFilled ? "quarter" : "half";
 
@@ -57,12 +77,40 @@ public sealed class NoteBuilder
             input.Staff,
             input.Measure,
             input.LogicalX,
-            pitch,
+            ParsePitch(input.Pitch, input.Accidental),
             type,
-            input.Stem,
+            stem?.Direction,
             input.Accidental,
             input.DotCount,
-            input.Beams.OrderBy(x => x.Level).ToArray());
+            semanticBeams);
+    }
+
+    private static MusicBeam[] BuildSemanticBeams(IReadOnlyList<RecognizedBeamInput> rawBeams, RecognizedStemInput stem, RecognizedNoteInput note)
+    {
+        var distinct = rawBeams
+            .OrderBy(x => x.Level)
+            .GroupBy(x => x.Level)
+            .Select(g => g.First())
+            .ToArray();
+
+        var result = new List<MusicBeam>();
+        for (var i = 0; i < distinct.Length; i++)
+        {
+            var beam = distinct[i];
+            var stemIndex = Array.IndexOf(beam.StemKeys.ToArray(), stem.Key);
+            if (stemIndex < 0)
+                continue;
+
+            var position = beam.StemKeys.Count <= 1
+                ? MusicBeamPosition.Begin
+                : stemIndex == 0
+                    ? MusicBeamPosition.Begin
+                    : stemIndex == beam.StemKeys.Count - 1
+                        ? MusicBeamPosition.End
+                        : MusicBeamPosition.Continue;
+            result.Add(new MusicBeam(i + 1, position));
+        }
+        return result.ToArray();
     }
 
     private static MusicPitch ParsePitch(string text, MusicAccidental? accidental)
