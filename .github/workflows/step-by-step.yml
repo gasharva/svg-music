@@ -29,15 +29,15 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Restore
-        run: dotnet restore SvgStructure/SvgStructure.csproj
+        run: dotnet restore SvgStructureDiagnostics/SvgStructureDiagnostics.csproj
 
       - name: Build
-        run: dotnet build SvgStructure/SvgStructure.csproj --configuration Release --no-restore
+        run: dotnet build SvgStructureDiagnostics/SvgStructureDiagnostics.csproj --configuration Release --no-restore
 
       - name: Run step-by-step samples
         run: >-
           dotnet run
-          --project SvgStructure/SvgStructure.csproj
+          --project SvgStructureDiagnostics/SvgStructureDiagnostics.csproj
           --configuration Release
           --no-build
           --no-launch-profile
@@ -55,12 +55,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-
           rm -rf /tmp/svg-music-pages
           mkdir -p /tmp/svg-music-pages/latest/step-by-step
           cp -R Samples/step-by-step/_artifacts/. /tmp/svg-music-pages/latest/step-by-step/
           touch /tmp/svg-music-pages/.nojekyll
-
           cat > /tmp/svg-music-pages/index.html <<'EOF'
           <!doctype html>
           <html><head><meta charset="utf-8"><title>svg-music diagnostics</title>
@@ -77,38 +75,32 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-
           rm -rf /tmp/step-by-step-latest
           mkdir -p /tmp/step-by-step-latest
           cp -R Samples/step-by-step/_artifacts/. /tmp/step-by-step-latest/
-
           cat > /tmp/step-by-step-latest/source.txt <<EOF
           Branch: ${{ github.ref_name }}
           Commit: ${{ github.sha }}
           Workflow run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
           Rendered report: https://gasharva.github.io/svg-music/latest/step-by-step/
           EOF
-
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
           if git fetch origin ci-output:refs/remotes/origin/ci-output 2>/dev/null; then
             git switch -C ci-output origin/ci-output
           else
             git switch --orphan ci-output
             git rm -rf . >/dev/null 2>&1 || true
           fi
-
           mkdir -p latest
           rm -rf latest/step-by-step
           mkdir -p latest/step-by-step
           cp -R /tmp/step-by-step-latest/. latest/step-by-step/
-
           git add -A latest/step-by-step
           if git diff --cached --quiet; then
             echo "ci-output/latest/step-by-step is already up to date"
           else
-            git commit -m "Update SvgStructure step-by-step from ${{ github.sha }}"
+            git commit -m "Update SvgStructure diagnostics from ${{ github.sha }}"
             git push origin ci-output
           fi
 
@@ -117,7 +109,7 @@ jobs:
         shell: bash
         run: |
           {
-            echo '## SvgStructure step-by-step'
+            echo '## SvgStructure diagnostics'
             echo
             echo '- Rendered report: https://gasharva.github.io/svg-music/latest/step-by-step/'
             echo '- Download the **svg-structure-step-by-step-${{ github.sha }}** artifact from this run.'
