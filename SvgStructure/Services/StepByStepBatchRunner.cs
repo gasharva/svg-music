@@ -46,7 +46,7 @@ public sealed class StepByStepBatchRunner
             _dotOverlayRenderer.Render(structure,dots,metersPath);
 
             WriteResolutionJson(Path.Combine(itemDirectory,"structure.json"),fileName,structure,primitives,musicSymbols,meters,logicalGrid,clefs,ledgerLines,noteHeads,accidentals,stems,arpeggiati,beams,noteFlags,arcs,rests,dots);
-            var referenceValidation=ReferenceValidation.Run(svgPath,itemDirectory,resolved);
+            var referenceValidation=ReferenceValidationWithNotes.Run(svgPath,itemDirectory,resolved);
             return new(fileName,stem,structure.LineCount,structure.SystemCount,structure.Parts.Count,structure.Measures.Count,primitives.PartMeasurePrimitives.Count,primitives.MeasurePrimitives.Count,primitives.PhysicalOnlyPrimitives.Count,musicSymbols.Candidates.Count,meters.Count,clefs.Count,ledgerLines.Count,noteHeads.Count,resolved.NoteHeadDiagnostics.Count,accidentals.Count,rests.Count,primitiveExport.Items.Count,sourceModel.ElementCount,sourceModel.UseCount,referenceValidation);
         }
         catch(Exception ex)
