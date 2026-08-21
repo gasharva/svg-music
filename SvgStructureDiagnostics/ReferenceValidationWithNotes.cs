@@ -31,63 +31,71 @@ public static class ReferenceValidationWithNotes
 
     private static NoteComparison CompareNotes(string referencePath, MusicScore score)
     {
-        var doc = XDocument.Load(referencePath, LoadOptions.None);
-        var expected = ReadReferenceNotes(doc);
+        var expected = ReadReferenceNotes(XDocument.Load(referencePath, LoadOptions.None));
         var actual = score.Notes.ToArray();
-        var used = new HashSet<int>();
         var rows = new List<NoteCheckRow>();
         var matched = 0;
 
-        foreach (var exp in expected.OrderBy(x => x.Measure).ThenBy(x => x.Staff).ThenBy(x => x.X ?? decimal.MaxValue))
+        var keys = expected.Select(x => x.MatchKey)
+            .Concat(actual.Select(MatchKey))
+            .Distinct()
+            .OrderBy(x => x.Measure).ThenBy(x => x.Staff).ThenBy(x => x.Step).ThenBy(x => x.Octave)
+            .ToArray();
+
+        foreach (var key in keys)
         {
-            var candidates = actual.Select((note, index) => (note, index))
-                .Where(x => !used.Contains(x.index) && x.note.Measure == exp.Measure && x.note.Staff == exp.Staff && PitchKey(x.note) == exp.Pitch)
-                .ToArray();
+            var e = expected.Where(x => x.MatchKey == key).OrderBy(x => x.X ?? decimal.MaxValue).ToArray();
+            var a = actual.Where(x => MatchKey(x) == key).OrderBy(x => x.LogicalX ?? double.MaxValue).ToArray();
+            var pairCount = Math.Min(e.Length, a.Length);
 
-            if (candidates.Length == 0)
+            for (var i = 0; i < pairCount; i++)
             {
-                rows.Add(new("missing", exp.Measure, exp.Staff, exp.Label, "—", "Reference note was not built from the recognized SVG symbols."));
-                continue;
+                var differences = Differences(e[i], a[i]);
+                if (differences.Count == 0)
+                {
+                    matched++;
+                    rows.Add(new("ok", key.Measure, key.Staff, e[i].Label, Label(a[i]), "Matched visible note properties recovered from SVG."));
+                }
+                else
+                {
+                    rows.Add(new("missing", key.Measure, key.Staff, e[i].Label, Label(a[i]), string.Join("; ", differences)));
+                }
             }
 
-            var candidate = candidates.OrderBy(x => Differences(exp, x.note).Count).First();
-            used.Add(candidate.index);
-            var differences = Differences(exp, candidate.note);
-            if (differences.Count == 0)
-            {
-                matched++;
-                rows.Add(new("ok", exp.Measure, exp.Staff, exp.Label, Label(candidate.note), "Matched pitch, note value, stem, accidental, dots and resolved beams."));
-            }
-            else
-            {
-                rows.Add(new("missing", exp.Measure, exp.Staff, exp.Label, Label(candidate.note), string.Join("; ", differences)));
-            }
+            for (var i = pairCount; i < e.Length; i++)
+                rows.Add(new("missing", key.Measure, key.Staff, e[i].Label, "—", "Reference visible note was not built from the recognized SVG symbols."));
+
+            for (var i = pairCount; i < a.Length; i++)
+                rows.Add(new("extra", key.Measure, key.Staff, "—", Label(a[i]), "Built note has no matching visible reference note at this staff/measure/pitch."));
         }
 
-        for (var i = 0; i < actual.Length; i++)
-        {
-            if (used.Contains(i))
-                continue;
-            var note = actual[i];
-            rows.Add(new("extra", note.Measure, note.Staff, "—", Label(note), "Built note has no matching reference note with the same pitch on this staff/measure."));
-        }
-
-        return new NoteComparison(matched, expected.Count, actual.Length - used.Count, rows);
+        return new NoteComparison(matched, expected.Count, rows.Count(x => x.State == "extra"), rows);
     }
 
     private static List<string> Differences(ReferenceNote expected, MusicNote actual)
     {
         var result = new List<string>();
-        if (!string.Equals(expected.Type, actual.Type, StringComparison.OrdinalIgnoreCase)) result.Add($"type expected {expected.Type ?? "—"}, got {actual.Type}");
-        if (actual.Stem is not null && !string.Equals(expected.Stem, actual.Stem.ToString(), StringComparison.OrdinalIgnoreCase)) result.Add($"stem expected {expected.Stem ?? "—"}, got {actual.Stem.ToString()!.ToLowerInvariant()}");
-        if (actual.Accidental is not null && !string.Equals(expected.Accidental, AccidentalText(actual.Accidental.Value), StringComparison.OrdinalIgnoreCase)) result.Add($"accidental expected {expected.Accidental ?? "—"}, got {AccidentalText(actual.Accidental.Value)}");
-        if (expected.DotCount != actual.DotCount) result.Add($"dots expected {expected.DotCount}, got {actual.DotCount}");
-        if (actual.Beams.Count > 0)
-        {
-            var e = string.Join(",", expected.Beams.OrderBy(x => x.Level).Select(x => $"{x.Level}:{x.Position}"));
-            var a = string.Join(",", actual.Beams.OrderBy(x => x.Level).Select(x => $"{x.Level}:{x.Position.ToString().ToLowerInvariant()}"));
-            if (!string.Equals(e, a, StringComparison.OrdinalIgnoreCase)) result.Add($"beams expected [{e}], got [{a}]");
-        }
+        if (!string.Equals(expected.Type, actual.Type, StringComparison.OrdinalIgnoreCase))
+            result.Add($"type expected {expected.Type ?? "—"}, got {actual.Type}");
+
+        var actualStem = actual.Stem?.ToString().ToLowerInvariant();
+        if (!string.Equals(expected.Stem, actualStem, StringComparison.OrdinalIgnoreCase))
+            result.Add($"stem expected {expected.Stem ?? "—"}, got {actualStem ?? "—"}");
+
+        // <pitch><alter> may come only from the key signature. That is not a visible per-note
+        // symbol and we do not have a KeySignatureResolver yet. Compare explicit accidentals only.
+        var actualAccidental = actual.Accidental is null ? null : AccidentalText(actual.Accidental.Value);
+        if (!string.Equals(expected.Accidental, actualAccidental, StringComparison.OrdinalIgnoreCase))
+            result.Add($"accidental expected {expected.Accidental ?? "—"}, got {actualAccidental ?? "—"}");
+
+        if (expected.DotCount != actual.DotCount)
+            result.Add($"dots expected {expected.DotCount}, got {actual.DotCount}");
+
+        var expectedBeams = string.Join(",", expected.Beams.OrderBy(x => x.Level).Select(x => $"{x.Level}:{x.Position}"));
+        var actualBeams = string.Join(",", actual.Beams.OrderBy(x => x.Level).Select(x => $"{x.Level}:{BeamText(x.Position)}"));
+        if (!string.Equals(expectedBeams, actualBeams, StringComparison.OrdinalIgnoreCase))
+            result.Add($"beams expected [{expectedBeams}], got [{actualBeams}]");
+
         return result;
     }
 
@@ -95,35 +103,88 @@ public static class ReferenceValidationWithNotes
     {
         var result = new List<ReferenceNote>();
         var partOffset = 0;
+
         foreach (var part in doc.Root!.Elements().Where(x => x.Name.LocalName == "part"))
         {
             var measures = part.Elements().Where(x => x.Name.LocalName == "measure").ToArray();
-            var staffCount = Math.Max(1, part.Descendants().Where(x => x.Name.LocalName == "staves").Select(x => ParseInt(x.Value) ?? 1).DefaultIfEmpty(1).Max());
+            var staffCount = Math.Max(1, part.Descendants().Where(x => x.Name.LocalName == "staves")
+                .Select(x => ParseInt(x.Value) ?? 1).DefaultIfEmpty(1).Max());
+            var octaveShift = new Dictionary<int, int>();
+
             for (var m = 0; m < measures.Length; m++)
             {
-                foreach (var note in measures[m].Elements().Where(x => x.Name.LocalName == "note" && !x.Elements().Any(c => c.Name.LocalName == "rest")))
+                foreach (var element in measures[m].Elements())
                 {
-                    var pitch = note.Elements().FirstOrDefault(x => x.Name.LocalName == "pitch");
-                    if (pitch is null) continue;
-                    var step = ChildValue(pitch, "step");
+                    if (element.Name.LocalName == "direction")
+                    {
+                        ApplyOctaveShift(element, octaveShift);
+                        continue;
+                    }
+
+                    if (element.Name.LocalName != "note" || element.Elements().Any(c => c.Name.LocalName == "rest"))
+                        continue;
+
+                    var pitch = element.Elements().FirstOrDefault(x => x.Name.LocalName == "pitch");
+                    if (pitch is null)
+                        continue;
+
+                    var step = ChildValue(pitch, "step")?.ToUpperInvariant();
                     var octave = ParseInt(ChildValue(pitch, "octave"));
-                    if (step is null || octave is null) continue;
+                    if (step is null || octave is null)
+                        continue;
+
+                    var staff = ParseInt(ChildValue(element, "staff")) ?? 1;
+                    var visualOctave = octave.Value + octaveShift.GetValueOrDefault(staff);
                     var alter = ParseInt(ChildValue(pitch, "alter")) ?? 0;
-                    var staff = ParseInt(ChildValue(note, "staff")) ?? 1;
-                    var beams = note.Elements().Where(x => x.Name.LocalName == "beam")
-                        .Select(x => new RefBeam(ParseInt(x.Attributes().FirstOrDefault(a => a.Name.LocalName == "number")?.Value) ?? 1, x.Value.Trim()))
+                    var accidental = ChildValue(element, "accidental");
+                    var beams = element.Elements().Where(x => x.Name.LocalName == "beam")
+                        .Select(x => new RefBeam(
+                            ParseInt(x.Attributes().FirstOrDefault(a => a.Name.LocalName == "number")?.Value) ?? 1,
+                            x.Value.Trim()))
                         .ToArray();
+
                     result.Add(new ReferenceNote(
-                        partOffset + staff, m + 1,
-                        decimal.TryParse(note.Attributes().FirstOrDefault(a => a.Name.LocalName == "default-x")?.Value, NumberStyles.Any, CultureInfo.InvariantCulture, out var dx) ? dx : null,
-                        $"{step.ToUpperInvariant()}{(alter == 0 ? "" : alter > 0 ? $"+{alter}" : alter.ToString())}{octave}",
-                        ChildValue(note, "type"), ChildValue(note, "stem"), ChildValue(note, "accidental"),
-                        note.Elements().Count(x => x.Name.LocalName == "dot"), beams));
+                        partOffset + staff,
+                        m + 1,
+                        decimal.TryParse(element.Attributes().FirstOrDefault(a => a.Name.LocalName == "default-x")?.Value,
+                            NumberStyles.Any, CultureInfo.InvariantCulture, out var dx) ? dx : null,
+                        step,
+                        visualOctave,
+                        accidental is null ? 0 : alter,
+                        ChildValue(element, "type"),
+                        ChildValue(element, "stem"),
+                        accidental,
+                        element.Elements().Count(x => x.Name.LocalName == "dot"),
+                        beams));
                 }
             }
+
             partOffset += staffCount;
         }
+
         return result;
+    }
+
+    private static void ApplyOctaveShift(XElement direction, IDictionary<int, int> state)
+    {
+        var staff = ParseInt(ChildValue(direction, "staff")) ?? 1;
+        foreach (var shift in direction.Descendants().Where(x => x.Name.LocalName == "octave-shift"))
+        {
+            var type = shift.Attributes().FirstOrDefault(x => x.Name.LocalName == "type")?.Value;
+            if (string.Equals(type, "stop", StringComparison.OrdinalIgnoreCase))
+            {
+                state[staff] = 0;
+                continue;
+            }
+
+            var size = ParseInt(shift.Attributes().FirstOrDefault(x => x.Name.LocalName == "size")?.Value) ?? 8;
+            var octaves = Math.Max(1, (size - 1) / 7);
+            state[staff] = string.Equals(type, "down", StringComparison.OrdinalIgnoreCase)
+                ? -octaves
+                : string.Equals(type, "up", StringComparison.OrdinalIgnoreCase)
+                    ? octaves
+                    : state.GetValueOrDefault(staff);
+        }
     }
 
     private static void AppendNoteChecks(string htmlPath, IReadOnlyList<NoteCheckRow> rows, int matched, int expected, int extra)
@@ -135,6 +196,7 @@ public static class ReferenceValidationWithNotes
         if (!allGreen) sb.Append($" — {rows.Count(x => x.State != "ok")} problems");
         if (extra > 0) sb.Append($" (+{extra} extra)");
         sb.Append("</summary><table><thead><tr><th>Builder</th><th>Measure</th><th>Part</th><th>Expected</th><th>Actual</th><th>Problem</th></tr></thead><tbody>");
+
         var seq = 0;
         foreach (var group in rows.OrderBy(x => x.Measure).ThenBy(x => x.Staff).GroupBy(x => x.Measure))
         {
@@ -142,11 +204,12 @@ public static class ReferenceValidationWithNotes
             foreach (var row in group)
             {
                 var id = $"check-notebuilder-m{row.Measure}-p{row.Staff}-{++seq}";
-                sb.Append($"<tr id=\"{id}\" class=\"{row.State} anchor\"><td>NoteBuilder</td><td>{row.Measure}</td><td>{row.Staff}</td><td>{WebUtility.HtmlEncode(row.Expected)}</td><td>{WebUtility.HtmlEncode(row.Actual)}</td><td>{WebUtility.HtmlEncode(row.Description)} <button class=\"row-link\" onclick=\"copyCheckLink('{id}',this)\">Link</button></td></tr>");
+                sb.Append($"<tr id=\"{id}\" class=\"{row.State} anchor\"><td>NoteBuilder</td><td>{row.Measure}</td><td>{row.Staff}</td><td>{WebUtility.HtmlEncode(row.Expected)}</td><td>{WebUtility.HtmlEncode(row.Actual)}</td><td>{WebUtility.HtmlEncode(row.Description)} <button class=\"row-link\" type=\"button\" onclick=\"copyLink('{id}',this)\">Link</button></td></tr>");
             }
         }
+
         sb.Append("</tbody></table></details>");
-        html = html.Replace("</body>", sb.ToString() + "</body>", StringComparison.OrdinalIgnoreCase);
+        html = html.Replace("</body>", sb + "</body>", StringComparison.OrdinalIgnoreCase);
         File.WriteAllText(htmlPath, html);
     }
 
@@ -154,19 +217,25 @@ public static class ReferenceValidationWithNotes
     {
         var doc = XDocument.Load(path);
         var part = doc.Root!.Elements().First(x => x.Name.LocalName == "part");
-        var measures = part.Elements().Where(x => x.Name.LocalName == "measure").ToDictionary(x => ParseInt(x.Attribute("number")?.Value) ?? 0);
+        var measures = part.Elements().Where(x => x.Name.LocalName == "measure")
+            .ToDictionary(x => ParseInt(x.Attribute("number")?.Value) ?? 0);
+
         if (measures.TryGetValue(1, out var firstMeasure))
         {
             var attributes = firstMeasure.Elements().FirstOrDefault(x => x.Name.LocalName == "attributes");
-            if (attributes is not null && !attributes.Elements().Any(x => x.Name.LocalName == "divisions")) attributes.AddFirst(new XElement("divisions", 32));
+            if (attributes is not null && !attributes.Elements().Any(x => x.Name.LocalName == "divisions"))
+                attributes.AddFirst(new XElement("divisions", 32));
         }
 
         foreach (var note in score.Notes)
         {
-            if (!measures.TryGetValue(note.Measure, out var measure)) continue;
+            if (!measures.TryGetValue(note.Measure, out var measure))
+                continue;
+
             var pitch = new XElement("pitch", new XElement("step", note.Pitch.Step));
             if (note.Pitch.Alter != 0) pitch.Add(new XElement("alter", note.Pitch.Alter));
             pitch.Add(new XElement("octave", note.Pitch.Octave));
+
             var noteEl = new XElement("note");
             if (note.IsChordTone) noteEl.Add(new XElement("chord"));
             noteEl.Add(pitch);
@@ -176,29 +245,52 @@ public static class ReferenceValidationWithNotes
             if (note.Accidental is not null) noteEl.Add(new XElement("accidental", AccidentalText(note.Accidental.Value)));
             if (note.Stem is not null) noteEl.Add(new XElement("stem", note.Stem.ToString()!.ToLowerInvariant()));
             noteEl.Add(new XElement("staff", note.Staff));
-            foreach (var beam in note.Beams) noteEl.Add(new XElement("beam", new XAttribute("number", beam.Level), beam.Position.ToString().ToLowerInvariant()));
+            foreach (var beam in note.Beams)
+                noteEl.Add(new XElement("beam", new XAttribute("number", beam.Level), BeamText(beam.Position)));
             measure.Add(noteEl);
         }
+
         doc.Save(path);
     }
 
     private static int Duration(MusicNote note)
     {
-        var denominator = note.Type switch { "whole" => 1, "half" => 2, "quarter" => 4, "eighth" => 8, "16th" => 16, "32nd" => 32, "64th" => 64, _ => 4 };
+        var denominator = note.Type switch
+        {
+            "whole" => 1, "half" => 2, "quarter" => 4, "eighth" => 8,
+            "16th" => 16, "32nd" => 32, "64th" => 64, _ => 4
+        };
         var baseDuration = 128 / denominator;
         return note.DotCount == 0 ? baseDuration : note.DotCount == 1 ? baseDuration * 3 / 2 : baseDuration * 7 / 4;
     }
 
-    private static string PitchKey(MusicNote note) => note.Pitch.ToString();
-    private static string Label(MusicNote note) => $"{note.Pitch} {note.Type}" + (note.DotCount > 0 ? new string('.', note.DotCount) : "") + (note.Stem is null ? "" : $" stem={note.Stem.ToString()!.ToLowerInvariant()}");
-    private static string AccidentalText(MusicAccidental a) => a switch { MusicAccidental.Flat => "flat", MusicAccidental.Sharp => "sharp", MusicAccidental.Natural => "natural", MusicAccidental.DoubleSharp => "double-sharp", MusicAccidental.DoubleFlat => "flat-flat", _ => "" };
+    private static NoteMatchKey MatchKey(MusicNote note) => new(note.Measure, note.Staff, note.Pitch.Step, note.Pitch.Octave);
+    private static string Label(MusicNote note) => $"{VisiblePitch(note)} {note.Type}" + (note.DotCount > 0 ? new string('.', note.DotCount) : "") + (note.Stem is null ? "" : $" stem={note.Stem.ToString()!.ToLowerInvariant()}");
+    private static string VisiblePitch(MusicNote note) => $"{note.Pitch.Step}{(note.Accidental is null ? "" : AlterText(note.Pitch.Alter))}{note.Pitch.Octave}";
+    private static string AlterText(int alter) => alter == 0 ? "" : alter > 0 ? $"+{alter}" : alter.ToString(CultureInfo.InvariantCulture);
+    private static string AccidentalText(MusicAccidental a) => a switch
+    {
+        MusicAccidental.Flat => "flat", MusicAccidental.Sharp => "sharp", MusicAccidental.Natural => "natural",
+        MusicAccidental.DoubleSharp => "double-sharp", MusicAccidental.DoubleFlat => "flat-flat", _ => ""
+    };
+    private static string BeamText(MusicBeamPosition p) => p switch
+    {
+        MusicBeamPosition.Begin => "begin", MusicBeamPosition.Continue => "continue", MusicBeamPosition.End => "end",
+        MusicBeamPosition.ForwardHook => "forward hook", MusicBeamPosition.BackwardHook => "backward hook", _ => ""
+    };
     private static string? ChildValue(XContainer e, string name) => e.Elements().FirstOrDefault(x => x.Name.LocalName == name)?.Value.Trim();
     private static int? ParseInt(string? value) => int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var n) ? n : null;
 
+    private readonly record struct NoteMatchKey(int Measure, int Staff, string Step, int Octave);
     private sealed record RefBeam(int Level, string Position);
-    private sealed record ReferenceNote(int Staff, int Measure, decimal? X, string Pitch, string? Type, string? Stem, string? Accidental, int DotCount, IReadOnlyList<RefBeam> Beams)
+    private sealed record ReferenceNote(
+        int Staff, int Measure, decimal? X, string Step, int Octave, int ExplicitAlter,
+        string? Type, string? Stem, string? Accidental, int DotCount, IReadOnlyList<RefBeam> Beams)
     {
-        public string Label => $"{Pitch} {Type ?? "?"}" + (DotCount > 0 ? new string('.', DotCount) : "") + (Stem is null ? "" : $" stem={Stem}");
+        public NoteMatchKey MatchKey => new(Measure, Staff, Step, Octave);
+        public string Label => $"{Step}{(Accidental is null ? "" : AlterText(ExplicitAlter))}{Octave} {Type ?? "?"}" +
+                               (DotCount > 0 ? new string('.', DotCount) : "") +
+                               (Stem is null ? "" : $" stem={Stem}");
     }
     private sealed record NoteCheckRow(string State, int Measure, int Staff, string Expected, string Actual, string Description);
     private sealed record NoteComparison(int Matched, int Expected, int Extra, IReadOnlyList<NoteCheckRow> Rows);
