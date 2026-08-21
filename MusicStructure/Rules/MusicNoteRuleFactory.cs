@@ -7,6 +7,7 @@ public sealed class MusicNoteRuleFactory
         new PitchRule(input),
         new StemRule(input),
         new ChordRule(input),
+        new VoiceRule(input),
         new BeamRule(input),
         new DurationRule(input)
     };
