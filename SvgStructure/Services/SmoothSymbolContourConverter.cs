@@ -7,10 +7,10 @@ using Shim = ShimSkiaSharp;
 namespace SvgStructure.Services;
 
 /// <summary>
-/// Temporary adapter for recognizers that still consume point contours. MusicSymbolCandidate keeps
-/// original smooth Bezier geometry; flattening happens only at the recognizer boundary.
+/// Temporary adapter for recognizers and diagnostics that still consume point contours.
+/// MusicSymbolCandidate keeps original smooth Bezier geometry; flattening happens only at this boundary.
 /// </summary>
-internal static class SmoothSymbolContourConverter
+public static class SmoothSymbolContourConverter
 {
     private const int CurveSteps = 20;
 
