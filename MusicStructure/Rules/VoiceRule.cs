@@ -19,7 +19,7 @@ public sealed class VoiceRule : IMusicNoteRule
         {
             var withStem = staffGroup
                 .Where(x => x.LogicalX.HasValue && stems.ContainsKey(x.Key))
-                .Select(x => new { Note = x, Stem = stems[x.Key] })
+                .Select(x => (Note: x, Stem: stems[x.Key]))
                 .ToArray();
 
             var up = withStem.Where(x => x.Stem.Direction == MusicStemDirection.Up).ToArray();
@@ -39,13 +39,13 @@ public sealed class VoiceRule : IMusicNoteRule
             : note;
 
     private static bool RangesOverlap(
-        IReadOnlyList<dynamic> up,
-        IReadOnlyList<dynamic> down)
+        IReadOnlyList<(RecognizedNoteInput Note, RecognizedStemInput Stem)> up,
+        IReadOnlyList<(RecognizedNoteInput Note, RecognizedStemInput Stem)> down)
     {
-        var upMin = up.Min(x => (double)x.Note.LogicalX.Value);
-        var upMax = up.Max(x => (double)x.Note.LogicalX.Value);
-        var downMin = down.Min(x => (double)x.Note.LogicalX.Value);
-        var downMax = down.Max(x => (double)x.Note.LogicalX.Value);
+        var upMin = up.Min(x => x.Note.LogicalX!.Value);
+        var upMax = up.Max(x => x.Note.LogicalX!.Value);
+        var downMin = down.Min(x => x.Note.LogicalX!.Value);
+        var downMax = down.Max(x => x.Note.LogicalX!.Value);
         return upMin <= downMax + XOverlapTolerance && downMin <= upMax + XOverlapTolerance;
     }
 }
