@@ -1,0 +1,125 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<score-partwise version="4.0">
+  <part-list>
+    <score-part id="P1">
+      <part-name>Part 1</part-name>
+    </score-part>
+    <score-part id="P2">
+      <part-name>Part 2</part-name>
+    </score-part>
+  </part-list>
+  <part id="P1">
+    <measure number="1">
+      <attributes>
+        <clef>
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
+      </attributes>
+    </measure>
+    <measure number="2" />
+    <measure number="3" />
+    <measure number="4" />
+    <measure number="5">
+      <attributes>
+        <clef>
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
+      </attributes>
+    </measure>
+    <measure number="6" />
+    <measure number="7" />
+    <measure number="8" />
+    <measure number="9">
+      <attributes>
+        <clef>
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
+      </attributes>
+    </measure>
+    <measure number="10" />
+    <measure number="11" />
+    <measure number="12" />
+    <measure number="13">
+      <attributes>
+        <clef>
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
+      </attributes>
+    </measure>
+    <measure number="14" />
+    <measure number="15" />
+    <measure number="16" />
+    <measure number="17">
+      <attributes>
+        <clef>
+          <sign>G</sign>
+          <line>2</line>
+        </clef>
+      </attributes>
+    </measure>
+    <measure number="18" />
+    <measure number="19" />
+    <measure number="20" />
+  </part>
+  <part id="P2">
+    <measure number="1">
+      <attributes>
+        <clef>
+          <sign>F</sign>
+          <line>4</line>
+        </clef>
+      </attributes>
+    </measure>
+    <measure number="2" />
+    <measure number="3" />
+    <measure number="4" />
+    <measure number="5">
+      <attributes>
+        <clef>
+          <sign>F</sign>
+          <line>4</line>
+        </clef>
+      </attributes>
+    </measure>
+    <measure number="6" />
+    <measure number="7" />
+    <measure number="8" />
+    <measure number="9">
+      <attributes>
+        <clef>
+          <sign>F</sign>
+          <line>4</line>
+        </clef>
+      </attributes>
+    </measure>
+    <measure number="10" />
+    <measure number="11" />
+    <measure number="12" />
+    <measure number="13">
+      <attributes>
+        <clef>
+          <sign>F</sign>
+          <line>4</line>
+        </clef>
+      </attributes>
+    </measure>
+    <measure number="14" />
+    <measure number="15" />
+    <measure number="16" />
+    <measure number="17">
+      <attributes>
+        <clef>
+          <sign>F</sign>
+          <line>4</line>
+        </clef>
+      </attributes>
+    </measure>
+    <measure number="18" />
+    <measure number="19" />
+    <measure number="20" />
+  </part>
+</score-partwise>
