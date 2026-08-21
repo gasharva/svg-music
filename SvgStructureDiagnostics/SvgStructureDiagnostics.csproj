@@ -15,7 +15,8 @@
 
   <ItemGroup>
     <Compile Include="..\SvgStructure\Program.cs" Link="Program.cs" />
-    <Compile Include="..\SvgStructure\Services\*Diagnostic*.cs" Link="Services\%(Filename)%(Extension)" />
+    <Compile Include="..\SvgStructure\Services\DiagnosticClefRecognizer.cs" Link="Services\DiagnosticClefRecognizer.cs" />
+    <Compile Include="..\SvgStructure\Services\DiagnosticNumberRecognizer.cs" Link="Services\DiagnosticNumberRecognizer.cs" />
     <Compile Include="..\SvgStructure\Services\*OverlayRenderer.cs" Link="Services\%(Filename)%(Extension)" />
     <Compile Include="..\SvgStructure\Services\*Exporter.cs" Link="Services\%(Filename)%(Extension)" />
     <Compile Include="..\SvgStructure\Services\StepByStepBatchRunner.cs" Link="Services\StepByStepBatchRunner.cs" />
