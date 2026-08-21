@@ -198,7 +198,6 @@
         <staff>1</staff>
         <beam number="1">begin</beam>
         <beam number="2">begin</beam>
-        <beam number="2">begin</beam>
       </note>
       <note>
         <pitch>
@@ -211,7 +210,6 @@
         <staff>1</staff>
         <beam number="1">continue</beam>
         <beam number="2">continue</beam>
-        <beam number="2">continue</beam>
       </note>
       <note>
         <pitch>
@@ -223,7 +221,6 @@
         <stem>up</stem>
         <staff>1</staff>
         <beam number="1">continue</beam>
-        <beam number="2">continue</beam>
         <beam number="2">continue</beam>
       </note>
       <note>
@@ -237,7 +234,6 @@
         <staff>1</staff>
         <beam number="1">continue</beam>
         <beam number="2">continue</beam>
-        <beam number="2">continue</beam>
       </note>
       <note>
         <pitch>
@@ -249,7 +245,6 @@
         <stem>up</stem>
         <staff>1</staff>
         <beam number="1">end</beam>
-        <beam number="2">end</beam>
         <beam number="2">end</beam>
       </note>
     </measure>
@@ -1918,11 +1913,12 @@
           <step>E</step>
           <octave>5</octave>
         </pitch>
-        <duration>16</duration>
-        <type>eighth</type>
+        <duration>8</duration>
+        <type>16th</type>
         <stem>up</stem>
         <staff>1</staff>
         <beam number="1">end</beam>
+        <beam number="2">begin</beam>
       </note>
       <note>
         <pitch>
