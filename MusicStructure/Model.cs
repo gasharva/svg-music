@@ -21,7 +21,8 @@ public sealed record MusicNote(
     MusicAccidental? Accidental,
     int DotCount,
     IReadOnlyList<MusicBeam> Beams,
-    bool IsChordTone = false);
+    bool IsChordTone = false,
+    string? ChordGroupKey = null);
 
 public sealed record MusicMeasure(int Number, bool StartsNewSystem, IReadOnlyList<MusicNote> Notes);
 public sealed record MusicScore(int StaffCount, IReadOnlyList<MusicMeasure> Measures)
@@ -88,7 +89,8 @@ public sealed record MusicNoteDraft(
     int DotCount = 0,
     IReadOnlyList<MusicBeam>? Beams = null,
     string? Type = null,
-    bool IsChordTone = false)
+    bool IsChordTone = false,
+    string? ChordGroupKey = null)
 {
     public static MusicNoteDraft From(RecognizedNoteInput source) => new(
         source,
@@ -113,6 +115,7 @@ public sealed record MusicNoteDraft(
             Accidental,
             DotCount,
             Beams ?? Array.Empty<MusicBeam>(),
-            IsChordTone);
+            IsChordTone,
+            ChordGroupKey);
     }
 }
