@@ -67404,46 +67404,6 @@
       },
       "label": "3-4",
       "logicalLabel": "P2-M1"
-    },
-    {
-      "partNumber": 2,
-      "measureNumber": 11,
-      "beatNumber": 4,
-      "beatValue": 4,
-      "side": 0,
-      "confidence": 0.14700433985873787,
-      "physicalBounds": {
-        "left": 63.36342239379883,
-        "top": 584.17431640625,
-        "right": 67.57997131347656,
-        "bottom": 607.923583984375,
-        "width": 4.216548919677734,
-        "height": 23.749267578125,
-        "centerX": 65.4716968536377,
-        "centerY": 596.0489501953125
-      },
-      "numeratorBounds": {
-        "left": 63.36342239379883,
-        "top": 584.17431640625,
-        "right": 67.57997131347656,
-        "bottom": 596.6142578125,
-        "width": 4.216548919677734,
-        "height": 12.43994140625,
-        "centerX": 65.4716968536377,
-        "centerY": 590.394287109375
-      },
-      "denominatorBounds": {
-        "left": 63.36342239379883,
-        "top": 595.48095703125,
-        "right": 67.57997131347656,
-        "bottom": 607.923583984375,
-        "width": 4.216548919677734,
-        "height": 12.442626953125,
-        "centerX": 65.4716968536377,
-        "centerY": 601.7022705078125
-      },
-      "label": "4-4",
-      "logicalLabel": "P2-M11"
     }
   ],
   "logicalGrid": {
@@ -68136,10 +68096,10 @@
       {
         "partNumber": 2,
         "measureNumber": 11,
-        "beatNumber": 4,
+        "beatNumber": 3,
         "beatValue": 4,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 32,
+        "horizontalUnits": 24,
         "halfStaffSpace": 3.2123336791992188,
         "physicalBounds": {
           "left": 38.27455520629883,
@@ -68155,10 +68115,10 @@
       {
         "partNumber": 2,
         "measureNumber": 12,
-        "beatNumber": 4,
+        "beatNumber": 3,
         "beatValue": 4,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 32,
+        "horizontalUnits": 24,
         "halfStaffSpace": 3.2123336791992188,
         "physicalBounds": {
           "left": 182.81096801757812,
@@ -68174,10 +68134,10 @@
       {
         "partNumber": 2,
         "measureNumber": 13,
-        "beatNumber": 4,
+        "beatNumber": 3,
         "beatValue": 4,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 32,
+        "horizontalUnits": 24,
         "halfStaffSpace": 3.2123336791992188,
         "physicalBounds": {
           "left": 366.4386444091797,
@@ -68193,10 +68153,10 @@
       {
         "partNumber": 2,
         "measureNumber": 14,
-        "beatNumber": 4,
+        "beatNumber": 3,
         "beatValue": 4,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 32,
+        "horizontalUnits": 24,
         "halfStaffSpace": 3.2123336791992188,
         "physicalBounds": {
           "left": 478.91729736328125,
@@ -68212,10 +68172,10 @@
       {
         "partNumber": 2,
         "measureNumber": 15,
-        "beatNumber": 4,
+        "beatNumber": 3,
         "beatValue": 4,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 32,
+        "horizontalUnits": 24,
         "halfStaffSpace": 3.2123336791992188,
         "physicalBounds": {
           "left": 622.3989054361979,
@@ -68231,10 +68191,10 @@
       {
         "partNumber": 2,
         "measureNumber": 16,
-        "beatNumber": 4,
+        "beatNumber": 3,
         "beatValue": 4,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 32,
+        "horizontalUnits": 24,
         "halfStaffSpace": 3.2126693725585938,
         "physicalBounds": {
           "left": 38.27455520629883,
@@ -68250,10 +68210,10 @@
       {
         "partNumber": 2,
         "measureNumber": 17,
-        "beatNumber": 4,
+        "beatNumber": 3,
         "beatValue": 4,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 32,
+        "horizontalUnits": 24,
         "halfStaffSpace": 3.2126693725585938,
         "physicalBounds": {
           "left": 208.93922119140626,
@@ -68269,10 +68229,10 @@
       {
         "partNumber": 2,
         "measureNumber": 18,
-        "beatNumber": 4,
+        "beatNumber": 3,
         "beatValue": 4,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 32,
+        "horizontalUnits": 24,
         "halfStaffSpace": 3.2126693725585938,
         "physicalBounds": {
           "left": 383.84046427408856,
@@ -68288,10 +68248,10 @@
       {
         "partNumber": 2,
         "measureNumber": 19,
-        "beatNumber": 4,
+        "beatNumber": 3,
         "beatValue": 4,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 32,
+        "horizontalUnits": 24,
         "halfStaffSpace": 3.2126693725585938,
         "physicalBounds": {
           "left": 556.784797668457,
@@ -68307,10 +68267,10 @@
       {
         "partNumber": 2,
         "measureNumber": 20,
-        "beatNumber": 4,
+        "beatNumber": 3,
         "beatValue": 4,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 32,
+        "horizontalUnits": 24,
         "halfStaffSpace": 3.2126693725585938,
         "physicalBounds": {
           "left": 697.8827514648438,
@@ -68326,10 +68286,10 @@
       {
         "partNumber": 2,
         "measureNumber": 21,
-        "beatNumber": 4,
+        "beatNumber": 3,
         "beatValue": 4,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 32,
+        "horizontalUnits": 24,
         "halfStaffSpace": 3.2126693725585938,
         "physicalBounds": {
           "left": 38.27455520629883,
@@ -68345,10 +68305,10 @@
       {
         "partNumber": 2,
         "measureNumber": 22,
-        "beatNumber": 4,
+        "beatNumber": 3,
         "beatValue": 4,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 32,
+        "horizontalUnits": 24,
         "halfStaffSpace": 3.2126693725585938,
         "physicalBounds": {
           "left": 255.30338202582465,
@@ -68364,10 +68324,10 @@
       {
         "partNumber": 2,
         "measureNumber": 23,
-        "beatNumber": 4,
+        "beatNumber": 3,
         "beatValue": 4,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 32,
+        "horizontalUnits": 24,
         "halfStaffSpace": 3.2126693725585938,
         "physicalBounds": {
           "left": 417.7587036132812,
@@ -68383,10 +68343,10 @@
       {
         "partNumber": 2,
         "measureNumber": 24,
-        "beatNumber": 4,
+        "beatNumber": 3,
         "beatValue": 4,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 32,
+        "horizontalUnits": 24,
         "halfStaffSpace": 3.2126693725585938,
         "physicalBounds": {
           "left": 575.4364420572916,
@@ -68402,10 +68362,10 @@
       {
         "partNumber": 2,
         "measureNumber": 25,
-        "beatNumber": 4,
+        "beatNumber": 3,
         "beatValue": 4,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 32,
+        "horizontalUnits": 24,
         "halfStaffSpace": 3.2126693725585938,
         "physicalBounds": {
           "left": 651.343994140625,
@@ -68421,10 +68381,10 @@
       {
         "partNumber": 2,
         "measureNumber": 26,
-        "beatNumber": 4,
+        "beatNumber": 3,
         "beatValue": 4,
         "subdivisionsPerBeat": 8,
-        "horizontalUnits": 32,
+        "horizontalUnits": 24,
         "halfStaffSpace": 3.2126693725585938,
         "physicalBounds": {
           "left": 769.5947265625,
@@ -68566,9 +68526,9 @@
         "centerY": 594.6751098632812
       },
       "logicalBounds": {
-        "left": 1.2879615939817015,
+        "left": 0.9659711954862762,
         "top": -0.007885105463285571,
-        "right": 4.2921549566480595,
+        "right": 3.219116217486045,
         "bottom": 6.936441774908739
       }
     },
@@ -68610,9 +68570,9 @@
         "centerY": 772.5845336914062
       },
       "logicalBounds": {
-        "left": 1.090778501561987,
+        "left": 0.8180838761714904,
         "top": -0.007029359449620153,
-        "right": 3.6350387883933606,
+        "right": 2.7262790912950203,
         "bottom": 6.9365719048851675
       }
     },
@@ -68654,9 +68614,9 @@
         "centerY": 962.8538818359375
       },
       "logicalBounds": {
-        "left": 0.8577540198731984,
+        "left": 0.6433155149048988,
         "top": -0.007029359449620153,
-        "right": 2.858480551894355,
+        "right": 2.143860413920766,
         "bottom": 6.9365719048851675
       }
     }
@@ -68853,9 +68813,9 @@
       "partNumber": 2,
       "measureNumber": 13,
       "logicalBounds": {
-        "left": 1.9751881630099895,
+        "left": 1.481391122257492,
         "top": -4.000408505463761,
-        "right": 5.630412997474971,
+        "right": 4.222809748106228,
         "bottom": -2.0006317584497695
       },
       "depth": -2
@@ -68864,9 +68824,9 @@
       "partNumber": 2,
       "measureNumber": 14,
       "logicalBounds": {
-        "left": 2.3153079061789965,
+        "left": 1.7364809296342474,
         "top": 10.000631758449769,
-        "right": 5.180140456990011,
+        "right": 3.8851053427425084,
         "bottom": 10.000631758449769
       },
       "depth": 1
@@ -68875,9 +68835,9 @@
       "partNumber": 2,
       "measureNumber": 15,
       "logicalBounds": {
-        "left": 16.753498686059178,
+        "left": 12.565124014544384,
         "top": -2.0006317584497695,
-        "right": 19.399765403447347,
+        "right": 14.54982405258551,
         "bottom": -2.0006317584497695
       },
       "depth": -1
@@ -68886,9 +68846,9 @@
       "partNumber": 2,
       "measureNumber": 15,
       "logicalBounds": {
-        "left": 21.634012298375094,
+        "left": 16.22550922378132,
         "top": -2.0006317584497695,
-        "right": 24.280832265036583,
+        "right": 18.210624198777438,
         "bottom": -2.0006317584497695
       },
       "depth": -1
@@ -68897,9 +68857,9 @@
       "partNumber": 2,
       "measureNumber": 16,
       "logicalBounds": {
-        "left": 6.920946429797356,
+        "left": 5.190709822348017,
         "top": 9.999567789385193,
-        "right": 9.329675609704884,
+        "right": 6.9972567072786624,
         "bottom": 9.999567789385193
       },
       "depth": 1
@@ -68908,9 +68868,9 @@
       "partNumber": 2,
       "measureNumber": 16,
       "logicalBounds": {
-        "left": 23.368041509959934,
+        "left": 17.52603113246995,
         "top": -3.9999905008656085,
-        "right": 25.776770689867462,
+        "right": 19.332578017400596,
         "bottom": -1.9995677893851922
       },
       "depth": -2
@@ -68941,9 +68901,9 @@
       "partNumber": 2,
       "measureNumber": 17,
       "logicalBounds": {
-        "left": 8.0281973670991,
+        "left": 6.021148025324325,
         "top": -1.9995677893851922,
-        "right": 10.378583459120268,
+        "right": 7.783937594340201,
         "bottom": -1.9995677893851922
       },
       "depth": -1
@@ -68952,9 +68912,9 @@
       "partNumber": 2,
       "measureNumber": 17,
       "logicalBounds": {
-        "left": 11.37173878781272,
+        "left": 8.528804090859541,
         "top": -3.9999905008656085,
-        "right": 13.721926665297852,
+        "right": 10.29144499897339,
         "bottom": -1.9995677893851922
       },
       "depth": -2
@@ -68963,9 +68923,9 @@
       "partNumber": 2,
       "measureNumber": 18,
       "logicalBounds": {
-        "left": 11.360302076573513,
+        "left": 8.520226557430135,
         "top": -1.9995677893851922,
-        "right": 13.737082935375476,
+        "right": 10.302812201531607,
         "bottom": -1.9995677893851922
       },
       "depth": -1
@@ -68974,9 +68934,9 @@
       "partNumber": 2,
       "measureNumber": 18,
       "logicalBounds": {
-        "left": 15.151205319873121,
+        "left": 11.36340398990484,
         "top": -3.9999905008656085,
-        "right": 17.527991825361973,
+        "right": 13.14599386902148,
         "bottom": -1.9995677893851922
       },
       "depth": -2
@@ -68985,9 +68945,9 @@
       "partNumber": 2,
       "measureNumber": 19,
       "logicalBounds": {
-        "left": 11.344898351037372,
+        "left": 8.50867376327803,
         "top": -1.9995677893851922,
-        "right": 14.258737337981835,
+        "right": 10.694053003486376,
         "bottom": -1.9995677893851922
       },
       "depth": -1
@@ -68996,9 +68956,9 @@
       "partNumber": 2,
       "measureNumber": 19,
       "logicalBounds": {
-        "left": 16.318615057182626,
+        "left": 12.23896129288697,
         "top": -3.9999905008656085,
-        "right": 19.231844981432076,
+        "right": 14.423883736074057,
         "bottom": -1.9995677893851922
       },
       "depth": -2
@@ -69007,9 +68967,9 @@
       "partNumber": 2,
       "measureNumber": 19,
       "logicalBounds": {
-        "left": 21.29172270063287,
+        "left": 15.968792025474652,
         "top": -3.9999905008656085,
-        "right": 24.205561687577333,
+        "right": 18.154171265683,
         "bottom": -1.9995677893851922
       },
       "depth": -2
@@ -69018,9 +68978,9 @@
       "partNumber": 2,
       "measureNumber": 19,
       "logicalBounds": {
-        "left": 26.265439406778125,
+        "left": 19.699079555083593,
         "top": -5.999577288519584,
-        "right": 29.178669331027574,
+        "right": 21.88400199827068,
         "bottom": -1.9995677893851922
       },
       "depth": -3
@@ -69029,9 +68989,9 @@
       "partNumber": 2,
       "measureNumber": 20,
       "logicalBounds": {
-        "left": 7.026613514242369,
+        "left": 5.269960135681776,
         "top": -1.9995677893851922,
-        "right": 12.174497965812941,
+        "right": 9.130873474359706,
         "bottom": -1.9995677893851922
       },
       "depth": -1
@@ -69040,9 +69000,9 @@
       "partNumber": 2,
       "measureNumber": 21,
       "logicalBounds": {
-        "left": 14.342287450709717,
+        "left": 10.756715588032288,
         "top": -1.9995677893851922,
-        "right": 16.23643431903378,
+        "right": 12.177325739275336,
         "bottom": -1.9995677893851922
       },
       "depth": -1
@@ -69051,9 +69011,9 @@
       "partNumber": 2,
       "measureNumber": 21,
       "logicalBounds": {
-        "left": 17.36323775666356,
+        "left": 13.022428317497669,
         "top": -3.9999905008656085,
-        "right": 19.25738462498762,
+        "right": 14.443038468740713,
         "bottom": -1.9995677893851922
       },
       "depth": -2
@@ -69062,9 +69022,9 @@
       "partNumber": 2,
       "measureNumber": 22,
       "logicalBounds": {
-        "left": 2.9164315297209282,
+        "left": 2.1873236472906963,
         "top": -3.9999905008656085,
-        "right": 5.446670473163073,
+        "right": 4.085002854872305,
         "bottom": -1.9995677893851922
       },
       "depth": -2
@@ -69073,9 +69033,9 @@
       "partNumber": 2,
       "measureNumber": 23,
       "logicalBounds": {
-        "left": 21.547130038153202,
+        "left": 16.160347528614903,
         "top": -1.9995677893851922,
-        "right": 24.154579401691546,
+        "right": 18.11593455126866,
         "bottom": -1.9995677893851922
       },
       "depth": -1
@@ -69084,9 +69044,9 @@
       "partNumber": 2,
       "measureNumber": 23,
       "logicalBounds": {
-        "left": 26.464918616947063,
+        "left": 19.8486889627103,
         "top": -3.9999905008656085,
-        "right": 29.071822960618633,
+        "right": 21.803867220463975,
         "bottom": -1.9995677893851922
       },
       "depth": -2
@@ -69095,9 +69055,9 @@
       "partNumber": 2,
       "measureNumber": 25,
       "logicalBounds": {
-        "left": 2.809311352210672,
+        "left": 2.106983514158004,
         "top": -1.9995677893851922,
-        "right": 6.286133104850781,
+        "right": 4.714599828638086,
         "bottom": -1.9995677893851922
       },
       "depth": -1
@@ -72518,9 +72478,9 @@
       "partNumber": 2,
       "measureNumber": 11,
       "logicalBounds": {
-        "left": 8.669944523254916,
+        "left": 6.502458392441187,
         "top": -1.0563381285224689,
-        "right": 10.519224748765442,
+        "right": 7.8894185615740815,
         "bottom": 1.0638432289031865
       },
       "physicalBounds": {
@@ -72540,9 +72500,9 @@
       "partNumber": 2,
       "measureNumber": 11,
       "logicalBounds": {
-        "left": 8.669944523254916,
+        "left": 6.502458392441187,
         "top": 0.9434386184915223,
-        "right": 10.519224748765442,
+        "right": 7.8894185615740815,
         "bottom": 3.063619975917178
       },
       "physicalBounds": {
@@ -72562,9 +72522,9 @@
       "partNumber": 2,
       "measureNumber": 11,
       "logicalBounds": {
-        "left": 8.669944523254916,
+        "left": 6.502458392441187,
         "top": 4.94388512446354,
-        "right": 10.519224748765442,
+        "right": 7.8894185615740815,
         "bottom": 7.064066481889196
       },
       "physicalBounds": {
@@ -72826,9 +72786,9 @@
       "partNumber": 2,
       "measureNumber": 12,
       "logicalBounds": {
-        "left": 1.8901464634602023,
+        "left": 1.4176098475951517,
         "top": -1.0563381285224689,
-        "right": 3.3457445039619267,
+        "right": 2.509308377971445,
         "bottom": 1.0638432289031865
       },
       "physicalBounds": {
@@ -72848,9 +72808,9 @@
       "partNumber": 2,
       "measureNumber": 12,
       "logicalBounds": {
-        "left": 1.8901464634602023,
+        "left": 1.4176098475951517,
         "top": 0.9434386184915223,
-        "right": 3.3457445039619267,
+        "right": 2.509308377971445,
         "bottom": 3.063619975917178
       },
       "physicalBounds": {
@@ -72870,9 +72830,9 @@
       "partNumber": 2,
       "measureNumber": 12,
       "logicalBounds": {
-        "left": 1.8901464634602023,
+        "left": 1.4176098475951517,
         "top": 4.94388512446354,
-        "right": 3.3457445039619267,
+        "right": 2.509308377971445,
         "bottom": 7.064066481889196
       },
       "physicalBounds": {
@@ -73002,9 +72962,9 @@
       "partNumber": 2,
       "measureNumber": 13,
       "logicalBounds": {
-        "left": 2.6147366016310873,
+        "left": 1.9610524512233156,
         "top": 4.94388512446354,
-        "right": 4.991081613929293,
+        "right": 3.7433112104469695,
         "bottom": 7.064066481889196
       },
       "physicalBounds": {
@@ -73024,9 +72984,9 @@
       "partNumber": 2,
       "measureNumber": 13,
       "logicalBounds": {
-        "left": 2.8706532177533144,
+        "left": 2.1529899133149857,
         "top": -5.680771980325237,
-        "right": 4.7351736800100825,
+        "right": 3.551380260007562,
         "bottom": -4.313152688417207
       },
       "physicalBounds": {
@@ -73200,9 +73160,9 @@
       "partNumber": 2,
       "measureNumber": 14,
       "logicalBounds": {
-        "left": 2.8166651730869803,
+        "left": 2.1124988798152353,
         "top": 8.9442936299273,
-        "right": 4.679538676718648,
+        "right": 3.509654007538986,
         "bottom": 11.064474987352956
       },
       "physicalBounds": {
@@ -73222,9 +73182,9 @@
       "partNumber": 2,
       "measureNumber": 14,
       "logicalBounds": {
-        "left": 8.51302760702444,
+        "left": 6.3847707052683305,
         "top": 0.9434386184915223,
-        "right": 10.375907916842023,
+        "right": 7.781930937631516,
         "bottom": 3.063619975917178
       },
       "physicalBounds": {
@@ -73244,9 +73204,9 @@
       "partNumber": 2,
       "measureNumber": 14,
       "logicalBounds": {
-        "left": 10.218113302576938,
+        "left": 7.663584976932704,
         "top": -0.05684876035216971,
-        "right": 12.080993612394522,
+        "right": 9.060745209295892,
         "bottom": 2.0633325970734857
       },
       "physicalBounds": {
@@ -73266,9 +73226,9 @@
       "partNumber": 2,
       "measureNumber": 14,
       "logicalBounds": {
-        "left": 14.086286556308147,
+        "left": 10.564714917231111,
         "top": 0.9434386184915223,
-        "right": 15.949166866125731,
+        "right": 11.961875149594299,
         "bottom": 3.063619975917178
       },
       "physicalBounds": {
@@ -73288,9 +73248,9 @@
       "partNumber": 2,
       "measureNumber": 14,
       "logicalBounds": {
-        "left": 15.791372251860645,
+        "left": 11.843529188895484,
         "top": -0.05684876035216971,
-        "right": 17.654252561678227,
+        "right": 13.24068942125867,
         "bottom": 2.0633325970734857
       },
       "physicalBounds": {
@@ -73376,9 +73336,9 @@
       "partNumber": 2,
       "measureNumber": 15,
       "logicalBounds": {
-        "left": 2.573971287724889,
+        "left": 1.9304784657936667,
         "top": 5.9441725033072315,
-        "right": 4.294727413925868,
+        "right": 3.221045560444401,
         "bottom": 8.064353860732888
       },
       "physicalBounds": {
@@ -73398,9 +73358,9 @@
       "partNumber": 2,
       "measureNumber": 15,
       "logicalBounds": {
-        "left": 7.4544849000408036,
+        "left": 5.590863675030603,
         "top": 1.943763997843471,
-        "right": 9.175241026241784,
+        "right": 6.881430769681337,
         "bottom": 4.0639453552691265
       },
       "physicalBounds": {
@@ -73420,9 +73380,9 @@
       "partNumber": 2,
       "measureNumber": 15,
       "logicalBounds": {
-        "left": 12.335551761630043,
+        "left": 9.251663821222532,
         "top": -2.0566445076202893,
-        "right": 14.056307887831021,
+        "right": 10.542230915873265,
         "bottom": 0.06353684980536614
       },
       "physicalBounds": {
@@ -73442,9 +73402,9 @@
       "partNumber": 2,
       "measureNumber": 15,
       "logicalBounds": {
-        "left": 17.21661862321928,
+        "left": 12.91246396741446,
         "top": -3.0569698869722384,
-        "right": 18.93737474942026,
+        "right": 14.203031062065197,
         "bottom": -0.9367885295465826
       },
       "physicalBounds": {
@@ -73464,9 +73424,9 @@
       "partNumber": 2,
       "measureNumber": 15,
       "logicalBounds": {
-        "left": 20.523213496013074,
+        "left": 15.392410122009807,
         "top": -2.0566445076202893,
-        "right": 22.243969622214053,
+        "right": 16.68297721666054,
         "bottom": 0.06353684980536614
       },
       "physicalBounds": {
@@ -73486,9 +73446,9 @@
       "partNumber": 2,
       "measureNumber": 15,
       "logicalBounds": {
-        "left": 22.09768548480852,
+        "left": 16.57326411360639,
         "top": -3.0569698869722384,
-        "right": 23.818441611009497,
+        "right": 17.863831208257125,
         "bottom": -0.9367885295465826
       },
       "physicalBounds": {
@@ -73508,9 +73468,9 @@
       "partNumber": 2,
       "measureNumber": 15,
       "logicalBounds": {
-        "left": 22.09768548480852,
+        "left": 16.57326411360639,
         "top": 1.943763997843471,
-        "right": 23.818441611009497,
+        "right": 17.863831208257125,
         "bottom": 4.0639453552691265
       },
       "physicalBounds": {
@@ -73530,9 +73490,9 @@
       "partNumber": 2,
       "measureNumber": 15,
       "logicalBounds": {
-        "left": 22.09768548480852,
+        "left": 16.57326411360639,
         "top": 5.9441725033072315,
-        "right": 23.818441611009497,
+        "right": 17.863831208257125,
         "bottom": 8.064353860732888
       },
       "physicalBounds": {
@@ -73640,9 +73600,9 @@
       "partNumber": 2,
       "measureNumber": 16,
       "logicalBounds": {
-        "left": 7.342601782453391,
+        "left": 5.506951336840043,
         "top": 9.943560893013624,
-        "right": 8.908762701207653,
+        "right": 6.68157202590574,
         "bottom": 12.063520711675148
       },
       "physicalBounds": {
@@ -73662,9 +73622,9 @@
       "partNumber": 2,
       "measureNumber": 16,
       "logicalBounds": {
-        "left": 11.454400586738311,
+        "left": 8.590800440053734,
         "top": 5.943570392148016,
-        "right": 13.020561505492573,
+        "right": 9.76542112911943,
         "bottom": 8.06353021080954
       },
       "physicalBounds": {
@@ -73684,9 +73644,9 @@
       "partNumber": 2,
       "measureNumber": 16,
       "logicalBounds": {
-        "left": 15.56614932253468,
+        "left": 11.67461199190101,
         "top": 1.943579891282407,
-        "right": 17.132311671817185,
+        "right": 12.849233753862888,
         "bottom": 4.063539709943932
       },
       "physicalBounds": {
@@ -73706,9 +73666,9 @@
       "partNumber": 2,
       "measureNumber": 16,
       "logicalBounds": {
-        "left": 19.677896627802806,
+        "left": 14.758422470852103,
         "top": 0.9441949602342486,
-        "right": 21.244056116028823,
+        "right": 15.933042087021617,
         "bottom": 3.064154778895773
       },
       "physicalBounds": {
@@ -73728,9 +73688,9 @@
       "partNumber": 2,
       "measureNumber": 16,
       "logicalBounds": {
-        "left": 23.789695432087726,
+        "left": 17.842271574065794,
         "top": -0.0560258946403509,
-        "right": 25.35585778137023,
+        "right": 19.01689333602767,
         "bottom": 2.0639339240211734
       },
       "physicalBounds": {
@@ -73882,9 +73842,9 @@
       "partNumber": 2,
       "measureNumber": 17,
       "logicalBounds": {
-        "left": 1.7527028221224943,
+        "left": 1.3145271165918708,
         "top": 3.943964606225258,
-        "right": 3.280928519708833,
+        "right": 2.4606963897816247,
         "bottom": 6.063924424886782
       },
       "physicalBounds": {
@@ -73904,9 +73864,9 @@
       "partNumber": 2,
       "measureNumber": 17,
       "logicalBounds": {
-        "left": 5.096193991263599,
+        "left": 3.822145493447699,
         "top": -0.0560258946403509,
-        "right": 6.62441689709591,
+        "right": 4.9683126728219325,
         "bottom": 2.0639339240211734
       },
       "physicalBounds": {
@@ -73926,9 +73886,9 @@
       "partNumber": 2,
       "measureNumber": 17,
       "logicalBounds": {
-        "left": 8.439687952158732,
+        "left": 6.329765964119049,
         "top": -4.056016395505959,
-        "right": 9.967910857991043,
+        "right": 7.4759331434932825,
         "bottom": -1.936056576844435
       },
       "physicalBounds": {
@@ -73948,9 +73908,9 @@
       "partNumber": 2,
       "measureNumber": 17,
       "logicalBounds": {
-        "left": 11.783036741844374,
+        "left": 8.837277556383281,
         "top": -5.056218252111776,
-        "right": 13.311259647676684,
+        "right": 9.983444735757512,
         "bottom": -2.9362584334502517
       },
       "physicalBounds": {
@@ -73970,9 +73930,9 @@
       "partNumber": 2,
       "measureNumber": 17,
       "logicalBounds": {
-        "left": 15.825725499226396,
+        "left": 11.869294124419797,
         "top": -0.0560258946403509,
-        "right": 17.353948405058706,
+        "right": 13.01546130379403,
         "bottom": 2.0639339240211734
       },
       "physicalBounds": {
@@ -73992,9 +73952,9 @@
       "partNumber": 2,
       "measureNumber": 17,
       "logicalBounds": {
-        "left": 15.825725499226396,
+        "left": 11.869294124419797,
         "top": 3.943964606225258,
-        "right": 17.353948405058706,
+        "right": 13.01546130379403,
         "bottom": 6.063924424886782
       },
       "physicalBounds": {
@@ -74146,9 +74106,9 @@
       "partNumber": 2,
       "measureNumber": 18,
       "logicalBounds": {
-        "left": 1.632127789700437,
+        "left": 1.2240958422753276,
         "top": 5.943570392148016,
-        "right": 3.177642931431028,
+        "right": 2.383232198573271,
         "bottom": 8.06353021080954
       },
       "physicalBounds": {
@@ -74168,9 +74128,9 @@
       "partNumber": 2,
       "measureNumber": 18,
       "logicalBounds": {
-        "left": 5.013505066335407,
+        "left": 3.760128799751555,
         "top": 1.943579891282407,
-        "right": 6.5590202080659985,
+        "right": 4.919265156049499,
         "bottom": 4.063539709943932
       },
       "physicalBounds": {
@@ -74190,9 +74150,9 @@
       "partNumber": 2,
       "measureNumber": 18,
       "logicalBounds": {
-        "left": 8.394876696283488,
+        "left": 6.296157522212615,
         "top": -2.0564486061207674,
-        "right": 9.94039183801408,
+        "right": 7.45529387851056,
         "bottom": 0.06351121254075723
       },
       "physicalBounds": {
@@ -74212,9 +74172,9 @@
       "partNumber": 2,
       "measureNumber": 18,
       "logicalBounds": {
-        "left": 11.776248326231569,
+        "left": 8.832186244673677,
         "top": -3.05579554063136,
-        "right": 13.32176346796216,
+        "right": 9.991322600971621,
         "bottom": -0.9358357219698354
       },
       "physicalBounds": {
@@ -74234,9 +74194,9 @@
       "partNumber": 2,
       "measureNumber": 18,
       "logicalBounds": {
-        "left": 14.153029185033532,
+        "left": 10.614771888775149,
         "top": -2.0564486061207674,
-        "right": 15.698544326764122,
+        "right": 11.773908245073091,
         "bottom": 0.06351121254075723
       },
       "physicalBounds": {
@@ -74256,9 +74216,9 @@
       "partNumber": 2,
       "measureNumber": 18,
       "logicalBounds": {
-        "left": 15.567157216218066,
+        "left": 11.67536791216355,
         "top": -5.056218252111776,
-        "right": 17.112672357948657,
+        "right": 12.834504268461494,
         "bottom": -2.9362584334502517
       },
       "physicalBounds": {
@@ -74278,9 +74238,9 @@
       "partNumber": 2,
       "measureNumber": 18,
       "logicalBounds": {
-        "left": 15.567157216218066,
+        "left": 11.67536791216355,
         "top": -3.05579554063136,
-        "right": 17.112672357948657,
+        "right": 12.834504268461494,
         "bottom": -0.9358357219698354
       },
       "physicalBounds": {
@@ -74300,9 +74260,9 @@
       "partNumber": 2,
       "measureNumber": 18,
       "logicalBounds": {
-        "left": 15.567157216218066,
+        "left": 11.67536791216355,
         "top": 1.943579891282407,
-        "right": 17.112672357948657,
+        "right": 12.834504268461494,
         "bottom": 4.063539709943932
       },
       "physicalBounds": {
@@ -74322,9 +74282,9 @@
       "partNumber": 2,
       "measureNumber": 18,
       "logicalBounds": {
-        "left": 15.567157216218066,
+        "left": 11.67536791216355,
         "top": 5.943570392148016,
-        "right": 17.112672357948657,
+        "right": 12.834504268461494,
         "bottom": 8.06353021080954
       },
       "physicalBounds": {
@@ -74366,9 +74326,9 @@
       "partNumber": 2,
       "measureNumber": 19,
       "logicalBounds": {
-        "left": 1.9084962245304433,
+        "left": 1.4313721683978324,
         "top": 4.9433495372734155,
-        "right": 3.802847314027567,
+        "right": 2.8521354855206753,
         "bottom": 7.0633093559349405
       },
       "physicalBounds": {
@@ -74388,9 +74348,9 @@
       "partNumber": 2,
       "measureNumber": 19,
       "logicalBounds": {
-        "left": 6.881631552648641,
+        "left": 5.161223664486481,
         "top": -1.0562277512461677,
-        "right": 8.775982642145765,
+        "right": 6.581986981609324,
         "bottom": 1.0637320674153568
       },
       "physicalBounds": {
@@ -74410,9 +74370,9 @@
       "partNumber": 2,
       "measureNumber": 19,
       "logicalBounds": {
-        "left": 11.855348258793898,
+        "left": 8.891511194095424,
         "top": -4.056016395505959,
-        "right": 13.74969934829102,
+        "right": 10.312274511218266,
         "bottom": -1.936056576844435
       },
       "physicalBounds": {
@@ -74432,9 +74392,9 @@
       "partNumber": 2,
       "measureNumber": 19,
       "logicalBounds": {
-        "left": 16.82845590224414,
+        "left": 12.621341926683105,
         "top": -5.056218252111776,
-        "right": 18.722806991741262,
+        "right": 14.042105243805945,
         "bottom": -2.9362584334502517
       },
       "physicalBounds": {
@@ -74454,9 +74414,9 @@
       "partNumber": 2,
       "measureNumber": 19,
       "logicalBounds": {
-        "left": 21.802172608389395,
+        "left": 16.351629456292045,
         "top": -6.056439106986375,
-        "right": 23.69652369788652,
+        "right": 17.77239277341489,
         "bottom": -3.9364792883248514
       },
       "physicalBounds": {
@@ -74476,9 +74436,9 @@
       "partNumber": 2,
       "measureNumber": 19,
       "logicalBounds": {
-        "left": 26.77528025183964,
+        "left": 20.08146018887973,
         "top": -8.056006896371569,
-        "right": 28.66963134133676,
+        "right": 21.502223506002572,
         "bottom": -5.936047077710044
       },
       "physicalBounds": {
@@ -74586,9 +74546,9 @@
       "partNumber": 2,
       "measureNumber": 20,
       "logicalBounds": {
-        "left": 7.92753854498602,
+        "left": 5.945653908739515,
         "top": -4.056016395505959,
-        "right": 11.274991637604671,
+        "right": 8.456243728203503,
         "bottom": -1.936056576844435
       },
       "physicalBounds": {
@@ -74608,9 +74568,9 @@
       "partNumber": 2,
       "measureNumber": 20,
       "logicalBounds": {
-        "left": 7.92753854498602,
+        "left": 5.945653908739515,
         "top": 1.943579891282407,
-        "right": 11.274991637604671,
+        "right": 8.456243728203503,
         "bottom": 4.063539709943932
       },
       "physicalBounds": {
@@ -74762,9 +74722,9 @@
       "partNumber": 2,
       "measureNumber": 21,
       "logicalBounds": {
-        "left": 5.742024941044927,
+        "left": 4.306518705783695,
         "top": 5.943570392148016,
-        "right": 6.9736047914967445,
+        "right": 5.230203593622559,
         "bottom": 8.06353021080954
       },
       "physicalBounds": {
@@ -74784,9 +74744,9 @@
       "partNumber": 2,
       "measureNumber": 21,
       "logicalBounds": {
-        "left": 8.719331626163084,
+        "left": 6.539498719622314,
         "top": 1.9435608930136241,
-        "right": 9.950911476614902,
+        "right": 7.463183607461176,
         "bottom": 4.063520711675149
       },
       "physicalBounds": {
@@ -74806,9 +74766,9 @@
       "partNumber": 2,
       "measureNumber": 21,
       "logicalBounds": {
-        "left": 11.696597814068825,
+        "left": 8.77244836055162,
         "top": -2.0564486061207674,
-        "right": 12.928177664520643,
+        "right": 9.696133248390481,
         "bottom": 0.06351121254075723
       },
       "physicalBounds": {
@@ -74828,9 +74788,9 @@
       "partNumber": 2,
       "measureNumber": 21,
       "logicalBounds": {
-        "left": 14.673903374264416,
+        "left": 11.005427530698313,
         "top": -3.05579554063136,
-        "right": 15.905484349638801,
+        "right": 11.929113262229102,
         "bottom": -0.9358357219698354
       },
       "physicalBounds": {
@@ -74850,9 +74810,9 @@
       "partNumber": 2,
       "measureNumber": 21,
       "logicalBounds": {
-        "left": 16.568011995221198,
+        "left": 12.426008996415899,
         "top": -2.0564486061207674,
-        "right": 17.79959297059558,
+        "right": 13.349694727946684,
         "bottom": 0.06351121254075723
       },
       "physicalBounds": {
@@ -74872,9 +74832,9 @@
       "partNumber": 2,
       "measureNumber": 21,
       "logicalBounds": {
-        "left": 17.69481318300584,
+        "left": 13.271109887254381,
         "top": -5.056218252111776,
-        "right": 18.926391908535095,
+        "right": 14.194793931401321,
         "bottom": -2.9362584334502517
       },
       "physicalBounds": {
@@ -74894,9 +74854,9 @@
       "partNumber": 2,
       "measureNumber": 21,
       "logicalBounds": {
-        "left": 17.69481318300584,
+        "left": 13.271109887254381,
         "top": -3.05579554063136,
-        "right": 18.926391908535095,
+        "right": 14.194793931401321,
         "bottom": -0.9358357219698354
       },
       "physicalBounds": {
@@ -74916,9 +74876,9 @@
       "partNumber": 2,
       "measureNumber": 21,
       "logicalBounds": {
-        "left": 17.69481318300584,
+        "left": 13.271109887254381,
         "top": 1.9435608930136241,
-        "right": 18.926391908535095,
+        "right": 14.194793931401321,
         "bottom": 4.063520711675149
       },
       "physicalBounds": {
@@ -74938,9 +74898,9 @@
       "partNumber": 2,
       "measureNumber": 21,
       "logicalBounds": {
-        "left": 17.69481318300584,
+        "left": 13.271109887254381,
         "top": 5.943570392148016,
-        "right": 18.926391908535095,
+        "right": 14.194793931401321,
         "bottom": 8.06353021080954
       },
       "physicalBounds": {
@@ -75092,9 +75052,9 @@
       "partNumber": 2,
       "measureNumber": 22,
       "logicalBounds": {
-        "left": 1.8541202227497133,
+        "left": 1.3905901670622849,
         "top": -2.0564486061207674,
-        "right": 3.499422348439745,
+        "right": 2.6245667613298087,
         "bottom": 0.06351121254075723
       },
       "physicalBounds": {
@@ -75114,9 +75074,9 @@
       "partNumber": 2,
       "measureNumber": 22,
       "logicalBounds": {
-        "left": 3.359239575247301,
+        "left": 2.5194296814354757,
         "top": -5.056218252111776,
-        "right": 5.004541700937333,
+        "right": 3.7534062757029996,
         "bottom": -2.9362584334502517
       },
       "physicalBounds": {
@@ -75136,9 +75096,9 @@
       "partNumber": 2,
       "measureNumber": 22,
       "logicalBounds": {
-        "left": 3.359239575247301,
+        "left": 2.5194296814354757,
         "top": -3.05579554063136,
-        "right": 5.004541700937333,
+        "right": 3.7534062757029996,
         "bottom": -0.9358357219698354
       },
       "physicalBounds": {
@@ -75158,9 +75118,9 @@
       "partNumber": 2,
       "measureNumber": 22,
       "logicalBounds": {
-        "left": 3.359239575247301,
+        "left": 2.5194296814354757,
         "top": 1.9435608930136241,
-        "right": 5.004541700937333,
+        "right": 3.7534062757029996,
         "bottom": 4.063520711675149
       },
       "physicalBounds": {
@@ -75180,9 +75140,9 @@
       "partNumber": 2,
       "measureNumber": 22,
       "logicalBounds": {
-        "left": 3.359239575247301,
+        "left": 2.5194296814354757,
         "top": 5.943570392148016,
-        "right": 5.004541700937333,
+        "right": 3.7534062757029996,
         "bottom": 8.06353021080954
       },
       "physicalBounds": {
@@ -75246,9 +75206,9 @@
       "partNumber": 2,
       "measureNumber": 23,
       "logicalBounds": {
-        "left": 2.3333217120921765,
+        "left": 1.7499912840691323,
         "top": 6.943772248753833,
-        "right": 4.028475946133978,
+        "right": 3.0213569596004834,
         "bottom": 9.063732067415357
       },
       "physicalBounds": {
@@ -75268,9 +75228,9 @@
       "partNumber": 2,
       "measureNumber": 23,
       "logicalBounds": {
-        "left": 7.251097904070883,
+        "left": 5.438323428053162,
         "top": 0.9441949602342486,
-        "right": 8.946252138112685,
+        "right": 6.709689103584514,
         "bottom": 3.064154778895773
       },
       "physicalBounds": {
@@ -75290,9 +75250,9 @@
       "partNumber": 2,
       "measureNumber": 23,
       "logicalBounds": {
-        "left": 12.168335269590393,
+        "left": 9.126251452192795,
         "top": -1.0562277512461677,
-        "right": 13.863489503632195,
+        "right": 10.397617127724146,
         "bottom": 1.0637320674153568
       },
       "physicalBounds": {
@@ -75312,9 +75272,9 @@
       "partNumber": 2,
       "measureNumber": 23,
       "logicalBounds": {
-        "left": 17.086117654976675,
+        "left": 12.814588241232507,
         "top": -2.0564486061207674,
-        "right": 18.781271889018477,
+        "right": 14.085953916763858,
         "bottom": 0.06351121254075723
       },
       "physicalBounds": {
@@ -75334,9 +75294,9 @@
       "partNumber": 2,
       "measureNumber": 23,
       "logicalBounds": {
-        "left": 22.003906233770536,
+        "left": 16.502929675327902,
         "top": -4.056016395505959,
-        "right": 23.699066661219916,
+        "right": 17.774299995914937,
         "bottom": -1.936056576844435
       },
       "physicalBounds": {
@@ -75356,9 +75316,9 @@
       "partNumber": 2,
       "measureNumber": 23,
       "logicalBounds": {
-        "left": 26.921125019067315,
+        "left": 20.190843764300485,
         "top": -6.056439106986375,
-        "right": 28.616285446516695,
+        "right": 21.46221408488752,
         "bottom": -3.9364792883248514
       },
       "physicalBounds": {
@@ -75466,9 +75426,9 @@
       "partNumber": 2,
       "measureNumber": 24,
       "logicalBounds": {
-        "left": 4.789371665780414,
+        "left": 3.5920287493353102,
         "top": -2.0564486061207674,
-        "right": 8.310616326740668,
+        "right": 6.232962245055501,
         "bottom": 0.06351121254075723
       },
       "physicalBounds": {
@@ -75488,9 +75448,9 @@
       "partNumber": 2,
       "measureNumber": 24,
       "logicalBounds": {
-        "left": 4.789371665780414,
+        "left": 3.5920287493353102,
         "top": 3.943964606225258,
-        "right": 8.310616326740668,
+        "right": 6.232962245055501,
         "bottom": 6.063924424886782
       },
       "physicalBounds": {
@@ -75620,9 +75580,9 @@
       "partNumber": 2,
       "measureNumber": 25,
       "logicalBounds": {
-        "left": 3.418352241640945,
+        "left": 2.5637641812307086,
         "top": -3.05579554063136,
-        "right": 5.678710862900146,
+        "right": 4.259033147175109,
         "bottom": -0.9358357219698354
       },
       "physicalBounds": {
@@ -75642,9 +75602,9 @@
       "partNumber": 2,
       "measureNumber": 25,
       "logicalBounds": {
-        "left": 3.418352241640945,
+        "left": 2.5637641812307086,
         "top": 0.9441949602342486,
-        "right": 5.678710862900146,
+        "right": 4.259033147175109,
         "bottom": 3.064154778895773
       },
       "physicalBounds": {
@@ -76194,9 +76154,9 @@
       "partNumber": 2,
       "measureNumber": 11,
       "logicalBounds": {
-        "left": 7.199451442736946,
+        "left": 5.39958858205271,
         "top": 3.4000004750063533,
-        "right": 8.172104198537207,
+        "right": 6.129078148902906,
         "bottom": 8.584181813431755
       },
       "physicalBounds": {
@@ -76215,9 +76175,9 @@
         "partNumber": 2,
         "measureNumber": 11,
         "logicalBounds": {
-          "left": 8.669944523254916,
+          "left": 6.502458392441187,
           "top": 4.94388512446354,
-          "right": 10.519224748765442,
+          "right": 7.8894185615740815,
           "bottom": 7.064066481889196
         },
         "physicalBounds": {
@@ -76326,9 +76286,9 @@
       "partNumber": 2,
       "measureNumber": 12,
       "logicalBounds": {
-        "left": 0.7326502514487151,
+        "left": 0.5494876885865363,
         "top": 3.4000004750063533,
-        "right": 1.4982428197236235,
+        "right": 1.1236821147927176,
         "bottom": 8.584181813431755
       },
       "physicalBounds": {
@@ -76347,9 +76307,9 @@
         "partNumber": 2,
         "measureNumber": 12,
         "logicalBounds": {
-          "left": 1.8901464634602023,
+          "left": 1.4176098475951517,
           "top": 4.94388512446354,
-          "right": 3.3457445039619267,
+          "right": 2.509308377971445,
           "bottom": 7.064066481889196
         },
         "physicalBounds": {
@@ -76370,9 +76330,9 @@
       "partNumber": 2,
       "measureNumber": 14,
       "logicalBounds": {
-        "left": 5.043349732460177,
+        "left": 3.782512299345133,
         "top": -0.6729510007196347,
-        "right": 6.442299991719143,
+        "right": 4.831724993789357,
         "bottom": 4.6637453775944255
       },
       "physicalBounds": {
@@ -76391,9 +76351,9 @@
         "partNumber": 2,
         "measureNumber": 14,
         "logicalBounds": {
-          "left": 8.51302760702444,
+          "left": 6.3847707052683305,
           "top": 0.9434386184915223,
-          "right": 10.375907916842023,
+          "right": 7.781930937631516,
           "bottom": 3.063619975917178
         },
         "physicalBounds": {
@@ -76414,9 +76374,9 @@
       "partNumber": 2,
       "measureNumber": 14,
       "logicalBounds": {
-        "left": 6.756779811945085,
+        "left": 5.0675848589588135,
         "top": -1.6732383795633265,
-        "right": 8.15573007120405,
+        "right": 6.116797553403038,
         "bottom": 3.6634579987507334
       },
       "physicalBounds": {
@@ -76435,9 +76395,9 @@
         "partNumber": 2,
         "measureNumber": 14,
         "logicalBounds": {
-          "left": 10.218113302576938,
+          "left": 7.663584976932704,
           "top": -0.05684876035216971,
-          "right": 12.080993612394522,
+          "right": 9.060745209295892,
           "bottom": 2.0633325970734857
         },
         "physicalBounds": {
@@ -76455,56 +76415,12 @@
       }
     },
     {
-      "partNumber": 1,
-      "measureNumber": 15,
-      "logicalBounds": {
-        "left": 0.7137890099022771,
-        "top": 0.3273743786323142,
-        "right": 1.6829591417553051,
-        "bottom": 5.664070756946374
-      },
-      "physicalBounds": {
-        "left": 627.0186767578125,
-        "top": 522.7529907226562,
-        "right": 633.2913208007812,
-        "bottom": 539.896240234375,
-        "width": 6.27264404296875,
-        "height": 17.14324951171875,
-        "centerX": 630.1549987792969,
-        "centerY": 531.3246154785156
-      },
-      "kind": 1,
-      "confidence": 0.9917861500637105,
-      "note": {
-        "partNumber": 1,
-        "measureNumber": 15,
-        "logicalBounds": {
-          "left": 1.9304784657936667,
-          "top": 1.943763997843471,
-          "right": 3.221045560444401,
-          "bottom": 4.0639453552691265
-        },
-        "physicalBounds": {
-          "left": 634.893310546875,
-          "top": 527.9453735351562,
-          "right": 643.24609375,
-          "bottom": 534.756103515625,
-          "width": 8.352783203125,
-          "height": 6.81072998046875,
-          "centerX": 639.0697021484375,
-          "centerY": 531.3507385253906
-        },
-        "isFilled": false,
-        "pitch": "C5"
-      }
-    },
-    {
       "partNumber": 2,
       "measureNumber": 15,
       "logicalBounds": {
-        "left": 15.223538116072017,
+        "left": 11.417653587054012,
         "top": -4.673359506183395,
-        "right": 16.51576495854272,
+        "right": 12.386823718907042,
         "bottom": 0.6633368721306647
       },
       "physicalBounds": {
@@ -76523,9 +76439,9 @@
         "partNumber": 2,
         "measureNumber": 15,
         "logicalBounds": {
-          "left": 17.21661862321928,
+          "left": 12.91246396741446,
           "top": -3.0569698869722384,
-          "right": 18.93737474942026,
+          "right": 14.203031062065197,
           "bottom": -0.9367885295465826
         },
         "physicalBounds": {
@@ -76678,9 +76594,9 @@
       "partNumber": 2,
       "measureNumber": 23,
       "logicalBounds": {
-        "left": 15.701215980096046,
+        "left": 11.775911985072035,
         "top": -4.623893647691354,
-        "right": 16.759873717451747,
+        "right": 12.56990528808881,
         "bottom": 0.4072468896271827
       },
       "physicalBounds": {
@@ -76699,9 +76615,9 @@
         "partNumber": 2,
         "measureNumber": 23,
         "logicalBounds": {
-          "left": 17.086117654976675,
+          "left": 12.814588241232507,
           "top": -2.0564486061207674,
-          "right": 18.781271889018477,
+          "right": 14.085953916763858,
           "bottom": 0.06351121254075723
         },
         "physicalBounds": {
@@ -76722,9 +76638,9 @@
       "partNumber": 2,
       "measureNumber": 24,
       "logicalBounds": {
-        "left": 1.9125683997461427,
+        "left": 1.4344262998096071,
         "top": -4.623893647691354,
-        "right": 4.1116609774088,
+        "right": 3.0837457330566,
         "bottom": 0.4072468896271827
       },
       "physicalBounds": {
@@ -76743,9 +76659,9 @@
         "partNumber": 2,
         "measureNumber": 24,
         "logicalBounds": {
-          "left": 4.789371665780414,
+          "left": 3.5920287493353102,
           "top": -2.0564486061207674,
-          "right": 8.310616326740668,
+          "right": 6.232962245055501,
           "bottom": 0.06351121254075723
         },
         "physicalBounds": {
@@ -80844,9 +80760,9 @@
       "partNumber": 2,
       "measureNumber": 11,
       "logicalBounds": {
-        "left": 8.748171458634605,
+        "left": 6.561128593975954,
         "top": 0.33537348562037017,
-        "right": 8.748171458634605,
+        "right": 6.561128593975954,
         "bottom": 11.000938137547589
       },
       "physicalBounds": {
@@ -80866,9 +80782,9 @@
           "partNumber": 2,
           "measureNumber": 11,
           "logicalBounds": {
-            "left": 8.669944523254916,
+            "left": 6.502458392441187,
             "top": -1.0563381285224689,
-            "right": 10.519224748765442,
+            "right": 7.8894185615740815,
             "bottom": 1.0638432289031865
           },
           "physicalBounds": {
@@ -81304,9 +81220,9 @@
       "partNumber": 2,
       "measureNumber": 12,
       "logicalBounds": {
-        "left": 1.951717532516474,
+        "left": 1.4637881493873555,
         "top": 0.33537348562037017,
-        "right": 1.951717532516474,
+        "right": 1.4637881493873555,
         "bottom": 11.000938137547589
       },
       "physicalBounds": {
@@ -81326,9 +81242,9 @@
           "partNumber": 2,
           "measureNumber": 12,
           "logicalBounds": {
-            "left": 1.8901464634602023,
+            "left": 1.4176098475951517,
             "top": -1.0563381285224689,
-            "right": 3.3457445039619267,
+            "right": 2.509308377971445,
             "bottom": 1.0638432289031865
           },
           "physicalBounds": {
@@ -81534,9 +81450,9 @@
       "partNumber": 2,
       "measureNumber": 13,
       "logicalBounds": {
-        "left": 2.715632482888938,
+        "left": 2.0367243621667033,
         "top": -4.6645053877595615,
-        "right": 2.715632482888938,
+        "right": 2.0367243621667033,
         "bottom": 11.000938137547589
       },
       "physicalBounds": {
@@ -81556,9 +81472,9 @@
           "partNumber": 2,
           "measureNumber": 13,
           "logicalBounds": {
-            "left": 2.8706532177533144,
+            "left": 2.1529899133149857,
             "top": -5.680771980325237,
-            "right": 4.7351736800100825,
+            "right": 3.551380260007562,
             "bottom": -4.313152688417207
           },
           "physicalBounds": {
@@ -81832,9 +81748,9 @@
       "partNumber": 2,
       "measureNumber": 14,
       "logicalBounds": {
-        "left": 2.8957666657969883,
+        "left": 2.1718249993477414,
         "top": 10.33684125525179,
-        "right": 2.8957666657969883,
+        "right": 2.1718249993477414,
         "bottom": 15.00134664301135
       },
       "physicalBounds": {
@@ -81854,9 +81770,9 @@
           "partNumber": 2,
           "measureNumber": 14,
           "logicalBounds": {
-            "left": 2.8166651730869803,
+            "left": 2.1124988798152353,
             "top": 8.9442936299273,
-            "right": 4.679538676718648,
+            "right": 3.509654007538986,
             "bottom": 11.064474987352956
           },
           "physicalBounds": {
@@ -81878,9 +81794,9 @@
       "partNumber": 2,
       "measureNumber": 14,
       "logicalBounds": {
-        "left": 10.297228407658777,
+        "left": 7.722921305744082,
         "top": -5.48468935772016,
-        "right": 10.297228407658777,
+        "right": 7.722921305744082,
         "bottom": 1.6801924725743207
       },
       "physicalBounds": {
@@ -81900,9 +81816,9 @@
           "partNumber": 2,
           "measureNumber": 14,
           "logicalBounds": {
-            "left": 8.51302760702444,
+            "left": 6.3847707052683305,
             "top": 0.9434386184915223,
-            "right": 10.375907916842023,
+            "right": 7.781930937631516,
             "bottom": 3.063619975917178
           },
           "physicalBounds": {
@@ -81922,9 +81838,9 @@
           "partNumber": 2,
           "measureNumber": 14,
           "logicalBounds": {
-            "left": 10.218113302576938,
+            "left": 7.663584976932704,
             "top": -0.05684876035216971,
-            "right": 12.080993612394522,
+            "right": 9.060745209295892,
             "bottom": 2.0633325970734857
           },
           "physicalBounds": {
@@ -81946,9 +81862,9 @@
       "partNumber": 2,
       "measureNumber": 14,
       "logicalBounds": {
-        "left": 15.870487356942483,
+        "left": 11.902865517706863,
         "top": -4.000408505463761,
-        "right": 15.870487356942483,
+        "right": 11.902865517706863,
         "bottom": 1.6801924725743207
       },
       "physicalBounds": {
@@ -81968,9 +81884,9 @@
           "partNumber": 2,
           "measureNumber": 14,
           "logicalBounds": {
-            "left": 14.086286556308147,
+            "left": 10.564714917231111,
             "top": 0.9434386184915223,
-            "right": 15.949166866125731,
+            "right": 11.961875149594299,
             "bottom": 3.063619975917178
           },
           "physicalBounds": {
@@ -81990,9 +81906,9 @@
           "partNumber": 2,
           "measureNumber": 14,
           "logicalBounds": {
-            "left": 15.791372251860645,
+            "left": 11.843529188895484,
             "top": -0.05684876035216971,
-            "right": 17.654252561678227,
+            "right": 13.24068942125867,
             "bottom": 2.0633325970734857
           },
           "physicalBounds": {
@@ -82152,9 +82068,9 @@
       "partNumber": 2,
       "measureNumber": 15,
       "logicalBounds": {
-        "left": 4.221522475987496,
+        "left": 3.166141856990622,
         "top": -1.5149852629278917,
-        "right": 4.221522475987496,
+        "right": 3.166141856990622,
         "bottom": 6.680090346208381
       },
       "physicalBounds": {
@@ -82174,9 +82090,9 @@
           "partNumber": 2,
           "measureNumber": 15,
           "logicalBounds": {
-            "left": 2.573971287724889,
+            "left": 1.9304784657936667,
             "top": 5.9441725033072315,
-            "right": 4.294727413925868,
+            "right": 3.221045560444401,
             "bottom": 8.064353860732888
           },
           "physicalBounds": {
@@ -82198,9 +82114,9 @@
       "partNumber": 2,
       "measureNumber": 15,
       "logicalBounds": {
-        "left": 9.102564189882493,
+        "left": 6.82692314241187,
         "top": -2.4862402534633903,
-        "right": 9.102564189882493,
+        "right": 6.82692314241187,
         "bottom": 2.67968184074462
       },
       "physicalBounds": {
@@ -82220,9 +82136,9 @@
           "partNumber": 2,
           "measureNumber": 15,
           "logicalBounds": {
-            "left": 7.4544849000408036,
+            "left": 5.590863675030603,
             "top": 1.943763997843471,
-            "right": 9.175241026241784,
+            "right": 6.881430769681337,
             "bottom": 4.0639453552691265
           },
           "physicalBounds": {
@@ -82244,9 +82160,9 @@
       "partNumber": 2,
       "measureNumber": 15,
       "logicalBounds": {
-        "left": 12.408630961097204,
+        "left": 9.306473220822904,
         "top": -0.6640968822958007,
-        "right": 12.408630961097204,
+        "right": 9.306473220822904,
         "bottom": 4.492686089676449
       },
       "physicalBounds": {
@@ -82266,9 +82182,9 @@
           "partNumber": 2,
           "measureNumber": 15,
           "logicalBounds": {
-            "left": 12.335551761630043,
+            "left": 9.251663821222532,
             "top": -2.0566445076202893,
-            "right": 14.056307887831021,
+            "right": 10.542230915873265,
             "bottom": 0.06353684980536614
           },
           "physicalBounds": {
@@ -82290,9 +82206,9 @@
       "partNumber": 2,
       "measureNumber": 15,
       "logicalBounds": {
-        "left": 17.289119425718876,
+        "left": 12.966839569289156,
         "top": -1.6644222616477495,
-        "right": 17.289119425718876,
+        "right": 12.966839569289156,
         "bottom": 4.0070585944087
       },
       "physicalBounds": {
@@ -82312,9 +82228,9 @@
           "partNumber": 2,
           "measureNumber": 15,
           "logicalBounds": {
-            "left": 17.21661862321928,
+            "left": 12.91246396741446,
             "top": -3.0569698869722384,
-            "right": 18.93737474942026,
+            "right": 14.203031062065197,
             "bottom": -0.9367885295465826
           },
           "physicalBounds": {
@@ -82336,9 +82252,9 @@
       "partNumber": 2,
       "measureNumber": 15,
       "logicalBounds": {
-        "left": 22.170186287308116,
+        "left": 16.627639715481088,
         "top": -1.6644222616477495,
-        "right": 22.170186287308116,
+        "right": 16.627639715481088,
         "bottom": 12.000427505717889
       },
       "physicalBounds": {
@@ -82358,9 +82274,9 @@
           "partNumber": 2,
           "measureNumber": 15,
           "logicalBounds": {
-            "left": 20.523213496013074,
+            "left": 15.392410122009807,
             "top": -2.0566445076202893,
-            "right": 22.243969622214053,
+            "right": 16.68297721666054,
             "bottom": 0.06353684980536614
           },
           "physicalBounds": {
@@ -82380,9 +82296,9 @@
           "partNumber": 2,
           "measureNumber": 15,
           "logicalBounds": {
-            "left": 22.09768548480852,
+            "left": 16.57326411360639,
             "top": -3.0569698869722384,
-            "right": 23.818441611009497,
+            "right": 17.863831208257125,
             "bottom": -0.9367885295465826
           },
           "physicalBounds": {
@@ -82564,9 +82480,9 @@
       "partNumber": 2,
       "measureNumber": 16,
       "logicalBounds": {
-        "left": 8.842519229797691,
+        "left": 6.6318894223482685,
         "top": 2.4843276156460243,
-        "right": 8.842519229797691,
+        "right": 6.6318894223482685,
         "bottom": 10.680218765065034
       },
       "physicalBounds": {
@@ -82586,9 +82502,9 @@
           "partNumber": 2,
           "measureNumber": 16,
           "logicalBounds": {
-            "left": 7.342601782453391,
+            "left": 5.506951336840043,
             "top": 9.943560893013624,
-            "right": 8.908762701207653,
+            "right": 6.68157202590574,
             "bottom": 12.063520711675148
           },
           "physicalBounds": {
@@ -82610,9 +82526,9 @@
       "partNumber": 2,
       "measureNumber": 16,
       "logicalBounds": {
-        "left": 12.95426796559406,
+        "left": 9.715700974195546,
         "top": 1.5156628852195844,
-        "right": 12.95426796559406,
+        "right": 9.715700974195546,
         "bottom": 6.6802092659306425
       },
       "physicalBounds": {
@@ -82632,9 +82548,9 @@
           "partNumber": 2,
           "measureNumber": 16,
           "logicalBounds": {
-            "left": 11.454400586738311,
+            "left": 8.590800440053734,
             "top": 5.943570392148016,
-            "right": 13.020561505492573,
+            "right": 9.76542112911943,
             "bottom": 8.06353021080954
           },
           "physicalBounds": {
@@ -82656,9 +82572,9 @@
       "partNumber": 2,
       "measureNumber": 16,
       "logicalBounds": {
-        "left": 15.632399946585862,
+        "left": 11.724299959939396,
         "top": 3.3359440121018973,
-        "right": 15.632399946585862,
+        "right": 11.724299959939396,
         "bottom": 8.492207147623672
       },
       "physicalBounds": {
@@ -82678,9 +82594,9 @@
           "partNumber": 2,
           "measureNumber": 16,
           "logicalBounds": {
-            "left": 15.56614932253468,
+            "left": 11.67461199190101,
             "top": 1.943579891282407,
-            "right": 17.132311671817185,
+            "right": 12.849233753862888,
             "bottom": 4.063539709943932
           },
           "physicalBounds": {
@@ -82702,9 +82618,9 @@
       "partNumber": 2,
       "measureNumber": 16,
       "logicalBounds": {
-        "left": 19.744198750870783,
+        "left": 14.808149063153088,
         "top": 2.3357611537648633,
-        "right": 19.744198750870783,
+        "right": 14.808149063153088,
         "bottom": 8.007466319631623
       },
       "physicalBounds": {
@@ -82724,9 +82640,9 @@
           "partNumber": 2,
           "measureNumber": 16,
           "logicalBounds": {
-            "left": 19.677896627802806,
+            "left": 14.758422470852103,
             "top": 0.9441949602342486,
-            "right": 21.244056116028823,
+            "right": 15.933042087021617,
             "bottom": 3.064154778895773
           },
           "physicalBounds": {
@@ -83024,9 +82940,9 @@
       "partNumber": 2,
       "measureNumber": 17,
       "logicalBounds": {
-        "left": 1.8173514701650053,
+        "left": 1.363013602623754,
         "top": 5.335549798024655,
-        "right": 1.8173514701650053,
+        "right": 1.363013602623754,
         "bottom": 10.987344778207087
       },
       "physicalBounds": {
@@ -83046,9 +82962,9 @@
           "partNumber": 2,
           "measureNumber": 17,
           "logicalBounds": {
-            "left": 1.7527028221224943,
+            "left": 1.3145271165918708,
             "top": 3.943964606225258,
-            "right": 3.280928519708833,
+            "right": 2.4606963897816247,
             "bottom": 6.063924424886782
           },
           "physicalBounds": {
@@ -83070,9 +82986,9 @@
       "partNumber": 2,
       "measureNumber": 17,
       "logicalBounds": {
-        "left": 5.16084263930611,
+        "left": 3.8706319794795823,
         "top": 1.3363762227167049,
-        "right": 5.16084263930611,
+        "right": 3.8706319794795823,
         "bottom": 10.329092761422116
       },
       "physicalBounds": {
@@ -83092,9 +83008,9 @@
           "partNumber": 2,
           "measureNumber": 17,
           "logicalBounds": {
-            "left": 5.096193991263599,
+            "left": 3.822145493447699,
             "top": -0.0560258946403509,
-            "right": 6.62441689709591,
+            "right": 4.9683126728219325,
             "bottom": 2.0639339240211734
           },
           "physicalBounds": {
@@ -83116,9 +83032,9 @@
       "partNumber": 2,
       "measureNumber": 17,
       "logicalBounds": {
-        "left": 8.504333808447214,
+        "left": 6.3782503563354105,
         "top": -2.663614278148904,
-        "right": 8.504333808447214,
+        "right": 6.3782503563354105,
         "bottom": 9.670878741174711
       },
       "physicalBounds": {
@@ -83138,9 +83054,9 @@
           "partNumber": 2,
           "measureNumber": 17,
           "logicalBounds": {
-            "left": 8.439687952158732,
+            "left": 6.329765964119049,
             "top": -4.056016395505959,
-            "right": 9.967910857991043,
+            "right": 7.4759331434932825,
             "bottom": -1.936056576844435
           },
           "physicalBounds": {
@@ -83162,9 +83078,9 @@
       "partNumber": 2,
       "measureNumber": 17,
       "logicalBounds": {
-        "left": 11.847922688979324,
+        "left": 8.885942016734493,
         "top": -3.6638161347547205,
-        "right": 11.847922688979324,
+        "right": 8.885942016734493,
         "bottom": 9.012645722658522
       },
       "physicalBounds": {
@@ -83184,9 +83100,9 @@
           "partNumber": 2,
           "measureNumber": 17,
           "logicalBounds": {
-            "left": 11.783036741844374,
+            "left": 8.837277556383281,
             "top": -5.056218252111776,
-            "right": 13.311259647676684,
+            "right": 9.983444735757512,
             "bottom": -2.9362584334502517
           },
           "physicalBounds": {
@@ -83484,9 +83400,9 @@
       "partNumber": 2,
       "measureNumber": 18,
       "logicalBounds": {
-        "left": 1.6977535847307907,
+        "left": 1.2733151885480931,
         "top": 7.335972509505071,
-        "right": 1.6977535847307907,
+        "right": 1.2733151885480931,
         "bottom": 12.986912567592277
       },
       "physicalBounds": {
@@ -83506,9 +83422,9 @@
           "partNumber": 2,
           "measureNumber": 18,
           "logicalBounds": {
-            "left": 1.632127789700437,
+            "left": 1.2240958422753276,
             "top": 5.943570392148016,
-            "right": 3.177642931431028,
+            "right": 2.383232198573271,
             "bottom": 8.06353021080954
           },
           "physicalBounds": {
@@ -83530,9 +83446,9 @@
       "partNumber": 2,
       "measureNumber": 18,
       "logicalBounds": {
-        "left": 5.0791252146788715,
+        "left": 3.8093439110091536,
         "top": 3.3359440121018973,
-        "right": 5.0791252146788715,
+        "right": 3.8093439110091536,
         "bottom": 12.32867954907609
       },
       "physicalBounds": {
@@ -83552,9 +83468,9 @@
           "partNumber": 2,
           "measureNumber": 18,
           "logicalBounds": {
-            "left": 5.013505066335407,
+            "left": 3.760128799751555,
             "top": 1.943579891282407,
-            "right": 6.5590202080659985,
+            "right": 4.919265156049499,
             "bottom": 4.063539709943932
           },
           "physicalBounds": {
@@ -83576,9 +83492,9 @@
       "partNumber": 2,
       "measureNumber": 18,
       "logicalBounds": {
-        "left": 8.460502491313841,
+        "left": 6.345376868485381,
         "top": -0.6640464887637114,
-        "right": 8.460502491313841,
+        "right": 6.345376868485381,
         "bottom": 11.670465528828686
       },
       "physicalBounds": {
@@ -83598,9 +83514,9 @@
           "partNumber": 2,
           "measureNumber": 18,
           "logicalBounds": {
-            "left": 8.394876696283488,
+            "left": 6.296157522212615,
             "top": -2.0564486061207674,
-            "right": 9.94039183801408,
+            "right": 7.45529387851056,
             "bottom": 0.06351121254075723
           },
           "physicalBounds": {
@@ -83622,9 +83538,9 @@
       "partNumber": 2,
       "measureNumber": 18,
       "logicalBounds": {
-        "left": 11.841874121261922,
+        "left": 8.881405590946441,
         "top": -1.6642483453695283,
-        "right": 11.841874121261922,
+        "right": 8.881405590946441,
         "bottom": 11.012251508581281
       },
       "physicalBounds": {
@@ -83644,9 +83560,9 @@
           "partNumber": 2,
           "measureNumber": 18,
           "logicalBounds": {
-            "left": 11.776248326231569,
+            "left": 8.832186244673677,
             "top": -3.05579554063136,
-            "right": 13.32176346796216,
+            "right": 9.991322600971621,
             "bottom": -0.9358357219698354
           },
           "physicalBounds": {
@@ -83668,9 +83584,9 @@
       "partNumber": 2,
       "measureNumber": 18,
       "logicalBounds": {
-        "left": 15.632783011248419,
+        "left": 11.724587258436314,
         "top": -3.6638161347547205,
-        "right": 15.632783011248419,
+        "right": 11.724587258436314,
         "bottom": 11.999990500865609
       },
       "physicalBounds": {
@@ -83690,9 +83606,9 @@
           "partNumber": 2,
           "measureNumber": 18,
           "logicalBounds": {
-            "left": 15.567157216218066,
+            "left": 11.67536791216355,
             "top": -5.056218252111776,
-            "right": 17.112672357948657,
+            "right": 12.834504268461494,
             "bottom": -2.9362584334502517
           },
           "physicalBounds": {
@@ -83760,9 +83676,9 @@
       "partNumber": 2,
       "measureNumber": 19,
       "logicalBounds": {
-        "left": 1.988338806913013,
+        "left": 1.4912541051847596,
         "top": 6.335751654630472,
-        "right": 1.988338806913013,
+        "right": 1.4912541051847596,
         "bottom": 10.984020081170103
       },
       "physicalBounds": {
@@ -83782,9 +83698,9 @@
           "partNumber": 2,
           "measureNumber": 19,
           "logicalBounds": {
-            "left": 1.9084962245304433,
+            "left": 1.4313721683978324,
             "top": 4.9433495372734155,
-            "right": 3.802847314027567,
+            "right": 2.8521354855206753,
             "bottom": 7.0633093559349405
           },
           "physicalBounds": {
@@ -83806,9 +83722,9 @@
       "partNumber": 2,
       "measureNumber": 19,
       "logicalBounds": {
-        "left": 6.962055513058268,
+        "left": 5.221541634793701,
         "top": 0.33617436611088813,
-        "right": 6.962055513058268,
+        "right": 5.221541634793701,
         "bottom": 10.015355350743663
       },
       "physicalBounds": {
@@ -83828,9 +83744,9 @@
           "partNumber": 2,
           "measureNumber": 19,
           "logicalBounds": {
-            "left": 6.881631552648641,
+            "left": 5.161223664486481,
             "top": -1.0562277512461677,
-            "right": 8.775982642145765,
+            "right": 6.581986981609324,
             "bottom": 1.0637320674153568
           },
           "physicalBounds": {
@@ -83852,9 +83768,9 @@
       "partNumber": 2,
       "measureNumber": 19,
       "logicalBounds": {
-        "left": 11.935163156508512,
+        "left": 8.951372367381385,
         "top": -2.663614278148904,
-        "right": 11.935163156508512,
+        "right": 8.951372367381385,
         "bottom": 3.992524181233985
       },
       "physicalBounds": {
@@ -83874,9 +83790,9 @@
           "partNumber": 2,
           "measureNumber": 19,
           "logicalBounds": {
-            "left": 11.855348258793898,
+            "left": 8.891511194095424,
             "top": -4.056016395505959,
-            "right": 13.74969934829102,
+            "right": 10.312274511218266,
             "bottom": -1.936056576844435
           },
           "physicalBounds": {
@@ -83898,9 +83814,9 @@
       "partNumber": 2,
       "measureNumber": 19,
       "logicalBounds": {
-        "left": 16.908879862653766,
+        "left": 12.681659896990325,
         "top": -3.6638161347547205,
-        "right": 16.908879862653766,
+        "right": 12.681659896990325,
         "bottom": 3.507783353241936
       },
       "physicalBounds": {
@@ -83920,9 +83836,9 @@
           "partNumber": 2,
           "measureNumber": 19,
           "logicalBounds": {
-            "left": 16.82845590224414,
+            "left": 12.621341926683105,
             "top": -5.056218252111776,
-            "right": 18.722806991741262,
+            "right": 14.042105243805945,
             "bottom": -2.9362584334502517
           },
           "physicalBounds": {
@@ -83944,9 +83860,9 @@
       "partNumber": 2,
       "measureNumber": 19,
       "logicalBounds": {
-        "left": 21.88198750610401,
+        "left": 16.411490629578008,
         "top": -4.66403698962932,
-        "right": 21.88198750610401,
+        "right": 16.411490629578008,
         "bottom": 4.484750327126441
       },
       "physicalBounds": {
@@ -83966,9 +83882,9 @@
           "partNumber": 2,
           "measureNumber": 19,
           "logicalBounds": {
-            "left": 21.802172608389395,
+            "left": 16.351629456292045,
             "top": -6.056439106986375,
-            "right": 23.69652369788652,
+            "right": 17.77239277341489,
             "bottom": -3.9364792883248514
           },
           "physicalBounds": {
@@ -83990,9 +83906,9 @@
       "partNumber": 2,
       "measureNumber": 19,
       "logicalBounds": {
-        "left": 26.855704212249265,
+        "left": 20.14177815918695,
         "top": -6.663623777283295,
-        "right": 26.855704212249265,
+        "right": 20.14177815918695,
         "bottom": 3.5152496728735594
       },
       "physicalBounds": {
@@ -84012,9 +83928,9 @@
           "partNumber": 2,
           "measureNumber": 19,
           "logicalBounds": {
-            "left": 26.77528025183964,
+            "left": 20.08146018887973,
             "top": -8.056006896371569,
-            "right": 28.66963134133676,
+            "right": 21.502223506002572,
             "bottom": -5.936047077710044
           },
           "physicalBounds": {
@@ -84196,9 +84112,9 @@
       "partNumber": 2,
       "measureNumber": 20,
       "logicalBounds": {
-        "left": 8.069653402409473,
+        "left": 6.052240051807106,
         "top": -2.663614278148904,
-        "right": 8.069653402409473,
+        "right": 6.052240051807106,
         "bottom": 9.499875323861113
       },
       "physicalBounds": {
@@ -84218,9 +84134,9 @@
           "partNumber": 2,
           "measureNumber": 20,
           "logicalBounds": {
-            "left": 7.92753854498602,
+            "left": 5.945653908739515,
             "top": -4.056016395505959,
-            "right": 11.274991637604671,
+            "right": 8.456243728203503,
             "bottom": -1.936056576844435
           },
           "physicalBounds": {
@@ -84518,9 +84434,9 @@
       "partNumber": 2,
       "measureNumber": 21,
       "logicalBounds": {
-        "left": 5.794123479894918,
+        "left": 4.345592609921189,
         "top": 7.335972509505071,
-        "right": 5.794123479894918,
+        "right": 4.345592609921189,
         "bottom": 12.988565416976378
       },
       "physicalBounds": {
@@ -84540,9 +84456,9 @@
           "partNumber": 2,
           "measureNumber": 21,
           "logicalBounds": {
-            "left": 5.742024941044927,
+            "left": 4.306518705783695,
             "top": 5.943570392148016,
-            "right": 6.9736047914967445,
+            "right": 5.230203593622559,
             "bottom": 8.06353021080954
           },
           "physicalBounds": {
@@ -84564,9 +84480,9 @@
       "partNumber": 2,
       "measureNumber": 21,
       "logicalBounds": {
-        "left": 8.771429040090508,
+        "left": 6.578571780067881,
         "top": 3.3359440121018973,
-        "right": 8.771429040090508,
+        "right": 6.578571780067881,
         "bottom": 12.329515472902532
       },
       "physicalBounds": {
@@ -84586,9 +84502,9 @@
           "partNumber": 2,
           "measureNumber": 21,
           "logicalBounds": {
-            "left": 8.719331626163084,
+            "left": 6.539498719622314,
             "top": 1.9435608930136241,
-            "right": 9.950911476614902,
+            "right": 7.463183607461176,
             "bottom": 4.063520711675149
           },
           "physicalBounds": {
@@ -84610,9 +84526,9 @@
       "partNumber": 2,
       "measureNumber": 21,
       "logicalBounds": {
-        "left": 11.748694103073683,
+        "left": 8.811520577305263,
         "top": -0.6640464887637114,
-        "right": 11.748694103073683,
+        "right": 8.811520577305263,
         "bottom": 11.670465528828686
       },
       "physicalBounds": {
@@ -84632,9 +84548,9 @@
           "partNumber": 2,
           "measureNumber": 21,
           "logicalBounds": {
-            "left": 11.696597814068825,
+            "left": 8.77244836055162,
             "top": -2.0564486061207674,
-            "right": 12.928177664520643,
+            "right": 9.696133248390481,
             "bottom": 0.06351121254075723
           },
           "physicalBounds": {
@@ -84656,9 +84572,9 @@
       "partNumber": 2,
       "measureNumber": 21,
       "logicalBounds": {
-        "left": 14.72600078819184,
+        "left": 11.04450059114388,
         "top": -1.6642483453695283,
-        "right": 14.72600078819184,
+        "right": 11.04450059114388,
         "bottom": 11.01141558475484
       },
       "physicalBounds": {
@@ -84678,9 +84594,9 @@
           "partNumber": 2,
           "measureNumber": 21,
           "logicalBounds": {
-            "left": 14.673903374264416,
+            "left": 11.005427530698313,
             "top": -3.05579554063136,
-            "right": 15.905484349638801,
+            "right": 11.929113262229102,
             "bottom": -0.9358357219698354
           },
           "physicalBounds": {
@@ -84702,9 +84618,9 @@
       "partNumber": 2,
       "measureNumber": 21,
       "logicalBounds": {
-        "left": 17.746910596933265,
+        "left": 13.31018294769995,
         "top": -3.6638161347547205,
-        "right": 17.746910596933265,
+        "right": 13.31018294769995,
         "bottom": 11.999990500865609
       },
       "physicalBounds": {
@@ -84724,9 +84640,9 @@
           "partNumber": 2,
           "measureNumber": 21,
           "logicalBounds": {
-            "left": 17.69481318300584,
+            "left": 13.271109887254381,
             "top": -5.056218252111776,
-            "right": 18.926391908535095,
+            "right": 14.194793931401321,
             "bottom": -2.9362584334502517
           },
           "physicalBounds": {
@@ -85024,9 +84940,9 @@
       "partNumber": 2,
       "measureNumber": 22,
       "logicalBounds": {
-        "left": 3.4290965223857826,
+        "left": 2.571822391789337,
         "top": -3.6638161347547205,
-        "right": 3.4290965223857826,
+        "right": 2.571822391789337,
         "bottom": 11.999990500865609
       },
       "physicalBounds": {
@@ -85046,9 +84962,9 @@
           "partNumber": 2,
           "measureNumber": 22,
           "logicalBounds": {
-            "left": 3.359239575247301,
+            "left": 2.5194296814354757,
             "top": -5.056218252111776,
-            "right": 5.004541700937333,
+            "right": 3.7534062757029996,
             "bottom": -2.9362584334502517
           },
           "physicalBounds": {
@@ -85138,9 +85054,9 @@
       "partNumber": 2,
       "measureNumber": 23,
       "logicalBounds": {
-        "left": 3.956886347951681,
+        "left": 2.967664760963761,
         "top": -2.0137025013595635,
-        "right": 3.956886347951681,
+        "right": 2.967664760963761,
         "bottom": 7.6795941969788
       },
       "physicalBounds": {
@@ -85160,9 +85076,9 @@
           "partNumber": 2,
           "measureNumber": 23,
           "logicalBounds": {
-            "left": 2.3333217120921765,
+            "left": 1.7499912840691323,
             "top": 6.943772248753833,
-            "right": 4.028475946133978,
+            "right": 3.0213569596004834,
             "bottom": 9.063732067415357
           },
           "physicalBounds": {
@@ -85184,9 +85100,9 @@
       "partNumber": 2,
       "measureNumber": 23,
       "logicalBounds": {
-        "left": 8.874662539930387,
+        "left": 6.6559969049477905,
         "top": -2.985672930554203,
-        "right": 8.874662539930387,
+        "right": 6.6559969049477905,
         "bottom": 1.6800169084592167
       },
       "physicalBounds": {
@@ -85206,9 +85122,9 @@
           "partNumber": 2,
           "measureNumber": 23,
           "logicalBounds": {
-            "left": 7.251097904070883,
+            "left": 5.438323428053162,
             "top": 0.9441949602342486,
-            "right": 8.946252138112685,
+            "right": 6.709689103584514,
             "bottom": 3.064154778895773
           },
           "physicalBounds": {
@@ -85230,9 +85146,9 @@
       "partNumber": 2,
       "measureNumber": 23,
       "logicalBounds": {
-        "left": 12.24031505245004,
+        "left": 9.180236289337529,
         "top": 0.33617436611088813,
-        "right": 12.24031505245004,
+        "right": 9.180236289337529,
         "bottom": 5.992927894445619
       },
       "physicalBounds": {
@@ -85252,9 +85168,9 @@
           "partNumber": 2,
           "measureNumber": 23,
           "logicalBounds": {
-            "left": 12.168335269590393,
+            "left": 9.126251452192795,
             "top": -1.0562277512461677,
-            "right": 13.863489503632195,
+            "right": 10.397617127724146,
             "bottom": 1.0637320674153568
           },
           "physicalBounds": {
@@ -85276,9 +85192,9 @@
       "partNumber": 2,
       "measureNumber": 23,
       "logicalBounds": {
-        "left": 17.157552417969548,
+        "left": 12.86816431347716,
         "top": -0.6640464887637114,
-        "right": 17.157552417969548,
+        "right": 12.86816431347716,
         "bottom": 5.507370140895911
       },
       "physicalBounds": {
@@ -85298,9 +85214,9 @@
           "partNumber": 2,
           "measureNumber": 23,
           "logicalBounds": {
-            "left": 17.086117654976675,
+            "left": 12.814588241232507,
             "top": -2.0564486061207674,
-            "right": 18.781271889018477,
+            "right": 14.085953916763858,
             "bottom": 0.06351121254075723
           },
           "physicalBounds": {
@@ -85322,9 +85238,9 @@
       "partNumber": 2,
       "measureNumber": 23,
       "logicalBounds": {
-        "left": 22.075328609948254,
+        "left": 16.55649645746119,
         "top": -2.663614278148904,
-        "right": 22.075328609948254,
+        "right": 16.55649645746119,
         "bottom": 4.485567252684099
       },
       "physicalBounds": {
@@ -85344,9 +85260,9 @@
           "partNumber": 2,
           "measureNumber": 23,
           "logicalBounds": {
-            "left": 22.003906233770536,
+            "left": 16.502929675327902,
             "top": -4.056016395505959,
-            "right": 23.699066661219916,
+            "right": 17.774299995914937,
             "bottom": -1.936056576844435
           },
           "physicalBounds": {
@@ -85368,9 +85284,9 @@
       "partNumber": 2,
       "measureNumber": 23,
       "logicalBounds": {
-        "left": 26.993117188742115,
+        "left": 20.244837891556585,
         "top": -4.66403698962932,
-        "right": 26.993117188742115,
+        "right": 20.244837891556585,
         "bottom": 3.514413749047118
       },
       "physicalBounds": {
@@ -85390,9 +85306,9 @@
           "partNumber": 2,
           "measureNumber": 23,
           "logicalBounds": {
-            "left": 26.921125019067315,
+            "left": 20.190843764300485,
             "top": -6.056439106986375,
-            "right": 28.616285446516695,
+            "right": 21.46221408488752,
             "bottom": -3.9364792883248514
           },
           "physicalBounds": {
@@ -85574,9 +85490,9 @@
       "partNumber": 2,
       "measureNumber": 24,
       "logicalBounds": {
-        "left": 4.938864778633563,
+        "left": 3.704148583975172,
         "top": -0.6640464887637114,
-        "right": 4.938864778633563,
+        "right": 3.704148583975172,
         "bottom": 10.500096178735713
       },
       "physicalBounds": {
@@ -85596,9 +85512,9 @@
           "partNumber": 2,
           "measureNumber": 24,
           "logicalBounds": {
-            "left": 4.789371665780414,
+            "left": 3.5920287493353102,
             "top": -2.0564486061207674,
-            "right": 8.310616326740668,
+            "right": 6.232962245055501,
             "bottom": 0.06351121254075723
           },
           "physicalBounds": {
@@ -85850,9 +85766,9 @@
       "partNumber": 2,
       "measureNumber": 25,
       "logicalBounds": {
-        "left": 3.5136212075853455,
+        "left": 2.635215905689009,
         "top": -1.6642483453695283,
-        "right": 3.5136212075853455,
+        "right": 2.635215905689009,
         "bottom": 9.000182858337034
       },
       "physicalBounds": {
@@ -85872,9 +85788,9 @@
           "partNumber": 2,
           "measureNumber": 25,
           "logicalBounds": {
-            "left": 3.418352241640945,
+            "left": 2.5637641812307086,
             "top": -3.05579554063136,
-            "right": 5.678710862900146,
+            "right": 4.259033147175109,
             "bottom": -0.9358357219698354
           },
           "physicalBounds": {
@@ -87025,6 +86941,193 @@
       ]
     },
     {
+      "measureNumber": 11,
+      "physicalBounds": {
+        "left": 63.36342239379883,
+        "top": 533.2863159179688,
+        "right": 67.57997131347656,
+        "bottom": 619.230224609375,
+        "width": 4.216548919677734,
+        "height": 85.94390869140625,
+        "centerX": 65.4716968536377,
+        "centerY": 576.2582702636719
+      },
+      "primitiveIds": [
+        279,
+        280,
+        281,
+        282,
+        283,
+        284,
+        285,
+        286,
+        287,
+        288,
+        289,
+        290,
+        291,
+        292,
+        293
+      ],
+      "noteLogicalX": 7.195938477007634,
+      "notes": [
+        {
+          "partNumber": 1,
+          "measureNumber": 11,
+          "logicalBounds": {
+            "left": 6.502458392441187,
+            "top": 0.9434576187456507,
+            "right": 7.8894185615740815,
+            "bottom": 3.063638976171306
+          },
+          "physicalBounds": {
+            "left": 77.43463897705078,
+            "top": 524.7320556640625,
+            "right": 85.78739929199219,
+            "bottom": 531.5427856445312,
+            "width": 8.352760314941406,
+            "height": 6.81072998046875,
+            "centerX": 81.61101913452148,
+            "centerY": 528.1374206542969
+          },
+          "isFilled": true,
+          "pitch": "D5"
+        },
+        {
+          "partNumber": 1,
+          "measureNumber": 11,
+          "logicalBounds": {
+            "left": 6.502458392441187,
+            "top": 3.9435597451115907,
+            "right": 7.8894185615740815,
+            "bottom": 6.0637411025372465
+          },
+          "physicalBounds": {
+            "left": 77.43463897705078,
+            "top": 534.369384765625,
+            "right": 85.78739929199219,
+            "bottom": 541.1801147460938,
+            "width": 8.352760314941406,
+            "height": 6.81072998046875,
+            "centerX": 81.61101913452148,
+            "centerY": 537.7747497558594
+          },
+          "isFilled": false,
+          "pitch": "A4"
+        },
+        {
+          "partNumber": 1,
+          "measureNumber": 11,
+          "logicalBounds": {
+            "left": 6.502458392441187,
+            "top": 5.9441725033072315,
+            "right": 7.8894185615740815,
+            "bottom": 8.064353860732888
+          },
+          "physicalBounds": {
+            "left": 77.43463897705078,
+            "top": 540.7960205078125,
+            "right": 85.78739929199219,
+            "bottom": 547.6067504882812,
+            "width": 8.352760314941406,
+            "height": 6.81072998046875,
+            "centerX": 81.61101913452148,
+            "centerY": 544.2013854980469
+          },
+          "isFilled": false,
+          "pitch": "F4"
+        },
+        {
+          "partNumber": 1,
+          "measureNumber": 11,
+          "logicalBounds": {
+            "left": 6.502458392441187,
+            "top": 7.94398725082948,
+            "right": 7.8894185615740815,
+            "bottom": 10.064168608255136
+          },
+          "physicalBounds": {
+            "left": 77.43463897705078,
+            "top": 547.2200927734375,
+            "right": 85.78739929199219,
+            "bottom": 554.0308227539062,
+            "width": 8.352760314941406,
+            "height": 6.81072998046875,
+            "centerX": 81.61101913452148,
+            "centerY": 550.6254577636719
+          },
+          "isFilled": false,
+          "pitch": "D4"
+        },
+        {
+          "partNumber": 2,
+          "measureNumber": 11,
+          "logicalBounds": {
+            "left": 6.502458392441187,
+            "top": -1.0563381285224689,
+            "right": 7.8894185615740815,
+            "bottom": 1.0638432289031865
+          },
+          "physicalBounds": {
+            "left": 77.43463897705078,
+            "top": 580.1533813476562,
+            "right": 85.78739929199219,
+            "bottom": 586.964111328125,
+            "width": 8.352760314941406,
+            "height": 6.81072998046875,
+            "centerX": 81.61101913452148,
+            "centerY": 583.5587463378906
+          },
+          "isFilled": false,
+          "pitch": "A3"
+        },
+        {
+          "partNumber": 2,
+          "measureNumber": 11,
+          "logicalBounds": {
+            "left": 6.502458392441187,
+            "top": 0.9434386184915223,
+            "right": 7.8894185615740815,
+            "bottom": 3.063619975917178
+          },
+          "physicalBounds": {
+            "left": 77.43463897705078,
+            "top": 586.5773315429688,
+            "right": 85.78739929199219,
+            "bottom": 593.3880615234375,
+            "width": 8.352760314941406,
+            "height": 6.81072998046875,
+            "centerX": 81.61101913452148,
+            "centerY": 589.9826965332031
+          },
+          "isFilled": false,
+          "pitch": "F3"
+        },
+        {
+          "partNumber": 2,
+          "measureNumber": 11,
+          "logicalBounds": {
+            "left": 6.502458392441187,
+            "top": 4.94388512446354,
+            "right": 7.8894185615740815,
+            "bottom": 7.064066481889196
+          },
+          "physicalBounds": {
+            "left": 77.43463897705078,
+            "top": 599.4281005859375,
+            "right": 85.78739929199219,
+            "bottom": 606.2388305664062,
+            "width": 8.352760314941406,
+            "height": 6.81072998046875,
+            "centerX": 81.61101913452148,
+            "centerY": 602.8334655761719
+          },
+          "isFilled": false,
+          "pitch": "B2"
+        }
+      ]
+    },
+    {
       "measureNumber": 14,
       "physicalBounds": {
         "left": 483.6719970703125,
@@ -87106,6 +87209,91 @@
           },
           "isFilled": false,
           "pitch": "G4"
+        },
+        {
+          "partNumber": 2,
+          "measureNumber": 14,
+          "logicalBounds": {
+            "left": 2.1124988798152353,
+            "top": 8.9442936299273,
+            "right": 3.509654007538986,
+            "bottom": 11.064474987352956
+          },
+          "physicalBounds": {
+            "left": 491.5466613769531,
+            "top": 612.2787475585938,
+            "right": 499.8994140625,
+            "bottom": 619.0894775390625,
+            "width": 8.352752685546875,
+            "height": 6.81072998046875,
+            "centerX": 495.72303771972656,
+            "centerY": 615.6841125488281
+          },
+          "isFilled": false,
+          "pitch": "E2"
+        }
+      ]
+    },
+    {
+      "measureNumber": 15,
+      "physicalBounds": {
+        "left": 627.0186767578125,
+        "top": 522.7529907226562,
+        "right": 633.2913208007812,
+        "bottom": 539.896240234375,
+        "width": 6.27264404296875,
+        "height": 17.14324951171875,
+        "centerX": 630.1549987792969,
+        "centerY": 531.3246154785156
+      },
+      "primitiveIds": [
+        303
+      ],
+      "noteLogicalX": 2.575762013119034,
+      "notes": [
+        {
+          "partNumber": 1,
+          "measureNumber": 15,
+          "logicalBounds": {
+            "left": 1.9304784657936667,
+            "top": 1.943763997843471,
+            "right": 3.221045560444401,
+            "bottom": 4.0639453552691265
+          },
+          "physicalBounds": {
+            "left": 634.893310546875,
+            "top": 527.9453735351562,
+            "right": 643.24609375,
+            "bottom": 534.756103515625,
+            "width": 8.352783203125,
+            "height": 6.81072998046875,
+            "centerX": 639.0697021484375,
+            "centerY": 531.3507385253906
+          },
+          "isFilled": false,
+          "pitch": "C5"
+        },
+        {
+          "partNumber": 2,
+          "measureNumber": 15,
+          "logicalBounds": {
+            "left": 1.9304784657936667,
+            "top": 5.9441725033072315,
+            "right": 3.221045560444401,
+            "bottom": 8.064353860732888
+          },
+          "physicalBounds": {
+            "left": 634.893310546875,
+            "top": 602.641357421875,
+            "right": 643.24609375,
+            "bottom": 609.4520874023438,
+            "width": 8.352783203125,
+            "height": 6.81072998046875,
+            "centerX": 639.0697021484375,
+            "centerY": 606.0467224121094
+          },
+          "isFilled": true,
+          "pitch": "A2"
         }
       ]
     },
@@ -87124,15 +87312,37 @@
       "primitiveIds": [
         295
       ],
-      "noteLogicalX": 22.958063547909006,
+      "noteLogicalX": 17.218547660931755,
       "notes": [
+        {
+          "partNumber": 1,
+          "measureNumber": 15,
+          "logicalBounds": {
+            "left": 16.57326411360639,
+            "top": 4.9438661242094115,
+            "right": 17.863831208257125,
+            "bottom": 7.0640474816350665
+          },
+          "physicalBounds": {
+            "left": 729.6640625,
+            "top": 537.5827026367188,
+            "right": 738.016845703125,
+            "bottom": 544.3934326171875,
+            "width": 8.352783203125,
+            "height": 6.81072998046875,
+            "centerX": 733.8404541015625,
+            "centerY": 540.9880676269531
+          },
+          "isFilled": true,
+          "pitch": "G4"
+        },
         {
           "partNumber": 2,
           "measureNumber": 15,
           "logicalBounds": {
-            "left": 22.09768548480852,
+            "left": 16.57326411360639,
             "top": -3.0569698869722384,
-            "right": 23.818441611009497,
+            "right": 17.863831208257125,
             "bottom": -0.9367885295465826
           },
           "physicalBounds": {
@@ -87152,9 +87362,9 @@
           "partNumber": 2,
           "measureNumber": 15,
           "logicalBounds": {
-            "left": 22.09768548480852,
+            "left": 16.57326411360639,
             "top": 1.943763997843471,
-            "right": 23.818441611009497,
+            "right": 17.863831208257125,
             "bottom": 4.0639453552691265
           },
           "physicalBounds": {
@@ -87174,9 +87384,9 @@
           "partNumber": 2,
           "measureNumber": 15,
           "logicalBounds": {
-            "left": 22.09768548480852,
+            "left": 16.57326411360639,
             "top": 5.9441725033072315,
-            "right": 23.818441611009497,
+            "right": 17.863831208257125,
             "bottom": 8.064353860732888
           },
           "physicalBounds": {
@@ -87209,37 +87419,37 @@
       "primitiveIds": [
         309
       ],
-      "noteLogicalX": 9.49888001995968,
+      "noteLogicalX": 7.20094881847151,
       "notes": [
         {
           "partNumber": 1,
           "measureNumber": 20,
           "logicalBounds": {
-            "left": 8.243585110227686,
-            "top": 4.943361276686694,
-            "right": 10.754174929691674,
-            "bottom": 7.063326129805979
+            "left": 5.945653908739515,
+            "top": 5.943584506875015,
+            "right": 8.456243728203503,
+            "bottom": 8.063549359994301
           },
           "physicalBounds": {
-            "left": 725.309326171875,
-            "top": 715.4893798828125,
-            "right": 733.662109375,
-            "bottom": 722.3001098632812,
+            "left": 717.6640625,
+            "top": 718.7027587890625,
+            "right": 726.016845703125,
+            "bottom": 725.5134887695312,
             "width": 8.352783203125,
             "height": 6.81072998046875,
-            "centerX": 729.4857177734375,
-            "centerY": 718.8947448730469
+            "centerX": 721.8404541015625,
+            "centerY": 722.1081237792969
           },
           "isFilled": false,
-          "pitch": "G4"
+          "pitch": "F4"
         },
         {
           "partNumber": 2,
           "measureNumber": 20,
           "logicalBounds": {
-            "left": 7.92753854498602,
+            "left": 5.945653908739515,
             "top": -4.056016395505959,
-            "right": 11.274991637604671,
+            "right": 8.456243728203503,
             "bottom": -1.936056576844435
           },
           "physicalBounds": {
@@ -87259,9 +87469,9 @@
           "partNumber": 2,
           "measureNumber": 20,
           "logicalBounds": {
-            "left": 7.92753854498602,
+            "left": 5.945653908739515,
             "top": 1.943579891282407,
-            "right": 11.274991637604671,
+            "right": 8.456243728203503,
             "bottom": 4.063539709943932
           },
           "physicalBounds": {
@@ -87276,6 +87486,69 @@
           },
           "isFilled": false,
           "pitch": "E3"
+        }
+      ]
+    },
+    {
+      "measureNumber": 21,
+      "physicalBounds": {
+        "left": 46.58575439453125,
+        "top": 886.7687377929688,
+        "right": 54.88630676269531,
+        "bottom": 902.2413940429688,
+        "width": 8.300552368164062,
+        "height": 15.47265625,
+        "centerX": 50.73603057861328,
+        "centerY": 894.5050659179688
+      },
+      "primitiveIds": [
+        1034
+      ],
+      "noteLogicalX": 4.768361149703127,
+      "notes": [
+        {
+          "partNumber": 1,
+          "measureNumber": 21,
+          "logicalBounds": {
+            "left": 4.306518705783695,
+            "top": -0.0560258946403509,
+            "right": 5.230203593622559,
+            "bottom": 2.0639339240211734
+          },
+          "physicalBounds": {
+            "left": 77.21783447265625,
+            "top": 877.334716796875,
+            "right": 85.57059478759766,
+            "bottom": 884.1454467773438,
+            "width": 8.352760314941406,
+            "height": 6.81072998046875,
+            "centerX": 81.39421463012695,
+            "centerY": 880.7400817871094
+          },
+          "isFilled": true,
+          "pitch": "E5"
+        },
+        {
+          "partNumber": 2,
+          "measureNumber": 21,
+          "logicalBounds": {
+            "left": 4.306518705783695,
+            "top": 5.943570392148016,
+            "right": 5.230203593622559,
+            "bottom": 8.06353021080954
+          },
+          "physicalBounds": {
+            "left": 77.21783447265625,
+            "top": 970.8174438476562,
+            "right": 85.57059478759766,
+            "bottom": 977.628173828125,
+            "width": 8.352760314941406,
+            "height": 6.81072998046875,
+            "centerX": 81.39421463012695,
+            "centerY": 974.2228088378906
+          },
+          "isFilled": true,
+          "pitch": "A2"
         }
       ]
     },
@@ -87339,6 +87612,50 @@
           },
           "isFilled": false,
           "pitch": "E4"
+        },
+        {
+          "partNumber": 2,
+          "measureNumber": 25,
+          "logicalBounds": {
+            "left": 2.5637641812307086,
+            "top": -3.05579554063136,
+            "right": 4.259033147175109,
+            "bottom": -0.9358357219698354
+          },
+          "physicalBounds": {
+            "left": 663.9759521484375,
+            "top": 941.9054565429688,
+            "right": 672.3287353515625,
+            "bottom": 948.7161865234375,
+            "width": 8.352783203125,
+            "height": 6.81072998046875,
+            "centerX": 668.15234375,
+            "centerY": 945.3108215332031
+          },
+          "isFilled": false,
+          "pitch": "C4"
+        },
+        {
+          "partNumber": 2,
+          "measureNumber": 25,
+          "logicalBounds": {
+            "left": 2.5637641812307086,
+            "top": 0.9441949602342486,
+            "right": 4.259033147175109,
+            "bottom": 3.064154778895773
+          },
+          "physicalBounds": {
+            "left": 663.9759521484375,
+            "top": 954.756103515625,
+            "right": 672.3287353515625,
+            "bottom": 961.5668334960938,
+            "width": 8.352783203125,
+            "height": 6.81072998046875,
+            "centerX": 668.15234375,
+            "centerY": 958.1614685058594
+          },
+          "isFilled": false,
+          "pitch": "F3"
         }
       ]
     }
@@ -94525,9 +94842,9 @@
           "partNumber": 2,
           "measureNumber": 15,
           "logicalBounds": {
-            "left": 4.221522475987496,
+            "left": 3.166141856990622,
             "top": -1.5149852629278917,
-            "right": 4.221522475987496,
+            "right": 3.166141856990622,
             "bottom": 6.680090346208381
           },
           "physicalBounds": {
@@ -94547,9 +94864,9 @@
               "partNumber": 2,
               "measureNumber": 15,
               "logicalBounds": {
-                "left": 2.573971287724889,
+                "left": 1.9304784657936667,
                 "top": 5.9441725033072315,
-                "right": 4.294727413925868,
+                "right": 3.221045560444401,
                 "bottom": 8.064353860732888
               },
               "physicalBounds": {
@@ -94571,9 +94888,9 @@
           "partNumber": 2,
           "measureNumber": 15,
           "logicalBounds": {
-            "left": 9.102564189882493,
+            "left": 6.82692314241187,
             "top": -2.4862402534633903,
-            "right": 9.102564189882493,
+            "right": 6.82692314241187,
             "bottom": 2.67968184074462
           },
           "physicalBounds": {
@@ -94593,9 +94910,9 @@
               "partNumber": 2,
               "measureNumber": 15,
               "logicalBounds": {
-                "left": 7.4544849000408036,
+                "left": 5.590863675030603,
                 "top": 1.943763997843471,
-                "right": 9.175241026241784,
+                "right": 6.881430769681337,
                 "bottom": 4.0639453552691265
               },
               "physicalBounds": {
@@ -94618,9 +94935,9 @@
         "partNumber": 2,
         "measureNumber": 15,
         "logicalBounds": {
-          "left": 4.221522475987496,
+          "left": 3.166141856990622,
           "top": -1.5149852629278917,
-          "right": 4.221522475987496,
+          "right": 3.166141856990622,
           "bottom": 6.680090346208381
         },
         "physicalBounds": {
@@ -94640,9 +94957,9 @@
             "partNumber": 2,
             "measureNumber": 15,
             "logicalBounds": {
-              "left": 2.573971287724889,
+              "left": 1.9304784657936667,
               "top": 5.9441725033072315,
-              "right": 4.294727413925868,
+              "right": 3.221045560444401,
               "bottom": 8.064353860732888
             },
             "physicalBounds": {
@@ -94664,9 +94981,9 @@
         "partNumber": 2,
         "measureNumber": 15,
         "logicalBounds": {
-          "left": 9.102564189882493,
+          "left": 6.82692314241187,
           "top": -2.4862402534633903,
-          "right": 9.102564189882493,
+          "right": 6.82692314241187,
           "bottom": 2.67968184074462
         },
         "physicalBounds": {
@@ -94686,9 +95003,9 @@
             "partNumber": 2,
             "measureNumber": 15,
             "logicalBounds": {
-              "left": 7.4544849000408036,
+              "left": 5.590863675030603,
               "top": 1.943763997843471,
-              "right": 9.175241026241784,
+              "right": 6.881430769681337,
               "bottom": 4.0639453552691265
             },
             "physicalBounds": {
@@ -94733,9 +95050,9 @@
           "partNumber": 2,
           "measureNumber": 15,
           "logicalBounds": {
-            "left": 12.408630961097204,
+            "left": 9.306473220822904,
             "top": -0.6640968822958007,
-            "right": 12.408630961097204,
+            "right": 9.306473220822904,
             "bottom": 4.492686089676449
           },
           "physicalBounds": {
@@ -94755,9 +95072,9 @@
               "partNumber": 2,
               "measureNumber": 15,
               "logicalBounds": {
-                "left": 12.335551761630043,
+                "left": 9.251663821222532,
                 "top": -2.0566445076202893,
-                "right": 14.056307887831021,
+                "right": 10.542230915873265,
                 "bottom": 0.06353684980536614
               },
               "physicalBounds": {
@@ -94779,9 +95096,9 @@
           "partNumber": 2,
           "measureNumber": 15,
           "logicalBounds": {
-            "left": 17.289119425718876,
+            "left": 12.966839569289156,
             "top": -1.6644222616477495,
-            "right": 17.289119425718876,
+            "right": 12.966839569289156,
             "bottom": 4.0070585944087
           },
           "physicalBounds": {
@@ -94801,9 +95118,9 @@
               "partNumber": 2,
               "measureNumber": 15,
               "logicalBounds": {
-                "left": 17.21661862321928,
+                "left": 12.91246396741446,
                 "top": -3.0569698869722384,
-                "right": 18.93737474942026,
+                "right": 14.203031062065197,
                 "bottom": -0.9367885295465826
               },
               "physicalBounds": {
@@ -94826,9 +95143,9 @@
         "partNumber": 2,
         "measureNumber": 15,
         "logicalBounds": {
-          "left": 12.408630961097204,
+          "left": 9.306473220822904,
           "top": -0.6640968822958007,
-          "right": 12.408630961097204,
+          "right": 9.306473220822904,
           "bottom": 4.492686089676449
         },
         "physicalBounds": {
@@ -94848,9 +95165,9 @@
             "partNumber": 2,
             "measureNumber": 15,
             "logicalBounds": {
-              "left": 12.335551761630043,
+              "left": 9.251663821222532,
               "top": -2.0566445076202893,
-              "right": 14.056307887831021,
+              "right": 10.542230915873265,
               "bottom": 0.06353684980536614
             },
             "physicalBounds": {
@@ -94872,9 +95189,9 @@
         "partNumber": 2,
         "measureNumber": 15,
         "logicalBounds": {
-          "left": 17.289119425718876,
+          "left": 12.966839569289156,
           "top": -1.6644222616477495,
-          "right": 17.289119425718876,
+          "right": 12.966839569289156,
           "bottom": 4.0070585944087
         },
         "physicalBounds": {
@@ -94894,9 +95211,9 @@
             "partNumber": 2,
             "measureNumber": 15,
             "logicalBounds": {
-              "left": 17.21661862321928,
+              "left": 12.91246396741446,
               "top": -3.0569698869722384,
-              "right": 18.93737474942026,
+              "right": 14.203031062065197,
               "bottom": -0.9367885295465826
             },
             "physicalBounds": {
@@ -95149,9 +95466,9 @@
           "partNumber": 2,
           "measureNumber": 16,
           "logicalBounds": {
-            "left": 8.842519229797691,
+            "left": 6.6318894223482685,
             "top": 2.4843276156460243,
-            "right": 8.842519229797691,
+            "right": 6.6318894223482685,
             "bottom": 10.680218765065034
           },
           "physicalBounds": {
@@ -95171,9 +95488,9 @@
               "partNumber": 2,
               "measureNumber": 16,
               "logicalBounds": {
-                "left": 7.342601782453391,
+                "left": 5.506951336840043,
                 "top": 9.943560893013624,
-                "right": 8.908762701207653,
+                "right": 6.68157202590574,
                 "bottom": 12.063520711675148
               },
               "physicalBounds": {
@@ -95195,9 +95512,9 @@
           "partNumber": 2,
           "measureNumber": 16,
           "logicalBounds": {
-            "left": 12.95426796559406,
+            "left": 9.715700974195546,
             "top": 1.5156628852195844,
-            "right": 12.95426796559406,
+            "right": 9.715700974195546,
             "bottom": 6.6802092659306425
           },
           "physicalBounds": {
@@ -95217,9 +95534,9 @@
               "partNumber": 2,
               "measureNumber": 16,
               "logicalBounds": {
-                "left": 11.454400586738311,
+                "left": 8.590800440053734,
                 "top": 5.943570392148016,
-                "right": 13.020561505492573,
+                "right": 9.76542112911943,
                 "bottom": 8.06353021080954
               },
               "physicalBounds": {
@@ -95242,9 +95559,9 @@
         "partNumber": 2,
         "measureNumber": 16,
         "logicalBounds": {
-          "left": 8.842519229797691,
+          "left": 6.6318894223482685,
           "top": 2.4843276156460243,
-          "right": 8.842519229797691,
+          "right": 6.6318894223482685,
           "bottom": 10.680218765065034
         },
         "physicalBounds": {
@@ -95264,9 +95581,9 @@
             "partNumber": 2,
             "measureNumber": 16,
             "logicalBounds": {
-              "left": 7.342601782453391,
+              "left": 5.506951336840043,
               "top": 9.943560893013624,
-              "right": 8.908762701207653,
+              "right": 6.68157202590574,
               "bottom": 12.063520711675148
             },
             "physicalBounds": {
@@ -95288,9 +95605,9 @@
         "partNumber": 2,
         "measureNumber": 16,
         "logicalBounds": {
-          "left": 12.95426796559406,
+          "left": 9.715700974195546,
           "top": 1.5156628852195844,
-          "right": 12.95426796559406,
+          "right": 9.715700974195546,
           "bottom": 6.6802092659306425
         },
         "physicalBounds": {
@@ -95310,9 +95627,9 @@
             "partNumber": 2,
             "measureNumber": 16,
             "logicalBounds": {
-              "left": 11.454400586738311,
+              "left": 8.590800440053734,
               "top": 5.943570392148016,
-              "right": 13.020561505492573,
+              "right": 9.76542112911943,
               "bottom": 8.06353021080954
             },
             "physicalBounds": {
@@ -95357,9 +95674,9 @@
           "partNumber": 2,
           "measureNumber": 16,
           "logicalBounds": {
-            "left": 15.632399946585862,
+            "left": 11.724299959939396,
             "top": 3.3359440121018973,
-            "right": 15.632399946585862,
+            "right": 11.724299959939396,
             "bottom": 8.492207147623672
           },
           "physicalBounds": {
@@ -95379,9 +95696,9 @@
               "partNumber": 2,
               "measureNumber": 16,
               "logicalBounds": {
-                "left": 15.56614932253468,
+                "left": 11.67461199190101,
                 "top": 1.943579891282407,
-                "right": 17.132311671817185,
+                "right": 12.849233753862888,
                 "bottom": 4.063539709943932
               },
               "physicalBounds": {
@@ -95403,9 +95720,9 @@
           "partNumber": 2,
           "measureNumber": 16,
           "logicalBounds": {
-            "left": 19.744198750870783,
+            "left": 14.808149063153088,
             "top": 2.3357611537648633,
-            "right": 19.744198750870783,
+            "right": 14.808149063153088,
             "bottom": 8.007466319631623
           },
           "physicalBounds": {
@@ -95425,9 +95742,9 @@
               "partNumber": 2,
               "measureNumber": 16,
               "logicalBounds": {
-                "left": 19.677896627802806,
+                "left": 14.758422470852103,
                 "top": 0.9441949602342486,
-                "right": 21.244056116028823,
+                "right": 15.933042087021617,
                 "bottom": 3.064154778895773
               },
               "physicalBounds": {
@@ -95450,9 +95767,9 @@
         "partNumber": 2,
         "measureNumber": 16,
         "logicalBounds": {
-          "left": 15.632399946585862,
+          "left": 11.724299959939396,
           "top": 3.3359440121018973,
-          "right": 15.632399946585862,
+          "right": 11.724299959939396,
           "bottom": 8.492207147623672
         },
         "physicalBounds": {
@@ -95472,9 +95789,9 @@
             "partNumber": 2,
             "measureNumber": 16,
             "logicalBounds": {
-              "left": 15.56614932253468,
+              "left": 11.67461199190101,
               "top": 1.943579891282407,
-              "right": 17.132311671817185,
+              "right": 12.849233753862888,
               "bottom": 4.063539709943932
             },
             "physicalBounds": {
@@ -95496,9 +95813,9 @@
         "partNumber": 2,
         "measureNumber": 16,
         "logicalBounds": {
-          "left": 19.744198750870783,
+          "left": 14.808149063153088,
           "top": 2.3357611537648633,
-          "right": 19.744198750870783,
+          "right": 14.808149063153088,
           "bottom": 8.007466319631623
         },
         "physicalBounds": {
@@ -95518,9 +95835,9 @@
             "partNumber": 2,
             "measureNumber": 16,
             "logicalBounds": {
-              "left": 19.677896627802806,
+              "left": 14.758422470852103,
               "top": 0.9441949602342486,
-              "right": 21.244056116028823,
+              "right": 15.933042087021617,
               "bottom": 3.064154778895773
             },
             "physicalBounds": {
@@ -95773,9 +96090,9 @@
           "partNumber": 2,
           "measureNumber": 17,
           "logicalBounds": {
-            "left": 1.8173514701650053,
+            "left": 1.363013602623754,
             "top": 5.335549798024655,
-            "right": 1.8173514701650053,
+            "right": 1.363013602623754,
             "bottom": 10.987344778207087
           },
           "physicalBounds": {
@@ -95795,9 +96112,9 @@
               "partNumber": 2,
               "measureNumber": 17,
               "logicalBounds": {
-                "left": 1.7527028221224943,
+                "left": 1.3145271165918708,
                 "top": 3.943964606225258,
-                "right": 3.280928519708833,
+                "right": 2.4606963897816247,
                 "bottom": 6.063924424886782
               },
               "physicalBounds": {
@@ -95819,9 +96136,9 @@
           "partNumber": 2,
           "measureNumber": 17,
           "logicalBounds": {
-            "left": 5.16084263930611,
+            "left": 3.8706319794795823,
             "top": 1.3363762227167049,
-            "right": 5.16084263930611,
+            "right": 3.8706319794795823,
             "bottom": 10.329092761422116
           },
           "physicalBounds": {
@@ -95841,9 +96158,9 @@
               "partNumber": 2,
               "measureNumber": 17,
               "logicalBounds": {
-                "left": 5.096193991263599,
+                "left": 3.822145493447699,
                 "top": -0.0560258946403509,
-                "right": 6.62441689709591,
+                "right": 4.9683126728219325,
                 "bottom": 2.0639339240211734
               },
               "physicalBounds": {
@@ -95865,9 +96182,9 @@
           "partNumber": 2,
           "measureNumber": 17,
           "logicalBounds": {
-            "left": 8.504333808447214,
+            "left": 6.3782503563354105,
             "top": -2.663614278148904,
-            "right": 8.504333808447214,
+            "right": 6.3782503563354105,
             "bottom": 9.670878741174711
           },
           "physicalBounds": {
@@ -95887,9 +96204,9 @@
               "partNumber": 2,
               "measureNumber": 17,
               "logicalBounds": {
-                "left": 8.439687952158732,
+                "left": 6.329765964119049,
                 "top": -4.056016395505959,
-                "right": 9.967910857991043,
+                "right": 7.4759331434932825,
                 "bottom": -1.936056576844435
               },
               "physicalBounds": {
@@ -95911,9 +96228,9 @@
           "partNumber": 2,
           "measureNumber": 17,
           "logicalBounds": {
-            "left": 11.847922688979324,
+            "left": 8.885942016734493,
             "top": -3.6638161347547205,
-            "right": 11.847922688979324,
+            "right": 8.885942016734493,
             "bottom": 9.012645722658522
           },
           "physicalBounds": {
@@ -95933,9 +96250,9 @@
               "partNumber": 2,
               "measureNumber": 17,
               "logicalBounds": {
-                "left": 11.783036741844374,
+                "left": 8.837277556383281,
                 "top": -5.056218252111776,
-                "right": 13.311259647676684,
+                "right": 9.983444735757512,
                 "bottom": -2.9362584334502517
               },
               "physicalBounds": {
@@ -95958,9 +96275,9 @@
         "partNumber": 2,
         "measureNumber": 17,
         "logicalBounds": {
-          "left": 1.8173514701650053,
+          "left": 1.363013602623754,
           "top": 5.335549798024655,
-          "right": 1.8173514701650053,
+          "right": 1.363013602623754,
           "bottom": 10.987344778207087
         },
         "physicalBounds": {
@@ -95980,9 +96297,9 @@
             "partNumber": 2,
             "measureNumber": 17,
             "logicalBounds": {
-              "left": 1.7527028221224943,
+              "left": 1.3145271165918708,
               "top": 3.943964606225258,
-              "right": 3.280928519708833,
+              "right": 2.4606963897816247,
               "bottom": 6.063924424886782
             },
             "physicalBounds": {
@@ -96004,9 +96321,9 @@
         "partNumber": 2,
         "measureNumber": 17,
         "logicalBounds": {
-          "left": 11.847922688979324,
+          "left": 8.885942016734493,
           "top": -3.6638161347547205,
-          "right": 11.847922688979324,
+          "right": 8.885942016734493,
           "bottom": 9.012645722658522
         },
         "physicalBounds": {
@@ -96026,9 +96343,9 @@
             "partNumber": 2,
             "measureNumber": 17,
             "logicalBounds": {
-              "left": 11.783036741844374,
+              "left": 8.837277556383281,
               "top": -5.056218252111776,
-              "right": 13.311259647676684,
+              "right": 9.983444735757512,
               "bottom": -2.9362584334502517
             },
             "physicalBounds": {
@@ -96073,9 +96390,9 @@
           "partNumber": 2,
           "measureNumber": 17,
           "logicalBounds": {
-            "left": 1.8173514701650053,
+            "left": 1.363013602623754,
             "top": 5.335549798024655,
-            "right": 1.8173514701650053,
+            "right": 1.363013602623754,
             "bottom": 10.987344778207087
           },
           "physicalBounds": {
@@ -96095,9 +96412,9 @@
               "partNumber": 2,
               "measureNumber": 17,
               "logicalBounds": {
-                "left": 1.7527028221224943,
+                "left": 1.3145271165918708,
                 "top": 3.943964606225258,
-                "right": 3.280928519708833,
+                "right": 2.4606963897816247,
                 "bottom": 6.063924424886782
               },
               "physicalBounds": {
@@ -96119,9 +96436,9 @@
           "partNumber": 2,
           "measureNumber": 17,
           "logicalBounds": {
-            "left": 5.16084263930611,
+            "left": 3.8706319794795823,
             "top": 1.3363762227167049,
-            "right": 5.16084263930611,
+            "right": 3.8706319794795823,
             "bottom": 10.329092761422116
           },
           "physicalBounds": {
@@ -96141,9 +96458,9 @@
               "partNumber": 2,
               "measureNumber": 17,
               "logicalBounds": {
-                "left": 5.096193991263599,
+                "left": 3.822145493447699,
                 "top": -0.0560258946403509,
-                "right": 6.62441689709591,
+                "right": 4.9683126728219325,
                 "bottom": 2.0639339240211734
               },
               "physicalBounds": {
@@ -96165,9 +96482,9 @@
           "partNumber": 2,
           "measureNumber": 17,
           "logicalBounds": {
-            "left": 8.504333808447214,
+            "left": 6.3782503563354105,
             "top": -2.663614278148904,
-            "right": 8.504333808447214,
+            "right": 6.3782503563354105,
             "bottom": 9.670878741174711
           },
           "physicalBounds": {
@@ -96187,9 +96504,9 @@
               "partNumber": 2,
               "measureNumber": 17,
               "logicalBounds": {
-                "left": 8.439687952158732,
+                "left": 6.329765964119049,
                 "top": -4.056016395505959,
-                "right": 9.967910857991043,
+                "right": 7.4759331434932825,
                 "bottom": -1.936056576844435
               },
               "physicalBounds": {
@@ -96211,9 +96528,9 @@
           "partNumber": 2,
           "measureNumber": 17,
           "logicalBounds": {
-            "left": 11.847922688979324,
+            "left": 8.885942016734493,
             "top": -3.6638161347547205,
-            "right": 11.847922688979324,
+            "right": 8.885942016734493,
             "bottom": 9.012645722658522
           },
           "physicalBounds": {
@@ -96233,9 +96550,9 @@
               "partNumber": 2,
               "measureNumber": 17,
               "logicalBounds": {
-                "left": 11.783036741844374,
+                "left": 8.837277556383281,
                 "top": -5.056218252111776,
-                "right": 13.311259647676684,
+                "right": 9.983444735757512,
                 "bottom": -2.9362584334502517
               },
               "physicalBounds": {
@@ -96258,9 +96575,9 @@
         "partNumber": 2,
         "measureNumber": 17,
         "logicalBounds": {
-          "left": 1.8173514701650053,
+          "left": 1.363013602623754,
           "top": 5.335549798024655,
-          "right": 1.8173514701650053,
+          "right": 1.363013602623754,
           "bottom": 10.987344778207087
         },
         "physicalBounds": {
@@ -96280,9 +96597,9 @@
             "partNumber": 2,
             "measureNumber": 17,
             "logicalBounds": {
-              "left": 1.7527028221224943,
+              "left": 1.3145271165918708,
               "top": 3.943964606225258,
-              "right": 3.280928519708833,
+              "right": 2.4606963897816247,
               "bottom": 6.063924424886782
             },
             "physicalBounds": {
@@ -96304,9 +96621,9 @@
         "partNumber": 2,
         "measureNumber": 17,
         "logicalBounds": {
-          "left": 11.847922688979324,
+          "left": 8.885942016734493,
           "top": -3.6638161347547205,
-          "right": 11.847922688979324,
+          "right": 8.885942016734493,
           "bottom": 9.012645722658522
         },
         "physicalBounds": {
@@ -96326,9 +96643,9 @@
             "partNumber": 2,
             "measureNumber": 17,
             "logicalBounds": {
-              "left": 11.783036741844374,
+              "left": 8.837277556383281,
               "top": -5.056218252111776,
-              "right": 13.311259647676684,
+              "right": 9.983444735757512,
               "bottom": -2.9362584334502517
             },
             "physicalBounds": {
@@ -96997,9 +97314,9 @@
           "partNumber": 2,
           "measureNumber": 18,
           "logicalBounds": {
-            "left": 1.6977535847307907,
+            "left": 1.2733151885480931,
             "top": 7.335972509505071,
-            "right": 1.6977535847307907,
+            "right": 1.2733151885480931,
             "bottom": 12.986912567592277
           },
           "physicalBounds": {
@@ -97019,9 +97336,9 @@
               "partNumber": 2,
               "measureNumber": 18,
               "logicalBounds": {
-                "left": 1.632127789700437,
+                "left": 1.2240958422753276,
                 "top": 5.943570392148016,
-                "right": 3.177642931431028,
+                "right": 2.383232198573271,
                 "bottom": 8.06353021080954
               },
               "physicalBounds": {
@@ -97043,9 +97360,9 @@
           "partNumber": 2,
           "measureNumber": 18,
           "logicalBounds": {
-            "left": 5.0791252146788715,
+            "left": 3.8093439110091536,
             "top": 3.3359440121018973,
-            "right": 5.0791252146788715,
+            "right": 3.8093439110091536,
             "bottom": 12.32867954907609
           },
           "physicalBounds": {
@@ -97065,9 +97382,9 @@
               "partNumber": 2,
               "measureNumber": 18,
               "logicalBounds": {
-                "left": 5.013505066335407,
+                "left": 3.760128799751555,
                 "top": 1.943579891282407,
-                "right": 6.5590202080659985,
+                "right": 4.919265156049499,
                 "bottom": 4.063539709943932
               },
               "physicalBounds": {
@@ -97089,9 +97406,9 @@
           "partNumber": 2,
           "measureNumber": 18,
           "logicalBounds": {
-            "left": 8.460502491313841,
+            "left": 6.345376868485381,
             "top": -0.6640464887637114,
-            "right": 8.460502491313841,
+            "right": 6.345376868485381,
             "bottom": 11.670465528828686
           },
           "physicalBounds": {
@@ -97111,9 +97428,9 @@
               "partNumber": 2,
               "measureNumber": 18,
               "logicalBounds": {
-                "left": 8.394876696283488,
+                "left": 6.296157522212615,
                 "top": -2.0564486061207674,
-                "right": 9.94039183801408,
+                "right": 7.45529387851056,
                 "bottom": 0.06351121254075723
               },
               "physicalBounds": {
@@ -97135,9 +97452,9 @@
           "partNumber": 2,
           "measureNumber": 18,
           "logicalBounds": {
-            "left": 11.841874121261922,
+            "left": 8.881405590946441,
             "top": -1.6642483453695283,
-            "right": 11.841874121261922,
+            "right": 8.881405590946441,
             "bottom": 11.012251508581281
           },
           "physicalBounds": {
@@ -97157,9 +97474,9 @@
               "partNumber": 2,
               "measureNumber": 18,
               "logicalBounds": {
-                "left": 11.776248326231569,
+                "left": 8.832186244673677,
                 "top": -3.05579554063136,
-                "right": 13.32176346796216,
+                "right": 9.991322600971621,
                 "bottom": -0.9358357219698354
               },
               "physicalBounds": {
@@ -97182,9 +97499,9 @@
         "partNumber": 2,
         "measureNumber": 18,
         "logicalBounds": {
-          "left": 1.6977535847307907,
+          "left": 1.2733151885480931,
           "top": 7.335972509505071,
-          "right": 1.6977535847307907,
+          "right": 1.2733151885480931,
           "bottom": 12.986912567592277
         },
         "physicalBounds": {
@@ -97204,9 +97521,9 @@
             "partNumber": 2,
             "measureNumber": 18,
             "logicalBounds": {
-              "left": 1.632127789700437,
+              "left": 1.2240958422753276,
               "top": 5.943570392148016,
-              "right": 3.177642931431028,
+              "right": 2.383232198573271,
               "bottom": 8.06353021080954
             },
             "physicalBounds": {
@@ -97228,9 +97545,9 @@
         "partNumber": 2,
         "measureNumber": 18,
         "logicalBounds": {
-          "left": 11.841874121261922,
+          "left": 8.881405590946441,
           "top": -1.6642483453695283,
-          "right": 11.841874121261922,
+          "right": 8.881405590946441,
           "bottom": 11.012251508581281
         },
         "physicalBounds": {
@@ -97250,9 +97567,9 @@
             "partNumber": 2,
             "measureNumber": 18,
             "logicalBounds": {
-              "left": 11.776248326231569,
+              "left": 8.832186244673677,
               "top": -3.05579554063136,
-              "right": 13.32176346796216,
+              "right": 9.991322600971621,
               "bottom": -0.9358357219698354
             },
             "physicalBounds": {
@@ -97297,9 +97614,9 @@
           "partNumber": 2,
           "measureNumber": 18,
           "logicalBounds": {
-            "left": 1.6977535847307907,
+            "left": 1.2733151885480931,
             "top": 7.335972509505071,
-            "right": 1.6977535847307907,
+            "right": 1.2733151885480931,
             "bottom": 12.986912567592277
           },
           "physicalBounds": {
@@ -97319,9 +97636,9 @@
               "partNumber": 2,
               "measureNumber": 18,
               "logicalBounds": {
-                "left": 1.632127789700437,
+                "left": 1.2240958422753276,
                 "top": 5.943570392148016,
-                "right": 3.177642931431028,
+                "right": 2.383232198573271,
                 "bottom": 8.06353021080954
               },
               "physicalBounds": {
@@ -97343,9 +97660,9 @@
           "partNumber": 2,
           "measureNumber": 18,
           "logicalBounds": {
-            "left": 5.0791252146788715,
+            "left": 3.8093439110091536,
             "top": 3.3359440121018973,
-            "right": 5.0791252146788715,
+            "right": 3.8093439110091536,
             "bottom": 12.32867954907609
           },
           "physicalBounds": {
@@ -97365,9 +97682,9 @@
               "partNumber": 2,
               "measureNumber": 18,
               "logicalBounds": {
-                "left": 5.013505066335407,
+                "left": 3.760128799751555,
                 "top": 1.943579891282407,
-                "right": 6.5590202080659985,
+                "right": 4.919265156049499,
                 "bottom": 4.063539709943932
               },
               "physicalBounds": {
@@ -97389,9 +97706,9 @@
           "partNumber": 2,
           "measureNumber": 18,
           "logicalBounds": {
-            "left": 8.460502491313841,
+            "left": 6.345376868485381,
             "top": -0.6640464887637114,
-            "right": 8.460502491313841,
+            "right": 6.345376868485381,
             "bottom": 11.670465528828686
           },
           "physicalBounds": {
@@ -97411,9 +97728,9 @@
               "partNumber": 2,
               "measureNumber": 18,
               "logicalBounds": {
-                "left": 8.394876696283488,
+                "left": 6.296157522212615,
                 "top": -2.0564486061207674,
-                "right": 9.94039183801408,
+                "right": 7.45529387851056,
                 "bottom": 0.06351121254075723
               },
               "physicalBounds": {
@@ -97435,9 +97752,9 @@
           "partNumber": 2,
           "measureNumber": 18,
           "logicalBounds": {
-            "left": 11.841874121261922,
+            "left": 8.881405590946441,
             "top": -1.6642483453695283,
-            "right": 11.841874121261922,
+            "right": 8.881405590946441,
             "bottom": 11.012251508581281
           },
           "physicalBounds": {
@@ -97457,9 +97774,9 @@
               "partNumber": 2,
               "measureNumber": 18,
               "logicalBounds": {
-                "left": 11.776248326231569,
+                "left": 8.832186244673677,
                 "top": -3.05579554063136,
-                "right": 13.32176346796216,
+                "right": 9.991322600971621,
                 "bottom": -0.9358357219698354
               },
               "physicalBounds": {
@@ -97482,9 +97799,9 @@
         "partNumber": 2,
         "measureNumber": 18,
         "logicalBounds": {
-          "left": 1.6977535847307907,
+          "left": 1.2733151885480931,
           "top": 7.335972509505071,
-          "right": 1.6977535847307907,
+          "right": 1.2733151885480931,
           "bottom": 12.986912567592277
         },
         "physicalBounds": {
@@ -97504,9 +97821,9 @@
             "partNumber": 2,
             "measureNumber": 18,
             "logicalBounds": {
-              "left": 1.632127789700437,
+              "left": 1.2240958422753276,
               "top": 5.943570392148016,
-              "right": 3.177642931431028,
+              "right": 2.383232198573271,
               "bottom": 8.06353021080954
             },
             "physicalBounds": {
@@ -97528,9 +97845,9 @@
         "partNumber": 2,
         "measureNumber": 18,
         "logicalBounds": {
-          "left": 11.841874121261922,
+          "left": 8.881405590946441,
           "top": -1.6642483453695283,
-          "right": 11.841874121261922,
+          "right": 8.881405590946441,
           "bottom": 11.012251508581281
         },
         "physicalBounds": {
@@ -97550,9 +97867,9 @@
             "partNumber": 2,
             "measureNumber": 18,
             "logicalBounds": {
-              "left": 11.776248326231569,
+              "left": 8.832186244673677,
               "top": -3.05579554063136,
-              "right": 13.32176346796216,
+              "right": 9.991322600971621,
               "bottom": -0.9358357219698354
             },
             "physicalBounds": {
@@ -98013,9 +98330,9 @@
           "partNumber": 2,
           "measureNumber": 19,
           "logicalBounds": {
-            "left": 1.988338806913013,
+            "left": 1.4912541051847596,
             "top": 6.335751654630472,
-            "right": 1.988338806913013,
+            "right": 1.4912541051847596,
             "bottom": 10.984020081170103
           },
           "physicalBounds": {
@@ -98035,9 +98352,9 @@
               "partNumber": 2,
               "measureNumber": 19,
               "logicalBounds": {
-                "left": 1.9084962245304433,
+                "left": 1.4313721683978324,
                 "top": 4.9433495372734155,
-                "right": 3.802847314027567,
+                "right": 2.8521354855206753,
                 "bottom": 7.0633093559349405
               },
               "physicalBounds": {
@@ -98059,9 +98376,9 @@
           "partNumber": 2,
           "measureNumber": 19,
           "logicalBounds": {
-            "left": 6.962055513058268,
+            "left": 5.221541634793701,
             "top": 0.33617436611088813,
-            "right": 6.962055513058268,
+            "right": 5.221541634793701,
             "bottom": 10.015355350743663
           },
           "physicalBounds": {
@@ -98081,9 +98398,9 @@
               "partNumber": 2,
               "measureNumber": 19,
               "logicalBounds": {
-                "left": 6.881631552648641,
+                "left": 5.161223664486481,
                 "top": -1.0562277512461677,
-                "right": 8.775982642145765,
+                "right": 6.581986981609324,
                 "bottom": 1.0637320674153568
               },
               "physicalBounds": {
@@ -98106,9 +98423,9 @@
         "partNumber": 2,
         "measureNumber": 19,
         "logicalBounds": {
-          "left": 1.988338806913013,
+          "left": 1.4912541051847596,
           "top": 6.335751654630472,
-          "right": 1.988338806913013,
+          "right": 1.4912541051847596,
           "bottom": 10.984020081170103
         },
         "physicalBounds": {
@@ -98128,9 +98445,9 @@
             "partNumber": 2,
             "measureNumber": 19,
             "logicalBounds": {
-              "left": 1.9084962245304433,
+              "left": 1.4313721683978324,
               "top": 4.9433495372734155,
-              "right": 3.802847314027567,
+              "right": 2.8521354855206753,
               "bottom": 7.0633093559349405
             },
             "physicalBounds": {
@@ -98152,9 +98469,9 @@
         "partNumber": 2,
         "measureNumber": 19,
         "logicalBounds": {
-          "left": 6.962055513058268,
+          "left": 5.221541634793701,
           "top": 0.33617436611088813,
-          "right": 6.962055513058268,
+          "right": 5.221541634793701,
           "bottom": 10.015355350743663
         },
         "physicalBounds": {
@@ -98174,9 +98491,9 @@
             "partNumber": 2,
             "measureNumber": 19,
             "logicalBounds": {
-              "left": 6.881631552648641,
+              "left": 5.161223664486481,
               "top": -1.0562277512461677,
-              "right": 8.775982642145765,
+              "right": 6.581986981609324,
               "bottom": 1.0637320674153568
             },
             "physicalBounds": {
@@ -98221,9 +98538,9 @@
           "partNumber": 2,
           "measureNumber": 19,
           "logicalBounds": {
-            "left": 11.935163156508512,
+            "left": 8.951372367381385,
             "top": -2.663614278148904,
-            "right": 11.935163156508512,
+            "right": 8.951372367381385,
             "bottom": 3.992524181233985
           },
           "physicalBounds": {
@@ -98243,9 +98560,9 @@
               "partNumber": 2,
               "measureNumber": 19,
               "logicalBounds": {
-                "left": 11.855348258793898,
+                "left": 8.891511194095424,
                 "top": -4.056016395505959,
-                "right": 13.74969934829102,
+                "right": 10.312274511218266,
                 "bottom": -1.936056576844435
               },
               "physicalBounds": {
@@ -98267,9 +98584,9 @@
           "partNumber": 2,
           "measureNumber": 19,
           "logicalBounds": {
-            "left": 16.908879862653766,
+            "left": 12.681659896990325,
             "top": -3.6638161347547205,
-            "right": 16.908879862653766,
+            "right": 12.681659896990325,
             "bottom": 3.507783353241936
           },
           "physicalBounds": {
@@ -98289,9 +98606,9 @@
               "partNumber": 2,
               "measureNumber": 19,
               "logicalBounds": {
-                "left": 16.82845590224414,
+                "left": 12.621341926683105,
                 "top": -5.056218252111776,
-                "right": 18.722806991741262,
+                "right": 14.042105243805945,
                 "bottom": -2.9362584334502517
               },
               "physicalBounds": {
@@ -98314,9 +98631,9 @@
         "partNumber": 2,
         "measureNumber": 19,
         "logicalBounds": {
-          "left": 11.935163156508512,
+          "left": 8.951372367381385,
           "top": -2.663614278148904,
-          "right": 11.935163156508512,
+          "right": 8.951372367381385,
           "bottom": 3.992524181233985
         },
         "physicalBounds": {
@@ -98336,9 +98653,9 @@
             "partNumber": 2,
             "measureNumber": 19,
             "logicalBounds": {
-              "left": 11.855348258793898,
+              "left": 8.891511194095424,
               "top": -4.056016395505959,
-              "right": 13.74969934829102,
+              "right": 10.312274511218266,
               "bottom": -1.936056576844435
             },
             "physicalBounds": {
@@ -98360,9 +98677,9 @@
         "partNumber": 2,
         "measureNumber": 19,
         "logicalBounds": {
-          "left": 16.908879862653766,
+          "left": 12.681659896990325,
           "top": -3.6638161347547205,
-          "right": 16.908879862653766,
+          "right": 12.681659896990325,
           "bottom": 3.507783353241936
         },
         "physicalBounds": {
@@ -98382,9 +98699,9 @@
             "partNumber": 2,
             "measureNumber": 19,
             "logicalBounds": {
-              "left": 16.82845590224414,
+              "left": 12.621341926683105,
               "top": -5.056218252111776,
-              "right": 18.722806991741262,
+              "right": 14.042105243805945,
               "bottom": -2.9362584334502517
             },
             "physicalBounds": {
@@ -98429,9 +98746,9 @@
           "partNumber": 2,
           "measureNumber": 19,
           "logicalBounds": {
-            "left": 21.88198750610401,
+            "left": 16.411490629578008,
             "top": -4.66403698962932,
-            "right": 21.88198750610401,
+            "right": 16.411490629578008,
             "bottom": 4.484750327126441
           },
           "physicalBounds": {
@@ -98451,9 +98768,9 @@
               "partNumber": 2,
               "measureNumber": 19,
               "logicalBounds": {
-                "left": 21.802172608389395,
+                "left": 16.351629456292045,
                 "top": -6.056439106986375,
-                "right": 23.69652369788652,
+                "right": 17.77239277341489,
                 "bottom": -3.9364792883248514
               },
               "physicalBounds": {
@@ -98475,9 +98792,9 @@
           "partNumber": 2,
           "measureNumber": 19,
           "logicalBounds": {
-            "left": 26.855704212249265,
+            "left": 20.14177815918695,
             "top": -6.663623777283295,
-            "right": 26.855704212249265,
+            "right": 20.14177815918695,
             "bottom": 3.5152496728735594
           },
           "physicalBounds": {
@@ -98497,9 +98814,9 @@
               "partNumber": 2,
               "measureNumber": 19,
               "logicalBounds": {
-                "left": 26.77528025183964,
+                "left": 20.08146018887973,
                 "top": -8.056006896371569,
-                "right": 28.66963134133676,
+                "right": 21.502223506002572,
                 "bottom": -5.936047077710044
               },
               "physicalBounds": {
@@ -98522,9 +98839,9 @@
         "partNumber": 2,
         "measureNumber": 19,
         "logicalBounds": {
-          "left": 21.88198750610401,
+          "left": 16.411490629578008,
           "top": -4.66403698962932,
-          "right": 21.88198750610401,
+          "right": 16.411490629578008,
           "bottom": 4.484750327126441
         },
         "physicalBounds": {
@@ -98544,9 +98861,9 @@
             "partNumber": 2,
             "measureNumber": 19,
             "logicalBounds": {
-              "left": 21.802172608389395,
+              "left": 16.351629456292045,
               "top": -6.056439106986375,
-              "right": 23.69652369788652,
+              "right": 17.77239277341489,
               "bottom": -3.9364792883248514
             },
             "physicalBounds": {
@@ -98568,9 +98885,9 @@
         "partNumber": 2,
         "measureNumber": 19,
         "logicalBounds": {
-          "left": 26.855704212249265,
+          "left": 20.14177815918695,
           "top": -6.663623777283295,
-          "right": 26.855704212249265,
+          "right": 20.14177815918695,
           "bottom": 3.5152496728735594
         },
         "physicalBounds": {
@@ -98590,9 +98907,9 @@
             "partNumber": 2,
             "measureNumber": 19,
             "logicalBounds": {
-              "left": 26.77528025183964,
+              "left": 20.08146018887973,
               "top": -8.056006896371569,
-              "right": 28.66963134133676,
+              "right": 21.502223506002572,
               "bottom": -5.936047077710044
             },
             "physicalBounds": {
@@ -98845,9 +99162,9 @@
           "partNumber": 2,
           "measureNumber": 21,
           "logicalBounds": {
-            "left": 5.794123479894918,
+            "left": 4.345592609921189,
             "top": 7.335972509505071,
-            "right": 5.794123479894918,
+            "right": 4.345592609921189,
             "bottom": 12.988565416976378
           },
           "physicalBounds": {
@@ -98867,9 +99184,9 @@
               "partNumber": 2,
               "measureNumber": 21,
               "logicalBounds": {
-                "left": 5.742024941044927,
+                "left": 4.306518705783695,
                 "top": 5.943570392148016,
-                "right": 6.9736047914967445,
+                "right": 5.230203593622559,
                 "bottom": 8.06353021080954
               },
               "physicalBounds": {
@@ -98891,9 +99208,9 @@
           "partNumber": 2,
           "measureNumber": 21,
           "logicalBounds": {
-            "left": 8.771429040090508,
+            "left": 6.578571780067881,
             "top": 3.3359440121018973,
-            "right": 8.771429040090508,
+            "right": 6.578571780067881,
             "bottom": 12.329515472902532
           },
           "physicalBounds": {
@@ -98913,9 +99230,9 @@
               "partNumber": 2,
               "measureNumber": 21,
               "logicalBounds": {
-                "left": 8.719331626163084,
+                "left": 6.539498719622314,
                 "top": 1.9435608930136241,
-                "right": 9.950911476614902,
+                "right": 7.463183607461176,
                 "bottom": 4.063520711675149
               },
               "physicalBounds": {
@@ -98937,9 +99254,9 @@
           "partNumber": 2,
           "measureNumber": 21,
           "logicalBounds": {
-            "left": 11.748694103073683,
+            "left": 8.811520577305263,
             "top": -0.6640464887637114,
-            "right": 11.748694103073683,
+            "right": 8.811520577305263,
             "bottom": 11.670465528828686
           },
           "physicalBounds": {
@@ -98959,9 +99276,9 @@
               "partNumber": 2,
               "measureNumber": 21,
               "logicalBounds": {
-                "left": 11.696597814068825,
+                "left": 8.77244836055162,
                 "top": -2.0564486061207674,
-                "right": 12.928177664520643,
+                "right": 9.696133248390481,
                 "bottom": 0.06351121254075723
               },
               "physicalBounds": {
@@ -98983,9 +99300,9 @@
           "partNumber": 2,
           "measureNumber": 21,
           "logicalBounds": {
-            "left": 14.72600078819184,
+            "left": 11.04450059114388,
             "top": -1.6642483453695283,
-            "right": 14.72600078819184,
+            "right": 11.04450059114388,
             "bottom": 11.01141558475484
           },
           "physicalBounds": {
@@ -99005,9 +99322,9 @@
               "partNumber": 2,
               "measureNumber": 21,
               "logicalBounds": {
-                "left": 14.673903374264416,
+                "left": 11.005427530698313,
                 "top": -3.05579554063136,
-                "right": 15.905484349638801,
+                "right": 11.929113262229102,
                 "bottom": -0.9358357219698354
               },
               "physicalBounds": {
@@ -99030,9 +99347,9 @@
         "partNumber": 2,
         "measureNumber": 21,
         "logicalBounds": {
-          "left": 5.794123479894918,
+          "left": 4.345592609921189,
           "top": 7.335972509505071,
-          "right": 5.794123479894918,
+          "right": 4.345592609921189,
           "bottom": 12.988565416976378
         },
         "physicalBounds": {
@@ -99052,9 +99369,9 @@
             "partNumber": 2,
             "measureNumber": 21,
             "logicalBounds": {
-              "left": 5.742024941044927,
+              "left": 4.306518705783695,
               "top": 5.943570392148016,
-              "right": 6.9736047914967445,
+              "right": 5.230203593622559,
               "bottom": 8.06353021080954
             },
             "physicalBounds": {
@@ -99076,9 +99393,9 @@
         "partNumber": 2,
         "measureNumber": 21,
         "logicalBounds": {
-          "left": 14.72600078819184,
+          "left": 11.04450059114388,
           "top": -1.6642483453695283,
-          "right": 14.72600078819184,
+          "right": 11.04450059114388,
           "bottom": 11.01141558475484
         },
         "physicalBounds": {
@@ -99098,9 +99415,9 @@
             "partNumber": 2,
             "measureNumber": 21,
             "logicalBounds": {
-              "left": 14.673903374264416,
+              "left": 11.005427530698313,
               "top": -3.05579554063136,
-              "right": 15.905484349638801,
+              "right": 11.929113262229102,
               "bottom": -0.9358357219698354
             },
             "physicalBounds": {
@@ -99145,9 +99462,9 @@
           "partNumber": 2,
           "measureNumber": 21,
           "logicalBounds": {
-            "left": 5.794123479894918,
+            "left": 4.345592609921189,
             "top": 7.335972509505071,
-            "right": 5.794123479894918,
+            "right": 4.345592609921189,
             "bottom": 12.988565416976378
           },
           "physicalBounds": {
@@ -99167,9 +99484,9 @@
               "partNumber": 2,
               "measureNumber": 21,
               "logicalBounds": {
-                "left": 5.742024941044927,
+                "left": 4.306518705783695,
                 "top": 5.943570392148016,
-                "right": 6.9736047914967445,
+                "right": 5.230203593622559,
                 "bottom": 8.06353021080954
               },
               "physicalBounds": {
@@ -99191,9 +99508,9 @@
           "partNumber": 2,
           "measureNumber": 21,
           "logicalBounds": {
-            "left": 8.771429040090508,
+            "left": 6.578571780067881,
             "top": 3.3359440121018973,
-            "right": 8.771429040090508,
+            "right": 6.578571780067881,
             "bottom": 12.329515472902532
           },
           "physicalBounds": {
@@ -99213,9 +99530,9 @@
               "partNumber": 2,
               "measureNumber": 21,
               "logicalBounds": {
-                "left": 8.719331626163084,
+                "left": 6.539498719622314,
                 "top": 1.9435608930136241,
-                "right": 9.950911476614902,
+                "right": 7.463183607461176,
                 "bottom": 4.063520711675149
               },
               "physicalBounds": {
@@ -99237,9 +99554,9 @@
           "partNumber": 2,
           "measureNumber": 21,
           "logicalBounds": {
-            "left": 11.748694103073683,
+            "left": 8.811520577305263,
             "top": -0.6640464887637114,
-            "right": 11.748694103073683,
+            "right": 8.811520577305263,
             "bottom": 11.670465528828686
           },
           "physicalBounds": {
@@ -99259,9 +99576,9 @@
               "partNumber": 2,
               "measureNumber": 21,
               "logicalBounds": {
-                "left": 11.696597814068825,
+                "left": 8.77244836055162,
                 "top": -2.0564486061207674,
-                "right": 12.928177664520643,
+                "right": 9.696133248390481,
                 "bottom": 0.06351121254075723
               },
               "physicalBounds": {
@@ -99283,9 +99600,9 @@
           "partNumber": 2,
           "measureNumber": 21,
           "logicalBounds": {
-            "left": 14.72600078819184,
+            "left": 11.04450059114388,
             "top": -1.6642483453695283,
-            "right": 14.72600078819184,
+            "right": 11.04450059114388,
             "bottom": 11.01141558475484
           },
           "physicalBounds": {
@@ -99305,9 +99622,9 @@
               "partNumber": 2,
               "measureNumber": 21,
               "logicalBounds": {
-                "left": 14.673903374264416,
+                "left": 11.005427530698313,
                 "top": -3.05579554063136,
-                "right": 15.905484349638801,
+                "right": 11.929113262229102,
                 "bottom": -0.9358357219698354
               },
               "physicalBounds": {
@@ -99330,9 +99647,9 @@
         "partNumber": 2,
         "measureNumber": 21,
         "logicalBounds": {
-          "left": 5.794123479894918,
+          "left": 4.345592609921189,
           "top": 7.335972509505071,
-          "right": 5.794123479894918,
+          "right": 4.345592609921189,
           "bottom": 12.988565416976378
         },
         "physicalBounds": {
@@ -99352,9 +99669,9 @@
             "partNumber": 2,
             "measureNumber": 21,
             "logicalBounds": {
-              "left": 5.742024941044927,
+              "left": 4.306518705783695,
               "top": 5.943570392148016,
-              "right": 6.9736047914967445,
+              "right": 5.230203593622559,
               "bottom": 8.06353021080954
             },
             "physicalBounds": {
@@ -99376,9 +99693,9 @@
         "partNumber": 2,
         "measureNumber": 21,
         "logicalBounds": {
-          "left": 14.72600078819184,
+          "left": 11.04450059114388,
           "top": -1.6642483453695283,
-          "right": 14.72600078819184,
+          "right": 11.04450059114388,
           "bottom": 11.01141558475484
         },
         "physicalBounds": {
@@ -99398,9 +99715,9 @@
             "partNumber": 2,
             "measureNumber": 21,
             "logicalBounds": {
-              "left": 14.673903374264416,
+              "left": 11.005427530698313,
               "top": -3.05579554063136,
-              "right": 15.905484349638801,
+              "right": 11.929113262229102,
               "bottom": -0.9358357219698354
             },
             "physicalBounds": {
@@ -100485,9 +100802,9 @@
           "partNumber": 2,
           "measureNumber": 23,
           "logicalBounds": {
-            "left": 3.956886347951681,
+            "left": 2.967664760963761,
             "top": -2.0137025013595635,
-            "right": 3.956886347951681,
+            "right": 2.967664760963761,
             "bottom": 7.6795941969788
           },
           "physicalBounds": {
@@ -100507,9 +100824,9 @@
               "partNumber": 2,
               "measureNumber": 23,
               "logicalBounds": {
-                "left": 2.3333217120921765,
+                "left": 1.7499912840691323,
                 "top": 6.943772248753833,
-                "right": 4.028475946133978,
+                "right": 3.0213569596004834,
                 "bottom": 9.063732067415357
               },
               "physicalBounds": {
@@ -100531,9 +100848,9 @@
           "partNumber": 2,
           "measureNumber": 23,
           "logicalBounds": {
-            "left": 8.874662539930387,
+            "left": 6.6559969049477905,
             "top": -2.985672930554203,
-            "right": 8.874662539930387,
+            "right": 6.6559969049477905,
             "bottom": 1.6800169084592167
           },
           "physicalBounds": {
@@ -100553,9 +100870,9 @@
               "partNumber": 2,
               "measureNumber": 23,
               "logicalBounds": {
-                "left": 7.251097904070883,
+                "left": 5.438323428053162,
                 "top": 0.9441949602342486,
-                "right": 8.946252138112685,
+                "right": 6.709689103584514,
                 "bottom": 3.064154778895773
               },
               "physicalBounds": {
@@ -100578,9 +100895,9 @@
         "partNumber": 2,
         "measureNumber": 23,
         "logicalBounds": {
-          "left": 3.956886347951681,
+          "left": 2.967664760963761,
           "top": -2.0137025013595635,
-          "right": 3.956886347951681,
+          "right": 2.967664760963761,
           "bottom": 7.6795941969788
         },
         "physicalBounds": {
@@ -100600,9 +100917,9 @@
             "partNumber": 2,
             "measureNumber": 23,
             "logicalBounds": {
-              "left": 2.3333217120921765,
+              "left": 1.7499912840691323,
               "top": 6.943772248753833,
-              "right": 4.028475946133978,
+              "right": 3.0213569596004834,
               "bottom": 9.063732067415357
             },
             "physicalBounds": {
@@ -100624,9 +100941,9 @@
         "partNumber": 2,
         "measureNumber": 23,
         "logicalBounds": {
-          "left": 8.874662539930387,
+          "left": 6.6559969049477905,
           "top": -2.985672930554203,
-          "right": 8.874662539930387,
+          "right": 6.6559969049477905,
           "bottom": 1.6800169084592167
         },
         "physicalBounds": {
@@ -100646,9 +100963,9 @@
             "partNumber": 2,
             "measureNumber": 23,
             "logicalBounds": {
-              "left": 7.251097904070883,
+              "left": 5.438323428053162,
               "top": 0.9441949602342486,
-              "right": 8.946252138112685,
+              "right": 6.709689103584514,
               "bottom": 3.064154778895773
             },
             "physicalBounds": {
@@ -100693,9 +101010,9 @@
           "partNumber": 2,
           "measureNumber": 23,
           "logicalBounds": {
-            "left": 12.24031505245004,
+            "left": 9.180236289337529,
             "top": 0.33617436611088813,
-            "right": 12.24031505245004,
+            "right": 9.180236289337529,
             "bottom": 5.992927894445619
           },
           "physicalBounds": {
@@ -100715,9 +101032,9 @@
               "partNumber": 2,
               "measureNumber": 23,
               "logicalBounds": {
-                "left": 12.168335269590393,
+                "left": 9.126251452192795,
                 "top": -1.0562277512461677,
-                "right": 13.863489503632195,
+                "right": 10.397617127724146,
                 "bottom": 1.0637320674153568
               },
               "physicalBounds": {
@@ -100739,9 +101056,9 @@
           "partNumber": 2,
           "measureNumber": 23,
           "logicalBounds": {
-            "left": 17.157552417969548,
+            "left": 12.86816431347716,
             "top": -0.6640464887637114,
-            "right": 17.157552417969548,
+            "right": 12.86816431347716,
             "bottom": 5.507370140895911
           },
           "physicalBounds": {
@@ -100761,9 +101078,9 @@
               "partNumber": 2,
               "measureNumber": 23,
               "logicalBounds": {
-                "left": 17.086117654976675,
+                "left": 12.814588241232507,
                 "top": -2.0564486061207674,
-                "right": 18.781271889018477,
+                "right": 14.085953916763858,
                 "bottom": 0.06351121254075723
               },
               "physicalBounds": {
@@ -100786,9 +101103,9 @@
         "partNumber": 2,
         "measureNumber": 23,
         "logicalBounds": {
-          "left": 12.24031505245004,
+          "left": 9.180236289337529,
           "top": 0.33617436611088813,
-          "right": 12.24031505245004,
+          "right": 9.180236289337529,
           "bottom": 5.992927894445619
         },
         "physicalBounds": {
@@ -100808,9 +101125,9 @@
             "partNumber": 2,
             "measureNumber": 23,
             "logicalBounds": {
-              "left": 12.168335269590393,
+              "left": 9.126251452192795,
               "top": -1.0562277512461677,
-              "right": 13.863489503632195,
+              "right": 10.397617127724146,
               "bottom": 1.0637320674153568
             },
             "physicalBounds": {
@@ -100832,9 +101149,9 @@
         "partNumber": 2,
         "measureNumber": 23,
         "logicalBounds": {
-          "left": 17.157552417969548,
+          "left": 12.86816431347716,
           "top": -0.6640464887637114,
-          "right": 17.157552417969548,
+          "right": 12.86816431347716,
           "bottom": 5.507370140895911
         },
         "physicalBounds": {
@@ -100854,9 +101171,9 @@
             "partNumber": 2,
             "measureNumber": 23,
             "logicalBounds": {
-              "left": 17.086117654976675,
+              "left": 12.814588241232507,
               "top": -2.0564486061207674,
-              "right": 18.781271889018477,
+              "right": 14.085953916763858,
               "bottom": 0.06351121254075723
             },
             "physicalBounds": {
@@ -100901,9 +101218,9 @@
           "partNumber": 2,
           "measureNumber": 23,
           "logicalBounds": {
-            "left": 22.075328609948254,
+            "left": 16.55649645746119,
             "top": -2.663614278148904,
-            "right": 22.075328609948254,
+            "right": 16.55649645746119,
             "bottom": 4.485567252684099
           },
           "physicalBounds": {
@@ -100923,9 +101240,9 @@
               "partNumber": 2,
               "measureNumber": 23,
               "logicalBounds": {
-                "left": 22.003906233770536,
+                "left": 16.502929675327902,
                 "top": -4.056016395505959,
-                "right": 23.699066661219916,
+                "right": 17.774299995914937,
                 "bottom": -1.936056576844435
               },
               "physicalBounds": {
@@ -100947,9 +101264,9 @@
           "partNumber": 2,
           "measureNumber": 23,
           "logicalBounds": {
-            "left": 26.993117188742115,
+            "left": 20.244837891556585,
             "top": -4.66403698962932,
-            "right": 26.993117188742115,
+            "right": 20.244837891556585,
             "bottom": 3.514413749047118
           },
           "physicalBounds": {
@@ -100969,9 +101286,9 @@
               "partNumber": 2,
               "measureNumber": 23,
               "logicalBounds": {
-                "left": 26.921125019067315,
+                "left": 20.190843764300485,
                 "top": -6.056439106986375,
-                "right": 28.616285446516695,
+                "right": 21.46221408488752,
                 "bottom": -3.9364792883248514
               },
               "physicalBounds": {
@@ -100994,9 +101311,9 @@
         "partNumber": 2,
         "measureNumber": 23,
         "logicalBounds": {
-          "left": 22.075328609948254,
+          "left": 16.55649645746119,
           "top": -2.663614278148904,
-          "right": 22.075328609948254,
+          "right": 16.55649645746119,
           "bottom": 4.485567252684099
         },
         "physicalBounds": {
@@ -101016,9 +101333,9 @@
             "partNumber": 2,
             "measureNumber": 23,
             "logicalBounds": {
-              "left": 22.003906233770536,
+              "left": 16.502929675327902,
               "top": -4.056016395505959,
-              "right": 23.699066661219916,
+              "right": 17.774299995914937,
               "bottom": -1.936056576844435
             },
             "physicalBounds": {
@@ -101040,9 +101357,9 @@
         "partNumber": 2,
         "measureNumber": 23,
         "logicalBounds": {
-          "left": 26.993117188742115,
+          "left": 20.244837891556585,
           "top": -4.66403698962932,
-          "right": 26.993117188742115,
+          "right": 20.244837891556585,
           "bottom": 3.514413749047118
         },
         "physicalBounds": {
@@ -101062,9 +101379,9 @@
             "partNumber": 2,
             "measureNumber": 23,
             "logicalBounds": {
-              "left": 26.921125019067315,
+              "left": 20.190843764300485,
               "top": -6.056439106986375,
-              "right": 28.616285446516695,
+              "right": 21.46221408488752,
               "bottom": -3.9364792883248514
             },
             "physicalBounds": {
@@ -101723,9 +102040,9 @@
           "partNumber": 2,
           "measureNumber": 15,
           "logicalBounds": {
-            "left": 12.335551761630043,
+            "left": 9.251663821222532,
             "top": -2.0566445076202893,
-            "right": 14.056307887831021,
+            "right": 10.542230915873265,
             "bottom": 0.06353684980536614
           },
           "physicalBounds": {
@@ -101745,9 +102062,9 @@
           "partNumber": 2,
           "measureNumber": 15,
           "logicalBounds": {
-            "left": 22.09768548480852,
+            "left": 16.57326411360639,
             "top": -3.0569698869722384,
-            "right": 23.818441611009497,
+            "right": 17.863831208257125,
             "bottom": -0.9367885295465826
           },
           "physicalBounds": {
@@ -101794,9 +102111,9 @@
           "partNumber": 2,
           "measureNumber": 11,
           "logicalBounds": {
-            "left": 8.669944523254916,
+            "left": 6.502458392441187,
             "top": -1.0563381285224689,
-            "right": 10.519224748765442,
+            "right": 7.8894185615740815,
             "bottom": 1.0638432289031865
           },
           "physicalBounds": {
@@ -101816,9 +102133,9 @@
           "partNumber": 2,
           "measureNumber": 12,
           "logicalBounds": {
-            "left": 1.8901464634602023,
+            "left": 1.4176098475951517,
             "top": -1.0563381285224689,
-            "right": 3.3457445039619267,
+            "right": 2.509308377971445,
             "bottom": 1.0638432289031865
           },
           "physicalBounds": {
@@ -101865,9 +102182,9 @@
           "partNumber": 2,
           "measureNumber": 11,
           "logicalBounds": {
-            "left": 8.669944523254916,
+            "left": 6.502458392441187,
             "top": -1.0563381285224689,
-            "right": 10.519224748765442,
+            "right": 7.8894185615740815,
             "bottom": 1.0638432289031865
           },
           "physicalBounds": {
@@ -101887,9 +102204,9 @@
           "partNumber": 2,
           "measureNumber": 12,
           "logicalBounds": {
-            "left": 1.8901464634602023,
+            "left": 1.4176098475951517,
             "top": -1.0563381285224689,
-            "right": 3.3457445039619267,
+            "right": 2.509308377971445,
             "bottom": 1.0638432289031865
           },
           "physicalBounds": {
@@ -101936,9 +102253,9 @@
           "partNumber": 2,
           "measureNumber": 14,
           "logicalBounds": {
-            "left": 10.218113302576938,
+            "left": 7.663584976932704,
             "top": -0.05684876035216971,
-            "right": 12.080993612394522,
+            "right": 9.060745209295892,
             "bottom": 2.0633325970734857
           },
           "physicalBounds": {
@@ -101958,9 +102275,9 @@
           "partNumber": 2,
           "measureNumber": 14,
           "logicalBounds": {
-            "left": 15.791372251860645,
+            "left": 11.843529188895484,
             "top": -0.05684876035216971,
-            "right": 17.654252561678227,
+            "right": 13.24068942125867,
             "bottom": 2.0633325970734857
           },
           "physicalBounds": {
@@ -102007,9 +102324,9 @@
           "partNumber": 2,
           "measureNumber": 15,
           "logicalBounds": {
-            "left": 7.4544849000408036,
+            "left": 5.590863675030603,
             "top": 1.943763997843471,
-            "right": 9.175241026241784,
+            "right": 6.881430769681337,
             "bottom": 4.0639453552691265
           },
           "physicalBounds": {
@@ -102029,9 +102346,9 @@
           "partNumber": 2,
           "measureNumber": 15,
           "logicalBounds": {
-            "left": 22.09768548480852,
+            "left": 16.57326411360639,
             "top": 1.943763997843471,
-            "right": 23.818441611009497,
+            "right": 17.863831208257125,
             "bottom": 4.0639453552691265
           },
           "physicalBounds": {
@@ -102078,9 +102395,9 @@
           "partNumber": 2,
           "measureNumber": 11,
           "logicalBounds": {
-            "left": 8.669944523254916,
+            "left": 6.502458392441187,
             "top": 4.94388512446354,
-            "right": 10.519224748765442,
+            "right": 7.8894185615740815,
             "bottom": 7.064066481889196
           },
           "physicalBounds": {
@@ -102100,9 +102417,9 @@
           "partNumber": 2,
           "measureNumber": 12,
           "logicalBounds": {
-            "left": 1.8901464634602023,
+            "left": 1.4176098475951517,
             "top": 4.94388512446354,
-            "right": 3.3457445039619267,
+            "right": 2.509308377971445,
             "bottom": 7.064066481889196
           },
           "physicalBounds": {
@@ -102149,9 +102466,9 @@
           "partNumber": 2,
           "measureNumber": 15,
           "logicalBounds": {
-            "left": 2.573971287724889,
+            "left": 1.9304784657936667,
             "top": 5.9441725033072315,
-            "right": 4.294727413925868,
+            "right": 3.221045560444401,
             "bottom": 8.064353860732888
           },
           "physicalBounds": {
@@ -102171,9 +102488,9 @@
           "partNumber": 2,
           "measureNumber": 15,
           "logicalBounds": {
-            "left": 22.09768548480852,
+            "left": 16.57326411360639,
             "top": 5.9441725033072315,
-            "right": 23.818441611009497,
+            "right": 17.863831208257125,
             "bottom": 8.064353860732888
           },
           "physicalBounds": {
@@ -102221,9 +102538,9 @@
           "partNumber": 2,
           "measureNumber": 16,
           "logicalBounds": {
-            "left": 8.842519229797691,
+            "left": 6.6318894223482685,
             "top": 2.4843276156460243,
-            "right": 8.842519229797691,
+            "right": 6.6318894223482685,
             "bottom": 10.680218765065034
           },
           "physicalBounds": {
@@ -102243,9 +102560,9 @@
               "partNumber": 2,
               "measureNumber": 16,
               "logicalBounds": {
-                "left": 7.342601782453391,
+                "left": 5.506951336840043,
                 "top": 9.943560893013624,
-                "right": 8.908762701207653,
+                "right": 6.68157202590574,
                 "bottom": 12.063520711675148
               },
               "physicalBounds": {
@@ -102361,9 +102678,9 @@
           "partNumber": 2,
           "measureNumber": 17,
           "logicalBounds": {
-            "left": 8.439687952158732,
+            "left": 6.329765964119049,
             "top": -4.056016395505959,
-            "right": 9.967910857991043,
+            "right": 7.4759331434932825,
             "bottom": -1.936056576844435
           },
           "physicalBounds": {
@@ -102383,9 +102700,9 @@
           "partNumber": 2,
           "measureNumber": 17,
           "logicalBounds": {
-            "left": 11.783036741844374,
+            "left": 8.837277556383281,
             "top": -5.056218252111776,
-            "right": 13.311259647676684,
+            "right": 9.983444735757512,
             "bottom": -2.9362584334502517
           },
           "physicalBounds": {
@@ -102432,9 +102749,9 @@
           "partNumber": 2,
           "measureNumber": 18,
           "logicalBounds": {
-            "left": 8.394876696283488,
+            "left": 6.296157522212615,
             "top": -2.0564486061207674,
-            "right": 9.94039183801408,
+            "right": 7.45529387851056,
             "bottom": 0.06351121254075723
           },
           "physicalBounds": {
@@ -102454,9 +102771,9 @@
           "partNumber": 2,
           "measureNumber": 18,
           "logicalBounds": {
-            "left": 14.153029185033532,
+            "left": 10.614771888775149,
             "top": -2.0564486061207674,
-            "right": 15.698544326764122,
+            "right": 11.773908245073091,
             "bottom": 0.06351121254075723
           },
           "physicalBounds": {
@@ -102503,9 +102820,9 @@
           "partNumber": 2,
           "measureNumber": 17,
           "logicalBounds": {
-            "left": 5.096193991263599,
+            "left": 3.822145493447699,
             "top": -0.0560258946403509,
-            "right": 6.62441689709591,
+            "right": 4.9683126728219325,
             "bottom": 2.0639339240211734
           },
           "physicalBounds": {
@@ -102525,9 +102842,9 @@
           "partNumber": 2,
           "measureNumber": 17,
           "logicalBounds": {
-            "left": 15.825725499226396,
+            "left": 11.869294124419797,
             "top": -0.0560258946403509,
-            "right": 17.353948405058706,
+            "right": 13.01546130379403,
             "bottom": 2.0639339240211734
           },
           "physicalBounds": {
@@ -102574,9 +102891,9 @@
           "partNumber": 2,
           "measureNumber": 18,
           "logicalBounds": {
-            "left": 5.013505066335407,
+            "left": 3.760128799751555,
             "top": 1.943579891282407,
-            "right": 6.5590202080659985,
+            "right": 4.919265156049499,
             "bottom": 4.063539709943932
           },
           "physicalBounds": {
@@ -102596,9 +102913,9 @@
           "partNumber": 2,
           "measureNumber": 18,
           "logicalBounds": {
-            "left": 15.567157216218066,
+            "left": 11.67536791216355,
             "top": 1.943579891282407,
-            "right": 17.112672357948657,
+            "right": 12.834504268461494,
             "bottom": 4.063539709943932
           },
           "physicalBounds": {
@@ -102645,9 +102962,9 @@
           "partNumber": 2,
           "measureNumber": 17,
           "logicalBounds": {
-            "left": 1.7527028221224943,
+            "left": 1.3145271165918708,
             "top": 3.943964606225258,
-            "right": 3.280928519708833,
+            "right": 2.4606963897816247,
             "bottom": 6.063924424886782
           },
           "physicalBounds": {
@@ -102667,9 +102984,9 @@
           "partNumber": 2,
           "measureNumber": 17,
           "logicalBounds": {
-            "left": 15.825725499226396,
+            "left": 11.869294124419797,
             "top": 3.943964606225258,
-            "right": 17.353948405058706,
+            "right": 13.01546130379403,
             "bottom": 6.063924424886782
           },
           "physicalBounds": {
@@ -102716,9 +103033,9 @@
           "partNumber": 2,
           "measureNumber": 18,
           "logicalBounds": {
-            "left": 1.632127789700437,
+            "left": 1.2240958422753276,
             "top": 5.943570392148016,
-            "right": 3.177642931431028,
+            "right": 2.383232198573271,
             "bottom": 8.06353021080954
           },
           "physicalBounds": {
@@ -102738,9 +103055,9 @@
           "partNumber": 2,
           "measureNumber": 18,
           "logicalBounds": {
-            "left": 15.567157216218066,
+            "left": 11.67536791216355,
             "top": 5.943570392148016,
-            "right": 17.112672357948657,
+            "right": 12.834504268461494,
             "bottom": 8.06353021080954
           },
           "physicalBounds": {
@@ -102787,9 +103104,9 @@
           "partNumber": 2,
           "measureNumber": 21,
           "logicalBounds": {
-            "left": 17.69481318300584,
+            "left": 13.271109887254381,
             "top": -5.056218252111776,
-            "right": 18.926391908535095,
+            "right": 14.194793931401321,
             "bottom": -2.9362584334502517
           },
           "physicalBounds": {
@@ -102809,9 +103126,9 @@
           "partNumber": 2,
           "measureNumber": 22,
           "logicalBounds": {
-            "left": 3.359239575247301,
+            "left": 2.5194296814354757,
             "top": -5.056218252111776,
-            "right": 5.004541700937333,
+            "right": 3.7534062757029996,
             "bottom": -2.9362584334502517
           },
           "physicalBounds": {
@@ -102858,9 +103175,9 @@
           "partNumber": 2,
           "measureNumber": 21,
           "logicalBounds": {
-            "left": 17.69481318300584,
+            "left": 13.271109887254381,
             "top": -3.05579554063136,
-            "right": 18.926391908535095,
+            "right": 14.194793931401321,
             "bottom": -0.9358357219698354
           },
           "physicalBounds": {
@@ -102880,9 +103197,9 @@
           "partNumber": 2,
           "measureNumber": 22,
           "logicalBounds": {
-            "left": 3.359239575247301,
+            "left": 2.5194296814354757,
             "top": -3.05579554063136,
-            "right": 5.004541700937333,
+            "right": 3.7534062757029996,
             "bottom": -0.9358357219698354
           },
           "physicalBounds": {
@@ -102929,9 +103246,9 @@
           "partNumber": 2,
           "measureNumber": 21,
           "logicalBounds": {
-            "left": 11.696597814068825,
+            "left": 8.77244836055162,
             "top": -2.0564486061207674,
-            "right": 12.928177664520643,
+            "right": 9.696133248390481,
             "bottom": 0.06351121254075723
           },
           "physicalBounds": {
@@ -102951,9 +103268,9 @@
           "partNumber": 2,
           "measureNumber": 21,
           "logicalBounds": {
-            "left": 16.568011995221198,
+            "left": 12.426008996415899,
             "top": -2.0564486061207674,
-            "right": 17.79959297059558,
+            "right": 13.349694727946684,
             "bottom": 0.06351121254075723
           },
           "physicalBounds": {
@@ -103000,9 +103317,9 @@
           "partNumber": 2,
           "measureNumber": 21,
           "logicalBounds": {
-            "left": 16.568011995221198,
+            "left": 12.426008996415899,
             "top": -2.0564486061207674,
-            "right": 17.79959297059558,
+            "right": 13.349694727946684,
             "bottom": 0.06351121254075723
           },
           "physicalBounds": {
@@ -103022,9 +103339,9 @@
           "partNumber": 2,
           "measureNumber": 22,
           "logicalBounds": {
-            "left": 1.8541202227497133,
+            "left": 1.3905901670622849,
             "top": -2.0564486061207674,
-            "right": 3.499422348439745,
+            "right": 2.6245667613298087,
             "bottom": 0.06351121254075723
           },
           "physicalBounds": {
@@ -103071,9 +103388,9 @@
           "partNumber": 2,
           "measureNumber": 21,
           "logicalBounds": {
-            "left": 8.719331626163084,
+            "left": 6.539498719622314,
             "top": 1.9435608930136241,
-            "right": 9.950911476614902,
+            "right": 7.463183607461176,
             "bottom": 4.063520711675149
           },
           "physicalBounds": {
@@ -103093,9 +103410,9 @@
           "partNumber": 2,
           "measureNumber": 21,
           "logicalBounds": {
-            "left": 17.69481318300584,
+            "left": 13.271109887254381,
             "top": 1.9435608930136241,
-            "right": 18.926391908535095,
+            "right": 14.194793931401321,
             "bottom": 4.063520711675149
           },
           "physicalBounds": {
@@ -103142,9 +103459,9 @@
           "partNumber": 2,
           "measureNumber": 21,
           "logicalBounds": {
-            "left": 17.69481318300584,
+            "left": 13.271109887254381,
             "top": 1.9435608930136241,
-            "right": 18.926391908535095,
+            "right": 14.194793931401321,
             "bottom": 4.063520711675149
           },
           "physicalBounds": {
@@ -103164,9 +103481,9 @@
           "partNumber": 2,
           "measureNumber": 22,
           "logicalBounds": {
-            "left": 3.359239575247301,
+            "left": 2.5194296814354757,
             "top": 1.9435608930136241,
-            "right": 5.004541700937333,
+            "right": 3.7534062757029996,
             "bottom": 4.063520711675149
           },
           "physicalBounds": {
@@ -103213,9 +103530,9 @@
           "partNumber": 2,
           "measureNumber": 21,
           "logicalBounds": {
-            "left": 5.742024941044927,
+            "left": 4.306518705783695,
             "top": 5.943570392148016,
-            "right": 6.9736047914967445,
+            "right": 5.230203593622559,
             "bottom": 8.06353021080954
           },
           "physicalBounds": {
@@ -103235,9 +103552,9 @@
           "partNumber": 2,
           "measureNumber": 21,
           "logicalBounds": {
-            "left": 17.69481318300584,
+            "left": 13.271109887254381,
             "top": 5.943570392148016,
-            "right": 18.926391908535095,
+            "right": 14.194793931401321,
             "bottom": 8.06353021080954
           },
           "physicalBounds": {
@@ -103284,9 +103601,9 @@
           "partNumber": 2,
           "measureNumber": 21,
           "logicalBounds": {
-            "left": 17.69481318300584,
+            "left": 13.271109887254381,
             "top": 5.943570392148016,
-            "right": 18.926391908535095,
+            "right": 14.194793931401321,
             "bottom": 8.06353021080954
           },
           "physicalBounds": {
@@ -103306,9 +103623,9 @@
           "partNumber": 2,
           "measureNumber": 22,
           "logicalBounds": {
-            "left": 3.359239575247301,
+            "left": 2.5194296814354757,
             "top": 5.943570392148016,
-            "right": 5.004541700937333,
+            "right": 3.7534062757029996,
             "bottom": 8.06353021080954
           },
           "physicalBounds": {
@@ -103426,9 +103743,9 @@
       "measureNumber": 14,
       "denominator": 8,
       "logicalBounds": {
-        "left": 2.8166651730869803,
+        "left": 2.1124988798152353,
         "top": 0.3671419105230532,
-        "right": 4.399212297416713,
+        "right": 3.2994092230625345,
         "bottom": 4.039948034304959
       },
       "physicalBounds": {
@@ -105526,9 +105843,9 @@
       "partNumber": 2,
       "measureNumber": 11,
       "logicalBounds": {
-        "left": 11.229594643861091,
+        "left": 8.422195982895818,
         "top": -1.4003377295171322,
-        "right": 11.798604723616107,
+        "right": 8.84895354271208,
         "bottom": -0.6002750286785086
       },
       "physicalBounds": {
@@ -105545,9 +105862,9 @@
         "partNumber": 2,
         "measureNumber": 11,
         "logicalBounds": {
-          "left": 8.669944523254916,
+          "left": 6.502458392441187,
           "top": -1.0563381285224689,
-          "right": 10.519224748765442,
+          "right": 7.8894185615740815,
           "bottom": 1.0638432289031865
         },
         "physicalBounds": {
@@ -105580,9 +105897,9 @@
       "partNumber": 2,
       "measureNumber": 11,
       "logicalBounds": {
-        "left": 11.229594643861091,
+        "left": 8.422195982895818,
         "top": 0.5994580177509874,
-        "right": 11.798604723616107,
+        "right": 8.84895354271208,
         "bottom": 1.3995207185896112
       },
       "physicalBounds": {
@@ -105599,9 +105916,9 @@
         "partNumber": 2,
         "measureNumber": 11,
         "logicalBounds": {
-          "left": 8.669944523254916,
+          "left": 6.502458392441187,
           "top": 0.9434386184915223,
-          "right": 10.519224748765442,
+          "right": 7.8894185615740815,
           "bottom": 3.063619975917178
         },
         "physicalBounds": {
@@ -105634,9 +105951,9 @@
       "partNumber": 2,
       "measureNumber": 11,
       "logicalBounds": {
-        "left": 11.229594643861091,
+        "left": 8.422195982895818,
         "top": 4.599866523214748,
-        "right": 11.798604723616107,
+        "right": 8.84895354271208,
         "bottom": 5.399929224053372
       },
       "physicalBounds": {
@@ -105653,9 +105970,9 @@
         "partNumber": 2,
         "measureNumber": 11,
         "logicalBounds": {
-          "left": 8.669944523254916,
+          "left": 6.502458392441187,
           "top": 4.94388512446354,
-          "right": 10.519224748765442,
+          "right": 7.8894185615740815,
           "bottom": 7.064066481889196
         },
         "physicalBounds": {
@@ -105904,9 +106221,9 @@
       "partNumber": 2,
       "measureNumber": 12,
       "logicalBounds": {
-        "left": 3.904888519852474,
+        "left": 2.9286663898893557,
         "top": -1.4003377295171322,
-        "right": 4.352765862731118,
+        "right": 3.2645743970483387,
         "bottom": -0.6002750286785086
       },
       "physicalBounds": {
@@ -105923,9 +106240,9 @@
         "partNumber": 2,
         "measureNumber": 12,
         "logicalBounds": {
-          "left": 1.8901464634602023,
+          "left": 1.4176098475951517,
           "top": -1.0563381285224689,
-          "right": 3.3457445039619267,
+          "right": 2.509308377971445,
           "bottom": 1.0638432289031865
         },
         "physicalBounds": {
@@ -105958,9 +106275,9 @@
       "partNumber": 2,
       "measureNumber": 12,
       "logicalBounds": {
-        "left": 3.904888519852474,
+        "left": 2.9286663898893557,
         "top": 0.5994580177509874,
-        "right": 4.352765862731118,
+        "right": 3.2645743970483387,
         "bottom": 1.3995207185896112
       },
       "physicalBounds": {
@@ -105977,9 +106294,9 @@
         "partNumber": 2,
         "measureNumber": 12,
         "logicalBounds": {
-          "left": 1.8901464634602023,
+          "left": 1.4176098475951517,
           "top": 0.9434386184915223,
-          "right": 3.3457445039619267,
+          "right": 2.509308377971445,
           "bottom": 3.063619975917178
         },
         "physicalBounds": {
@@ -106012,9 +106329,9 @@
       "partNumber": 2,
       "measureNumber": 12,
       "logicalBounds": {
-        "left": 3.904888519852474,
+        "left": 2.9286663898893557,
         "top": 4.599866523214748,
-        "right": 4.352765862731118,
+        "right": 3.2645743970483387,
         "bottom": 5.399929224053372
       },
       "physicalBounds": {
@@ -106031,9 +106348,9 @@
         "partNumber": 2,
         "measureNumber": 12,
         "logicalBounds": {
-          "left": 1.8901464634602023,
+          "left": 1.4176098475951517,
           "top": 4.94388512446354,
-          "right": 3.3457445039619267,
+          "right": 2.509308377971445,
           "bottom": 7.064066481889196
         },
         "physicalBounds": {
@@ -106229,9 +106546,9 @@
       "partNumber": 2,
       "measureNumber": 13,
       "logicalBounds": {
-        "left": 5.904293091638889,
+        "left": 4.428219818729167,
         "top": -5.400746234980893,
-        "right": 6.635473500898947,
+        "right": 4.976605125674211,
         "bottom": -4.600683534142269
       },
       "physicalBounds": {
@@ -106248,9 +106565,9 @@
         "partNumber": 2,
         "measureNumber": 13,
         "logicalBounds": {
-          "left": 2.8706532177533144,
+          "left": 2.1529899133149857,
           "top": -5.680771980325237,
-          "right": 4.7351736800100825,
+          "right": 3.551380260007562,
           "bottom": -4.313152688417207
         },
         "physicalBounds": {
@@ -106283,9 +106600,9 @@
       "partNumber": 2,
       "measureNumber": 13,
       "logicalBounds": {
-        "left": 5.904293091638889,
+        "left": 4.428219818729167,
         "top": 4.599866523214748,
-        "right": 6.635473500898947,
+        "right": 4.976605125674211,
         "bottom": 5.399929224053372
       },
       "physicalBounds": {
@@ -106302,9 +106619,9 @@
         "partNumber": 2,
         "measureNumber": 13,
         "logicalBounds": {
-          "left": 2.6147366016310873,
+          "left": 1.9610524512233156,
           "top": 4.94388512446354,
-          "right": 4.991081613929293,
+          "right": 3.7433112104469695,
           "bottom": 7.064066481889196
         },
         "physicalBounds": {
@@ -106553,9 +106870,9 @@
       "partNumber": 2,
       "measureNumber": 14,
       "logicalBounds": {
-        "left": 5.395433729869288,
+        "left": 4.046575297401966,
         "top": 10.600906787128277,
-        "right": 5.96862348292952,
+        "right": 4.4764676121971405,
         "bottom": 11.400969487966902
       },
       "physicalBounds": {
@@ -106572,9 +106889,9 @@
         "partNumber": 2,
         "measureNumber": 14,
         "logicalBounds": {
-          "left": 2.8166651730869803,
+          "left": 2.1124988798152353,
           "top": 8.9442936299273,
-          "right": 4.679538676718648,
+          "right": 3.509654007538986,
           "bottom": 11.064474987352956
         },
         "physicalBounds": {
@@ -106661,9 +106978,9 @@
       "partNumber": 2,
       "measureNumber": 20,
       "logicalBounds": {
-        "left": 12.561363470978058,
+        "left": 9.421022603233544,
         "top": -3.3997781952119612,
-        "right": 13.591341511664245,
+        "right": 10.193506133748183,
         "bottom": -2.5997990933076225
       },
       "physicalBounds": {
@@ -106680,9 +106997,9 @@
         "partNumber": 2,
         "measureNumber": 20,
         "logicalBounds": {
-          "left": 7.92753854498602,
+          "left": 5.945653908739515,
           "top": -4.056016395505959,
-          "right": 11.274991637604671,
+          "right": 8.456243728203503,
           "bottom": -1.936056576844435
         },
         "physicalBounds": {
@@ -106715,9 +107032,9 @@
       "partNumber": 2,
       "measureNumber": 20,
       "logicalBounds": {
-        "left": 12.561363470978058,
+        "left": 9.421022603233544,
         "top": 2.599818091576405,
-        "right": 13.591341511664245,
+        "right": 10.193506133748183,
         "bottom": 3.3997971934807443
       },
       "physicalBounds": {
@@ -106734,9 +107051,9 @@
         "partNumber": 2,
         "measureNumber": 20,
         "logicalBounds": {
-          "left": 7.92753854498602,
+          "left": 5.945653908739515,
           "top": 1.943579891282407,
-          "right": 11.274991637604671,
+          "right": 8.456243728203503,
           "bottom": 4.063539709943932
         },
         "physicalBounds": {
@@ -106769,9 +107086,9 @@
       "partNumber": 2,
       "measureNumber": 22,
       "logicalBounds": {
-        "left": 5.636818907194951,
+        "left": 4.2276141803962135,
         "top": -3.3997781952119612,
-        "right": 6.143063865478608,
+        "right": 4.607297899108955,
         "bottom": -2.5997990933076225
       },
       "physicalBounds": {
@@ -106788,9 +107105,9 @@
         "partNumber": 2,
         "measureNumber": 22,
         "logicalBounds": {
-          "left": 3.359239575247301,
+          "left": 2.5194296814354757,
           "top": -5.056218252111776,
-          "right": 5.004541700937333,
+          "right": 3.7534062757029996,
           "bottom": -2.9362584334502517
         },
         "physicalBounds": {
@@ -106823,9 +107140,9 @@
       "partNumber": 2,
       "measureNumber": 22,
       "logicalBounds": {
-        "left": 5.636818907194951,
+        "left": 4.2276141803962135,
         "top": -1.400210405826769,
-        "right": 6.143063865478608,
+        "right": 4.607297899108955,
         "bottom": -0.6002313039224301
       },
       "physicalBounds": {
@@ -106842,9 +107159,9 @@
         "partNumber": 2,
         "measureNumber": 22,
         "logicalBounds": {
-          "left": 3.359239575247301,
+          "left": 2.5194296814354757,
           "top": -3.05579554063136,
-          "right": 5.004541700937333,
+          "right": 3.7534062757029996,
           "bottom": -0.9358357219698354
         },
         "physicalBounds": {
@@ -106877,9 +107194,9 @@
       "partNumber": 2,
       "measureNumber": 22,
       "logicalBounds": {
-        "left": 5.636818907194951,
+        "left": 4.2276141803962135,
         "top": 2.5997990933076225,
-        "right": 6.143063865478608,
+        "right": 4.607297899108955,
         "bottom": 3.3997781952119612
       },
       "physicalBounds": {
@@ -106896,9 +107213,9 @@
         "partNumber": 2,
         "measureNumber": 22,
         "logicalBounds": {
-          "left": 3.359239575247301,
+          "left": 2.5194296814354757,
           "top": 1.9435608930136241,
-          "right": 5.004541700937333,
+          "right": 3.7534062757029996,
           "bottom": 4.063520711675149
         },
         "physicalBounds": {
@@ -106931,9 +107248,9 @@
       "partNumber": 2,
       "measureNumber": 22,
       "logicalBounds": {
-        "left": 5.636818907194951,
+        "left": 4.2276141803962135,
         "top": 6.599808592442014,
-        "right": 6.143063865478608,
+        "right": 4.607297899108955,
         "bottom": 7.399787694346353
       },
       "physicalBounds": {
@@ -106950,9 +107267,9 @@
         "partNumber": 2,
         "measureNumber": 22,
         "logicalBounds": {
-          "left": 3.359239575247301,
+          "left": 2.5194296814354757,
           "top": 5.943570392148016,
-          "right": 5.004541700937333,
+          "right": 3.7534062757029996,
           "bottom": 8.06353021080954
         },
         "physicalBounds": {
@@ -107093,9 +107410,9 @@
       "partNumber": 2,
       "measureNumber": 24,
       "logicalBounds": {
-        "left": 9.66377343602588,
+        "left": 7.24783007701941,
         "top": -1.400210405826769,
-        "right": 10.747225414686874,
+        "right": 8.060419061015155,
         "bottom": -0.6002313039224301
       },
       "physicalBounds": {
@@ -107112,9 +107429,9 @@
         "partNumber": 2,
         "measureNumber": 24,
         "logicalBounds": {
-          "left": 4.789371665780414,
+          "left": 3.5920287493353102,
           "top": -2.0564486061207674,
-          "right": 8.310616326740668,
+          "right": 6.232962245055501,
           "bottom": 0.06351121254075723
         },
         "physicalBounds": {
@@ -107147,9 +107464,9 @@
       "partNumber": 2,
       "measureNumber": 24,
       "logicalBounds": {
-        "left": 9.66377343602588,
+        "left": 7.24783007701941,
         "top": 4.600202806519256,
-        "right": 10.747225414686874,
+        "right": 8.060419061015155,
         "bottom": 5.400181908423595
       },
       "physicalBounds": {
@@ -107166,9 +107483,9 @@
         "partNumber": 2,
         "measureNumber": 24,
         "logicalBounds": {
-          "left": 4.789371665780414,
+          "left": 3.5920287493353102,
           "top": 3.943964606225258,
-          "right": 8.310616326740668,
+          "right": 6.232962245055501,
           "bottom": 6.063924424886782
         },
         "physicalBounds": {
@@ -107255,9 +107572,9 @@
       "partNumber": 2,
       "measureNumber": 25,
       "logicalBounds": {
-        "left": 6.546636248206378,
+        "left": 4.909977186154784,
         "top": -3.3997781952119612,
-        "right": 7.2421261264981265,
+        "right": 5.431594594873594,
         "bottom": -2.5997990933076225
       },
       "physicalBounds": {
@@ -107274,9 +107591,9 @@
         "partNumber": 2,
         "measureNumber": 25,
         "logicalBounds": {
-          "left": 3.418352241640945,
+          "left": 2.5637641812307086,
           "top": -3.05579554063136,
-          "right": 5.678710862900146,
+          "right": 4.259033147175109,
           "bottom": -0.9358357219698354
         },
         "physicalBounds": {
@@ -107309,9 +107626,9 @@
       "partNumber": 2,
       "measureNumber": 25,
       "logicalBounds": {
-        "left": 6.546636248206378,
+        "left": 4.909977186154784,
         "top": 0.6002123056536474,
-        "right": 7.2421261264981265,
+        "right": 5.431594594873594,
         "bottom": 1.4001914075579862
       },
       "physicalBounds": {
@@ -107328,9 +107645,9 @@
         "partNumber": 2,
         "measureNumber": 25,
         "logicalBounds": {
-          "left": 3.418352241640945,
+          "left": 2.5637641812307086,
           "top": 0.9441949602342486,
-          "right": 5.678710862900146,
+          "right": 4.259033147175109,
           "bottom": 3.064154778895773
         },
         "physicalBounds": {
