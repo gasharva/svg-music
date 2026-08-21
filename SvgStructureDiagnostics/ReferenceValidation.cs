@@ -304,23 +304,52 @@ public static class ReferenceValidation
     {
         var sb = new StringBuilder();
         sb.AppendLine("<!doctype html><html><head><meta charset=\"utf-8\"><title>Resolver reference checks</title>");
-        sb.AppendLine("<style>body{font-family:Segoe UI,Arial,sans-serif;margin:24px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccc;padding:7px}th{background:#eee}.ok{background:#e9f8e9}.missing{background:#ffdede}.extra{background:#ffe8c2}.group td{background:#ddd;font-weight:700}</style></head><body>");
-        sb.AppendLine("<h1>Resolver reference checks</h1><p><b>Part</b> here means a physical staff in the SVG. A single MusicXML piano &lt;part&gt; with &lt;staves&gt;2&lt;/staves&gt; therefore maps to P1 and P2.</p><table><thead><tr><th>Resolver</th><th>Measure</th><th>Part</th><th>Expected</th><th>Actual</th><th>Problem</th></tr></thead><tbody>");
-        string? lastResolver = null;
-        int? lastMeasure = null;
-        foreach (var row in rows.OrderBy(x => x.Resolver).ThenBy(x => x.Measure).ThenBy(x => x.Part))
+        sb.AppendLine("<style>body{font-family:Segoe UI,Arial,sans-serif;margin:24px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccc;padding:7px}th{background:#eee}.ok{background:#e9f8e9}.missing{background:#ffdede}.extra{background:#ffe8c2}.resolver{margin:0 0 14px}.resolver>summary{cursor:pointer;background:#cfd3d6;padding:9px;font-weight:700;border:1px solid #aaa}.resolver.problem>summary{background:#ffe8c2}.measure td{background:#ddd;font-weight:700}.row-link{float:right;font-size:12px;font-weight:400}.anchor{scroll-margin-top:12px}.anchor:target{outline:3px solid #4378d0;outline-offset:-3px}</style></head><body>");
+        sb.AppendLine("<h1>Resolver reference checks</h1><p><b>Part</b> here means a physical staff in the SVG. A single MusicXML piano &lt;part&gt; with &lt;staves&gt;2&lt;/staves&gt; therefore maps to P1 and P2.</p>");
+
+        var resolverGroups = rows
+            .OrderBy(x => x.Resolver)
+            .ThenBy(x => x.Measure)
+            .ThenBy(x => x.Part)
+            .GroupBy(x => x.Resolver);
+
+        var sequence = 0;
+        foreach (var resolverGroup in resolverGroups)
         {
-            if (lastResolver != row.Resolver || lastMeasure != row.Measure)
+            var resolverRows = resolverGroup.ToArray();
+            var allGreen = resolverRows.All(x => x.State == "ok");
+            var okCount = resolverRows.Count(x => x.State == "ok");
+            var problemCount = resolverRows.Length - okCount;
+            var css = allGreen ? "resolver" : "resolver problem";
+            var open = allGreen ? string.Empty : " open";
+            sb.Append($"<details class=\"{css}\"{open}><summary>{WebUtility.HtmlEncode(resolverGroup.Key)} — {okCount}/{resolverRows.Length} ok");
+            if (problemCount > 0)
+                sb.Append($" — {problemCount} problem{(problemCount == 1 ? string.Empty : "s")}");
+            sb.AppendLine("</summary>");
+            sb.AppendLine("<table><thead><tr><th>Resolver</th><th>Measure</th><th>Part</th><th>Expected</th><th>Actual</th><th>Problem</th></tr></thead><tbody>");
+
+            int? lastMeasure = null;
+            foreach (var row in resolverRows)
             {
-                sb.Append($"<tr class=\"group\"><td colspan=\"6\">{WebUtility.HtmlEncode(row.Resolver)} — measure {row.Measure}</td></tr>");
-                lastResolver = row.Resolver;
-                lastMeasure = row.Measure;
+                if (lastMeasure != row.Measure)
+                {
+                    sb.Append($"<tr class=\"measure\"><td colspan=\"6\">measure {row.Measure}</td></tr>");
+                    lastMeasure = row.Measure;
+                }
+
+                var id = $"check-{Slug(row.Resolver)}-m{row.Measure}-p{row.Part}-{++sequence}";
+                sb.Append($"<tr id=\"{id}\" class=\"{row.State} anchor\"><td>{WebUtility.HtmlEncode(row.Resolver)}</td><td>{row.Measure}</td><td>{row.Part}</td><td>{WebUtility.HtmlEncode(row.Expected)}</td><td>{WebUtility.HtmlEncode(row.Actual)}</td><td>{WebUtility.HtmlEncode(row.Description)} <button class=\"row-link\" type=\"button\" onclick=\"copyLink('{id}',this)\">Link</button></td></tr>");
             }
-            sb.Append($"<tr class=\"{row.State}\"><td>{WebUtility.HtmlEncode(row.Resolver)}</td><td>{row.Measure}</td><td>{row.Part}</td><td>{WebUtility.HtmlEncode(row.Expected)}</td><td>{WebUtility.HtmlEncode(row.Actual)}</td><td>{WebUtility.HtmlEncode(row.Description)}</td></tr>");
+
+            sb.AppendLine("</tbody></table></details>");
         }
-        sb.AppendLine("</tbody></table></body></html>");
+
+        sb.AppendLine("<script>function copyLink(id,button){const u=new URL(window.location.href);u.hash=id;const text=u.toString();const done=()=>{const old=button.textContent;button.textContent='Copied';setTimeout(()=>button.textContent=old,1000);};if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(text).then(done).catch(()=>fallback(text,done));}else fallback(text,done);}function fallback(text,done){const t=document.createElement('textarea');t.value=text;t.style.position='fixed';t.style.opacity='0';document.body.appendChild(t);t.select();document.execCommand('copy');t.remove();done();}if(location.hash){const el=document.querySelector(location.hash);if(el){const details=el.closest('details');if(details)details.open=true;setTimeout(()=>el.scrollIntoView({block:'center'}),0);}}</script></body></html>");
         File.WriteAllText(path, sb.ToString());
     }
+
+    private static string Slug(string value) =>
+        new(value.ToLowerInvariant().Select(c => char.IsLetterOrDigit(c) ? c : '-').ToArray());
 
     private static void WriteGeneratedMusicXml(string path, SvgStructureResolution result)
     {
