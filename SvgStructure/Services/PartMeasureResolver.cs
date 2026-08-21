@@ -51,7 +51,8 @@ public sealed class PartMeasureResolver
             {
                 var left = system.BarXs[measureIndex];
                 var right = system.BarXs[measureIndex + 1];
-                measures.Add(new Measure(measureNumber, right - left));
+                var startsNewSystem = systemIndex > 0 && measureIndex == 0;
+                measures.Add(new Measure(measureNumber, right - left, startsNewSystem));
 
                 foreach (var staff in system.Staffs)
                 {
