@@ -51,9 +51,9 @@ public sealed class ClefResolver
             if (!_sanity.Accept(logicalBounds, candidate.Bounds, staffHeight))
                 continue;
 
-            if (_recognizer is DiagnosticClefRecognizer diagnostic)
+            if (_recognizer is IClefRecognitionContextReceiver contextReceiver)
             {
-                diagnostic.SetNextContext(new ClefDiagnosticContext(
+                contextReceiver.SetNextContext(new ClefRecognitionContext(
                     block.PartNumber,
                     block.MeasureNumber,
                     logicalBounds));
