@@ -2,7 +2,7 @@ namespace MusicStructure;
 
 public enum MusicAccidental { Flat, Sharp, Natural, DoubleSharp, DoubleFlat }
 public enum MusicStemDirection { Up, Down }
-public enum MusicBeamPosition { Begin, Continue, End }
+public enum MusicBeamPosition { Begin, Continue, End, ForwardHook, BackwardHook }
 
 public sealed record MusicPitch(string Step, int Octave, int Alter = 0)
 {
