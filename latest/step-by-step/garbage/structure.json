@@ -26516,7 +26516,28 @@
       },
       "kind": 0,
       "confidence": 0.9960628168852079,
-      "note": null
+      "note": {
+        "partNumber": 1,
+        "measureNumber": 2,
+        "logicalBounds": {
+          "left": 3.86799817127304,
+          "top": 4.2275037403078475,
+          "right": 4.180765456676108,
+          "bottom": 5.594997259989708
+        },
+        "physicalBounds": {
+          "left": 265.059326171875,
+          "top": 187.52316284179688,
+          "right": 270.6369323730469,
+          "bottom": 191.8972625732422,
+          "width": 5.577606201171875,
+          "height": 4.3740997314453125,
+          "centerX": 267.84812927246094,
+          "centerY": 189.71021270751953
+        },
+        "isFilled": true,
+        "pitch": "A4"
+      }
     },
     {
       "partNumber": 1,
