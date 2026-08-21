@@ -44,13 +44,13 @@ public sealed record RecognizedNoteInput(
     int DotCount);
 
 public sealed record RecognizedStemInput(
+    string Key,
     int Staff,
     int Measure,
     MusicStemDirection Direction,
     IReadOnlyList<string> AttachedNoteKeys);
 
 public sealed record RecognizedBeamInput(
-    int Staff,
     int Measure,
     int Level,
     IReadOnlyList<string> StemKeys);
