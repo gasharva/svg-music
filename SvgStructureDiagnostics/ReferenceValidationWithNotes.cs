@@ -89,10 +89,20 @@ public static class ReferenceValidationWithNotes
         if (expected.DotCount != actual.DotCount)
             result.Add($"dots expected {expected.DotCount}, got {actual.DotCount}");
 
+        if (expected.IsChordTone != actual.IsChordTone)
+            result.Add($"chord expected {(expected.IsChordTone ? "tone" : "root")}, got {(actual.IsChordTone ? "tone" : "root")}");
+
         var expectedBeams = string.Join(",", expected.Beams.OrderBy(x => x.Level).Select(x => $"{x.Level}:{x.Position}"));
         var actualBeams = string.Join(",", actual.Beams.OrderBy(x => x.Level).Select(x => $"{x.Level}:{BeamText(x.Position)}"));
         if (!string.Equals(expectedBeams, actualBeams, StringComparison.OrdinalIgnoreCase))
             result.Add($"beams expected [{expectedBeams}], got [{actualBeams}]");
+
+        var expectedSlurs = string.Join(",", expected.Slurs.OrderBy(x => x));
+        var actualSlurs = string.Join(",", (actual.Slurs ?? Array.Empty<MusicSlur>())
+            .Select(x => x.Type == MusicSlurType.Start ? "start" : "stop")
+            .OrderBy(x => x));
+        if (!string.Equals(expectedSlurs, actualSlurs, StringComparison.OrdinalIgnoreCase))
+            result.Add($"slurs expected [{expectedSlurs}], got [{actualSlurs}]");
 
         return result;
     }
@@ -129,6 +139,12 @@ public static class ReferenceValidationWithNotes
                             ParseInt(x.Attributes().FirstOrDefault(a => a.Name.LocalName == "number")?.Value) ?? 1,
                             x.Value.Trim()))
                         .ToArray();
+                    var slurs = element.Descendants()
+                        .Where(x => x.Name.LocalName == "slur")
+                        .Select(x => x.Attributes().FirstOrDefault(a => a.Name.LocalName == "type")?.Value?.Trim())
+                        .Where(x => !string.IsNullOrWhiteSpace(x))
+                        .Select(x => x!)
+                        .ToArray();
 
                     result.Add(new ReferenceNote(
                         partOffset + staff,
@@ -142,7 +158,9 @@ public static class ReferenceValidationWithNotes
                         ChildValue(element, "stem"),
                         accidental,
                         element.Elements().Count(x => x.Name.LocalName == "dot"),
-                        beams));
+                        element.Elements().Any(x => x.Name.LocalName == "chord"),
+                        beams,
+                        slurs));
                 }
             }
 
@@ -179,7 +197,19 @@ public static class ReferenceValidationWithNotes
     }
 
     private static NoteMatchKey MatchKey(MusicNote note) => new(note.Measure, note.Staff, note.Pitch.Step, note.Pitch.Octave);
-    private static string Label(MusicNote note) => $"{VisiblePitch(note)} {note.Type}" + (note.DotCount > 0 ? new string('.', note.DotCount) : "") + (note.Stem is null ? "" : $" stem={note.Stem.ToString()!.ToLowerInvariant()}");
+
+    private static string Label(MusicNote note)
+    {
+        var chord = note.IsChordTone ? " chord" : "";
+        var slurs = (note.Slurs ?? Array.Empty<MusicSlur>()).Count == 0
+            ? ""
+            : $" slur={string.Join(",", note.Slurs!.Select(x => x.Type.ToString().ToLowerInvariant()))}";
+        return $"{VisiblePitch(note)} {note.Type}" +
+               (note.DotCount > 0 ? new string('.', note.DotCount) : "") +
+               (note.Stem is null ? "" : $" stem={note.Stem.ToString()!.ToLowerInvariant()}") +
+               chord + slurs;
+    }
+
     private static string VisiblePitch(MusicNote note) => $"{note.Pitch.Step}{(note.Accidental is null ? "" : AlterText(note.Pitch.Alter))}{note.Pitch.Octave}";
     private static string AlterText(int alter) => alter == 0 ? "" : alter > 0 ? $"+{alter}" : alter.ToString(CultureInfo.InvariantCulture);
     private static string AccidentalText(MusicAccidental a) => a switch
@@ -199,12 +229,15 @@ public static class ReferenceValidationWithNotes
     private sealed record RefBeam(int Level, string Position);
     private sealed record ReferenceNote(
         int Staff, int Measure, decimal? X, string Step, int Octave, int ExplicitAlter,
-        string? Type, string? Stem, string? Accidental, int DotCount, IReadOnlyList<RefBeam> Beams)
+        string? Type, string? Stem, string? Accidental, int DotCount, bool IsChordTone,
+        IReadOnlyList<RefBeam> Beams, IReadOnlyList<string> Slurs)
     {
         public NoteMatchKey MatchKey => new(Measure, Staff, Step, Octave);
         public string Label => $"{Step}{(Accidental is null ? "" : AlterText(ExplicitAlter))}{Octave} {Type ?? "?"}" +
                                (DotCount > 0 ? new string('.', DotCount) : "") +
-                               (Stem is null ? "" : $" stem={Stem}");
+                               (Stem is null ? "" : $" stem={Stem}") +
+                               (IsChordTone ? " chord" : "") +
+                               (Slurs.Count == 0 ? "" : $" slur={string.Join(",", Slurs)}");
     }
     private sealed record NoteCheckRow(string State, int Measure, int Staff, string Expected, string Actual, string Description);
     private sealed record NoteComparison(int Matched, int Expected, int Extra, IReadOnlyList<NoteCheckRow> Rows);
