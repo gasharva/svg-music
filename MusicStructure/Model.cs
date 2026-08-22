@@ -67,10 +67,16 @@ public sealed record RecognizedFlagInput(
     int Denominator,
     string StemKey);
 
+/// <summary>
+/// An already recognized curved arc. Left/right attachment identity is preserved explicitly.
+/// MusicStructure may interpret that relation, but does not need SVG geometry to reconstruct sides.
+/// </summary>
 public sealed record RecognizedArcInput(
     int Measure,
-    IReadOnlyList<string> NoteKeys,
-    IReadOnlyList<string> StemKeys);
+    string? LeftNoteKey,
+    string? LeftStemKey,
+    string? RightNoteKey,
+    string? RightStemKey);
 
 public sealed record MusicStructureInput(
     int StaffCount,
