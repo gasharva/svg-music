@@ -1,9 +1,8 @@
 namespace MusicStructure;
 
 /// <summary>
-/// Converts already recognized arc relationships into slur endpoints.
-/// The left and right sides are resolved independently so an over-attached stem cannot drag an
-/// earlier note into the slur merely because it shares that stem's recognition context.
+/// Converts already recognized left/right arc attachments into musical slur endpoints.
+/// Arc geometry stays below the MusicStructure boundary; this rule works only with DTO relations.
 /// </summary>
 public sealed class SlurRule : IMusicNoteRule
 {
@@ -18,13 +17,15 @@ public sealed class SlurRule : IMusicNoteRule
 
         foreach (var arc in input.Arcs)
         {
-            var endpoints = ResolveEndpoints(arc, notesByKey, stemsByKey);
-            if (endpoints is null || endpoints.Value.Start == endpoints.Value.Stop)
+            var start = ResolveSide(arc.LeftNoteKey, arc.LeftStemKey, notesByKey, stemsByKey);
+            var stop = ResolveSide(arc.RightNoteKey, arc.RightStemKey, notesByKey, stemsByKey);
+
+            if (start is null || stop is null || start.Key == stop.Key)
                 continue;
 
             var slurNumber = ++number;
-            Add(result, endpoints.Value.Start, new MusicSlur(slurNumber, MusicSlurType.Start));
-            Add(result, endpoints.Value.Stop, new MusicSlur(slurNumber, MusicSlurType.Stop));
+            Add(result, start.Key, new MusicSlur(slurNumber, MusicSlurType.Start));
+            Add(result, stop.Key, new MusicSlur(slurNumber, MusicSlurType.Stop));
         }
 
         _slursByNote = result.ToDictionary(x => x.Key, x => (IReadOnlyList<MusicSlur>)x.Value.ToArray());
@@ -35,65 +36,34 @@ public sealed class SlurRule : IMusicNoteRule
             ? note with { Slurs = slurs }
             : note;
 
-    private static (string Start, string Stop)? ResolveEndpoints(
-        RecognizedArcInput arc,
+    private static RecognizedNoteInput? ResolveSide(
+        string? directNoteKey,
+        string? stemKey,
         IReadOnlyDictionary<string, RecognizedNoteInput> notesByKey,
         IReadOnlyDictionary<string, RecognizedStemInput> stemsByKey)
     {
-        // ArcResolver preserves left/right order in these arrays.
-        if (arc.NoteKeys.Count >= 2)
-        {
-            var left = arc.NoteKeys.FirstOrDefault(notesByKey.ContainsKey);
-            var right = arc.NoteKeys.Reverse().FirstOrDefault(notesByKey.ContainsKey);
-            if (left is not null && right is not null)
-                return OrderByX(left, right, notesByKey);
-        }
+        if (directNoteKey is not null && notesByKey.TryGetValue(directNoteKey, out var directNote))
+            return directNote;
 
-        if (arc.StemKeys.Count >= 2)
-        {
-            var left = ResolveStemNote(arc.StemKeys[0], notesByKey, stemsByKey);
-            var right = ResolveStemNote(arc.StemKeys[^1], notesByKey, stemsByKey);
-            if (left is not null && right is not null)
-                return OrderByX(left, right, notesByKey);
-        }
-
-        return null;
-    }
-
-    private static string? ResolveStemNote(
-        string stemKey,
-        IReadOnlyDictionary<string, RecognizedNoteInput> notesByKey,
-        IReadOnlyDictionary<string, RecognizedStemInput> stemsByKey)
-    {
-        if (!stemsByKey.TryGetValue(stemKey, out var stem))
+        if (stemKey is null || !stemsByKey.TryGetValue(stemKey, out var stem))
             return null;
 
-        var candidates = stem.AttachedNoteKeys
+        var attached = stem.AttachedNoteKeys
             .Where(notesByKey.ContainsKey)
             .Select(key => notesByKey[key])
             .ToArray();
-        if (candidates.Length == 0)
+
+        if (attached.Length == 0)
             return null;
+        if (attached.Length == 1)
+            return attached[0];
 
-        // A stem recognizer may conservatively attach several nearby heads. For a slur endpoint,
-        // choose the head horizontally closest to the recognized stem instead of expanding the
-        // whole attachment set and then taking the leftmost/rightmost note of the measure.
-        return candidates
-            .OrderBy(note => stem.LogicalX.HasValue && note.LogicalX.HasValue
-                ? Math.Abs(note.LogicalX.Value - stem.LogicalX.Value)
-                : double.MaxValue)
-            .ThenBy(note => note.LogicalX ?? double.MaxValue)
-            .First().Key;
-    }
+        // A stem may carry several chord heads. Stay on this exact stem and choose the head whose
+        // horizontal position agrees best with the stem. Never expand to notes from the other side.
+        if (stem.LogicalX is { } stemX)
+            return attached.OrderBy(note => note.LogicalX is { } x ? Math.Abs(x - stemX) : double.MaxValue).First();
 
-    private static (string Start, string Stop) OrderByX(
-        string left,
-        string right,
-        IReadOnlyDictionary<string, RecognizedNoteInput> notesByKey)
-    {
-        var lx = notesByKey[left].LogicalX ?? double.MaxValue;
-        var rx = notesByKey[right].LogicalX ?? double.MaxValue;
-        return lx <= rx ? (left, right) : (right, left);
+        return attached[0];
     }
 
     private static void Add(IDictionary<string, List<MusicSlur>> map, string noteKey, MusicSlur slur)
