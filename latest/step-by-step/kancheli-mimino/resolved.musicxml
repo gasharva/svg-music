@@ -51,7 +51,7 @@
         <stem>up</stem>
         <staff>1</staff>
         <beam number="1">end</beam>
-        <beam number="2">begin</beam>
+        <beam number="2">backward hook</beam>
       </note>
       <note default-x="152.525">
         <pitch>
@@ -161,14 +161,13 @@
           <alter>-1</alter>
           <octave>4</octave>
         </pitch>
-        <duration>24</duration>
+        <duration>48</duration>
         <voice>1</voice>
-        <type>eighth</type>
+        <type>quarter</type>
         <dot />
         <accidental>flat</accidental>
         <stem>up</stem>
         <staff>1</staff>
-        <beam number="1">begin</beam>
       </note>
       <note default-x="93.517">
         <pitch>
@@ -181,7 +180,7 @@
         <stem>up</stem>
         <staff>1</staff>
         <beam number="1">end</beam>
-        <beam number="2">begin</beam>
+        <beam number="2">backward hook</beam>
       </note>
       <note default-x="122.705">
         <pitch>
@@ -575,7 +574,7 @@
         <stem>up</stem>
         <staff>1</staff>
         <beam number="1">end</beam>
-        <beam number="2">begin</beam>
+        <beam number="2">backward hook</beam>
       </note>
       <note default-x="119.31">
         <pitch>
@@ -1038,14 +1037,13 @@
           <alter>-1</alter>
           <octave>4</octave>
         </pitch>
-        <duration>24</duration>
+        <duration>48</duration>
         <voice>1</voice>
-        <type>eighth</type>
+        <type>quarter</type>
         <dot />
         <accidental>flat</accidental>
         <stem>up</stem>
         <staff>1</staff>
-        <beam number="1">begin</beam>
       </note>
       <note default-x="92.043">
         <pitch>
@@ -1058,7 +1056,7 @@
         <stem>up</stem>
         <staff>1</staff>
         <beam number="1">end</beam>
-        <beam number="2">begin</beam>
+        <beam number="2">backward hook</beam>
       </note>
       <note default-x="121.853">
         <pitch>
@@ -1452,7 +1450,7 @@
         <stem>up</stem>
         <staff>1</staff>
         <beam number="1">end</beam>
-        <beam number="2">begin</beam>
+        <beam number="2">backward hook</beam>
       </note>
       <note default-x="115.235">
         <pitch>
