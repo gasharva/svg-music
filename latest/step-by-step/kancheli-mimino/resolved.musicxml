@@ -40,18 +40,6 @@
           <slur type="start" number="1" />
         </notations>
       </note>
-      <note default-x="83.425">
-        <chord />
-        <pitch>
-          <step>F</step>
-          <octave>3</octave>
-        </pitch>
-        <duration>96</duration>
-        <type>half</type>
-        <dot />
-        <stem>down</stem>
-        <staff>1</staff>
-      </note>
       <note default-x="130.381">
         <pitch>
           <step>F</step>
@@ -107,6 +95,19 @@
         <stem>down</stem>
         <staff>1</staff>
       </note>
+      <note default-x="83.425">
+        <chord />
+        <pitch>
+          <step>F</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>96</duration>
+        <voice>2</voice>
+        <type>half</type>
+        <dot />
+        <stem>down</stem>
+        <staff>1</staff>
+      </note>
       <backup>
         <duration>96</duration>
       </backup>
@@ -116,6 +117,7 @@
           <octave>3</octave>
         </pitch>
         <duration>96</duration>
+        <voice>1</voice>
         <type>half</type>
         <dot />
         <stem>up</stem>
@@ -217,6 +219,7 @@
           <octave>3</octave>
         </pitch>
         <duration>96</duration>
+        <voice>1</voice>
         <type>half</type>
         <dot />
         <stem>down</stem>
@@ -234,9 +237,6 @@
         <type>quarter</type>
         <stem>up</stem>
         <staff>1</staff>
-        <notations>
-          <slur type="start" number="1" />
-        </notations>
       </note>
       <note default-x="45.775">
         <chord />
@@ -251,6 +251,9 @@
         <accidental>flat</accidental>
         <stem>up</stem>
         <staff>1</staff>
+        <notations>
+          <slur type="start" number="1" />
+        </notations>
       </note>
       <note default-x="104.315">
         <pitch>
@@ -314,6 +317,7 @@
           <octave>2</octave>
         </pitch>
         <duration>96</duration>
+        <voice>1</voice>
         <type>half</type>
         <dot />
         <stem>down</stem>
@@ -454,6 +458,7 @@
           <octave>4</octave>
         </pitch>
         <duration>32</duration>
+        <voice>1</voice>
         <type>quarter</type>
         <stem>up</stem>
         <staff>1</staff>
@@ -476,6 +481,7 @@
           <octave>4</octave>
         </pitch>
         <duration>32</duration>
+        <voice>1</voice>
         <type>quarter</type>
         <stem>up</stem>
         <staff>1</staff>
@@ -532,6 +538,7 @@
           <octave>3</octave>
         </pitch>
         <duration>96</duration>
+        <voice>1</voice>
         <type>half</type>
         <dot />
         <stem>down</stem>
@@ -621,6 +628,7 @@
           <octave>2</octave>
         </pitch>
         <duration>96</duration>
+        <voice>1</voice>
         <type>half</type>
         <dot />
         <stem>down</stem>
@@ -763,6 +771,7 @@
           <octave>3</octave>
         </pitch>
         <duration>96</duration>
+        <voice>1</voice>
         <type>half</type>
         <dot />
         <stem>down</stem>
@@ -776,6 +785,7 @@
           <octave>4</octave>
         </pitch>
         <duration>64</duration>
+        <voice>1</voice>
         <type>half</type>
         <stem>up</stem>
         <staff>1</staff>
@@ -799,6 +809,7 @@
           <octave>4</octave>
         </pitch>
         <duration>64</duration>
+        <voice>1</voice>
         <type>half</type>
         <stem>up</stem>
         <staff>1</staff>
@@ -944,6 +955,7 @@
           <octave>4</octave>
         </pitch>
         <duration>64</duration>
+        <voice>1</voice>
         <type>half</type>
         <stem>up</stem>
         <staff>1</staff>
@@ -995,6 +1007,7 @@
           <octave>3</octave>
         </pitch>
         <duration>96</duration>
+        <voice>1</voice>
         <type>half</type>
         <dot />
         <stem>down</stem>
@@ -1083,6 +1096,7 @@
           <octave>3</octave>
         </pitch>
         <duration>96</duration>
+        <voice>1</voice>
         <type>half</type>
         <dot />
         <stem>down</stem>
@@ -1100,9 +1114,6 @@
         <type>quarter</type>
         <stem>up</stem>
         <staff>1</staff>
-        <notations>
-          <slur type="start" number="1" />
-        </notations>
       </note>
       <note default-x="44.21">
         <chord />
@@ -1117,6 +1128,9 @@
         <accidental>flat</accidental>
         <stem>up</stem>
         <staff>1</staff>
+        <notations>
+          <slur type="start" number="1" />
+        </notations>
       </note>
       <note default-x="103.255">
         <pitch>
@@ -1180,6 +1194,7 @@
           <octave>2</octave>
         </pitch>
         <duration>96</duration>
+        <voice>1</voice>
         <type>half</type>
         <dot />
         <stem>down</stem>
@@ -1320,6 +1335,7 @@
           <octave>4</octave>
         </pitch>
         <duration>32</duration>
+        <voice>1</voice>
         <type>quarter</type>
         <stem>up</stem>
         <staff>1</staff>
@@ -1342,6 +1358,7 @@
           <octave>4</octave>
         </pitch>
         <duration>32</duration>
+        <voice>1</voice>
         <type>quarter</type>
         <stem>up</stem>
         <staff>1</staff>
@@ -1398,6 +1415,7 @@
           <octave>3</octave>
         </pitch>
         <duration>96</duration>
+        <voice>1</voice>
         <type>half</type>
         <dot />
         <stem>down</stem>
@@ -1474,6 +1492,7 @@
           <octave>3</octave>
         </pitch>
         <duration>96</duration>
+        <voice>1</voice>
         <type>half</type>
         <dot />
         <stem>up</stem>
@@ -1501,6 +1520,7 @@
           <octave>4</octave>
         </pitch>
         <duration>32</duration>
+        <voice>1</voice>
         <type>quarter</type>
         <accidental>flat</accidental>
         <stem>up</stem>
@@ -1564,6 +1584,7 @@
           <octave>4</octave>
         </pitch>
         <duration>32</duration>
+        <voice>1</voice>
         <type>quarter</type>
         <stem>up</stem>
         <staff>1</staff>
@@ -1621,6 +1642,7 @@
           <octave>3</octave>
         </pitch>
         <duration>96</duration>
+        <voice>1</voice>
         <type>half</type>
         <dot />
         <stem>down</stem>
@@ -1788,6 +1810,7 @@
           <octave>3</octave>
         </pitch>
         <duration>96</duration>
+        <voice>1</voice>
         <type>half</type>
         <dot />
         <stem>down</stem>
@@ -1814,6 +1837,7 @@
           <octave>3</octave>
         </pitch>
         <duration>96</duration>
+        <voice>1</voice>
         <type>half</type>
         <dot />
         <stem>down</stem>
@@ -1826,6 +1850,7 @@
           <octave>4</octave>
         </pitch>
         <duration>96</duration>
+        <voice>1</voice>
         <type>half</type>
         <dot />
         <stem>down</stem>
@@ -1878,6 +1903,7 @@
           <octave>3</octave>
         </pitch>
         <duration>96</duration>
+        <voice>1</voice>
         <type>half</type>
         <dot />
         <accidental>flat</accidental>
@@ -1918,6 +1944,7 @@
           <octave>4</octave>
         </pitch>
         <duration>96</duration>
+        <voice>1</voice>
         <type>half</type>
         <dot />
         <stem>down</stem>
@@ -1999,6 +2026,7 @@
           <octave>3</octave>
         </pitch>
         <duration>96</duration>
+        <voice>1</voice>
         <type>half</type>
         <dot />
         <stem>down</stem>
@@ -2028,6 +2056,7 @@
           <octave>3</octave>
         </pitch>
         <duration>96</duration>
+        <voice>1</voice>
         <type>half</type>
         <dot />
         <accidental>flat</accidental>
@@ -2041,6 +2070,7 @@
           <octave>4</octave>
         </pitch>
         <duration>96</duration>
+        <voice>1</voice>
         <type>half</type>
         <dot />
         <stem>up</stem>
@@ -2083,6 +2113,7 @@
           <octave>2</octave>
         </pitch>
         <duration>96</duration>
+        <voice>1</voice>
         <type>half</type>
         <dot />
         <stem>down</stem>
