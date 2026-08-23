@@ -4,6 +4,7 @@ public enum MusicAccidental { Flat, Sharp, Natural, DoubleSharp, DoubleFlat }
 public enum MusicStemDirection { Up, Down }
 public enum MusicBeamPosition { Begin, Continue, End, ForwardHook, BackwardHook }
 public enum MusicSlurType { Start, Stop }
+public enum MusicSlurPlacement { Above, Below }
 
 public sealed record MusicPitch(string Step, int Octave, int Alter = 0)
 {
@@ -11,7 +12,7 @@ public sealed record MusicPitch(string Step, int Octave, int Alter = 0)
 }
 
 public sealed record MusicBeam(int Level, MusicBeamPosition Position);
-public sealed record MusicSlur(int Number, MusicSlurType Type);
+public sealed record MusicSlur(int Number, MusicSlurType Type, MusicSlurPlacement Placement);
 
 public sealed record MusicNote(
     int Staff,
@@ -34,10 +35,6 @@ public sealed record MusicScore(int StaffCount, IReadOnlyList<MusicMeasure> Meas
     public IReadOnlyList<MusicNote> Notes => Measures.SelectMany(x => x.Notes).ToArray();
 }
 
-/// <summary>
-/// SVG-free recognition contract. This layer contains only recognized musical facts and
-/// relationships between them. No physical boxes, contours, primitive ids, SVG nodes or XML types.
-/// </summary>
 public sealed record RecognizedNoteInput(
     string Key,
     int Staff,
@@ -67,16 +64,13 @@ public sealed record RecognizedFlagInput(
     int Denominator,
     string StemKey);
 
-/// <summary>
-/// An already recognized curved arc. Left/right attachment identity is preserved explicitly.
-/// MusicStructure may interpret that relation, but does not need SVG geometry to reconstruct sides.
-/// </summary>
 public sealed record RecognizedArcInput(
     int Measure,
     string? LeftNoteKey,
     string? LeftStemKey,
     string? RightNoteKey,
-    string? RightStemKey);
+    string? RightStemKey,
+    MusicSlurPlacement Placement);
 
 public sealed record MusicStructureInput(
     int StaffCount,
