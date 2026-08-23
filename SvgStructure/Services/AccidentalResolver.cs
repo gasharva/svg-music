@@ -12,7 +12,8 @@ public sealed class AccidentalResolver
     public double MinimumConfidence { get; init; } = 0.70;
     public double MaxAttachedNoteGapLogicalX { get; init; } = 8.0;
     public double NoteSearchLaneTolerance { get; init; } = 1.0;
-    public double AttachmentPitchTolerance { get; init; } = 0.85;
+    public double AttachmentPitchTolerance { get; init; } = 1.25;
+    public double AttachmentHorizontalOverlapTolerance { get; init; } = 0.75;
     public double MinLogicalHeight { get; init; } = 1.5;
     public double MaxLogicalHeight { get; init; } = 7.0;
     public double LaneTolerance { get; init; } = 0.55;
@@ -151,24 +152,34 @@ public sealed class AccidentalResolver
         var anchorY = AccidentalPitchAnchorY(accidental.Kind, accidental.LogicalBounds);
         var anchorPosition = (int)Math.Round(anchorY);
 
-        // Once a glyph has confidently been recognized as an accidental, attachment is deliberately
-        // simple: the nearest compatible note immediately to its right wins. Other smooth symbols in
-        // between must not block the relation; real scores commonly contain overlapping chord glyphs.
+        // Use glyph edges rather than bbox centers for horizontal attachment. A tall/wide accidental
+        // may overlap the head slightly, so its center can actually lie to the right of the head's
+        // center even though the symbol is visibly placed immediately before that note.
         return noteHeads
             .Where(x => x.PartNumber == accidental.PartNumber && x.MeasureNumber == accidental.MeasureNumber)
             .Select(x => new
             {
                 Note = x,
-                X = CenterX(x.LogicalBounds),
+                NoteLeft = x.LogicalBounds.Left ?? CenterX(x.LogicalBounds) ?? double.MaxValue,
+                NoteCenterX = CenterX(x.LogicalBounds),
                 Y = CenterY(x.LogicalBounds),
                 Position = (int)Math.Round(CenterY(x.LogicalBounds))
             })
-            .Where(x => x.X is not null && x.X.Value > accidental.X)
-            .Where(x => x.X!.Value - accidental.X <= MaxAttachedNoteGapLogicalX)
-            .Where(x => x.Position == anchorPosition || Math.Abs(x.Y - anchorY) <= AttachmentPitchTolerance)
-            .OrderBy(x => x.X!.Value - accidental.X)
-            .ThenBy(x => x.Position == anchorPosition ? 0 : 1)
-            .ThenBy(x => Math.Abs(x.Y - anchorY))
+            .Where(x => x.NoteCenterX is not null)
+            .Select(x => new
+            {
+                x.Note,
+                x.NoteCenterX,
+                XGap = x.NoteLeft - accidental.LogicalBounds.Right,
+                YGap = Math.Abs(x.Y - anchorY),
+                ExactPosition = x.Position == anchorPosition
+            })
+            .Where(x => x.XGap >= -AttachmentHorizontalOverlapTolerance && x.XGap <= MaxAttachedNoteGapLogicalX)
+            .Where(x => x.ExactPosition || x.YGap <= AttachmentPitchTolerance)
+            .OrderBy(x => Math.Max(0, x.XGap))
+            .ThenBy(x => x.ExactPosition ? 0 : 1)
+            .ThenBy(x => x.YGap)
+            .ThenBy(x => x.NoteCenterX)
             .Select(x => x.Note)
             .FirstOrDefault();
     }
