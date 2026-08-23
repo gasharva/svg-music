@@ -24,8 +24,8 @@ public sealed class SlurRule : IMusicNoteRule
                 continue;
 
             var slurNumber = ++number;
-            Add(result, start.Key, new MusicSlur(slurNumber, MusicSlurType.Start));
-            Add(result, stop.Key, new MusicSlur(slurNumber, MusicSlurType.Stop));
+            Add(result, start.Key, new MusicSlur(slurNumber, MusicSlurType.Start, arc.Placement));
+            Add(result, stop.Key, new MusicSlur(slurNumber, MusicSlurType.Stop, arc.Placement));
         }
 
         _slursByNote = result.ToDictionary(x => x.Key, x => (IReadOnlyList<MusicSlur>)x.Value.ToArray());
@@ -58,8 +58,6 @@ public sealed class SlurRule : IMusicNoteRule
         if (attached.Length == 1)
             return attached[0];
 
-        // A stem may carry several chord heads. Stay on this exact stem and choose the head whose
-        // horizontal position agrees best with the stem. Never expand to notes from the other side.
         if (stem.LogicalX is { } stemX)
             return attached.OrderBy(note => note.LogicalX is { } x ? Math.Abs(x - stemX) : double.MaxValue).First();
 
