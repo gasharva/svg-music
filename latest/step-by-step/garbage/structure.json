@@ -26627,7 +26627,28 @@
       },
       "kind": 0,
       "confidence": 0.996063793075691,
-      "note": null
+      "note": {
+        "partNumber": 2,
+        "measureNumber": 2,
+        "logicalBounds": {
+          "left": 3.810603225877353,
+          "top": 6.331444982193843,
+          "right": 4.13480363779548,
+          "bottom": 7.875249560511119
+        },
+        "physicalBounds": {
+          "left": 264.0357971191406,
+          "top": 263.6461486816406,
+          "right": 269.8172912597656,
+          "bottom": 268.58404541015625,
+          "width": 5.781494140625,
+          "height": 4.937896728515625,
+          "centerX": 266.9265441894531,
+          "centerY": 266.11509704589844
+        },
+        "isFilled": true,
+        "pitch": "A2"
+      }
     },
     {
       "partNumber": 2,
@@ -33576,7 +33597,8 @@
             }
           ]
         }
-      ]
+      ],
+      "curveDirection": 0
     },
     {
       "physicalBounds": {
@@ -33647,7 +33669,8 @@
           "pitch": "E5"
         }
       ],
-      "stems": []
+      "stems": [],
+      "curveDirection": 0
     },
     {
       "physicalBounds": {
@@ -33718,7 +33741,8 @@
           "pitch": "E3"
         }
       ],
-      "stems": []
+      "stems": [],
+      "curveDirection": 0
     }
   ],
   "rests": [

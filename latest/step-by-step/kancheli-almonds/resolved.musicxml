@@ -53,6 +53,7 @@
       <note default-x="156.192">
         <pitch>
           <step>B</step>
+          <alter>-1</alter>
           <octave>4</octave>
         </pitch>
         <duration>32</duration>
@@ -145,6 +146,7 @@
       <note default-x="92.269">
         <pitch>
           <step>B</step>
+          <alter>-1</alter>
           <octave>4</octave>
         </pitch>
         <duration>48</duration>
@@ -607,16 +609,7 @@
     </measure>
     <measure number="6">
       <print new-system="yes" />
-      <attributes>
-        <clef number="1">
-          <sign>G</sign>
-          <line>2</line>
-        </clef>
-        <clef number="2">
-          <sign>F</sign>
-          <line>4</line>
-        </clef>
-      </attributes>
+      <attributes />
       <note default-x="78.981">
         <pitch>
           <step>B</step>
@@ -747,7 +740,7 @@
         <stem>down</stem>
         <staff>1</staff>
         <notations>
-          <slur type="start" number="1" />
+          <slur type="start" number="1" placement="above" />
         </notations>
       </note>
       <note default-x="61.174">
@@ -774,7 +767,7 @@
         <staff>1</staff>
         <beam number="1">begin</beam>
         <notations>
-          <slur type="stop" number="1" />
+          <slur type="stop" number="1" placement="above" />
         </notations>
       </note>
       <note default-x="97.966">
@@ -1726,6 +1719,7 @@
         <chord />
         <pitch>
           <step>B</step>
+          <alter>-1</alter>
           <octave>4</octave>
         </pitch>
         <duration>32</duration>
@@ -1780,18 +1774,6 @@
       <note default-x="114.116">
         <pitch>
           <step>A</step>
-          <octave>3</octave>
-        </pitch>
-        <duration>64</duration>
-        <voice>1</voice>
-        <type>half</type>
-        <stem>down</stem>
-        <staff>2</staff>
-      </note>
-      <note default-x="128.708">
-        <chord />
-        <pitch>
-          <step>B</step>
           <alter>-1</alter>
           <octave>3</octave>
         </pitch>
@@ -1799,6 +1781,18 @@
         <voice>1</voice>
         <type>half</type>
         <accidental>flat</accidental>
+        <stem>down</stem>
+        <staff>2</staff>
+      </note>
+      <note default-x="128.708">
+        <chord />
+        <pitch>
+          <step>B</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>64</duration>
+        <voice>1</voice>
+        <type>half</type>
         <stem>down</stem>
         <staff>2</staff>
       </note>
@@ -1926,16 +1920,7 @@
     </measure>
     <measure number="11">
       <print new-system="yes" />
-      <attributes>
-        <clef number="1">
-          <sign>G</sign>
-          <line>2</line>
-        </clef>
-        <clef number="2">
-          <sign>F</sign>
-          <line>4</line>
-        </clef>
-      </attributes>
+      <attributes />
       <note default-x="71.959">
         <pitch>
           <step>D</step>
@@ -1982,9 +1967,9 @@
         <stem>up</stem>
         <staff>1</staff>
         <notations>
-          <slur type="stop" number="1" />
-          <slur type="stop" number="2" />
-          <slur type="stop" number="3" />
+          <slur type="stop" number="1" placement="below" />
+          <slur type="stop" number="2" placement="below" />
+          <slur type="stop" number="3" placement="below" />
         </notations>
       </note>
       <backup>
@@ -2002,7 +1987,7 @@
         <stem>down</stem>
         <staff>1</staff>
         <notations>
-          <slur type="start" number="1" />
+          <slur type="start" number="1" placement="below" />
         </notations>
       </note>
       <note default-x="71.959">
@@ -2018,7 +2003,7 @@
         <stem>down</stem>
         <staff>1</staff>
         <notations>
-          <slur type="start" number="3" />
+          <slur type="start" number="3" placement="below" />
         </notations>
       </note>
       <note default-x="71.959">
@@ -2034,7 +2019,7 @@
         <stem>down</stem>
         <staff>1</staff>
         <notations>
-          <slur type="start" number="2" />
+          <slur type="start" number="2" placement="below" />
         </notations>
       </note>
       <backup>
@@ -2052,8 +2037,8 @@
         <stem>down</stem>
         <staff>2</staff>
         <notations>
-          <slur type="start" number="4" />
-          <slur type="start" number="5" />
+          <slur type="start" number="4" placement="above" />
+          <slur type="start" number="5" placement="above" />
         </notations>
       </note>
       <note default-x="71.959">
@@ -2070,7 +2055,7 @@
         <stem>down</stem>
         <staff>2</staff>
         <notations>
-          <slur type="start" number="6" />
+          <slur type="start" number="6" placement="below" />
         </notations>
       </note>
       <note default-x="71.959">
@@ -2086,9 +2071,9 @@
         <stem>down</stem>
         <staff>2</staff>
         <notations>
-          <slur type="stop" number="4" />
-          <slur type="stop" number="5" />
-          <slur type="stop" number="6" />
+          <slur type="stop" number="4" placement="above" />
+          <slur type="stop" number="5" placement="above" />
+          <slur type="stop" number="6" placement="below" />
         </notations>
       </note>
     </measure>
@@ -2500,12 +2485,13 @@
         <stem>up</stem>
         <staff>2</staff>
         <notations>
-          <slur type="start" number="1" />
+          <slur type="start" number="1" placement="above" />
         </notations>
       </note>
       <note default-x="112.633">
         <pitch>
           <step>F</step>
+          <alter>1</alter>
           <octave>3</octave>
         </pitch>
         <duration>64</duration>
@@ -2518,6 +2504,7 @@
         <chord />
         <pitch>
           <step>G</step>
+          <alter>1</alter>
           <octave>3</octave>
         </pitch>
         <duration>64</duration>
@@ -2526,7 +2513,7 @@
         <stem>up</stem>
         <staff>2</staff>
         <notations>
-          <slur type="stop" number="1" />
+          <slur type="stop" number="1" placement="above" />
         </notations>
       </note>
     </measure>
@@ -2581,7 +2568,7 @@
         <staff>2</staff>
         <beam number="1">begin</beam>
         <notations>
-          <slur type="start" number="3" />
+          <slur type="start" number="3" placement="below" />
         </notations>
       </note>
       <note default-x="62.361">
@@ -2596,7 +2583,7 @@
         <staff>2</staff>
         <beam number="1">end</beam>
         <notations>
-          <slur type="start" number="2" />
+          <slur type="start" number="2" placement="below" />
         </notations>
       </note>
       <note default-x="98.969">
@@ -2611,7 +2598,7 @@
         <staff>2</staff>
         <beam number="1">begin</beam>
         <notations>
-          <slur type="start" number="1" />
+          <slur type="start" number="1" placement="above" />
         </notations>
       </note>
       <note default-x="135.577">
@@ -2651,7 +2638,7 @@
         <stem>down</stem>
         <staff>2</staff>
         <notations>
-          <slur type="stop" number="3" />
+          <slur type="stop" number="3" placement="below" />
         </notations>
       </note>
       <note default-x="172.185">
@@ -2666,13 +2653,14 @@
         <stem>down</stem>
         <staff>2</staff>
         <notations>
-          <slur type="stop" number="2" />
+          <slur type="stop" number="2" placement="below" />
         </notations>
       </note>
       <note default-x="172.185">
         <chord />
         <pitch>
           <step>C</step>
+          <alter>1</alter>
           <octave>4</octave>
         </pitch>
         <duration>32</duration>
@@ -2681,22 +2669,13 @@
         <stem>down</stem>
         <staff>2</staff>
         <notations>
-          <slur type="stop" number="1" />
+          <slur type="stop" number="1" placement="above" />
         </notations>
       </note>
     </measure>
     <measure number="16">
       <print new-system="yes" />
-      <attributes>
-        <clef number="1">
-          <sign>G</sign>
-          <line>2</line>
-        </clef>
-        <clef number="2">
-          <sign>F</sign>
-          <line>4</line>
-        </clef>
-      </attributes>
+      <attributes />
       <note default-x="60.943">
         <pitch>
           <step>C</step>
@@ -2770,7 +2749,7 @@
         <staff>2</staff>
         <beam number="1">end</beam>
         <notations>
-          <slur type="start" number="1" />
+          <slur type="start" number="1" placement="above" />
         </notations>
       </note>
       <note default-x="122.619">
@@ -2806,7 +2785,7 @@
         <type>quarter</type>
         <staff>2</staff>
         <notations>
-          <slur type="stop" number="1" />
+          <slur type="stop" number="1" placement="above" />
         </notations>
       </note>
     </measure>
@@ -2899,7 +2878,7 @@
         <beam number="1">begin</beam>
         <beam number="2">begin</beam>
         <notations>
-          <slur type="start" number="3" />
+          <slur type="start" number="3" placement="above" />
         </notations>
       </note>
       <note default-x="43.952">
@@ -2915,7 +2894,7 @@
         <beam number="1">continue</beam>
         <beam number="2">continue</beam>
         <notations>
-          <slur type="start" number="2" />
+          <slur type="start" number="2" placement="above" />
         </notations>
       </note>
       <note default-x="69.028">
@@ -2931,7 +2910,7 @@
         <beam number="1">continue</beam>
         <beam number="2">continue</beam>
         <notations>
-          <slur type="start" number="1" />
+          <slur type="start" number="1" placement="above" />
         </notations>
       </note>
       <note default-x="94.104">
@@ -2947,7 +2926,7 @@
         <beam number="1">end</beam>
         <beam number="2">end</beam>
         <notations>
-          <slur type="stop" number="1" />
+          <slur type="stop" number="1" placement="above" />
         </notations>
       </note>
       <note default-x="124.424">
@@ -2959,7 +2938,7 @@
         <type>whole</type>
         <staff>2</staff>
         <notations>
-          <slur type="stop" number="2" />
+          <slur type="stop" number="2" placement="above" />
         </notations>
       </note>
       <note default-x="124.424">
@@ -2972,7 +2951,7 @@
         <type>whole</type>
         <staff>2</staff>
         <notations>
-          <slur type="stop" number="3" />
+          <slur type="stop" number="3" placement="above" />
         </notations>
       </note>
     </measure>
@@ -3065,7 +3044,7 @@
         <beam number="1">begin</beam>
         <beam number="2">begin</beam>
         <notations>
-          <slur type="start" number="3" />
+          <slur type="start" number="3" placement="above" />
         </notations>
       </note>
       <note default-x="43.397">
@@ -3081,7 +3060,7 @@
         <beam number="1">continue</beam>
         <beam number="2">continue</beam>
         <notations>
-          <slur type="start" number="2" />
+          <slur type="start" number="2" placement="above" />
         </notations>
       </note>
       <note default-x="68.757">
@@ -3097,7 +3076,7 @@
         <beam number="1">continue</beam>
         <beam number="2">continue</beam>
         <notations>
-          <slur type="start" number="1" />
+          <slur type="start" number="1" placement="above" />
         </notations>
       </note>
       <note default-x="94.118">
@@ -3124,7 +3103,7 @@
         <stem>down</stem>
         <staff>2</staff>
         <notations>
-          <slur type="stop" number="1" />
+          <slur type="stop" number="1" placement="above" />
         </notations>
       </note>
       <note default-x="122.549">
@@ -3139,7 +3118,7 @@
         <stem>down</stem>
         <staff>2</staff>
         <notations>
-          <slur type="stop" number="3" />
+          <slur type="stop" number="3" placement="above" />
         </notations>
       </note>
       <note default-x="122.549">
@@ -3154,7 +3133,7 @@
         <stem>down</stem>
         <staff>2</staff>
         <notations>
-          <slur type="stop" number="2" />
+          <slur type="stop" number="2" placement="above" />
         </notations>
       </note>
       <note default-x="122.549">
@@ -3352,16 +3331,7 @@
     </measure>
     <measure number="21">
       <print new-system="yes" />
-      <attributes>
-        <clef number="1">
-          <sign>G</sign>
-          <line>2</line>
-        </clef>
-        <clef number="2">
-          <sign>F</sign>
-          <line>4</line>
-        </clef>
-      </attributes>
+      <attributes />
       <note default-x="47.684">
         <pitch>
           <step>E</step>
@@ -3450,7 +3420,7 @@
         <beam number="1">begin</beam>
         <beam number="2">begin</beam>
         <notations>
-          <slur type="start" number="7" />
+          <slur type="start" number="7" placement="above" />
         </notations>
       </note>
       <note default-x="70.013">
@@ -3466,7 +3436,7 @@
         <beam number="1">continue</beam>
         <beam number="2">continue</beam>
         <notations>
-          <slur type="start" number="5" />
+          <slur type="start" number="5" placement="above" />
         </notations>
       </note>
       <note default-x="92.343">
@@ -3482,7 +3452,7 @@
         <beam number="1">continue</beam>
         <beam number="2">continue</beam>
         <notations>
-          <slur type="start" number="3" />
+          <slur type="start" number="3" placement="above" />
         </notations>
       </note>
       <note default-x="114.673">
@@ -3509,8 +3479,8 @@
         <stem>down</stem>
         <staff>2</staff>
         <notations>
-          <slur type="stop" number="3" />
-          <slur type="start" number="4" />
+          <slur type="stop" number="3" placement="above" />
+          <slur type="start" number="4" placement="below" />
         </notations>
       </note>
       <note default-x="137.33">
@@ -3525,9 +3495,9 @@
         <stem>down</stem>
         <staff>2</staff>
         <notations>
-          <slur type="stop" number="6" />
-          <slur type="stop" number="7" />
-          <slur type="start" number="8" />
+          <slur type="stop" number="6" placement="below" />
+          <slur type="stop" number="7" placement="above" />
+          <slur type="start" number="8" placement="below" />
         </notations>
       </note>
       <note default-x="137.33">
@@ -3542,9 +3512,9 @@
         <stem>down</stem>
         <staff>2</staff>
         <notations>
-          <slur type="stop" number="5" />
-          <slur type="start" number="6" />
-          <slur type="stop" number="8" />
+          <slur type="stop" number="5" placement="above" />
+          <slur type="start" number="6" placement="below" />
+          <slur type="stop" number="8" placement="below" />
         </notations>
       </note>
       <note default-x="137.33">
@@ -3559,9 +3529,9 @@
         <stem>down</stem>
         <staff>2</staff>
         <notations>
-          <slur type="stop" number="1" />
-          <slur type="start" number="2" />
-          <slur type="stop" number="4" />
+          <slur type="stop" number="1" placement="above" />
+          <slur type="start" number="2" placement="above" />
+          <slur type="stop" number="4" placement="below" />
         </notations>
       </note>
       <note default-x="137.33">
@@ -3576,8 +3546,8 @@
         <stem>down</stem>
         <staff>2</staff>
         <notations>
-          <slur type="start" number="1" />
-          <slur type="stop" number="2" />
+          <slur type="start" number="1" placement="above" />
+          <slur type="stop" number="2" placement="above" />
         </notations>
       </note>
     </measure>
@@ -3726,19 +3696,6 @@
       <note default-x="23.857">
         <pitch>
           <step>A</step>
-          <octave>4</octave>
-        </pitch>
-        <duration>96</duration>
-        <voice>1</voice>
-        <type>half</type>
-        <dot />
-        <stem>up</stem>
-        <staff>1</staff>
-      </note>
-      <note default-x="35.494">
-        <chord />
-        <pitch>
-          <step>B</step>
           <alter>-1</alter>
           <octave>4</octave>
         </pitch>
@@ -3747,6 +3704,19 @@
         <type>half</type>
         <dot />
         <accidental>flat</accidental>
+        <stem>up</stem>
+        <staff>1</staff>
+      </note>
+      <note default-x="35.494">
+        <chord />
+        <pitch>
+          <step>B</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>96</duration>
+        <voice>1</voice>
+        <type>half</type>
+        <dot />
         <stem>up</stem>
         <staff>1</staff>
       </note>

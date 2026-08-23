@@ -76043,23 +76043,23 @@
         "partNumber": 2,
         "measureNumber": 9,
         "logicalBounds": {
-          "left": 12.073392275927867,
-          "top": -2.055615123114865,
-          "right": 13.66823552097284,
-          "bottom": 0.06434721277255127
+          "left": 10.614152427247896,
+          "top": -1.0562290054038266,
+          "right": 12.208995672292868,
+          "bottom": 1.0637333304835896
         },
         "physicalBounds": {
-          "left": 614.3199462890625,
-          "top": 399.0333557128906,
-          "right": 622.6727294921875,
-          "bottom": 405.8440856933594,
+          "left": 606.6773681640625,
+          "top": 402.2440490722656,
+          "right": 615.0301513671875,
+          "bottom": 409.0547790527344,
           "width": 8.352783203125,
           "height": 6.81072998046875,
-          "centerX": 618.496337890625,
-          "centerY": 402.438720703125
+          "centerX": 610.853759765625,
+          "centerY": 405.6494140625
         },
         "isFilled": false,
-        "pitch": "B3"
+        "pitch": "A3"
       }
     },
     {
@@ -76571,23 +76571,23 @@
         "partNumber": 1,
         "measureNumber": 23,
         "logicalBounds": {
-          "left": 2.913684568874709,
-          "top": 2.9437817478882238,
-          "right": 4.18505024440606,
-          "bottom": 5.063741566549748
+          "left": 1.7499912840691323,
+          "top": 3.943964606225258,
+          "right": 3.0213569596004834,
+          "bottom": 6.063924424886782
         },
         "physicalBounds": {
-          "left": 436.9013366699219,
-          "top": 886.9721069335938,
-          "right": 445.25408935546875,
-          "bottom": 893.7828369140625,
+          "left": 429.2559814453125,
+          "top": 890.1853637695312,
+          "right": 437.6087341308594,
+          "bottom": 896.99609375,
           "width": 8.352752685546875,
           "height": 6.81072998046875,
-          "centerX": 441.0777130126953,
-          "centerY": 890.3774719238281
+          "centerX": 433.43235778808594,
+          "centerY": 893.5907287597656
         },
         "isFilled": false,
-        "pitch": "B4"
+        "pitch": "A4"
       }
     },
     {
@@ -101797,7 +101797,8 @@
             }
           ]
         }
-      ]
+      ],
+      "curveDirection": 0
     },
     {
       "physicalBounds": {
@@ -101868,7 +101869,8 @@
           "pitch": "D5"
         }
       ],
-      "stems": []
+      "stems": [],
+      "curveDirection": 1
     },
     {
       "physicalBounds": {
@@ -101939,7 +101941,8 @@
           "pitch": "D5"
         }
       ],
-      "stems": []
+      "stems": [],
+      "curveDirection": 1
     },
     {
       "physicalBounds": {
@@ -102010,7 +102013,8 @@
           "pitch": "D5"
         }
       ],
-      "stems": []
+      "stems": [],
+      "curveDirection": 1
     },
     {
       "physicalBounds": {
@@ -102081,7 +102085,8 @@
           "pitch": "C4"
         }
       ],
-      "stems": []
+      "stems": [],
+      "curveDirection": 0
     },
     {
       "physicalBounds": {
@@ -102152,7 +102157,8 @@
           "pitch": "F3"
         }
       ],
-      "stems": []
+      "stems": [],
+      "curveDirection": 0
     },
     {
       "physicalBounds": {
@@ -102223,7 +102229,8 @@
           "pitch": "F3"
         }
       ],
-      "stems": []
+      "stems": [],
+      "curveDirection": 0
     },
     {
       "physicalBounds": {
@@ -102294,7 +102301,8 @@
           "pitch": "G3"
         }
       ],
-      "stems": []
+      "stems": [],
+      "curveDirection": 0
     },
     {
       "physicalBounds": {
@@ -102365,7 +102373,8 @@
           "pitch": "E3"
         }
       ],
-      "stems": []
+      "stems": [],
+      "curveDirection": 1
     },
     {
       "physicalBounds": {
@@ -102436,7 +102445,8 @@
           "pitch": "F3"
         }
       ],
-      "stems": []
+      "stems": [],
+      "curveDirection": 1
     },
     {
       "physicalBounds": {
@@ -102507,7 +102517,8 @@
           "pitch": "A2"
         }
       ],
-      "stems": []
+      "stems": [],
+      "curveDirection": 1
     },
     {
       "physicalBounds": {
@@ -102578,7 +102589,8 @@
           "pitch": "G3"
         }
       ],
-      "stems": []
+      "stems": [],
+      "curveDirection": 0
     },
     {
       "physicalBounds": {
@@ -102649,7 +102661,8 @@
           "pitch": "E4"
         }
       ],
-      "stems": []
+      "stems": [],
+      "curveDirection": 0
     },
     {
       "physicalBounds": {
@@ -102720,7 +102733,8 @@
           "pitch": "B3"
         }
       ],
-      "stems": []
+      "stems": [],
+      "curveDirection": 0
     },
     {
       "physicalBounds": {
@@ -102791,7 +102805,8 @@
           "pitch": "G3"
         }
       ],
-      "stems": []
+      "stems": [],
+      "curveDirection": 0
     },
     {
       "physicalBounds": {
@@ -102862,7 +102877,8 @@
           "pitch": "E3"
         }
       ],
-      "stems": []
+      "stems": [],
+      "curveDirection": 0
     },
     {
       "physicalBounds": {
@@ -102933,7 +102949,8 @@
           "pitch": "C3"
         }
       ],
-      "stems": []
+      "stems": [],
+      "curveDirection": 0
     },
     {
       "physicalBounds": {
@@ -103004,7 +103021,8 @@
           "pitch": "A2"
         }
       ],
-      "stems": []
+      "stems": [],
+      "curveDirection": 0
     },
     {
       "physicalBounds": {
@@ -103075,7 +103093,8 @@
           "pitch": "C4"
         }
       ],
-      "stems": []
+      "stems": [],
+      "curveDirection": 0
     },
     {
       "physicalBounds": {
@@ -103146,7 +103165,8 @@
           "pitch": "E4"
         }
       ],
-      "stems": []
+      "stems": [],
+      "curveDirection": 0
     },
     {
       "physicalBounds": {
@@ -103217,7 +103237,8 @@
           "pitch": "B3"
         }
       ],
-      "stems": []
+      "stems": [],
+      "curveDirection": 0
     },
     {
       "physicalBounds": {
@@ -103288,7 +103309,8 @@
           "pitch": "C4"
         }
       ],
-      "stems": []
+      "stems": [],
+      "curveDirection": 1
     },
     {
       "physicalBounds": {
@@ -103359,7 +103381,8 @@
           "pitch": "E3"
         }
       ],
-      "stems": []
+      "stems": [],
+      "curveDirection": 0
     },
     {
       "physicalBounds": {
@@ -103430,7 +103453,8 @@
           "pitch": "A2"
         }
       ],
-      "stems": []
+      "stems": [],
+      "curveDirection": 1
     },
     {
       "physicalBounds": {
@@ -103501,7 +103525,8 @@
           "pitch": "A2"
         }
       ],
-      "stems": []
+      "stems": [],
+      "curveDirection": 0
     },
     {
       "physicalBounds": {
@@ -103572,7 +103597,8 @@
           "pitch": "E3"
         }
       ],
-      "stems": []
+      "stems": [],
+      "curveDirection": 1
     }
   ],
   "rests": [
