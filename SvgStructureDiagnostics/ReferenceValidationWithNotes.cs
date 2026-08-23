@@ -82,6 +82,9 @@ public static class ReferenceValidationWithNotes
         if (!string.Equals(expected.Stem, actualStem, StringComparison.OrdinalIgnoreCase))
             result.Add($"stem expected {expected.Stem ?? "—"}, got {actualStem ?? "—"}");
 
+        if (expected.EffectiveAlter != actual.Pitch.Alter)
+            result.Add($"pitch alter expected {expected.EffectiveAlter}, got {actual.Pitch.Alter}");
+
         var actualAccidental = actual.Accidental is null ? null : AccidentalText(actual.Accidental.Value);
         if (!string.Equals(expected.Accidental, actualAccidental, StringComparison.OrdinalIgnoreCase))
             result.Add($"accidental expected {expected.Accidental ?? "—"}, got {actualAccidental ?? "—"}");
@@ -89,9 +92,6 @@ public static class ReferenceValidationWithNotes
         if (expected.DotCount != actual.DotCount)
             result.Add($"dots expected {expected.DotCount}, got {actual.DotCount}");
 
-        // <chord/> in MusicXML marks every chord note except whichever note happened to be serialized
-        // first. That root/tone choice is not musical semantics and may differ while rendering is
-        // identical. Validate whether the note belongs to a multi-note chord at all.
         var actualChordMember = actual.ChordGroupKey is not null;
         if (expected.IsChordMember != actualChordMember)
             result.Add($"chord membership expected {(expected.IsChordMember ? "member" : "single")}, got {(actualChordMember ? "member" : "single")}");
@@ -164,7 +164,7 @@ public static class ReferenceValidationWithNotes
                             NumberStyles.Any, CultureInfo.InvariantCulture, out var dx) ? dx : null,
                         step,
                         octave.Value,
-                        accidental is null ? 0 : alter,
+                        alter,
                         ChildValue(element, "type"),
                         ChildValue(element, "stem"),
                         accidental,
@@ -175,13 +175,8 @@ public static class ReferenceValidationWithNotes
                         slurs));
                 }
 
-                var chordSizes = measureNotes
-                    .GroupBy(x => (x.Staff, x.ChordGroupId))
-                    .ToDictionary(x => x.Key, x => x.Count());
-                result.AddRange(measureNotes.Select(x => x with
-                {
-                    IsChordMember = chordSizes[(x.Staff, x.ChordGroupId)] > 1
-                }));
+                var chordSizes = measureNotes.GroupBy(x => (x.Staff, x.ChordGroupId)).ToDictionary(x => x.Key, x => x.Count());
+                result.AddRange(measureNotes.Select(x => x with { IsChordMember = chordSizes[(x.Staff, x.ChordGroupId)] > 1 }));
             }
 
             partOffset += staffCount;
@@ -224,13 +219,12 @@ public static class ReferenceValidationWithNotes
         var slurs = (note.Slurs ?? Array.Empty<MusicSlur>()).Count == 0
             ? ""
             : $" slur={string.Join(",", note.Slurs!.Select(x => x.Type.ToString().ToLowerInvariant()))}";
-        return $"{VisiblePitch(note)} {note.Type}" +
+        return $"{note.Pitch.Step}{AlterText(note.Pitch.Alter)}{note.Pitch.Octave} {note.Type}" +
                (note.DotCount > 0 ? new string('.', note.DotCount) : "") +
                (note.Stem is null ? "" : $" stem={note.Stem.ToString()!.ToLowerInvariant()}") +
                chord + slurs;
     }
 
-    private static string VisiblePitch(MusicNote note) => $"{note.Pitch.Step}{(note.Accidental is null ? "" : AlterText(note.Pitch.Alter))}{note.Pitch.Octave}";
     private static string AlterText(int alter) => alter == 0 ? "" : alter > 0 ? $"+{alter}" : alter.ToString(CultureInfo.InvariantCulture);
     private static string AccidentalText(MusicAccidental a) => a switch
     {
@@ -248,12 +242,12 @@ public static class ReferenceValidationWithNotes
     private readonly record struct NoteMatchKey(int Measure, int Staff, string Step, int Octave);
     private sealed record RefBeam(int Level, string Position);
     private sealed record ReferenceNote(
-        int Staff, int Measure, decimal? X, string Step, int Octave, int ExplicitAlter,
+        int Staff, int Measure, decimal? X, string Step, int Octave, int EffectiveAlter,
         string? Type, string? Stem, string? Accidental, int DotCount, int ChordGroupId, bool IsChordMember,
         IReadOnlyList<RefBeam> Beams, IReadOnlyList<string> Slurs)
     {
         public NoteMatchKey MatchKey => new(Measure, Staff, Step, Octave);
-        public string Label => $"{Step}{(Accidental is null ? "" : AlterText(ExplicitAlter))}{Octave} {Type ?? "?"}" +
+        public string Label => $"{Step}{AlterText(EffectiveAlter)}{Octave} {Type ?? "?"}" +
                                (DotCount > 0 ? new string('.', DotCount) : "") +
                                (Stem is null ? "" : $" stem={Stem}") +
                                (IsChordMember ? " chord" : "") +
