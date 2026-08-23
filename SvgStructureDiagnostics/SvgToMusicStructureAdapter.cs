@@ -55,18 +55,18 @@ internal static class SvgToMusicStructureAdapter
 
         var arcs = source.Arcs.Select(arc =>
         {
-            // ArcResolver stores accepted attachments in left-to-right order. Preserve that order
-            // verbatim here; the adapter only transports identity, it does not reinterpret it.
             var leftNote = arc.Notes.Count > 0 && noteKeys.TryGetValue(arc.Notes[0], out var ln) ? ln : null;
             var rightNote = arc.Notes.Count > 1 && noteKeys.TryGetValue(arc.Notes[1], out var rn) ? rn : null;
             var leftStem = arc.Stems.Count > 0 && stemKeys.TryGetValue(arc.Stems[0], out var ls) ? ls : null;
             var rightStem = arc.Stems.Count > 1 && stemKeys.TryGetValue(arc.Stems[1], out var rs) ? rs : null;
-
             var measure = arc.Notes.FirstOrDefault()?.MeasureNumber
                           ?? arc.Stems.FirstOrDefault()?.MeasureNumber
                           ?? 0;
+            var placement = arc.CurveDirection == ArcCurveDirection.Up
+                ? MusicSlurPlacement.Above
+                : MusicSlurPlacement.Below;
 
-            return new RecognizedArcInput(measure, leftNote, leftStem, rightNote, rightStem);
+            return new RecognizedArcInput(measure, leftNote, leftStem, rightNote, rightStem, placement);
         }).Where(x => x.Measure > 0).ToArray();
 
         return new MusicStructureInput(
