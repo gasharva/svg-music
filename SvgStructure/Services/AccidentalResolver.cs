@@ -12,8 +12,8 @@ public sealed class AccidentalResolver
     public double MinimumConfidence { get; init; } = 0.70;
     public double MaxAttachedNoteGapLogicalX { get; init; } = 8.0;
     public double NoteSearchLaneTolerance { get; init; } = 1.0;
-    public double AttachmentPitchTolerance { get; init; } = 1.25;
-    public double AttachmentHorizontalOverlapTolerance { get; init; } = 0.75;
+    public double AttachmentPitchTolerance { get; init; } = 1.0;
+    public double AttachmentHorizontalOverlapTolerance { get; init; } = 1.0;
     public double MinLogicalHeight { get; init; } = 1.5;
     public double MaxLogicalHeight { get; init; } = 7.0;
     public double LaneTolerance { get; init; } = 0.55;
@@ -151,6 +151,7 @@ public sealed class AccidentalResolver
     {
         var anchorY = AccidentalPitchAnchorY(accidental.Kind, accidental.LogicalBounds);
         var anchorPosition = (int)Math.Round(anchorY);
+        var accidentalRight = accidental.LogicalBounds.Right ?? accidental.X;
 
         // Use glyph edges rather than bbox centers for horizontal attachment. A tall/wide accidental
         // may overlap the head slightly, so its center can actually lie to the right of the head's
@@ -170,13 +171,13 @@ public sealed class AccidentalResolver
             {
                 x.Note,
                 x.NoteCenterX,
-                XGap = x.NoteLeft - accidental.LogicalBounds.Right,
+                XGap = x.NoteLeft - accidentalRight,
                 YGap = Math.Abs(x.Y - anchorY),
                 ExactPosition = x.Position == anchorPosition
             })
             .Where(x => x.XGap >= -AttachmentHorizontalOverlapTolerance && x.XGap <= MaxAttachedNoteGapLogicalX)
             .Where(x => x.ExactPosition || x.YGap <= AttachmentPitchTolerance)
-            .OrderBy(x => Math.Max(0, x.XGap))
+            .OrderBy(x => Math.Max(0.0, x.XGap))
             .ThenBy(x => x.ExactPosition ? 0 : 1)
             .ThenBy(x => x.YGap)
             .ThenBy(x => x.NoteCenterX)
