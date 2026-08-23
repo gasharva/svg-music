@@ -10,6 +10,8 @@ internal static class ResolvedMusicXmlNoteWriter
 
     public static void Append(string path, MusicScore score)
     {
+        ClefStateNormalizer.Normalize(path);
+
         var doc = XDocument.Load(path);
         var part = doc.Root!.Elements().First(x => x.Name.LocalName == "part");
         var measures = part.Elements().Where(x => x.Name.LocalName == "measure")
