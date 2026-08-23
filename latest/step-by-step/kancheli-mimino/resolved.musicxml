@@ -326,20 +326,7 @@
       </note>
     </measure>
     <measure number="4">
-      <note default-x="21.167">
-        <pitch>
-          <step>F</step>
-          <octave>4</octave>
-        </pitch>
-        <duration>96</duration>
-        <voice>1</voice>
-        <type>half</type>
-        <dot />
-        <stem>down</stem>
-        <staff>1</staff>
-      </note>
       <note default-x="32.285">
-        <chord />
         <pitch>
           <step>E</step>
           <octave>4</octave>
@@ -348,11 +335,25 @@
         <voice>1</voice>
         <type>half</type>
         <dot />
-        <stem>down</stem>
+        <stem>up</stem>
         <staff>1</staff>
       </note>
       <backup>
         <duration>96</duration>
+      </backup>
+      <note default-x="21.167">
+        <pitch>
+          <step>F</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>64</duration>
+        <voice>2</voice>
+        <type>half</type>
+        <stem>down</stem>
+        <staff>1</staff>
+      </note>
+      <backup>
+        <duration>64</duration>
       </backup>
       <note default-x="20.982">
         <pitch>
@@ -1188,20 +1189,7 @@
       </note>
     </measure>
     <measure number="12">
-      <note default-x="19.066">
-        <pitch>
-          <step>F</step>
-          <octave>4</octave>
-        </pitch>
-        <duration>96</duration>
-        <voice>1</voice>
-        <type>half</type>
-        <dot />
-        <stem>down</stem>
-        <staff>1</staff>
-      </note>
       <note default-x="29.765">
-        <chord />
         <pitch>
           <step>E</step>
           <octave>4</octave>
@@ -1210,11 +1198,25 @@
         <voice>1</voice>
         <type>half</type>
         <dot />
-        <stem>down</stem>
+        <stem>up</stem>
         <staff>1</staff>
       </note>
       <backup>
         <duration>96</duration>
+      </backup>
+      <note default-x="19.066">
+        <pitch>
+          <step>F</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>64</duration>
+        <voice>2</voice>
+        <type>half</type>
+        <stem>down</stem>
+        <staff>1</staff>
+      </note>
+      <backup>
+        <duration>64</duration>
       </backup>
       <note default-x="18.887">
         <pitch>
@@ -1895,33 +1897,7 @@
       </note>
     </measure>
     <measure number="19">
-      <note default-x="30.58">
-        <pitch>
-          <step>C</step>
-          <octave>5</octave>
-        </pitch>
-        <duration>96</duration>
-        <voice>1</voice>
-        <type>half</type>
-        <dot />
-        <stem>down</stem>
-        <staff>1</staff>
-      </note>
       <note default-x="42.841">
-        <chord />
-        <pitch>
-          <step>F</step>
-          <octave>4</octave>
-        </pitch>
-        <duration>96</duration>
-        <voice>1</voice>
-        <type>half</type>
-        <dot />
-        <stem>down</stem>
-        <staff>1</staff>
-      </note>
-      <note default-x="42.841">
-        <chord />
         <pitch>
           <step>D</step>
           <octave>5</octave>
@@ -1930,24 +1906,8 @@
         <voice>1</voice>
         <type>half</type>
         <dot />
-        <stem>down</stem>
+        <stem>up</stem>
         <staff>1</staff>
-      </note>
-      <note default-x="30.834">
-        <pitch>
-          <step>E</step>
-          <alter>-1</alter>
-          <octave>5</octave>
-        </pitch>
-        <duration>32</duration>
-        <voice>1</voice>
-        <type>quarter</type>
-        <accidental>flat</accidental>
-        <stem>down</stem>
-        <staff>1</staff>
-        <notations>
-          <slur type="start" number="1" placement="above" />
-        </notations>
       </note>
       <note default-x="102.564">
         <pitch>
@@ -1975,7 +1935,51 @@
         </notations>
       </note>
       <backup>
-        <duration>192</duration>
+        <duration>160</duration>
+      </backup>
+      <note default-x="30.58">
+        <pitch>
+          <step>C</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>96</duration>
+        <voice>2</voice>
+        <type>half</type>
+        <dot />
+        <stem>down</stem>
+        <staff>1</staff>
+      </note>
+      <note default-x="42.841">
+        <chord />
+        <pitch>
+          <step>F</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>96</duration>
+        <voice>2</voice>
+        <type>half</type>
+        <dot />
+        <stem>down</stem>
+        <staff>1</staff>
+      </note>
+      <note default-x="30.834">
+        <pitch>
+          <step>E</step>
+          <alter>-1</alter>
+          <octave>5</octave>
+        </pitch>
+        <duration>32</duration>
+        <voice>2</voice>
+        <type>quarter</type>
+        <accidental>flat</accidental>
+        <stem>down</stem>
+        <staff>1</staff>
+        <notations>
+          <slur type="start" number="1" placement="above" />
+        </notations>
+      </note>
+      <backup>
+        <duration>128</duration>
       </backup>
       <note default-x="31.031">
         <pitch>
