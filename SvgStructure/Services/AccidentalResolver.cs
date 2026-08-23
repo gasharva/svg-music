@@ -4,9 +4,6 @@ namespace SvgStructure.Services;
 
 /// <summary>
 /// Resolves accidentals from smooth MusicSymbol candidates.
-/// PCA is invoked only for candidates that are structurally eligible:
-/// 1) the left-most symbol chain in each logical Y lane (clefs are skipped), or
-/// 2) the first symbol chain immediately to the left of an already recognized note head.
 /// </summary>
 public sealed class AccidentalResolver
 {
@@ -15,8 +12,7 @@ public sealed class AccidentalResolver
     public double MinimumConfidence { get; init; } = 0.70;
     public double MaxAttachedNoteGapLogicalX { get; init; } = 8.0;
     public double NoteSearchLaneTolerance { get; init; } = 1.0;
-    public double AttachmentBlockerLaneTolerance { get; init; } = 0.75;
-    public double AttachmentPitchTolerance { get; init; } = 0.65;
+    public double AttachmentPitchTolerance { get; init; } = 0.85;
     public double MinLogicalHeight { get; init; } = 1.5;
     public double MaxLogicalHeight { get; init; } = 7.0;
     public double LaneTolerance { get; init; } = 0.55;
@@ -34,37 +30,27 @@ public sealed class AccidentalResolver
         var recognized = new Dictionary<int, RecognizedCandidate?>();
         var found = new Dictionary<int, RecognizedCandidate>();
 
-        foreach (var group in prepared
-                     .GroupBy(x => (x.PartNumber, x.MeasureNumber))
-                     .OrderBy(x => x.Key.MeasureNumber)
-                     .ThenBy(x => x.Key.PartNumber))
+        foreach (var group in prepared.GroupBy(x => (x.PartNumber, x.MeasureNumber)).OrderBy(x => x.Key.MeasureNumber).ThenBy(x => x.Key.PartNumber))
         {
-            var lanes = BuildVerticalLanes(group.ToArray());
-            foreach (var lane in lanes)
+            foreach (var lane in BuildVerticalLanes(group.ToArray()))
             {
                 foreach (var candidate in lane.OrderBy(x => x.X))
                 {
                     if (OverlapsClef(candidate, clefs))
                         continue;
-
                     var recognition = Recognize(candidate, recognized);
                     if (recognition is null)
                         break;
-
                     found[recognition.SymbolId] = recognition;
                 }
             }
         }
 
-        foreach (var note in noteHeads
-                     .OrderBy(x => x.MeasureNumber)
-                     .ThenBy(x => x.PartNumber)
-                     .ThenBy(x => CenterX(x.LogicalBounds) ?? double.MaxValue))
+        foreach (var note in noteHeads.OrderBy(x => x.MeasureNumber).ThenBy(x => x.PartNumber).ThenBy(x => CenterX(x.LogicalBounds) ?? double.MaxValue))
         {
             var noteX = CenterX(note.LogicalBounds);
             if (noteX is null)
                 continue;
-
             var noteY = CenterY(note.LogicalBounds);
             var left = prepared
                 .Where(x => x.PartNumber == note.PartNumber && x.MeasureNumber == note.MeasureNumber)
@@ -77,36 +63,26 @@ public sealed class AccidentalResolver
             {
                 if (found.ContainsKey(candidate.Symbol.Id))
                     continue;
-
                 if (OverlapsClef(candidate, clefs))
                     break;
-
                 var recognition = Recognize(candidate, recognized);
                 if (recognition is null)
                     break;
-
                 found[recognition.SymbolId] = recognition;
             }
         }
 
-        var results = new List<AccidentalResolution>();
-        foreach (var accidental in found.Values
-                     .OrderBy(x => x.MeasureNumber)
-                     .ThenBy(x => x.PartNumber)
-                     .ThenBy(x => x.X))
-        {
-            var attached = FindAttachedNote(accidental, noteHeads, prepared, found);
-            results.Add(new AccidentalResolution(
+        return found.Values
+            .OrderBy(x => x.MeasureNumber).ThenBy(x => x.PartNumber).ThenBy(x => x.X)
+            .Select(accidental => new AccidentalResolution(
                 accidental.PartNumber,
                 accidental.MeasureNumber,
                 accidental.LogicalBounds,
                 accidental.PhysicalBounds,
                 accidental.Kind,
                 accidental.Confidence,
-                attached));
-        }
-
-        return results;
+                FindAttachedNote(accidental, noteHeads)))
+            .ToArray();
     }
 
     private IReadOnlyList<PreparedCandidate> PrepareCandidates(MusicSymbolResolution symbols, LogicalGridResolution grid)
@@ -119,16 +95,13 @@ public sealed class AccidentalResolver
             var part = symbol.PartNumber!.Value;
             if (!grid.TryGetBlock(part, symbol.MeasureNumber, out var block))
                 continue;
-
             var logical = block.ToLogical(symbol.PhysicalBounds);
             var height = logical.Bottom - logical.Top;
             if (height < MinLogicalHeight || height > MaxLogicalHeight)
                 continue;
-
             var x = CenterX(logical);
             if (x is null)
                 continue;
-
             result.Add(new PreparedCandidate(symbol, part, symbol.MeasureNumber, logical, x.Value, CenterY(logical)));
         }
         return result;
@@ -154,21 +127,18 @@ public sealed class AccidentalResolver
     {
         if (cache.TryGetValue(candidate.Symbol.Id, out var cached))
             return cached;
-
         var contours = SmoothSymbolContourConverter.ToContours(new[] { candidate.Symbol });
         if (contours.Count == 0)
         {
             cache[candidate.Symbol.Id] = null;
             return null;
         }
-
         var recognition = _recognizer.Recognize(contours);
         if (recognition.Kind is null || recognition.Confidence < MinimumConfidence)
         {
             cache[candidate.Symbol.Id] = null;
             return null;
         }
-
         var result = new RecognizedCandidate(
             candidate.Symbol.Id, candidate.PartNumber, candidate.MeasureNumber, candidate.LogicalBounds,
             candidate.Symbol.PhysicalBounds, candidate.X, recognition.Kind.Value, recognition.Confidence);
@@ -176,16 +146,15 @@ public sealed class AccidentalResolver
         return result;
     }
 
-    private NoteHeadResolution? FindAttachedNote(
-        RecognizedCandidate accidental,
-        IReadOnlyList<NoteHeadResolution> noteHeads,
-        IReadOnlyList<PreparedCandidate> allSymbols,
-        IReadOnlyDictionary<int, RecognizedCandidate> recognizedAccidentals)
+    private NoteHeadResolution? FindAttachedNote(RecognizedCandidate accidental, IReadOnlyList<NoteHeadResolution> noteHeads)
     {
         var anchorY = AccidentalPitchAnchorY(accidental.Kind, accidental.LogicalBounds);
         var anchorPosition = (int)Math.Round(anchorY);
 
-        var candidates = noteHeads
+        // Once a glyph has confidently been recognized as an accidental, attachment is deliberately
+        // simple: the nearest compatible note immediately to its right wins. Other smooth symbols in
+        // between must not block the relation; real scores commonly contain overlapping chord glyphs.
+        return noteHeads
             .Where(x => x.PartNumber == accidental.PartNumber && x.MeasureNumber == accidental.MeasureNumber)
             .Select(x => new
             {
@@ -196,32 +165,12 @@ public sealed class AccidentalResolver
             })
             .Where(x => x.X is not null && x.X.Value > accidental.X)
             .Where(x => x.X!.Value - accidental.X <= MaxAttachedNoteGapLogicalX)
-            // Exact quantized staff position remains preferred, but SVG glyph boxes are sometimes
-            // shifted by a fraction of a half-space. Accept a small geometric tolerance instead of
-            // dropping an otherwise obvious accidental completely.
             .Where(x => x.Position == anchorPosition || Math.Abs(x.Y - anchorY) <= AttachmentPitchTolerance)
-            .OrderBy(x => x.Position == anchorPosition ? 0 : 1)
+            .OrderBy(x => x.X!.Value - accidental.X)
+            .ThenBy(x => x.Position == anchorPosition ? 0 : 1)
             .ThenBy(x => Math.Abs(x.Y - anchorY))
-            .ThenBy(x => x.X)
-            .ToArray();
-
-        foreach (var candidate in candidates)
-        {
-            var targetX = candidate.X!.Value;
-            var targetY = candidate.Y;
-            var blocked = allSymbols
-                .Where(x => x.PartNumber == accidental.PartNumber && x.MeasureNumber == accidental.MeasureNumber)
-                .Where(x => x.X > accidental.X && x.X < targetX)
-                .Where(x => !x.Symbol.PhysicalBounds.Intersects(accidental.PhysicalBounds))
-                .Where(x => !x.Symbol.PhysicalBounds.Intersects(candidate.Note.PhysicalBounds))
-                .Where(x => VerticalDistanceToY(x.LogicalBounds, targetY) <= AttachmentBlockerLaneTolerance)
-                .Any(x => !recognizedAccidentals.ContainsKey(x.Symbol.Id));
-
-            if (!blocked)
-                return candidate.Note;
-        }
-
-        return null;
+            .Select(x => x.Note)
+            .FirstOrDefault();
     }
 
     private static double AccidentalPitchAnchorY(AccidentalKind kind, LogicalRectD bounds) => kind switch
@@ -238,8 +187,7 @@ public sealed class AccidentalResolver
     }
 
     private static bool OverlapsClef(PreparedCandidate candidate, IReadOnlyList<ClefResolution> clefs) =>
-        clefs.Any(c => c.PartNumber == candidate.PartNumber && c.MeasureNumber == candidate.MeasureNumber &&
-                       c.PhysicalBounds.Intersects(candidate.Symbol.PhysicalBounds));
+        clefs.Any(c => c.PartNumber == candidate.PartNumber && c.MeasureNumber == candidate.MeasureNumber && c.PhysicalBounds.Intersects(candidate.Symbol.PhysicalBounds));
 
     private static double? CenterX(LogicalRectD b) => b.Left is { } l && b.Right is { } r ? (l + r) / 2.0 : null;
     private static double CenterY(LogicalRectD b) => (b.Top + b.Bottom) / 2.0;
