@@ -8,14 +8,16 @@ internal static class StemAssignmentMap
     {
         var result = new Dictionary<string, RecognizedStemInput>();
 
-        // Low-level stem recognition can conservatively attach more than one nearby stem to the
-        // same note head. Do not depend on resolver enumeration order: when several explicit
-        // attachments exist, the stem whose logical X is closest to the head wins.
+        // Explicit low-level attachment is the strongest signal. If the resolver attached several
+        // stems to one head, prefer the most specific stem first: a stem attached only to this head
+        // is a better explanation than a nearby stem conservatively attached to several heads.
+        // X distance is only the tie-breaker, never the primary replacement for resolver identity.
         foreach (var note in input.Notes)
         {
             var explicitStems = input.Stems
                 .Where(stem => stem.AttachedNoteKeys.Contains(note.Key))
-                .OrderBy(stem => Distance(stem.LogicalX, note.LogicalX))
+                .OrderBy(stem => stem.AttachedNoteKeys.Distinct().Count())
+                .ThenBy(stem => Distance(stem.LogicalX, note.LogicalX))
                 .ThenBy(stem => stem.Key, StringComparer.Ordinal)
                 .ToArray();
 
@@ -39,8 +41,6 @@ internal static class StemAssignmentMap
             if (nearby.Length == 0)
                 continue;
 
-            // If two unattached stems are genuinely equally plausible, leave the note unresolved;
-            // a later, smarter rule can use more context. Otherwise preserve the obvious nearest one.
             if (nearby.Length > 1 && Math.Abs(nearby[0].Distance - nearby[1].Distance) < 0.10)
                 continue;
 
