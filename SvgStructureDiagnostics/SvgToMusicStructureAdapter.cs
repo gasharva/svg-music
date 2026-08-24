@@ -19,6 +19,7 @@ internal static class SvgToMusicStructureAdapter
             stemKeys[stem],
             stem.PartNumber,
             stem.MeasureNumber,
+            CenterX(stem.LogicalBounds),
             stem.Direction == StemDirection.Up ? MusicStemDirection.Up : MusicStemDirection.Down,
             stem.AttachedNotes.Where(noteKeys.ContainsKey).Select(note => noteKeys[note]).ToArray())).ToArray();
 
@@ -45,12 +46,28 @@ internal static class SvgToMusicStructureAdapter
                 noteKeys[head],
                 head.PartNumber,
                 head.MeasureNumber,
-                CenterX(head),
+                CenterX(head.LogicalBounds),
                 head.Pitch,
                 head.IsFilled,
                 accidental is null ? null : ToAccidental(accidental.Kind),
                 dotCount);
         }).ToArray();
+
+        var arcs = source.Arcs.Select(arc =>
+        {
+            var leftNote = arc.Notes.Count > 0 && noteKeys.TryGetValue(arc.Notes[0], out var ln) ? ln : null;
+            var rightNote = arc.Notes.Count > 1 && noteKeys.TryGetValue(arc.Notes[1], out var rn) ? rn : null;
+            var leftStem = arc.Stems.Count > 0 && stemKeys.TryGetValue(arc.Stems[0], out var ls) ? ls : null;
+            var rightStem = arc.Stems.Count > 1 && stemKeys.TryGetValue(arc.Stems[1], out var rs) ? rs : null;
+            var measure = arc.Notes.FirstOrDefault()?.MeasureNumber
+                          ?? arc.Stems.FirstOrDefault()?.MeasureNumber
+                          ?? 0;
+            var placement = arc.CurveDirection == ArcCurveDirection.Up
+                ? MusicSlurPlacement.Above
+                : MusicSlurPlacement.Below;
+
+            return new RecognizedArcInput(measure, leftNote, leftStem, rightNote, rightStem, placement);
+        }).Where(x => x.Measure > 0).ToArray();
 
         return new MusicStructureInput(
             source.Structure.Parts.Count,
@@ -59,13 +76,14 @@ internal static class SvgToMusicStructureAdapter
             notes,
             stems,
             beams,
-            flags);
+            flags,
+            arcs);
     }
 
-    private static double? CenterX(NoteHeadResolution head) =>
-        head.LogicalBounds.Left is { } left && head.LogicalBounds.Right is { } right
+    private static double? CenterX(LogicalRectD bounds) =>
+        bounds.Left is { } left && bounds.Right is { } right
             ? (left + right) / 2.0
-            : head.LogicalBounds.Left ?? head.LogicalBounds.Right;
+            : bounds.Left ?? bounds.Right;
 
     private static MusicAccidental ToAccidental(AccidentalKind kind) => kind switch
     {

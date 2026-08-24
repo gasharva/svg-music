@@ -21,6 +21,7 @@ public sealed class SvgStructureResolver
     private readonly ArpeggiatoResolver _arpeggiatoResolver = new();
     private readonly BeamResolver _beamResolver = new();
     private readonly ArcResolver _arcResolver = new();
+    private readonly ArcAttachmentRefiner _arcAttachmentRefiner = new();
     private readonly DotResolver _dotResolver = new();
 
     public SvgStructureResolution Resolve(string svgPath, string repositoryRoot, string recognizerWork)
@@ -99,7 +100,8 @@ public sealed class SvgStructureResolver
         claimed.AddRange(noteFlags.Select(x => x.PhysicalBounds));
 
         var arcPrimitives = RecognitionCandidateFilter.ExcludeClaimed(primitives, claimed);
-        var arcs = _arcResolver.Resolve(arcPrimitives, logicalGrid, noteHeads, stems);
+        var rawArcs = _arcResolver.Resolve(arcPrimitives, logicalGrid, noteHeads, stems);
+        var arcs = _arcAttachmentRefiner.Refine(rawArcs, noteHeads, stems);
         claimed.AddRange(arcs.Select(x => x.PhysicalBounds));
 
         var accidentalSymbols = RecognitionCandidateFilter.ExcludeClaimed(musicSymbols, claimed);
