@@ -1897,6 +1897,20 @@
       </note>
     </measure>
     <measure number="19">
+      <note default-x="30.834">
+        <pitch>
+          <step>E</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>32</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <stem>up</stem>
+        <staff>1</staff>
+        <notations>
+          <slur type="start" number="1" placement="above" />
+        </notations>
+      </note>
       <note default-x="42.841">
         <pitch>
           <step>D</step>
@@ -1923,6 +1937,7 @@
       <note default-x="173.859">
         <pitch>
           <step>C</step>
+          <alter>-1</alter>
           <octave>5</octave>
         </pitch>
         <duration>32</duration>
@@ -1935,17 +1950,19 @@
         </notations>
       </note>
       <backup>
-        <duration>160</duration>
+        <duration>192</duration>
       </backup>
       <note default-x="30.58">
         <pitch>
           <step>C</step>
+          <alter>-1</alter>
           <octave>5</octave>
         </pitch>
         <duration>96</duration>
         <voice>2</voice>
         <type>half</type>
         <dot />
+        <accidental>flat</accidental>
         <stem>down</stem>
         <staff>1</staff>
       </note>
@@ -1962,24 +1979,8 @@
         <stem>down</stem>
         <staff>1</staff>
       </note>
-      <note default-x="30.834">
-        <pitch>
-          <step>E</step>
-          <alter>-1</alter>
-          <octave>5</octave>
-        </pitch>
-        <duration>32</duration>
-        <voice>2</voice>
-        <type>quarter</type>
-        <accidental>flat</accidental>
-        <stem>down</stem>
-        <staff>1</staff>
-        <notations>
-          <slur type="start" number="1" placement="above" />
-        </notations>
-      </note>
       <backup>
-        <duration>128</duration>
+        <duration>96</duration>
       </backup>
       <note default-x="31.031">
         <pitch>

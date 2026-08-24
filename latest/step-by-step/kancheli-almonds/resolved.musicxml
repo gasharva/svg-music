@@ -2475,13 +2475,11 @@
         <chord />
         <pitch>
           <step>G</step>
-          <alter>1</alter>
           <octave>3</octave>
         </pitch>
         <duration>32</duration>
         <voice>1</voice>
         <type>quarter</type>
-        <accidental>sharp</accidental>
         <stem>up</stem>
         <staff>2</staff>
         <notations>
@@ -2504,7 +2502,6 @@
         <chord />
         <pitch>
           <step>G</step>
-          <alter>1</alter>
           <octave>3</octave>
         </pitch>
         <duration>64</duration>
