@@ -40,9 +40,13 @@ public sealed class AccidentalResolver
                 {
                     if (OverlapsClef(candidate, clefs))
                         continue;
+
+                    // One unrelated symbol must not terminate the whole lane. In real SVGs a sharp
+                    // may be preceded by another smooth candidate which simply is not an accidental.
                     var recognition = Recognize(candidate, recognized);
                     if (recognition is null)
-                        break;
+                        continue;
+
                     found[recognition.SymbolId] = recognition;
                 }
             }
@@ -53,6 +57,7 @@ public sealed class AccidentalResolver
             var noteX = CenterX(note.LogicalBounds);
             if (noteX is null)
                 continue;
+
             var noteY = CenterY(note.LogicalBounds);
             var left = prepared
                 .Where(x => x.PartNumber == note.PartNumber && x.MeasureNumber == note.MeasureNumber)
@@ -66,10 +71,12 @@ public sealed class AccidentalResolver
                 if (found.ContainsKey(candidate.Symbol.Id))
                     continue;
                 if (OverlapsClef(candidate, clefs))
-                    break;
+                    continue;
+
                 var recognition = Recognize(candidate, recognized);
                 if (recognition is null)
-                    break;
+                    continue;
+
                 found[recognition.SymbolId] = recognition;
             }
         }
@@ -154,11 +161,6 @@ public sealed class AccidentalResolver
         var anchorPosition = (int)Math.Round(anchorY);
         var accidentalRight = accidental.LogicalBounds.Right ?? accidental.X;
 
-        // Attachment is a geometric relation, not another recognition problem. A confidently
-        // recognized accidental belongs to the nearest note head immediately to its right whose
-        // centre lies inside (or just outside) the accidental's vertical glyph span. This is much
-        // more stable than comparing bbox centres: sharp/natural glyphs are tall and their bbox
-        // centre can be noticeably displaced from the pitch position they visually modify.
         return noteHeads
             .Where(x => x.PartNumber == accidental.PartNumber && x.MeasureNumber == accidental.MeasureNumber)
             .Select(x => new
@@ -181,9 +183,12 @@ public sealed class AccidentalResolver
             })
             .Where(x => x.XGap >= -AttachmentHorizontalOverlapTolerance && x.XGap <= MaxAttachedNoteGapLogicalX)
             .Where(x => x.GlyphYGap <= AttachmentGlyphLaneTolerance)
-            .OrderBy(x => Math.Max(0.0, x.XGap))
-            .ThenBy(x => x.ExactPosition ? 0 : 1)
+            // Pitch position is more important than tiny horizontal differences. The current Mimino
+            // M3 flat is a concrete example: B4 is the exact staff position, while A4 is merely a bit
+            // closer in X. Choosing X first attaches the sign to the wrong note.
+            .OrderBy(x => x.ExactPosition ? 0 : 1)
             .ThenBy(x => x.AnchorYGap)
+            .ThenBy(x => Math.Max(0.0, x.XGap))
             .ThenBy(x => x.NoteCenterX)
             .Select(x => x.Note)
             .FirstOrDefault();
