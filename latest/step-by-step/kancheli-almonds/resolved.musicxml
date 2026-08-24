@@ -1774,13 +1774,11 @@
       <note default-x="114.116">
         <pitch>
           <step>A</step>
-          <alter>-1</alter>
           <octave>3</octave>
         </pitch>
         <duration>64</duration>
         <voice>1</voice>
         <type>half</type>
-        <accidental>flat</accidental>
         <stem>down</stem>
         <staff>2</staff>
       </note>
@@ -1788,11 +1786,13 @@
         <chord />
         <pitch>
           <step>B</step>
+          <alter>-1</alter>
           <octave>3</octave>
         </pitch>
         <duration>64</duration>
         <voice>1</voice>
         <type>half</type>
+        <accidental>flat</accidental>
         <stem>down</stem>
         <staff>2</staff>
       </note>
@@ -2475,11 +2475,13 @@
         <chord />
         <pitch>
           <step>G</step>
+          <alter>1</alter>
           <octave>3</octave>
         </pitch>
         <duration>32</duration>
         <voice>1</voice>
         <type>quarter</type>
+        <accidental>sharp</accidental>
         <stem>up</stem>
         <staff>2</staff>
         <notations>
@@ -2502,6 +2504,7 @@
         <chord />
         <pitch>
           <step>G</step>
+          <alter>1</alter>
           <octave>3</octave>
         </pitch>
         <duration>64</duration>
@@ -3693,6 +3696,19 @@
       <note default-x="23.857">
         <pitch>
           <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>96</duration>
+        <voice>1</voice>
+        <type>half</type>
+        <dot />
+        <stem>up</stem>
+        <staff>1</staff>
+      </note>
+      <note default-x="35.494">
+        <chord />
+        <pitch>
+          <step>B</step>
           <alter>-1</alter>
           <octave>4</octave>
         </pitch>
@@ -3701,19 +3717,6 @@
         <type>half</type>
         <dot />
         <accidental>flat</accidental>
-        <stem>up</stem>
-        <staff>1</staff>
-      </note>
-      <note default-x="35.494">
-        <chord />
-        <pitch>
-          <step>B</step>
-          <octave>4</octave>
-        </pitch>
-        <duration>96</duration>
-        <voice>1</voice>
-        <type>half</type>
-        <dot />
         <stem>up</stem>
         <staff>1</staff>
       </note>
