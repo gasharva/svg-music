@@ -13,6 +13,7 @@ public sealed class AccidentalResolver
     public double MaxAttachedNoteGapLogicalX { get; init; } = 8.0;
     public double NoteSearchLaneTolerance { get; init; } = 1.0;
     public double AttachmentPitchTolerance { get; init; } = 1.0;
+    public double AttachmentGlyphLaneTolerance { get; init; } = 0.75;
     public double AttachmentHorizontalOverlapTolerance { get; init; } = 1.0;
     public double MinLogicalHeight { get; init; } = 1.5;
     public double MaxLogicalHeight { get; init; } = 7.0;
@@ -153,9 +154,11 @@ public sealed class AccidentalResolver
         var anchorPosition = (int)Math.Round(anchorY);
         var accidentalRight = accidental.LogicalBounds.Right ?? accidental.X;
 
-        // Use glyph edges rather than bbox centers for horizontal attachment. A tall/wide accidental
-        // may overlap the head slightly, so its center can actually lie to the right of the head's
-        // center even though the symbol is visibly placed immediately before that note.
+        // Attachment is a geometric relation, not another recognition problem. A confidently
+        // recognized accidental belongs to the nearest note head immediately to its right whose
+        // centre lies inside (or just outside) the accidental's vertical glyph span. This is much
+        // more stable than comparing bbox centres: sharp/natural glyphs are tall and their bbox
+        // centre can be noticeably displaced from the pitch position they visually modify.
         return noteHeads
             .Where(x => x.PartNumber == accidental.PartNumber && x.MeasureNumber == accidental.MeasureNumber)
             .Select(x => new
@@ -172,14 +175,15 @@ public sealed class AccidentalResolver
                 x.Note,
                 x.NoteCenterX,
                 XGap = x.NoteLeft - accidentalRight,
-                YGap = Math.Abs(x.Y - anchorY),
+                GlyphYGap = VerticalDistanceToY(accidental.LogicalBounds, x.Y),
+                AnchorYGap = Math.Abs(x.Y - anchorY),
                 ExactPosition = x.Position == anchorPosition
             })
             .Where(x => x.XGap >= -AttachmentHorizontalOverlapTolerance && x.XGap <= MaxAttachedNoteGapLogicalX)
-            .Where(x => x.ExactPosition || x.YGap <= AttachmentPitchTolerance)
+            .Where(x => x.GlyphYGap <= AttachmentGlyphLaneTolerance)
             .OrderBy(x => Math.Max(0.0, x.XGap))
             .ThenBy(x => x.ExactPosition ? 0 : 1)
-            .ThenBy(x => x.YGap)
+            .ThenBy(x => x.AnchorYGap)
             .ThenBy(x => x.NoteCenterX)
             .Select(x => x.Note)
             .FirstOrDefault();
