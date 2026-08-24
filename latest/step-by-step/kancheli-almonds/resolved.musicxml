@@ -81,14 +81,14 @@
           <step>F</step>
           <octave>4</octave>
         </pitch>
-        <duration>64</duration>
+        <duration>8</duration>
         <voice>2</voice>
-        <type>half</type>
+        <type>16th</type>
         <stem>down</stem>
         <staff>1</staff>
       </note>
       <backup>
-        <duration>64</duration>
+        <duration>8</duration>
       </backup>
       <note default-x="81.521">
         <pitch>
@@ -862,9 +862,9 @@
           <step>D</step>
           <octave>2</octave>
         </pitch>
-        <duration>96</duration>
+        <duration>12</duration>
         <voice>1</voice>
-        <type>half</type>
+        <type>16th</type>
         <dot />
         <stem>down</stem>
         <staff>2</staff>
@@ -2030,9 +2030,9 @@
           <step>A</step>
           <octave>3</octave>
         </pitch>
-        <duration>96</duration>
+        <duration>12</duration>
         <voice>1</voice>
-        <type>half</type>
+        <type>16th</type>
         <dot />
         <stem>down</stem>
         <staff>2</staff>
@@ -2047,9 +2047,9 @@
           <step>B</step>
           <octave>2</octave>
         </pitch>
-        <duration>96</duration>
+        <duration>12</duration>
         <voice>1</voice>
-        <type>half</type>
+        <type>16th</type>
         <dot />
         <accidental>natural</accidental>
         <stem>down</stem>
@@ -2064,9 +2064,9 @@
           <step>F</step>
           <octave>3</octave>
         </pitch>
-        <duration>96</duration>
+        <duration>12</duration>
         <voice>1</voice>
-        <type>half</type>
+        <type>16th</type>
         <dot />
         <stem>down</stem>
         <staff>2</staff>
@@ -2232,9 +2232,9 @@
           <step>A</step>
           <octave>3</octave>
         </pitch>
-        <duration>96</duration>
+        <duration>12</duration>
         <voice>1</voice>
-        <type>half</type>
+        <type>16th</type>
         <dot />
         <stem>down</stem>
         <staff>2</staff>
@@ -2245,9 +2245,9 @@
           <step>B</step>
           <octave>2</octave>
         </pitch>
-        <duration>96</duration>
+        <duration>12</duration>
         <voice>1</voice>
-        <type>half</type>
+        <type>16th</type>
         <dot />
         <accidental>natural</accidental>
         <stem>down</stem>
@@ -2259,9 +2259,9 @@
           <step>F</step>
           <octave>3</octave>
         </pitch>
-        <duration>96</duration>
+        <duration>12</duration>
         <voice>1</voice>
-        <type>half</type>
+        <type>16th</type>
         <dot />
         <stem>down</stem>
         <staff>2</staff>
@@ -3934,14 +3934,14 @@
           <step>E</step>
           <octave>4</octave>
         </pitch>
-        <duration>64</duration>
+        <duration>8</duration>
         <voice>2</voice>
-        <type>half</type>
+        <type>16th</type>
         <stem>down</stem>
         <staff>1</staff>
       </note>
       <backup>
-        <duration>64</duration>
+        <duration>8</duration>
       </backup>
       <note default-x="34.114">
         <pitch>

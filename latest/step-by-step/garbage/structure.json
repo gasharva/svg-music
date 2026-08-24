@@ -33520,7 +33520,76 @@
       }
     }
   ],
-  "noteFlags": [],
+  "noteFlags": [
+    {
+      "partNumber": 2,
+      "measureNumber": 3,
+      "denominator": 16,
+      "physicalBounds": {
+        "left": 505.9062805175781,
+        "top": 276.8515625,
+        "right": 529.5254516601562,
+        "bottom": 291.2586975097656,
+        "width": 23.619171142578125,
+        "height": 14.407135009765625,
+        "centerX": 517.7158660888672,
+        "centerY": 284.0551300048828
+      },
+      "logicalBounds": {
+        "left": 1.5717484269863822,
+        "top": 10.460040502150335,
+        "right": 3.0872419976798713,
+        "bottom": 14.964347135391199
+      },
+      "stem": {
+        "partNumber": 2,
+        "measureNumber": 3,
+        "logicalBounds": {
+          "left": 1.8016259501934806,
+          "top": 2.3680781992047457,
+          "right": 1.8016259501934806,
+          "bottom": 9.000035779284747
+        },
+        "physicalBounds": {
+          "left": 509.48895263671875,
+          "top": 250.96922302246094,
+          "right": 509.48895263671875,
+          "bottom": 272.18170166015625,
+          "width": 0,
+          "height": 21.212478637695312,
+          "centerX": 509.48895263671875,
+          "centerY": 261.5754623413086
+        },
+        "direction": 1,
+        "crossStaff": false,
+        "attachedNotes": [
+          {
+            "partNumber": 2,
+            "measureNumber": 3,
+            "logicalBounds": {
+              "left": 1.7769986632153154,
+              "top": 0.8800272876678347,
+              "right": 2.3172814330116425,
+              "bottom": 3.120096747185959
+            },
+            "physicalBounds": {
+              "left": 509.1051330566406,
+              "top": 246.20965576171875,
+              "right": 517.5255126953125,
+              "bottom": 253.37457275390625,
+              "width": 8.420379638671875,
+              "height": 7.1649169921875,
+              "centerX": 513.3153228759766,
+              "centerY": 249.7921142578125
+            },
+            "isFilled": true,
+            "pitch": "F3"
+          }
+        ]
+      },
+      "confidence": 0.1495618483637812
+    }
+  ],
   "arcs": [
     {
       "physicalBounds": {

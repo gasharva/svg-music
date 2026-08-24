@@ -101612,6 +101612,74 @@
   "noteFlags": [
     {
       "partNumber": 1,
+      "measureNumber": 1,
+      "denominator": 16,
+      "physicalBounds": {
+        "left": 116.09878540039062,
+        "top": 184.66983032226562,
+        "right": 134.940673828125,
+        "bottom": 195.5738525390625,
+        "width": 18.841888427734375,
+        "height": 10.904022216796875,
+        "centerX": 125.51972961425781,
+        "centerY": 190.12184143066406
+      },
+      "logicalBounds": {
+        "left": 6.478042787924149,
+        "top": 13.024199562080545,
+        "right": 9.18945184287758,
+        "bottom": 16.418341320692882
+      },
+      "stem": {
+        "partNumber": 1,
+        "measureNumber": 1,
+        "logicalBounds": {
+          "left": 7.601964178217712,
+          "top": 7.336029561938055,
+          "right": 7.601964178217712,
+          "bottom": 11.99999525033129
+        },
+        "physicalBounds": {
+          "left": 123.90904235839844,
+          "top": 166.39601135253906,
+          "right": 123.90904235839844,
+          "bottom": 181.3794708251953,
+          "width": 0,
+          "height": 14.98345947265625,
+          "centerX": 123.90904235839844,
+          "centerY": 173.8877410888672
+        },
+        "direction": 1,
+        "crossStaff": false,
+        "attachedNotes": [
+          {
+            "partNumber": 1,
+            "measureNumber": 1,
+            "logicalBounds": {
+              "left": 7.551118478937573,
+              "top": 5.943773421803829,
+              "right": 8.753108965456999,
+              "bottom": 8.063769052108615
+            },
+            "physicalBounds": {
+              "left": 123.55570983886719,
+              "top": 161.92324829101562,
+              "right": 131.90847778320312,
+              "bottom": 168.73394775390625,
+              "width": 8.352767944335938,
+              "height": 6.810699462890625,
+              "centerX": 127.73209381103516,
+              "centerY": 165.32859802246094
+            },
+            "isFilled": false,
+            "pitch": "F4"
+          }
+        ]
+      },
+      "confidence": 0.14402280520456276
+    },
+    {
+      "partNumber": 1,
       "measureNumber": 7,
       "denominator": 8,
       "physicalBounds": {
@@ -101676,7 +101744,279 @@
           }
         ]
       },
-      "confidence": 0.9980782696091531
+      "confidence": 0.9982282188726921
+    },
+    {
+      "partNumber": 2,
+      "measureNumber": 7,
+      "denominator": 16,
+      "physicalBounds": {
+        "left": 204.5431671142578,
+        "top": 460.3312683105469,
+        "right": 223.38479614257812,
+        "bottom": 471.2352600097656,
+        "width": 18.841629028320312,
+        "height": 10.90399169921875,
+        "centerX": 213.96398162841797,
+        "centerY": 465.78326416015625
+      },
+      "logicalBounds": {
+        "left": 0.7781882269837234,
+        "top": 17.024463862281387,
+        "right": 3.466847559878614,
+        "bottom": 20.418527608673195
+      },
+      "stem": {
+        "partNumber": 2,
+        "measureNumber": 7,
+        "logicalBounds": {
+          "left": 1.8926404109617003,
+          "top": 11.335957472324832,
+          "right": 1.8926404109617003,
+          "bottom": 16.00000949914567
+        },
+        "physicalBounds": {
+          "left": 212.35304260253906,
+          "top": 442.0559997558594,
+          "right": 212.35304260253906,
+          "bottom": 457.0400390625,
+          "width": 0,
+          "height": 14.984039306640625,
+          "centerX": 212.35304260253906,
+          "centerY": 449.5480194091797
+        },
+        "direction": 1,
+        "crossStaff": false,
+        "attachedNotes": [
+          {
+            "partNumber": 2,
+            "measureNumber": 7,
+            "logicalBounds": {
+              "left": 1.842222809111059,
+              "top": 9.9435726999303,
+              "right": 3.0341423840906394,
+              "bottom": 12.063535035817717
+            },
+            "physicalBounds": {
+              "left": 211.99972534179688,
+              "top": 437.5827331542969,
+              "right": 220.35247802734375,
+              "bottom": 444.3934631347656,
+              "width": 8.352752685546875,
+              "height": 6.81072998046875,
+              "centerX": 216.1761016845703,
+              "centerY": 440.98809814453125
+            },
+            "isFilled": false,
+            "pitch": "D2"
+          }
+        ]
+      },
+      "confidence": 0.14399465066261039
+    },
+    {
+      "partNumber": 2,
+      "measureNumber": 11,
+      "denominator": 16,
+      "physicalBounds": {
+        "left": 74.22219848632812,
+        "top": 623.566162109375,
+        "right": 96.6971664428711,
+        "bottom": 637.771484375,
+        "width": 22.47496795654297,
+        "height": 14.205322265625,
+        "centerX": 85.45968246459961,
+        "centerY": 630.6688232421875
+      },
+      "logicalBounds": {
+        "left": 5.969038679873592,
+        "top": 12.458067626654506,
+        "right": 9.700964915384382,
+        "bottom": 16.88018677249808
+      },
+      "stem": {
+        "partNumber": 2,
+        "measureNumber": 11,
+        "logicalBounds": {
+          "left": 6.561128593975954,
+          "top": 0.33537348562037017,
+          "right": 6.561128593975954,
+          "bottom": 11.000938137547589
+        },
+        "physicalBounds": {
+          "left": 77.78797149658203,
+          "top": 584.6240234375,
+          "right": 77.78797149658203,
+          "bottom": 618.8853759765625,
+          "width": 0,
+          "height": 34.2613525390625,
+          "centerX": 77.78797149658203,
+          "centerY": 601.7546997070312
+        },
+        "direction": 1,
+        "crossStaff": false,
+        "attachedNotes": [
+          {
+            "partNumber": 2,
+            "measureNumber": 11,
+            "logicalBounds": {
+              "left": 6.502458392441187,
+              "top": -1.0563381285224689,
+              "right": 7.8894185615740815,
+              "bottom": 1.0638432289031865
+            },
+            "physicalBounds": {
+              "left": 77.43463897705078,
+              "top": 580.1533813476562,
+              "right": 85.78739929199219,
+              "bottom": 586.964111328125,
+              "width": 8.352760314941406,
+              "height": 6.81072998046875,
+              "centerX": 81.61101913452148,
+              "centerY": 583.5587463378906
+            },
+            "isFilled": false,
+            "pitch": "A3"
+          }
+        ]
+      },
+      "confidence": 0.14103121629722906
+    },
+    {
+      "partNumber": 2,
+      "measureNumber": 12,
+      "denominator": 16,
+      "physicalBounds": {
+        "left": 190.4450225830078,
+        "top": 623.566162109375,
+        "right": 212.9199676513672,
+        "bottom": 637.771484375,
+        "width": 22.474945068359375,
+        "height": 14.205322265625,
+        "centerX": 201.6824951171875,
+        "centerY": 630.6688232421875
+      },
+      "logicalBounds": {
+        "left": 0.9977652234709229,
+        "top": 12.458067626654506,
+        "right": 3.935223738658533,
+        "bottom": 16.88018677249808
+      },
+      "stem": {
+        "partNumber": 2,
+        "measureNumber": 12,
+        "logicalBounds": {
+          "left": 1.4637881493873555,
+          "top": 0.33537348562037017,
+          "right": 1.4637881493873555,
+          "bottom": 11.000938137547589
+        },
+        "physicalBounds": {
+          "left": 194.01063537597656,
+          "top": 584.6240234375,
+          "right": 194.01063537597656,
+          "bottom": 618.8853759765625,
+          "width": 0,
+          "height": 34.2613525390625,
+          "centerX": 194.01063537597656,
+          "centerY": 601.7546997070312
+        },
+        "direction": 1,
+        "crossStaff": false,
+        "attachedNotes": [
+          {
+            "partNumber": 2,
+            "measureNumber": 12,
+            "logicalBounds": {
+              "left": 1.4176098475951517,
+              "top": -1.0563381285224689,
+              "right": 2.509308377971445,
+              "bottom": 1.0638432289031865
+            },
+            "physicalBounds": {
+              "left": 193.65731811523438,
+              "top": 580.1533813476562,
+              "right": 202.01007080078125,
+              "bottom": 586.964111328125,
+              "width": 8.352752685546875,
+              "height": 6.81072998046875,
+              "centerX": 197.8336944580078,
+              "centerY": 583.5587463378906
+            },
+            "isFilled": false,
+            "pitch": "A3"
+          }
+        ]
+      },
+      "confidence": 0.1410314605668783
+    },
+    {
+      "partNumber": 1,
+      "measureNumber": 25,
+      "denominator": 16,
+      "physicalBounds": {
+        "left": 653.5421142578125,
+        "top": 922.5718383789062,
+        "right": 680.6781616210938,
+        "bottom": 933.4758911132812,
+        "width": 27.13604736328125,
+        "height": 10.904052734375,
+        "centerX": 667.1101379394531,
+        "centerY": 928.0238647460938
+      },
+      "logicalBounds": {
+        "left": 0.44612732396692506,
+        "top": 14.024825987731868,
+        "right": 5.9536207946650705,
+        "bottom": 17.418904702309003
+      },
+      "stem": {
+        "partNumber": 1,
+        "measureNumber": 25,
+        "logicalBounds": {
+          "left": 2.635215905689009,
+          "top": 8.336174366110889,
+          "right": 2.635215905689009,
+          "bottom": 13.000211355740209
+        },
+        "physicalBounds": {
+          "left": 664.3280029296875,
+          "top": 904.2960815429688,
+          "right": 664.3280029296875,
+          "bottom": 919.2800903320312,
+          "width": 0,
+          "height": 14.9840087890625,
+          "centerX": 664.3280029296875,
+          "centerY": 911.7880859375
+        },
+        "direction": 1,
+        "crossStaff": false,
+        "attachedNotes": [
+          {
+            "partNumber": 1,
+            "measureNumber": 25,
+            "logicalBounds": {
+              "left": 2.5637641812307086,
+              "top": 6.943772248753833,
+              "right": 4.259033147175109,
+              "bottom": 9.063732067415357
+            },
+            "physicalBounds": {
+              "left": 663.9759521484375,
+              "top": 899.82275390625,
+              "right": 672.3287353515625,
+              "bottom": 906.6334838867188,
+              "width": 8.352783203125,
+              "height": 6.81072998046875,
+              "centerX": 668.15234375,
+              "centerY": 903.2281188964844
+            },
+            "isFilled": false,
+            "pitch": "E4"
+          }
+        ]
+      },
+      "confidence": 0.15942368131272228
     }
   ],
   "arcs": [

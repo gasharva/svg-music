@@ -500,15 +500,15 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>96</duration>
+        <duration>12</duration>
         <voice>2</voice>
-        <type>half</type>
+        <type>16th</type>
         <dot />
         <stem>down</stem>
         <staff>1</staff>
       </note>
       <backup>
-        <duration>96</duration>
+        <duration>12</duration>
       </backup>
       <note default-x="61.918">
         <pitch>
@@ -606,9 +606,9 @@
           <step>F</step>
           <octave>3</octave>
         </pitch>
-        <duration>96</duration>
+        <duration>12</duration>
         <voice>1</voice>
-        <type>half</type>
+        <type>16th</type>
         <dot />
         <stem>down</stem>
         <staff>2</staff>
@@ -619,9 +619,9 @@
           <step>G</step>
           <octave>2</octave>
         </pitch>
-        <duration>96</duration>
+        <duration>12</duration>
         <voice>1</voice>
-        <type>half</type>
+        <type>16th</type>
         <dot />
         <stem>down</stem>
         <staff>2</staff>
@@ -1361,15 +1361,15 @@
           <step>C</step>
           <octave>4</octave>
         </pitch>
-        <duration>96</duration>
+        <duration>12</duration>
         <voice>2</voice>
-        <type>half</type>
+        <type>16th</type>
         <dot />
         <stem>down</stem>
         <staff>1</staff>
       </note>
       <backup>
-        <duration>96</duration>
+        <duration>12</duration>
       </backup>
       <note default-x="59.181">
         <pitch>
@@ -2054,15 +2054,15 @@
           <step>F</step>
           <octave>4</octave>
         </pitch>
-        <duration>96</duration>
+        <duration>12</duration>
         <voice>2</voice>
-        <type>half</type>
+        <type>16th</type>
         <dot />
         <stem>down</stem>
         <staff>1</staff>
       </note>
       <backup>
-        <duration>96</duration>
+        <duration>12</duration>
       </backup>
       <note default-x="30.556">
         <pitch>
