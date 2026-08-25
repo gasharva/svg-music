@@ -184,7 +184,8 @@ def merged_contours(paths, sample_points=32, snap_fraction=0.0005):
 
 
 def closed_contours(paths):
-    return [c for c in merged_contours(paths) if c.is_ring]
+    # Contour order in source SVG is irrelevant. Canonical order = decreasing perimeter.
+    return sorted([c for c in merged_contours(paths) if c.is_ring], key=lambda c: c.length, reverse=True)
 
 
 def resample_closed_contour(contour, count):
@@ -200,7 +201,6 @@ def resample_closed_contour(contour, count):
 
 
 def fourier_descriptor(points):
-    """Complex Fourier descriptor of a closed sampled contour, centered and scale-normalized."""
     if len(points) == 0:
         return np.array([], dtype=complex)
     z = points[:, 0].astype(float) + 1j * points[:, 1].astype(float)
@@ -320,14 +320,9 @@ def draw_fourier_charts(series, component_count, contour_index):
     axes[0].set_title(f'Contour {contour_index} — Fourier real components')
     axes[1].set_title(f'Contour {contour_index} — Fourier imaginary components')
     for ax in axes:
-        ax.set_xlabel('k')
-        ax.set_xticks(ks)
-        ax.grid(alpha=.2)
-        ax.legend(fontsize=8)
-    axes[0].set_ylabel('Re(Zk)')
-    axes[1].set_ylabel('Im(Zk)')
-    plt.tight_layout()
-    plt.show()
+        ax.set_xlabel('k'); ax.set_xticks(ks); ax.grid(alpha=.2); ax.legend(fontsize=8)
+    axes[0].set_ylabel('Re(Zk)'); axes[1].set_ylabel('Im(Zk)')
+    plt.tight_layout(); plt.show()
 
 
 def launch():
@@ -335,14 +330,10 @@ def launch():
     print(f'Loaded {len(svg_files)} SVG files in {len(classes)} classes')
 
     class_dropdown = widgets.Dropdown(options=classes, description='Class:', layout=widgets.Layout(width='430px'))
-    mode_dropdown = widgets.Dropdown(
-        options=['Path commands', 'Merged contours', 'Resampled contours'],
-        value='Resampled contours', description='Mode:', layout=widgets.Layout(width='290px'))
-    point_slider = widgets.IntSlider(value=16, min=4, max=128, step=1, description='Points:', continuous_update=False,
-                                     layout=widgets.Layout(width='330px'))
+    mode_dropdown = widgets.Dropdown(options=['Path commands', 'Merged contours', 'Resampled contours'], value='Resampled contours', description='Mode:', layout=widgets.Layout(width='290px'))
+    point_slider = widgets.IntSlider(value=16, min=4, max=128, step=1, description='Points:', continuous_update=False, layout=widgets.Layout(width='330px'))
     contour_dropdown = widgets.Dropdown(options=[0], value=0, description='Contour:', layout=widgets.Layout(width='230px'))
-    fourier_slider = widgets.IntSlider(value=8, min=1, max=15, step=1, description='Fourier M:', continuous_update=False,
-                                       layout=widgets.Layout(width='320px'))
+    fourier_slider = widgets.IntSlider(value=8, min=1, max=15, step=1, description='Fourier M:', continuous_update=False, layout=widgets.Layout(width='320px'))
     controls_top = widgets.HBox([class_dropdown, mode_dropdown, point_slider])
     controls_bottom = widgets.HBox([contour_dropdown, fourier_slider])
     updating_controls = {'value': False}
@@ -350,16 +341,12 @@ def launch():
     def render(*_):
         if updating_controls['value']:
             return
-        class_name = class_dropdown.value
-        mode = mode_dropdown.value
-        point_count = point_slider.value
+        class_name = class_dropdown.value; mode = mode_dropdown.value; point_count = point_slider.value
         files = sorted([n for n in svg_files if PurePosixPath(n).parent.name == class_name])
-
         max_contours = 0
         if mode == 'Resampled contours' and files:
             for name in files:
                 max_contours = max(max_contours, len(closed_contours(parse_svg(zf.read(name)))))
-
         updating_controls['value'] = True
         try:
             new_options = list(range(max_contours)) if max_contours else [0]
@@ -371,37 +358,224 @@ def launch():
                 fourier_slider.value = fourier_slider.max
         finally:
             updating_controls['value'] = False
-
         clear_output(wait=True)
         is_resampled = mode == 'Resampled contours'
         point_slider.layout.display = '' if is_resampled else 'none'
         contour_dropdown.layout.display = '' if is_resampled else 'none'
         fourier_slider.layout.display = '' if is_resampled else 'none'
         display(controls_top)
-        if is_resampled:
-            display(controls_bottom)
-
+        if is_resampled: display(controls_bottom)
         print(f'{class_name}: {len(files)} examples — {mode}')
-        if mode == 'Path commands':
-            print('Commands:', '   '.join(f'{k}={v}' for k, v in COLORS.items()))
-        if not files:
-            return
-
+        if mode == 'Path commands': print('Commands:', '   '.join(f'{k}={v}' for k, v in COLORS.items()))
+        if not files: return
         fig, axes = plt.subplots(1, len(files), figsize=(max(4, 3.2 * len(files)), 4), squeeze=False)
         for ax, name in zip(axes[0], files):
             draw_example(ax, zf.read(name), PurePosixPath(name).name, mode, point_count)
-        plt.tight_layout()
-        plt.show()
-
+        plt.tight_layout(); plt.show()
         if is_resampled:
             contour_index = contour_dropdown.value
             series = collect_fourier(zf, files, contour_index, point_count)
             print(f'Fourier: contour={contour_index}, points={point_count}, showing k=1..{fourier_slider.value}; centered + RMS scale normalized')
             draw_fourier_charts(series, fourier_slider.value, contour_index)
 
-    class_dropdown.observe(render, names='value')
-    mode_dropdown.observe(render, names='value')
-    point_slider.observe(render, names='value')
-    contour_dropdown.observe(render, names='value')
-    fourier_slider.observe(render, names='value')
+    class_dropdown.observe(render, names='value'); mode_dropdown.observe(render, names='value')
+    point_slider.observe(render, names='value'); contour_dropdown.observe(render, names='value'); fourier_slider.observe(render, names='value')
+    render()
+
+
+# ---------- RMS nearest-neighbour experiment ----------
+
+def _signed_area(points):
+    if len(points) < 3:
+        return 0.0
+    x = points[:, 0]; y = points[:, 1]
+    return 0.5 * np.sum(x * np.roll(y, -1) - np.roll(x, -1) * y)
+
+
+def _canonical_direction(points):
+    """Use one winding direction for every contour, then put the visually topmost point first."""
+    if len(points) == 0:
+        return points
+    q = points.copy()
+    if _signed_area(q) < 0:
+        q = q[::-1].copy()
+    min_y = q[:, 1].min()
+    candidates = np.flatnonzero(np.isclose(q[:, 1], min_y, rtol=0, atol=1e-10))
+    start = candidates[np.argmin(q[candidates, 0])] if len(candidates) else int(np.argmin(q[:, 1]))
+    return np.roll(q, -int(start), axis=0)
+
+
+def glyph_descriptor(svg_bytes, point_count=16):
+    """All contours in one glyph coordinate system, normalized by whole-glyph bbox height."""
+    paths = parse_svg(svg_bytes)
+    raw = all_points(paths)
+    if len(raw) == 0:
+        return {'contours': [], 'perimeters': [], 'aspect': 0.0, 'paths': paths}
+    xmin, ymin = raw.min(axis=0); xmax, ymax = raw.max(axis=0)
+    height = max(ymax - ymin, 1e-9)
+    aspect = (xmax - xmin) / height
+
+    contours = closed_contours(paths)  # already sorted by decreasing perimeter
+    result = []
+    perimeters = []
+    for contour in contours:
+        pts = resample_closed_contour(contour, point_count)
+        if len(pts) == 0:
+            continue
+        pts = np.column_stack(((pts[:, 0] - xmin) / height, (pts[:, 1] - ymin) / height))
+        pts = _canonical_direction(pts)
+        result.append(pts)
+        perimeters.append(contour.length / height)
+    return {'contours': result, 'perimeters': perimeters, 'aspect': aspect, 'paths': paths}
+
+
+def cyclic_rms(a, b):
+    """Best pointwise RMS over every cyclic starting-point shift."""
+    if len(a) != len(b) or len(a) == 0:
+        return float('inf'), 0
+    best = float('inf'); best_shift = 0
+    for shift in range(len(a)):
+        br = np.roll(b, shift, axis=0)
+        d = np.sqrt(np.mean(np.sum((a - br) ** 2, axis=1)))
+        if d < best:
+            best = float(d); best_shift = shift
+    return best, best_shift
+
+
+def compare_glyph_descriptors(a, b, count_penalty=0.35):
+    """Perimeter-sorted contour comparison with weighted cyclic RMS + explicit contour-count penalty."""
+    na = len(a['contours']); nb = len(b['contours']); matched = min(na, nb)
+    details = []
+    weights = []
+    for i in range(matched):
+        d, shift = cyclic_rms(a['contours'][i], b['contours'][i])
+        wa = a['perimeters'][i] if i < len(a['perimeters']) else 1.0
+        wb = b['perimeters'][i] if i < len(b['perimeters']) else 1.0
+        w = max(1e-9, (wa + wb) / 2.0)
+        details.append({'index': i, 'rms': d, 'shift': shift, 'weight': w})
+        weights.append(w)
+    shape_distance = (sum(x['rms'] * x['weight'] for x in details) / sum(weights)) if weights else 0.0
+    contour_penalty = abs(na - nb) * count_penalty
+    total = shape_distance + contour_penalty
+    return {
+        'total': total,
+        'shape': shape_distance,
+        'count_penalty': contour_penalty,
+        'contours_a': na,
+        'contours_b': nb,
+        'details': details,
+    }
+
+
+def _draw_descriptor(ax, descriptor, title, subtitle=None):
+    all_pts = [p for p in descriptor['contours'] if len(p)]
+    if not all_pts:
+        ax.set_title(title); ax.axis('off'); return
+    for i, pts in enumerate(all_pts):
+        color = CONTOUR_COLORS[i % len(CONTOUR_COLORS)]
+        loop = np.vstack([pts, pts[0]])
+        ax.plot(loop[:, 0], loop[:, 1], linewidth=2.2, color=color)
+        ax.scatter(pts[:, 0], pts[:, 1], s=22, color=color, edgecolors='white', linewidths=.4, zorder=3)
+    xmax = max(p[:, 0].max() for p in all_pts)
+    ax.set_xlim(-.05, max(xmax + .05, descriptor['aspect'] + .05)); ax.set_ylim(1.05, -.05)
+    ax.set_aspect('equal'); ax.axis('off')
+    ax.set_title(title, fontsize=10)
+    if subtitle:
+        ax.text(.5, -.04, subtitle, transform=ax.transAxes, ha='center', va='top', fontsize=8)
+
+
+def launch_knn():
+    """Interactive top-K nearest glyphs over the whole dataset using perimeter-sorted cyclic RMS."""
+    zf, svg_files, classes = load_dataset()
+    files_by_class = {c: sorted([n for n in svg_files if PurePosixPath(n).parent.name == c]) for c in classes}
+    descriptor_cache = {}
+
+    def descriptor(name, point_count):
+        key = (name, point_count)
+        if key not in descriptor_cache:
+            descriptor_cache[key] = glyph_descriptor(zf.read(name), point_count)
+        return descriptor_cache[key]
+
+    class_dropdown = widgets.Dropdown(options=classes, description='Query class:', layout=widgets.Layout(width='430px'))
+    font_dropdown = widgets.Dropdown(options=[], description='Font:', layout=widgets.Layout(width='330px'))
+    topk_slider = widgets.IntSlider(value=10, min=1, max=30, step=1, description='Top K:', continuous_update=False, layout=widgets.Layout(width='300px'))
+    points_slider = widgets.IntSlider(value=16, min=8, max=64, step=1, description='Points:', continuous_update=False, layout=widgets.Layout(width='300px'))
+    penalty_slider = widgets.FloatSlider(value=.35, min=0, max=1.5, step=.05, description='Count penalty:', continuous_update=False, readout_format='.2f', layout=widgets.Layout(width='350px'))
+    controls1 = widgets.HBox([class_dropdown, font_dropdown, topk_slider])
+    controls2 = widgets.HBox([points_slider, penalty_slider])
+    updating = {'value': False}
+
+    def refresh_fonts():
+        files = files_by_class[class_dropdown.value]
+        options = [(PurePosixPath(n).name, n) for n in files]
+        old = font_dropdown.value
+        font_dropdown.options = options
+        if old not in [v for _, v in options] and options:
+            font_dropdown.value = options[0][1]
+
+    def render(*_):
+        if updating['value'] or not font_dropdown.value:
+            return
+        query_name = font_dropdown.value
+        point_count = points_slider.value
+        count_penalty = penalty_slider.value
+        query = descriptor(query_name, point_count)
+
+        scored = []
+        for name in svg_files:
+            if name == query_name:
+                continue
+            candidate = descriptor(name, point_count)
+            score = compare_glyph_descriptors(query, candidate, count_penalty)
+            scored.append((score['total'], name, score, candidate))
+        scored.sort(key=lambda x: x[0])
+        nearest = scored[:topk_slider.value]
+
+        clear_output(wait=True)
+        display(controls1); display(controls2)
+        qclass = PurePosixPath(query_name).parent.name
+        qfont = PurePosixPath(query_name).name
+        print(f'Query: {qclass}/{qfont} — {len(query["contours"])} contours, sorted by perimeter')
+        print(f'Metric: whole-glyph bbox normalization + canonical winding + cyclic RMS; points={point_count}; contour-count penalty={count_penalty:.2f}')
+
+        cols = min(4, len(nearest) + 1)
+        rows = int(np.ceil((len(nearest) + 1) / cols))
+        fig, axes = plt.subplots(rows, cols, figsize=(4.0 * cols, 4.4 * rows), squeeze=False)
+        flat_axes = axes.ravel()
+        _draw_descriptor(flat_axes[0], query, f'QUERY\n{qclass}/{qfont}', f'{len(query["contours"])} contours')
+
+        for rank, (_, name, score, candidate) in enumerate(nearest, start=1):
+            cls = PurePosixPath(name).parent.name
+            font = PurePosixPath(name).name
+            pieces = [f'c{x["index"]}={x["rms"]:.4f}' for x in score['details']]
+            if score['count_penalty'] > 0:
+                pieces.append(f'count={score["count_penalty"]:.3f}')
+            subtitle = f'TOTAL={score["total"]:.4f}\n' + '  '.join(pieces)
+            _draw_descriptor(flat_axes[rank], candidate, f'#{rank}  {cls}\n{font}', subtitle)
+
+        for ax in flat_axes[len(nearest)+1:]:
+            ax.axis('off')
+        plt.tight_layout(); plt.show()
+
+        print('\nRanking:')
+        for rank, (_, name, score, _) in enumerate(nearest, start=1):
+            cls = PurePosixPath(name).parent.name; font = PurePosixPath(name).name
+            breakdown = ', '.join(f'c{x["index"]}={x["rms"]:.4f}' for x in score['details']) or 'no matched contours'
+            extra = f', count penalty={score["count_penalty"]:.3f}' if score['count_penalty'] else ''
+            print(f'{rank:2d}. {cls}/{font}: total={score["total"]:.4f} (shape={score["shape"]:.4f}; {breakdown}{extra})')
+
+    def on_class_change(*_):
+        updating['value'] = True
+        try:
+            refresh_fonts()
+        finally:
+            updating['value'] = False
+        render()
+
+    class_dropdown.observe(on_class_change, names='value')
+    font_dropdown.observe(render, names='value')
+    topk_slider.observe(render, names='value')
+    points_slider.observe(render, names='value')
+    penalty_slider.observe(render, names='value')
+    refresh_fonts()
     render()
