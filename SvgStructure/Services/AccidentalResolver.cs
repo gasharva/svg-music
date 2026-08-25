@@ -14,8 +14,17 @@ public sealed class AccidentalResolver
     public double AttachmentPitchTolerance { get; init; } = 1.0;
     public double AttachmentGlyphLaneTolerance { get; init; } = 0.75;
     public double AttachmentHorizontalOverlapTolerance { get; init; } = 1.0;
-    public double MinLogicalHeight { get; init; } = 1.5;
-    public double MaxLogicalHeight { get; init; } = 7.0;
+
+    // Accidentals are compact, predominantly vertical glyphs. The old 1.5..7.0 height-only window
+    // was intentionally permissive for PCA, but with a nearest-class geometry classifier it lets long
+    // arcs and wedges enter the classifier and occasionally become sharps/naturals.
+    public double MinLogicalHeight { get; init; } = 1.6;
+    public double MaxLogicalHeight { get; init; } = 5.0;
+    public double MinLogicalWidth { get; init; } = 0.30;
+    public double MaxLogicalWidth { get; init; } = 4.0;
+    public double MinWidthHeightRatio { get; init; } = 0.12;
+    public double MaxWidthHeightRatio { get; init; } = 1.35;
+
     public double LaneTolerance { get; init; } = 0.55;
 
     public AccidentalResolver(GeometryAccidentalRecognizer recognizer) => _recognizer = recognizer;
@@ -88,9 +97,18 @@ public sealed class AccidentalResolver
         {
             var part = symbol.PartNumber!.Value;
             if (!grid.TryGetBlock(part, symbol.MeasureNumber, out var block)) continue;
+
             var logical = block.ToLogical(symbol.PhysicalBounds);
             var height = logical.Bottom - logical.Top;
+            var width = (logical.Right ?? logical.Left ?? 0) - (logical.Left ?? logical.Right ?? 0);
+            width = Math.Abs(width);
+
             if (height < MinLogicalHeight || height > MaxLogicalHeight) continue;
+            if (width < MinLogicalWidth || width > MaxLogicalWidth) continue;
+
+            var ratio = width / Math.Max(1e-9, height);
+            if (ratio < MinWidthHeightRatio || ratio > MaxWidthHeightRatio) continue;
+
             var x = CenterX(logical);
             if (x is null) continue;
             result.Add(new PreparedCandidate(symbol, part, symbol.MeasureNumber, logical, x.Value, CenterY(logical)));
