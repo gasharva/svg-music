@@ -7,7 +7,7 @@ namespace SvgStructure.Services;
 /// </summary>
 public sealed class AccidentalResolver
 {
-    private readonly GlyphPcaAccidentalRecognizer _recognizer;
+    private readonly GeometryAccidentalRecognizer _recognizer;
 
     public double MaxAttachedNoteGapLogicalX { get; init; } = 8.0;
     public double NoteSearchLaneTolerance { get; init; } = 1.0;
@@ -18,7 +18,7 @@ public sealed class AccidentalResolver
     public double MaxLogicalHeight { get; init; } = 7.0;
     public double LaneTolerance { get; init; } = 0.55;
 
-    public AccidentalResolver(GlyphPcaAccidentalRecognizer recognizer) => _recognizer = recognizer;
+    public AccidentalResolver(GeometryAccidentalRecognizer recognizer) => _recognizer = recognizer;
 
     public IReadOnlyList<AccidentalResolution> Resolve(
         MusicSymbolResolution symbols,
@@ -37,15 +37,9 @@ public sealed class AccidentalResolver
             {
                 foreach (var candidate in lane.OrderBy(x => x.X))
                 {
-                    if (OverlapsClef(candidate, clefs))
-                        continue;
-
-                    // One unrelated symbol must not terminate the whole lane. In real SVGs a sharp
-                    // may be preceded by another smooth candidate which simply is not an accidental.
+                    if (OverlapsClef(candidate, clefs)) continue;
                     var recognition = Recognize(candidate, recognized);
-                    if (recognition is null)
-                        continue;
-
+                    if (recognition is null) continue;
                     found[recognition.SymbolId] = recognition;
                 }
             }
@@ -54,9 +48,7 @@ public sealed class AccidentalResolver
         foreach (var note in noteHeads.OrderBy(x => x.MeasureNumber).ThenBy(x => x.PartNumber).ThenBy(x => CenterX(x.LogicalBounds) ?? double.MaxValue))
         {
             var noteX = CenterX(note.LogicalBounds);
-            if (noteX is null)
-                continue;
-
+            if (noteX is null) continue;
             var noteY = CenterY(note.LogicalBounds);
             var left = prepared
                 .Where(x => x.PartNumber == note.PartNumber && x.MeasureNumber == note.MeasureNumber)
@@ -67,15 +59,9 @@ public sealed class AccidentalResolver
 
             foreach (var candidate in left)
             {
-                if (found.ContainsKey(candidate.Symbol.Id))
-                    continue;
-                if (OverlapsClef(candidate, clefs))
-                    continue;
-
+                if (found.ContainsKey(candidate.Symbol.Id) || OverlapsClef(candidate, clefs)) continue;
                 var recognition = Recognize(candidate, recognized);
-                if (recognition is null)
-                    continue;
-
+                if (recognition is null) continue;
                 found[recognition.SymbolId] = recognition;
             }
         }
@@ -101,15 +87,12 @@ public sealed class AccidentalResolver
                      .Where(x => x.SmoothPaths.Count > 0))
         {
             var part = symbol.PartNumber!.Value;
-            if (!grid.TryGetBlock(part, symbol.MeasureNumber, out var block))
-                continue;
+            if (!grid.TryGetBlock(part, symbol.MeasureNumber, out var block)) continue;
             var logical = block.ToLogical(symbol.PhysicalBounds);
             var height = logical.Bottom - logical.Top;
-            if (height < MinLogicalHeight || height > MaxLogicalHeight)
-                continue;
+            if (height < MinLogicalHeight || height > MaxLogicalHeight) continue;
             var x = CenterX(logical);
-            if (x is null)
-                continue;
+            if (x is null) continue;
             result.Add(new PreparedCandidate(symbol, part, symbol.MeasureNumber, logical, x.Value, CenterY(logical)));
         }
         return result;
@@ -121,11 +104,7 @@ public sealed class AccidentalResolver
         foreach (var candidate in candidates.OrderBy(x => x.CenterY))
         {
             var lane = lanes.FirstOrDefault(x => Math.Abs(x.Average(c => c.CenterY) - candidate.CenterY) <= LaneTolerance);
-            if (lane is null)
-            {
-                lane = new List<PreparedCandidate>();
-                lanes.Add(lane);
-            }
+            if (lane is null) { lane = new List<PreparedCandidate>(); lanes.Add(lane); }
             lane.Add(candidate);
         }
         return lanes;
@@ -133,27 +112,12 @@ public sealed class AccidentalResolver
 
     private RecognizedCandidate? Recognize(PreparedCandidate candidate, IDictionary<int, RecognizedCandidate?> cache)
     {
-        if (cache.TryGetValue(candidate.Symbol.Id, out var cached))
-            return cached;
+        if (cache.TryGetValue(candidate.Symbol.Id, out var cached)) return cached;
         var contours = SmoothSymbolContourConverter.ToContours(new[] { candidate.Symbol });
-        if (contours.Count == 0)
-        {
-            cache[candidate.Symbol.Id] = null;
-            return null;
-        }
+        if (contours.Count == 0) { cache[candidate.Symbol.Id] = null; return null; }
 
         var recognition = _recognizer.Recognize(contours);
-
-        // GlyphPcaAccidentalRecognizer already applies the model's own acceptance criterion and
-        // returns Kind=null for rejected candidates. Do not impose a second arbitrary confidence
-        // cutoff here: PCA distances are class/shape dependent and valid sharps in real SVGs tend
-        // to score lower than the very regular flat glyphs. That extra cutoff was silently dropping
-        // accepted sharps before attachment was even attempted.
-        if (recognition.Kind is null)
-        {
-            cache[candidate.Symbol.Id] = null;
-            return null;
-        }
+        if (recognition.Kind is null) { cache[candidate.Symbol.Id] = null; return null; }
 
         var result = new RecognizedCandidate(
             candidate.Symbol.Id, candidate.PartNumber, candidate.MeasureNumber, candidate.LogicalBounds,
@@ -190,9 +154,6 @@ public sealed class AccidentalResolver
             })
             .Where(x => x.XGap >= -AttachmentHorizontalOverlapTolerance && x.XGap <= MaxAttachedNoteGapLogicalX)
             .Where(x => x.GlyphYGap <= AttachmentGlyphLaneTolerance)
-            // Pitch position is more important than tiny horizontal differences. The current Mimino
-            // M3 flat is a concrete example: B4 is the exact staff position, while A4 is merely a bit
-            // closer in X. Choosing X first attaches the sign to the wrong note.
             .OrderBy(x => x.ExactPosition ? 0 : 1)
             .ThenBy(x => x.AnchorYGap)
             .ThenBy(x => Math.Max(0.0, x.XGap))
