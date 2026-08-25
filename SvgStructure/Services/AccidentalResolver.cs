@@ -9,7 +9,6 @@ public sealed class AccidentalResolver
 {
     private readonly GlyphPcaAccidentalRecognizer _recognizer;
 
-    public double MinimumConfidence { get; init; } = 0.70;
     public double MaxAttachedNoteGapLogicalX { get; init; } = 8.0;
     public double NoteSearchLaneTolerance { get; init; } = 1.0;
     public double AttachmentPitchTolerance { get; init; } = 1.0;
@@ -142,12 +141,20 @@ public sealed class AccidentalResolver
             cache[candidate.Symbol.Id] = null;
             return null;
         }
+
         var recognition = _recognizer.Recognize(contours);
-        if (recognition.Kind is null || recognition.Confidence < MinimumConfidence)
+
+        // GlyphPcaAccidentalRecognizer already applies the model's own acceptance criterion and
+        // returns Kind=null for rejected candidates. Do not impose a second arbitrary confidence
+        // cutoff here: PCA distances are class/shape dependent and valid sharps in real SVGs tend
+        // to score lower than the very regular flat glyphs. That extra cutoff was silently dropping
+        // accepted sharps before attachment was even attempted.
+        if (recognition.Kind is null)
         {
             cache[candidate.Symbol.Id] = null;
             return null;
         }
+
         var result = new RecognizedCandidate(
             candidate.Symbol.Id, candidate.PartNumber, candidate.MeasureNumber, candidate.LogicalBounds,
             candidate.Symbol.PhysicalBounds, candidate.X, recognition.Kind.Value, recognition.Confidence);
