@@ -10,6 +10,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SvgSymbols", "SvgSymbols\Sv
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlyphPcaGallery", "GlyphPcaGallery\GlyphPcaGallery.csproj", "{D1A9DAF1-1D42-4A2D-A61A-9A5F7248F071}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlyphGeometry", "GlyphGeometry\GlyphGeometry.csproj", "{A5D16323-A7A6-4C10-B80B-0AF93F657234}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlyphGeometryCatalogGenerator", "GlyphGeometryCatalogGenerator\GlyphGeometryCatalogGenerator.csproj", "{D54F17D9-1D61-4B93-8A4E-A48D624FA110}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmuflDatasetBuilder", "SmuflDatasetBuilder\SmuflDatasetBuilder.csproj", "{E84F6D08-2B5A-4F6D-9C6A-7C79359FE42C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MusicXml", "MusicXml\MusicXml.csproj", "{F13B2E64-6584-4D80-B4EB-BFF0A11D7B41}"
@@ -38,6 +42,14 @@ Global
 		{D1A9DAF1-1D42-4A2D-A61A-9A5F7248F071}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D1A9DAF1-1D42-4A2D-A61A-9A5F7248F071}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D1A9DAF1-1D42-4A2D-A61A-9A5F7248F071}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5D16323-A7A6-4C10-B80B-0AF93F657234}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5D16323-A7A6-4C10-B80B-0AF93F657234}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5D16323-A7A6-4C10-B80B-0AF93F657234}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5D16323-A7A6-4C10-B80B-0AF93F657234}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D54F17D9-1D61-4B93-8A4E-A48D624FA110}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D54F17D9-1D61-4B93-8A4E-A48D624FA110}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D54F17D9-1D61-4B93-8A4E-A48D624FA110}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D54F17D9-1D61-4B93-8A4E-A48D624FA110}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E84F6D08-2B5A-4F6D-9C6A-7C79359FE42C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E84F6D08-2B5A-4F6D-9C6A-7C79359FE42C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E84F6D08-2B5A-4F6D-9C6A-7C79359FE42C}.Release|Any CPU.ActiveCfg = Release|Any CPU
