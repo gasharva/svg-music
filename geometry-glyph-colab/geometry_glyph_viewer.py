@@ -183,17 +183,32 @@ def merged_contours(paths, sample_points=32, snap_fraction=0.0005):
     return sorted(parts, key=lambda x: x.length, reverse=True)
 
 
+def closed_contours(paths):
+    return [c for c in merged_contours(paths) if c.is_ring]
+
+
 def resample_closed_contour(contour, count):
     """Uniform arc-length samples; index 0 is the topmost SVG point (minimum Y)."""
     if count < 3 or contour.length <= 0:
         return np.empty((0, 2))
     distances = np.linspace(0.0, contour.length, count, endpoint=False)
     pts = np.array([[contour.interpolate(d).x, contour.interpolate(d).y] for d in distances], dtype=float)
-    # SVG Y grows downward, so the visually topmost point is min Y.
     min_y = pts[:, 1].min()
     candidates = np.flatnonzero(np.isclose(pts[:, 1], min_y, rtol=0, atol=max(contour.length, 1.0) * 1e-9))
     start = candidates[np.argmin(pts[candidates, 0])] if len(candidates) else int(np.argmin(pts[:, 1]))
     return np.roll(pts, -int(start), axis=0)
+
+
+def fourier_descriptor(points):
+    """Complex Fourier descriptor of a closed sampled contour, centered and scale-normalized."""
+    if len(points) == 0:
+        return np.array([], dtype=complex)
+    z = points[:, 0].astype(float) + 1j * points[:, 1].astype(float)
+    z = z - z.mean()
+    rms = np.sqrt(np.mean(np.abs(z) ** 2))
+    if rms > 1e-12:
+        z = z / rms
+    return np.fft.fft(z) / len(z)
 
 
 def norm_factory(pts):
@@ -240,8 +255,7 @@ def draw_contours(ax, paths, norm):
 
 
 def draw_resampled(ax, paths, norm, point_count):
-    contours = merged_contours(paths)
-    closed = [c for c in contours if c.is_ring]
+    closed = closed_contours(paths)
     for i, c in enumerate(closed):
         pts = resample_closed_contour(c, point_count)
         if len(pts) == 0:
@@ -251,7 +265,6 @@ def draw_resampled(ax, paths, norm, point_count):
         color = CONTOUR_COLORS[i % len(CONTOUR_COLORS)]
         ax.plot(loop[:, 0], loop[:, 1], linewidth=2.4, color=color, zorder=3)
         ax.scatter(q[:, 0], q[:, 1], s=45, color=color, edgecolors='white', linewidths=.7, zorder=5)
-        # Make the canonical start point especially obvious.
         ax.scatter([q[0, 0]], [q[0, 1]], s=105, color=color, edgecolors='black', linewidths=1.0, zorder=6)
     ax.text(.02, .02, f'closed={len(closed)}  points/contour={point_count}', transform=ax.transAxes, fontsize=8, va='bottom')
 
@@ -276,38 +289,119 @@ def draw_example(ax, svg_bytes, title, mode, point_count):
     ax.set_title(title, fontsize=10)
 
 
+def collect_fourier(zf, files, contour_index, point_count):
+    result = []
+    for name in files:
+        paths = parse_svg(zf.read(name))
+        contours = closed_contours(paths)
+        if contour_index >= len(contours):
+            continue
+        pts = resample_closed_contour(contours[contour_index], point_count)
+        coeffs = fourier_descriptor(pts)
+        result.append((PurePosixPath(name).name, coeffs))
+    return result
+
+
+def draw_fourier_charts(series, component_count, contour_index):
+    if not series:
+        print(f'No samples contain contour {contour_index}.')
+        return
+    m = min(component_count, min(len(c) for _, c in series) - 1)
+    if m <= 0:
+        return
+    ks = np.arange(1, m + 1)
+    fig, axes = plt.subplots(1, 2, figsize=(14, 4.2))
+    for name, coeffs in series:
+        label = PurePosixPath(name).stem
+        axes[0].plot(ks, coeffs[1:m+1].real, marker='o', linewidth=1.5, label=label)
+        axes[1].plot(ks, coeffs[1:m+1].imag, marker='o', linewidth=1.5, label=label)
+    axes[0].axhline(0, linewidth=.7, alpha=.4)
+    axes[1].axhline(0, linewidth=.7, alpha=.4)
+    axes[0].set_title(f'Contour {contour_index} — Fourier real components')
+    axes[1].set_title(f'Contour {contour_index} — Fourier imaginary components')
+    for ax in axes:
+        ax.set_xlabel('k')
+        ax.set_xticks(ks)
+        ax.grid(alpha=.2)
+        ax.legend(fontsize=8)
+    axes[0].set_ylabel('Re(Zk)')
+    axes[1].set_ylabel('Im(Zk)')
+    plt.tight_layout()
+    plt.show()
+
+
 def launch():
     zf, svg_files, classes = load_dataset()
     print(f'Loaded {len(svg_files)} SVG files in {len(classes)} classes')
 
-    class_dropdown = widgets.Dropdown(options=classes, description='Class:', layout=widgets.Layout(width='520px'))
+    class_dropdown = widgets.Dropdown(options=classes, description='Class:', layout=widgets.Layout(width='430px'))
     mode_dropdown = widgets.Dropdown(
         options=['Path commands', 'Merged contours', 'Resampled contours'],
-        value='Resampled contours', description='Mode:', layout=widgets.Layout(width='320px'))
+        value='Resampled contours', description='Mode:', layout=widgets.Layout(width='290px'))
     point_slider = widgets.IntSlider(value=16, min=4, max=128, step=1, description='Points:', continuous_update=False,
-                                     layout=widgets.Layout(width='360px'))
-    controls = widgets.HBox([class_dropdown, mode_dropdown, point_slider])
+                                     layout=widgets.Layout(width='330px'))
+    contour_dropdown = widgets.Dropdown(options=[0], value=0, description='Contour:', layout=widgets.Layout(width='230px'))
+    fourier_slider = widgets.IntSlider(value=8, min=1, max=15, step=1, description='Fourier M:', continuous_update=False,
+                                       layout=widgets.Layout(width='320px'))
+    controls_top = widgets.HBox([class_dropdown, mode_dropdown, point_slider])
+    controls_bottom = widgets.HBox([contour_dropdown, fourier_slider])
+    updating_controls = {'value': False}
 
     def render(*_):
+        if updating_controls['value']:
+            return
         class_name = class_dropdown.value
         mode = mode_dropdown.value
         point_count = point_slider.value
         files = sorted([n for n in svg_files if PurePosixPath(n).parent.name == class_name])
+
+        max_contours = 0
+        if mode == 'Resampled contours' and files:
+            for name in files:
+                max_contours = max(max_contours, len(closed_contours(parse_svg(zf.read(name)))))
+
+        updating_controls['value'] = True
+        try:
+            new_options = list(range(max_contours)) if max_contours else [0]
+            old_value = contour_dropdown.value
+            contour_dropdown.options = new_options
+            contour_dropdown.value = old_value if old_value in new_options else 0
+            fourier_slider.max = max(1, point_count - 1)
+            if fourier_slider.value > fourier_slider.max:
+                fourier_slider.value = fourier_slider.max
+        finally:
+            updating_controls['value'] = False
+
         clear_output(wait=True)
-        point_slider.layout.display = '' if mode == 'Resampled contours' else 'none'
-        display(controls)
+        is_resampled = mode == 'Resampled contours'
+        point_slider.layout.display = '' if is_resampled else 'none'
+        contour_dropdown.layout.display = '' if is_resampled else 'none'
+        fourier_slider.layout.display = '' if is_resampled else 'none'
+        display(controls_top)
+        if is_resampled:
+            display(controls_bottom)
+
         print(f'{class_name}: {len(files)} examples — {mode}')
         if mode == 'Path commands':
             print('Commands:', '   '.join(f'{k}={v}' for k, v in COLORS.items()))
         if not files:
             return
+
         fig, axes = plt.subplots(1, len(files), figsize=(max(4, 3.2 * len(files)), 4), squeeze=False)
         for ax, name in zip(axes[0], files):
             draw_example(ax, zf.read(name), PurePosixPath(name).name, mode, point_count)
         plt.tight_layout()
         plt.show()
 
+        if is_resampled:
+            contour_index = contour_dropdown.value
+            series = collect_fourier(zf, files, contour_index, point_count)
+            print(f'Fourier: contour={contour_index}, points={point_count}, showing k=1..{fourier_slider.value}; centered + RMS scale normalized')
+            draw_fourier_charts(series, fourier_slider.value, contour_index)
+
     class_dropdown.observe(render, names='value')
     mode_dropdown.observe(render, names='value')
     point_slider.observe(render, names='value')
+    contour_dropdown.observe(render, names='value')
+    fourier_slider.observe(render, names='value')
     render()
