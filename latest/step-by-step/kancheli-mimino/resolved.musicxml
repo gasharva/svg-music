@@ -172,11 +172,13 @@
       <note default-x="93.517">
         <pitch>
           <step>A</step>
+          <alter>1</alter>
           <octave>4</octave>
         </pitch>
         <duration>8</duration>
         <voice>1</voice>
         <type>16th</type>
+        <accidental>sharp</accidental>
         <stem>up</stem>
         <staff>1</staff>
         <beam number="1">end</beam>
@@ -257,11 +259,13 @@
       <note default-x="104.315">
         <pitch>
           <step>A</step>
+          <alter>1</alter>
           <octave>4</octave>
         </pitch>
         <duration>32</duration>
         <voice>1</voice>
         <type>quarter</type>
+        <accidental>sharp</accidental>
         <stem>up</stem>
         <staff>1</staff>
       </note>
@@ -715,11 +719,13 @@
       <note default-x="102.181">
         <pitch>
           <step>F</step>
+          <alter>1</alter>
           <octave>4</octave>
         </pitch>
         <duration>32</duration>
         <voice>1</voice>
         <type>quarter</type>
+        <accidental>sharp</accidental>
         <stem>up</stem>
         <staff>1</staff>
         <notations>
@@ -1033,11 +1039,13 @@
       <note default-x="92.043">
         <pitch>
           <step>A</step>
+          <alter>1</alter>
           <octave>4</octave>
         </pitch>
         <duration>8</duration>
         <voice>1</voice>
         <type>16th</type>
+        <accidental>sharp</accidental>
         <stem>up</stem>
         <staff>1</staff>
         <beam number="1">end</beam>
@@ -1118,11 +1126,13 @@
       <note default-x="103.255">
         <pitch>
           <step>A</step>
+          <alter>1</alter>
           <octave>4</octave>
         </pitch>
         <duration>32</duration>
         <voice>1</voice>
         <type>quarter</type>
+        <accidental>sharp</accidental>
         <stem>up</stem>
         <staff>1</staff>
       </note>
@@ -1924,11 +1934,13 @@
       <note default-x="102.564">
         <pitch>
           <step>D</step>
+          <alter>1</alter>
           <octave>5</octave>
         </pitch>
         <duration>32</duration>
         <voice>1</voice>
         <type>quarter</type>
+        <accidental>sharp</accidental>
         <stem>up</stem>
         <staff>1</staff>
       </note>
