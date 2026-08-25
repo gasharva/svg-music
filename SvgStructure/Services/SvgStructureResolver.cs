@@ -26,8 +26,6 @@ public sealed class SvgStructureResolver
 
     public SvgStructureResolution Resolve(string svgPath, string repositoryRoot, string recognizerWork)
     {
-        // One shared, immutable class-mean geometry classifier. Reference descriptors are lazily
-        // built once from the embedded References/dataset.zip and then reused by every resolver.
         var glyphClassifier = new GeometryGlyphClassifier(GeometryGlyphClassifier.DefaultPointCount);
         var meterResolver = new MeterResolver(new GeometryNumberRecognizer(glyphClassifier));
         var clefResolver = new ClefResolver(new GeometryClefRecognizer(glyphClassifier));
@@ -39,6 +37,10 @@ public sealed class SvgStructureResolver
         var primitives = _primitiveResolver.Resolve(structure);
         var musicSymbols = _musicSymbolResolver.Resolve(primitives);
 
+        // Meter and clef recognition are bootstrap dependencies: the logical grid needs meters and
+        // note-head pitch mapping needs clefs. Everything that can be resolved by pure geometry after
+        // that runs before the remaining glyph classifiers so already-owned notation cannot be reused
+        // later as a flag/accidental/rest.
         var meters = structure.Map.Blocks
             .Select(block => meterResolver.Resolve(
                 block,
@@ -57,6 +59,7 @@ public sealed class SvgStructureResolver
             .ToArray();
         claimed.AddRange(clefs.Select(x => x.PhysicalBounds));
 
+        // ---- Pure geometry ownership passes ----
         var ledgerPrimitives = RecognitionCandidateFilter.ExcludeClaimed(primitives, claimed);
         var ledgerLines = _ledgerLineResolver.Resolve(ledgerPrimitives, logicalGrid);
         foreach (var ledger in ledgerLines)
@@ -83,14 +86,23 @@ public sealed class SvgStructureResolver
         var beams = _beamResolver.Resolve(beamPrimitives, logicalGrid, stems);
         claimed.AddRange(beams.Select(x => x.PhysicalBounds));
 
-        var flagSymbols = RecognitionCandidateFilter.ExcludeClaimed(musicSymbols, claimed);
-        var noteFlags = noteFlagResolver.Resolve(flagSymbols, logicalGrid, stems, beams);
-        claimed.AddRange(noteFlags.Select(x => x.PhysicalBounds));
-
+        // Arcs used to run after flag recognition. Move them before every remaining glyph classifier:
+        // once a slur/tie is geometrically known, its contour is no longer eligible to become a sharp.
         var arcPrimitives = RecognitionCandidateFilter.ExcludeClaimed(primitives, claimed);
         var rawArcs = _arcResolver.Resolve(arcPrimitives, logicalGrid, noteHeads, stems);
         var arcs = _arcAttachmentRefiner.Refine(rawArcs, noteHeads, stems);
         claimed.AddRange(arcs.Select(x => x.PhysicalBounds));
+
+        // Resolve note augmentation dots geometrically before the glyph passes as well. Rest dots are
+        // naturally deferred until rests exist; a second dot pass below sees only still-unclaimed dots.
+        var noteDotPrimitives = RecognitionCandidateFilter.ExcludeClaimed(primitives, claimed);
+        var noteDots = _dotResolver.Resolve(noteDotPrimitives, logicalGrid, noteHeads, Array.Empty<RestResolution>());
+        claimed.AddRange(noteDots.Select(x => x.PhysicalBounds));
+
+        // ---- Class-mean glyph recognition passes, preserving their existing relative order ----
+        var flagSymbols = RecognitionCandidateFilter.ExcludeClaimed(musicSymbols, claimed);
+        var noteFlags = noteFlagResolver.Resolve(flagSymbols, logicalGrid, stems, beams);
+        claimed.AddRange(noteFlags.Select(x => x.PhysicalBounds));
 
         var accidentalSymbols = RecognitionCandidateFilter.ExcludeClaimed(musicSymbols, claimed);
         var accidentals = accidentalResolver.Resolve(accidentalSymbols, logicalGrid, noteHeads, clefs, meters);
@@ -100,8 +112,15 @@ public sealed class SvgStructureResolver
         var rests = restResolver.Resolve(restSymbols, logicalGrid, claimed);
         claimed.AddRange(rests.Select(x => x.PhysicalBounds));
 
-        var dotPrimitives = RecognitionCandidateFilter.ExcludeClaimed(primitives, claimed);
-        var dots = _dotResolver.Resolve(dotPrimitives, logicalGrid, noteHeads, rests);
+        var restDotPrimitives = RecognitionCandidateFilter.ExcludeClaimed(primitives, claimed);
+        var restDots = _dotResolver.Resolve(restDotPrimitives, logicalGrid, noteHeads, rests);
+        var dots = noteDots
+            .Concat(restDots)
+            .OrderBy(x => x.MeasureNumber)
+            .ThenBy(x => x.PartNumber)
+            .ThenBy(x => x.PhysicalBounds.Left)
+            .ThenBy(x => x.PhysicalBounds.Top)
+            .ToArray();
 
         return new SvgStructureResolution(
             structure,
