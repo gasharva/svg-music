@@ -1,4 +1,4 @@
-using GlyphPcaGallery.Services;
+using GlyphGeometry;
 using SvgStructure.Models;
 using SvgSymbols.Services;
 
@@ -26,26 +26,14 @@ public sealed class SvgStructureResolver
 
     public SvgStructureResolution Resolve(string svgPath, string repositoryRoot, string recognizerWork)
     {
-        var glyphs = Path.Combine(repositoryRoot, "References", "glyphs");
-        var glyphModelBundlePath = Path.Combine(repositoryRoot, "GlyphPcaGallery", "glyph-models.zip");
-        var glyphModelBundle = GlyphModelBundleLoader.Load(glyphModelBundlePath);
-
-        var meterResolver = new MeterResolver(new GlyphPcaNumberRecognizer(
-            glyphModelBundle,
-            Path.Combine(recognizerWork, "meter-pca"),
-            minimumConfidence: 0.20));
-        var clefResolver = new ClefResolver(new GlyphPcaClefRecognizer(
-            glyphModelBundle,
-            Path.Combine(recognizerWork, "clef-pca")));
-        var accidentalResolver = new AccidentalResolver(new GlyphPcaAccidentalRecognizer(
-            glyphModelBundle,
-            Path.Combine(recognizerWork, "accidental-pca")));
-        var noteFlagResolver = new NoteFlagResolver(new GlyphPcaNoteFlagRecognizer(
-            glyphModelBundle,
-            Path.Combine(recognizerWork, "flag-pca")));
-        var restResolver = new RestResolver(new GlyphPcaRestRecognizer(
-            glyphModelBundle,
-            Path.Combine(recognizerWork, "rest-pca")));
+        // One shared, immutable class-mean geometry classifier. Reference descriptors are lazily
+        // built once from the embedded References/dataset.zip and then reused by every resolver.
+        var glyphClassifier = new GeometryGlyphClassifier(GeometryGlyphClassifier.DefaultPointCount);
+        var meterResolver = new MeterResolver(new GeometryNumberRecognizer(glyphClassifier));
+        var clefResolver = new ClefResolver(new GeometryClefRecognizer(glyphClassifier));
+        var accidentalResolver = new AccidentalResolver(new GeometryAccidentalRecognizer(glyphClassifier));
+        var noteFlagResolver = new NoteFlagResolver(new GeometryNoteFlagRecognizer(glyphClassifier));
+        var restResolver = new RestResolver(new GeometryRestRecognizer(glyphClassifier));
 
         var structure = _partMeasureResolver.Resolve(svgPath);
         var primitives = _primitiveResolver.Resolve(structure);
