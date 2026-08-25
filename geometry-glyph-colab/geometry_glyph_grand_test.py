@@ -28,7 +28,15 @@ CLASSIFIERS = [
     ('5-NN weighted', '5nnw'),
     ('7-NN weighted', '7nnw'),
 ]
-CLASSIFIER_LABELS = {key: label for label, key in CLASSIFIERS}
+
+
+def _classifier_label(mode):
+    # Do not depend on a module-level dict here: this file is commonly loaded with exec()
+    # into a long-lived Colab namespace, where stale globals from an older revision can linger.
+    for label, key in CLASSIFIERS:
+        if key == mode:
+            return label
+    return str(mode)
 
 
 def _svg_data_uri(svg_bytes):
@@ -221,7 +229,7 @@ def launch_grand_test(viewer, point_count=16, count_penalty=0.35, top_k=5):
             topk_text=' · '.join(f'{classes[j]}/{PurePosixPath(files[j]).stem} ({distances[i,j]:.4f})' for j in order[:show_k])
             rows.append({'index':i,'class':classes[i],'font':fonts[i],'nearest_correct':nc,'nearest_wrong':nw,'nearest_margin':nm,'farthest_correct':fc,'class_margin':cm,'classifier_ok':ok,'predicted':pred,'topk_text':topk_text})
         state['rows']=rows
-        label=CLASSIFIER_LABELS[mode]
+        label=_classifier_label(mode)
         with summary_output:
             clear_output(wait=True)
             display(HTML(f'<b>{html.escape(label)}</b>: {correct}/{n} = {correct/n:.1%}'))
@@ -231,7 +239,7 @@ def launch_grand_test(viewer, point_count=16, count_penalty=0.35, top_k=5):
         if state['rows'] is None: return
         with table_output:
             clear_output(wait=True)
-            display(HTML(_build_table(state['rows'],state['svg_bytes_cache'],sort_widget.value,direction_widget.value,CLASSIFIER_LABELS[classifier_widget.value])))
+            display(HTML(_build_table(state['rows'],state['svg_bytes_cache'],sort_widget.value,direction_widget.value,_classifier_label(classifier_widget.value))))
 
     def run_geometry(_=None):
         run_button.disabled=True
