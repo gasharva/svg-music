@@ -5,7 +5,8 @@ namespace SvgStructure.Services;
 
 /// <summary>
 /// Finds small round augmentation dots to the right of already recognized notes or rests.
-/// Matching is one-to-one: once a note/rest has received a dot it cannot receive another dot.
+/// Vertically stacked note heads and dots are matched as groups before the ordinary one-to-one
+/// fallback, so engraving offsets cannot make neighbouring notes steal each other's dots.
 /// This pass is deliberately geometric: no PCA/model recognition is used.
 /// </summary>
 public sealed class DotResolver
@@ -21,6 +22,18 @@ public sealed class DotResolver
     public double MaxAreaFractionOfNoteHead { get; init; } = 0.35;
     public double MaxDimensionFractionOfNoteHead { get; init; } = 0.72;
 
+    /// <summary>
+    /// Horizontal tolerance used when note-head/dot bounding boxes almost touch.
+    /// Expressed in physical staff spaces and converted separately for every P+M block.
+    /// </summary>
+    public double ColumnXJitterInStaffSpaces { get; init; } = 0.20;
+
+    /// <summary>
+    /// Maximum physical gap between a note-head snowman and its dot column.
+    /// Pair-level logical X limits still apply as a second guard.
+    /// </summary>
+    public double MaxColumnHorizontalGapInStaffSpaces { get; init; } = 2.5;
+
     public IReadOnlyList<DotResolution> Resolve(
         PrimitiveResolution primitives,
         LogicalGridResolution grid,
@@ -29,6 +42,46 @@ public sealed class DotResolver
     {
         var dotCandidates = BuildDotCandidates(primitives, grid);
         var targets = BuildTargets(noteHeads, rests);
+
+        var usedDots = new HashSet<int>();
+        var usedTargets = new HashSet<string>(StringComparer.Ordinal);
+        var result = new List<DotResolution>();
+
+        // First solve the ambiguous case that motivated this pass: a vertical column of dots beside
+        // a vertical column of same-kind note heads. The assignment is global and monotonic in Y,
+        // so an upper dot cannot greedily consume the note that a lower dot needs.
+        var noteKeys = new Dictionary<NoteHeadResolution, string>(ReferenceEqualityComparer.Instance);
+        for (var i = 0; i < noteHeads.Count; i++)
+            noteKeys[noteHeads[i]] = $"n:{i}";
+
+        foreach (var columnMatch in BuildColumnMatches(dotCandidates, noteHeads, grid)
+                     .OrderByDescending(x => x.Pairs.Count)
+                     .ThenBy(x => x.Score))
+        {
+            if (columnMatch.Pairs.Any(x => usedDots.Contains(x.Dot.PrimitiveId)))
+                continue;
+            if (columnMatch.Pairs.Any(x => !noteKeys.TryGetValue(x.Note, out var key) || usedTargets.Contains(key)))
+                continue;
+
+            foreach (var pair in columnMatch.Pairs)
+            {
+                var key = noteKeys[pair.Note];
+                usedDots.Add(pair.Dot.PrimitiveId);
+                usedTargets.Add(key);
+
+                result.Add(new DotResolution(
+                    pair.Dot.PrimitiveId,
+                    pair.Dot.PartNumber,
+                    pair.Dot.MeasureNumber,
+                    pair.Dot.LogicalBounds,
+                    pair.Dot.PhysicalBounds,
+                    pair.Note,
+                    null));
+            }
+        }
+
+        // Preserve the previous behaviour for everything that is not a real stacked-column case:
+        // single dots, rests, and any column candidate that could not be matched consistently.
         var pairings = new List<Pairing>();
 
         foreach (var dot in dotCandidates)
@@ -55,13 +108,8 @@ public sealed class DotResolver
             }
         }
 
-        // Global greedy matching is preferable to resolving dots one by one: the best geometric
-        // pair wins first, then both the dot and its target are removed from further consideration.
-        // In particular, vertically stacked dots can never attach to the same note/rest.
-        var usedDots = new HashSet<int>();
-        var usedTargets = new HashSet<string>(StringComparer.Ordinal);
-        var result = new List<DotResolution>();
-
+        // Global greedy matching remains the fallback. Group assignments above have already reserved
+        // their dots and note targets, so this can only fill still-free notes/rests.
         foreach (var pairing in pairings.OrderBy(x => x.Score).ThenBy(x => x.Dot.PhysicalBounds.Left))
         {
             if (!usedDots.Add(pairing.Dot.PrimitiveId))
@@ -88,6 +136,188 @@ public sealed class DotResolver
             .ThenBy(x => x.PhysicalBounds.Left)
             .ThenBy(x => x.PhysicalBounds.Top)
             .ToArray();
+    }
+
+    private IReadOnlyList<ColumnMatch> BuildColumnMatches(
+        IReadOnlyList<DotCandidate> dots,
+        IReadOnlyList<NoteHeadResolution> noteHeads,
+        LogicalGridResolution grid)
+    {
+        var result = new List<ColumnMatch>();
+
+        foreach (var scope in dots.GroupBy(x => (x.PartNumber, x.MeasureNumber)))
+        {
+            if (!grid.TryGetBlock(scope.Key.PartNumber, scope.Key.MeasureNumber, out var block))
+                continue;
+
+            var staffSpace = block.PhysicalBounds.Height / 4.0;
+            if (staffSpace <= 1e-9)
+                continue;
+
+            var xJitter = staffSpace * ColumnXJitterInStaffSpaces;
+            var dotColumns = XColumnHelper.GroupByX(
+                scope,
+                x => x.PhysicalBounds.Left,
+                x => x.PhysicalBounds.Right,
+                x => x.LogicalY,
+                xJitter);
+
+            var scopedNotes = noteHeads
+                .Where(x => x.PartNumber == scope.Key.PartNumber &&
+                            x.MeasureNumber == scope.Key.MeasureNumber)
+                .ToArray();
+
+            var noteColumns = NoteHeadColumnHelper.GroupByX(scopedNotes, xJitter);
+
+            foreach (var dotColumn in dotColumns.Where(x => x.Items.Count >= 2))
+            {
+                foreach (var noteColumn in noteColumns.Where(x => x.NoteHeads.Count >= 2))
+                {
+                    var match = TryMatchColumns(dotColumn, noteColumn, staffSpace);
+                    if (match is not null)
+                        result.Add(match);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private ColumnMatch? TryMatchColumns(
+        XColumn<DotCandidate> dots,
+        NoteHeadColumn notes,
+        double staffSpace)
+    {
+        if (dots.Items.Count > notes.NoteHeads.Count)
+            return null;
+
+        // The whole dot column must be on the right-hand side of the note-head snowman.
+        if (dots.CenterX <= notes.CenterX)
+            return null;
+
+        var columnGap = Math.Max(0, dots.Left - notes.Right) / staffSpace;
+        if (columnGap > MaxColumnHorizontalGapInStaffSpaces)
+            return null;
+
+        var orderedDots = dots.Items
+            .OrderBy(x => x.LogicalY)
+            .ToArray();
+        var orderedNotes = notes.NoteHeads
+            .OrderBy(CenterY)
+            .ToArray();
+
+        var dotCount = orderedDots.Length;
+        var noteCount = orderedNotes.Length;
+        var dp = new double[dotCount + 1, noteCount + 1];
+        var action = new MatchAction[dotCount + 1, noteCount + 1];
+
+        for (var d = 0; d <= dotCount; d++)
+        {
+            for (var n = 0; n <= noteCount; n++)
+                dp[d, n] = double.PositiveInfinity;
+        }
+
+        // With no dots matched yet, any number of leading notes may remain undotted for free.
+        for (var n = 0; n <= noteCount; n++)
+            dp[0, n] = 0;
+
+        for (var d = 1; d <= dotCount; d++)
+        {
+            for (var n = 1; n <= noteCount; n++)
+            {
+                // Leave this note without a visual dot.
+                if (dp[d, n - 1] < dp[d, n])
+                {
+                    dp[d, n] = dp[d, n - 1];
+                    action[d, n] = MatchAction.SkipNote;
+                }
+
+                // Or match the current dot to the current note. Because both sequences are ordered
+                // by Y, this transition can never produce crossing assignments.
+                var previous = dp[d - 1, n - 1];
+                if (double.IsPositiveInfinity(previous))
+                    continue;
+
+                var pairScore = ColumnPairScore(orderedDots[d - 1], orderedNotes[n - 1], staffSpace);
+                if (double.IsPositiveInfinity(pairScore))
+                    continue;
+
+                var matched = previous + pairScore;
+                if (matched <= dp[d, n])
+                {
+                    dp[d, n] = matched;
+                    action[d, n] = MatchAction.Match;
+                }
+            }
+        }
+
+        if (double.IsPositiveInfinity(dp[dotCount, noteCount]))
+            return null;
+
+        var pairs = new List<ColumnPair>();
+        var dotIndex = dotCount;
+        var noteIndex = noteCount;
+
+        while (dotIndex > 0)
+        {
+            if (noteIndex <= 0)
+                return null;
+
+            switch (action[dotIndex, noteIndex])
+            {
+                case MatchAction.Match:
+                {
+                    var dot = orderedDots[dotIndex - 1];
+                    var note = orderedNotes[noteIndex - 1];
+                    pairs.Add(new ColumnPair(dot, note));
+                    dotIndex--;
+                    noteIndex--;
+                    break;
+                }
+                case MatchAction.SkipNote:
+                    noteIndex--;
+                    break;
+                default:
+                    return null;
+            }
+        }
+
+        pairs.Reverse();
+
+        // All dots in this column must participate. The mean score lets columns with different
+        // cardinalities compete fairly; the caller separately prefers larger valid snowmen.
+        return new ColumnMatch(
+            pairs,
+            dp[dotCount, noteCount] / Math.Max(1, dotCount));
+    }
+
+    private double ColumnPairScore(
+        DotCandidate dot,
+        NoteHeadResolution note,
+        double staffSpace)
+    {
+        var noteX = Center(note.LogicalBounds.Left, note.LogicalBounds.Right);
+        if (noteX is null)
+            return double.PositiveInfinity;
+
+        var dx = dot.LogicalX - noteX.Value;
+        if (dx <= 0 || dx >= MaxLogicalDistanceToTarget)
+            return double.PositiveInfinity;
+
+        if (!IsMuchSmallerThanNote(dot.PhysicalBounds, note.PhysicalBounds))
+            return double.PositiveInfinity;
+
+        var noteY = CenterY(note);
+        var dy = VerticalError(dot.LogicalY, noteY);
+        if (dy > MaxVerticalErrorLogical)
+            return double.PositiveInfinity;
+
+        // Y carries the musical row information; X is deliberately only a tie-breaker inside an
+        // already-established pair of columns. A small physical-gap term stabilizes staggered heads.
+        var physicalGap = Math.Max(0, dot.PhysicalBounds.Left - note.PhysicalBounds.Right) /
+                          Math.Max(staffSpace, 1e-9);
+
+        return dy * 3.0 + dx * 0.20 + physicalGap * 0.10;
     }
 
     private IReadOnlyList<DotCandidate> BuildDotCandidates(
@@ -145,7 +375,7 @@ public sealed class DotResolver
                 note.PartNumber,
                 note.MeasureNumber,
                 x.Value,
-                (note.LogicalBounds.Top + note.LogicalBounds.Bottom) / 2.0,
+                CenterY(note),
                 note.PhysicalBounds,
                 note,
                 null));
@@ -171,6 +401,9 @@ public sealed class DotResolver
 
         return result;
     }
+
+    private static double CenterY(NoteHeadResolution note) =>
+        (note.LogicalBounds.Top + note.LogicalBounds.Bottom) / 2.0;
 
     private static double VerticalError(double dotY, double targetY) =>
         new[]
@@ -261,4 +494,13 @@ public sealed class DotResolver
         RestResolution? Rest);
 
     private sealed record Pairing(DotCandidate Dot, TargetCandidate Target, double Score);
+    private sealed record ColumnPair(DotCandidate Dot, NoteHeadResolution Note);
+    private sealed record ColumnMatch(IReadOnlyList<ColumnPair> Pairs, double Score);
+
+    private enum MatchAction
+    {
+        None,
+        SkipNote,
+        Match
+    }
 }
